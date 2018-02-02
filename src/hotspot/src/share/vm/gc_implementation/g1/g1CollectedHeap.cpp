@@ -871,9 +871,10 @@ G1CollectedHeap::mem_allocate(size_t word_size,
       }
       return result;
     } else {
-      if (gclocker_retry_count > GCLockerRetryAllocationCount) {
+      // Fix for JDK-8137099 for G1 is to not return null until full GC has happened
+      /*if (gclocker_retry_count > GCLockerRetryAllocationCount) {
         return NULL;
-      }
+      }*/
       assert(op.result() == NULL,
              "the result should be NULL if the VM op did not succeed");
     }
