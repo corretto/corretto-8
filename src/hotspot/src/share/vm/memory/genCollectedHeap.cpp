@@ -683,6 +683,7 @@ void GenCollectedHeap::process_roots(bool activate_scope,
 
       // We only visit parts of the CodeCache when scavenging.
       CodeCache::scavenge_root_nmethods_do(code_roots);
+      CodeCache::prune_scavenge_root_nmethods(); // Published in JDK-8153504
     }
     if (so & SO_AllCodeCache) {
       assert(code_roots != NULL, "must supply closure for code cache");
