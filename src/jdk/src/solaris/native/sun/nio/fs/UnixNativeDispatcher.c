@@ -452,12 +452,6 @@ static void prepAttributes(JNIEnv* env, struct stat64* buf, jobject attrs) {
 #ifdef _DARWIN_FEATURE_64_BIT_INODE
     (*env)->SetLongField(env, attrs, attrs_st_birthtime_sec, (jlong)buf->st_birthtime);
 #endif
-
-#if (_POSIX_C_SOURCE >= 200809L) || defined(__solaris__)
-    (*env)->SetLongField(env, attrs, attrs_st_atime_nsec, (jlong)buf->st_atim.tv_nsec);
-    (*env)->SetLongField(env, attrs, attrs_st_mtime_nsec, (jlong)buf->st_mtim.tv_nsec);
-    (*env)->SetLongField(env, attrs, attrs_st_ctime_nsec, (jlong)buf->st_ctim.tv_nsec);
-#endif
 }
 
 JNIEXPORT void JNICALL
