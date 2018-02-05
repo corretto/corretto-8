@@ -914,6 +914,34 @@ bool G1CollectorPolicy::need_to_start_conc_mark(const char* source, size_t alloc
     return false;
   }
 
+  int growth = 0;
+  int number_of_strings = 0;
+  if (StringTable::has_grown_much(&growth, &number_of_strings)) {
+    if (gcs_are_young() && !_last_young_gc) {
+      ergo_verbose3(ErgoConcCycles,
+        "request concurrent cycle initiation",
+        ergo_format_reason("string table growth")
+        ergo_format_int("number of strings")
+        ergo_format_int("growth")
+        ergo_format_str("source"),
+        number_of_strings,
+        growth,
+        source);
+      return true;
+    } else {
+      ergo_verbose3(ErgoConcCycles,
+        "do not request concurrent cycle initiation",
+        ergo_format_reason("still doing mixed collections")
+        ergo_format_int("number of strings")
+        ergo_format_int("growth")
+        ergo_format_str("source"),
+        number_of_strings,
+        growth,
+        source);
+      return false;
+    }
+  }
+
   size_t marking_initiating_used_threshold =
     (_g1->capacity() / 100) * InitiatingHeapOccupancyPercent;
   size_t cur_used_bytes = _g1->non_young_capacity_bytes();
