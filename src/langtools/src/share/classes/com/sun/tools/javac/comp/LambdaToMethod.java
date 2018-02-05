@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -2045,6 +2045,7 @@ public class LambdaToMethod extends TreeTranslator {
                             if (m.containsKey(lambdaIdent.sym)) {
                                 Symbol tSym = m.get(lambdaIdent.sym);
                                 JCTree t = make.Ident(tSym).setType(lambdaIdent.type);
+                                //XX tSym.setTypeAttributes(lambdaIdent.sym.getRawTypeAttributes());
                                 return t;
                             }
                             break;
@@ -2053,6 +2054,7 @@ public class LambdaToMethod extends TreeTranslator {
                                 // Transform outer instance variable references anchoring them to the captured synthetic.
                                 Symbol tSym = m.get(lambdaIdent.sym.owner);
                                 JCExpression t = make.Ident(tSym).setType(lambdaIdent.sym.owner.type);
+                                //XX tSym.setTypeAttributes(lambdaIdent.sym.owner.getRawTypeAttributes());
                                 t = make.Select(t, lambdaIdent.name);
                                 t.setType(lambdaIdent.type);
                                 TreeInfo.setSymbol(t, lambdaIdent.sym);
@@ -2073,6 +2075,7 @@ public class LambdaToMethod extends TreeTranslator {
                 if (m.containsKey(fieldAccess.sym.owner)) {
                     Symbol tSym = m.get(fieldAccess.sym.owner);
                     JCExpression t = make.Ident(tSym).setType(fieldAccess.sym.owner.type);
+                    //XX tSym.setTypeAttributes(fieldAccess.sym.owner.getRawTypeAttributes());
                     return t;
                 }
                 return null;
