@@ -1141,7 +1141,7 @@ class CommandLineFlags {
                                                                             \
   product(intx, MonitorBound, 0, "Bound Monitor population")                \
                                                                             \
-  product(bool, MonitorInUseLists, false, "Track Monitors for Deflation")   \
+  product(bool, MonitorInUseLists, true, "Track Monitors for Deflation")    \
                                                                             \
   product(intx, SyncFlags, 0, "(Unsafe, Unstable) Experimental Sync flags") \
                                                                             \
