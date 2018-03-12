@@ -339,7 +339,7 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
                 }
             } catch (Throwable t) {
                 log.error("proc.service.problem");
-                throw new Abort(t);
+                throw new AnnotationProcessingError(t);
             }
         }
 
@@ -361,7 +361,7 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
                 log.error("proc.bad.config.file", sce.getLocalizedMessage());
                 throw new Abort(sce);
             } catch (Throwable t) {
-                throw new Abort(t);
+                throw new AnnotationProcessingError(t);
             }
         }
 
