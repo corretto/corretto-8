@@ -2979,8 +2979,10 @@ bool os::Linux::libnuma_init() {
 
       if (numa_available() != -1) {
         set_numa_all_nodes((unsigned long*)libnuma_dlsym(handle, "numa_all_nodes"));
-        set_numa_all_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr"));
-        set_numa_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr"));
+        struct bitmask** numa_all_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr");
+        set_numa_all_nodes_ptr(numa_all_nodes_ptr);
+        struct bitmask** numa_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr");
+        set_numa_nodes_ptr(numa_nodes_ptr == NULL ? numa_all_nodes_ptr : numa_nodes_ptr);
         // Create an index -> node mapping, since nodes are not always consecutive
         _nindex_to_node = new (ResourceObj::C_HEAP, mtInternal) GrowableArray<int>(0, true);
         rebuild_nindex_to_node_map();
