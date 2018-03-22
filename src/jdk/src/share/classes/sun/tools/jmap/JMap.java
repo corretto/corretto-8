@@ -306,8 +306,10 @@ public class JMap {
                 x.printStackTrace();
             }
             if ((x instanceof AttachNotSupportedException) && haveSA()) {
-                System.err.println("The -F option can be used when the " +
-                  "target process is not responding");
+                System.err.println("Try running as target process user " + 
+                  "(e.g. sudo -u <USER> jmap [option])");
+                System.err.println("If the target process is not responding, " + 
+                  "try to run on the core dump or use -F option");
             }
             System.exit(1);
             return null; // keep compiler happy
