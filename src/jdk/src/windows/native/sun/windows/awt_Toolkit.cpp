@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1996, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -979,12 +979,12 @@ LRESULT CALLBACK AwtToolkit::WndProc(HWND hWnd, UINT message,
 
           env->CallStaticVoidMethod(systemColorClass, mid);
 
-          /* FALL THROUGH - NO BREAK */
+          // Falls through.
       }
 
       case WM_SETTINGCHANGE: {
           AwtWin32GraphicsDevice::ResetAllMonitorInfo();
-          /* FALL THROUGH - NO BREAK */
+          // Falls through.
       }
 // Remove this define when we move to newer (XP) version of SDK.
 #define WM_THEMECHANGED                 0x031A

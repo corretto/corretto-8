@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -224,7 +224,7 @@ Java_sun_nio_ch_DatagramChannelImpl_send0(JNIEnv *env, jobject this,
     jint fd = fdval(env, fdo);
     void *buf = (void *)jlong_to_ptr(address);
     SOCKADDR sa;
-    int sa_len = SOCKADDR_LEN;
+    socklen_t sa_len = SOCKADDR_LEN;
     jint n = 0;
 
     if (len > MAX_PACKET_LEN) {
