@@ -55,6 +55,9 @@
  * @author Martin Schlaeffer <schlaeff@sbox.tugraz.at>
  */
 
+#ifndef _PKCS11WRAPPER_H
+#define _PKCS11WRAPPER_H
+
 /* disable asserts in product mode */
 #ifndef DEBUG
   #ifndef NDEBUG
@@ -475,4 +478,6 @@ void p11free(void *p, char *file, int line);
 #define calloc(c, s)    (p11calloc((c), (s), THIS_FILE, __LINE__))
 #define free(c)         (p11free((c), THIS_FILE, __LINE__))
 
-#endif
+#endif // P11_MEMORYDEBUG
+
+#endif /* _PKCS11WRAPPER_H */

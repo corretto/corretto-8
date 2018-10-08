@@ -783,7 +783,7 @@ static void ProcessQuad(ProcessHandler* hnd, jfloat* coords, jint* pixelInfo) {
      * and Y points. The values are inside the (0,1) range (0 and 1 excluded)
      * and in ascending order.
      */
-    double params[2];
+    double params[2] = { 0.0, 0.0 };
 
     jint cnt = 0;
     double param;

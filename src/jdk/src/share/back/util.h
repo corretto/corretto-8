@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -169,37 +169,6 @@ typedef enum {
         EI_VM_DEATH             = 20,
         EI_max                  = 20
 } EventIndex;
-
-/* Agent errors that might be in a jvmtiError for JDWP or internal.
- *    (Done this way so that compiler allows it's use as a jvmtiError)
- */
-#define _AGENT_ERROR(x)                 ((jvmtiError)(JVMTI_ERROR_MAX+64+x))
-#define AGENT_ERROR_INTERNAL                    _AGENT_ERROR(1)
-#define AGENT_ERROR_VM_DEAD                     _AGENT_ERROR(2)
-#define AGENT_ERROR_NO_JNI_ENV                  _AGENT_ERROR(3)
-#define AGENT_ERROR_JNI_EXCEPTION               _AGENT_ERROR(4)
-#define AGENT_ERROR_JVMTI_INTERNAL              _AGENT_ERROR(5)
-#define AGENT_ERROR_JDWP_INTERNAL               _AGENT_ERROR(6)
-#define AGENT_ERROR_NOT_CURRENT_FRAME           _AGENT_ERROR(7)
-#define AGENT_ERROR_OUT_OF_MEMORY               _AGENT_ERROR(8)
-#define AGENT_ERROR_INVALID_TAG                 _AGENT_ERROR(9)
-#define AGENT_ERROR_ALREADY_INVOKING            _AGENT_ERROR(10)
-#define AGENT_ERROR_INVALID_INDEX               _AGENT_ERROR(11)
-#define AGENT_ERROR_INVALID_LENGTH              _AGENT_ERROR(12)
-#define AGENT_ERROR_INVALID_STRING              _AGENT_ERROR(13)
-#define AGENT_ERROR_INVALID_CLASS_LOADER        _AGENT_ERROR(14)
-#define AGENT_ERROR_INVALID_ARRAY               _AGENT_ERROR(15)
-#define AGENT_ERROR_TRANSPORT_LOAD              _AGENT_ERROR(16)
-#define AGENT_ERROR_TRANSPORT_INIT              _AGENT_ERROR(17)
-#define AGENT_ERROR_NATIVE_METHOD               _AGENT_ERROR(18)
-#define AGENT_ERROR_INVALID_COUNT               _AGENT_ERROR(19)
-#define AGENT_ERROR_INVALID_FRAMEID             _AGENT_ERROR(20)
-#define AGENT_ERROR_NULL_POINTER                _AGENT_ERROR(21)
-#define AGENT_ERROR_ILLEGAL_ARGUMENT            _AGENT_ERROR(22)
-#define AGENT_ERROR_INVALID_THREAD              _AGENT_ERROR(23)
-#define AGENT_ERROR_INVALID_EVENT_TYPE          _AGENT_ERROR(24)
-#define AGENT_ERROR_INVALID_OBJECT              _AGENT_ERROR(25)
-#define AGENT_ERROR_NO_MORE_FRAMES              _AGENT_ERROR(26)
 
 /* Combined event information */
 
