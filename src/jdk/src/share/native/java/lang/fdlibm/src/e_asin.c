@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 1998, 2001, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -54,7 +53,6 @@
  *
  */
 
-
 #include "fdlibm.h"
 
 #ifdef __STDC__
@@ -100,10 +98,10 @@ qS4 =  7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
                 if(huge+x>one) return x;/* return x with inexact if x!=0*/
             } else
                 t = x*x;
-                p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-                q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-                w = p/q;
-                return x+x*w;
+	    p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
+	    q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+	    w = p/q;
+	    return x+x*w;
         }
         /* 1> |x|>= 0.5 */
         w = one-fabs(x);
