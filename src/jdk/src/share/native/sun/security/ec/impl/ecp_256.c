@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * This library is free software; you can redistribute it and/or
@@ -261,12 +261,16 @@ ec_GFp_nistp256_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                 switch (a_used) {
                 case 8:
                         a7 = MP_DIGIT(a,7);
+                        // Falls through.
                 case 7:
                         a6 = MP_DIGIT(a,6);
+                        // Falls through.
                 case 6:
                         a5 = MP_DIGIT(a,5);
+                        // Falls through.
                 case 5:
                         a4 = MP_DIGIT(a,4);
+                        break;
                 }
                 a7l = a7 << 32;
                 a7h = a7 >> 32;

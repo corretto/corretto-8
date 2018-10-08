@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 1998, 2003, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -129,7 +128,7 @@ static double zero = 0.0;
                  * Added redundant test against hx to work around VC++
                  * code generation problem.
                  */
-                if(x==-1.0 && (hx==0xbff00000)) /* log1p(-1)=-inf */
+	      if(x==-1.0 && ((unsigned)hx==0xbff00000)) /* log1p(-1)=-inf */
                   return -two54/zero;
                 else
                   return (x-x)/(x-x);           /* log1p(x<-1)=NaN */
