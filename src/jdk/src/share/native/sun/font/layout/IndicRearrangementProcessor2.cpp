@@ -45,8 +45,9 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(IndicRearrangementProcessor2)
 
 IndicRearrangementProcessor2::IndicRearrangementProcessor2(
       const LEReferenceTo<MorphSubtableHeader2> &morphSubtableHeader, LEErrorCode &success)
-  : StateTableProcessor2(morphSubtableHeader, success), indicRearrangementSubtableHeader(morphSubtableHeader, success),
-  entryTable(stHeader, success, entryTableOffset, LE_UNBOUNDED_ARRAY)
+  : StateTableProcessor2(morphSubtableHeader, success),
+  entryTable(stHeader, success, entryTableOffset, LE_UNBOUNDED_ARRAY),
+    indicRearrangementSubtableHeader(morphSubtableHeader, success)
 {
 }
 
@@ -97,7 +98,7 @@ void IndicRearrangementProcessor2::endStateTable()
 void IndicRearrangementProcessor2::doRearrangementAction(LEGlyphStorage &glyphStorage, IndicRearrangementVerb verb, LEErrorCode &success) const
 {
     LEGlyphID a, b, c, d;
-    le_int32 ia, ib, ic, id, ix, x;
+    le_uint32 ia, ib, ic, id, ix, x;
 
     if (LE_FAILURE(success)) return;
 

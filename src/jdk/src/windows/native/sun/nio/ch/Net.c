@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -175,7 +175,7 @@ Java_sun_nio_ch_Net_bind0(JNIEnv *env, jclass clazz, jobject fdo, jboolean prefe
 {
     SOCKETADDRESS sa;
     int rv;
-    int sa_len;
+    socklen_t sa_len;
 
     if (NET_InetAddressToSockaddr(env, iao, port, (struct sockaddr *)&sa, &sa_len, preferIPv6) != 0) {
       return;
@@ -201,7 +201,7 @@ Java_sun_nio_ch_Net_connect0(JNIEnv *env, jclass clazz, jboolean preferIPv6, job
 {
     SOCKETADDRESS sa;
     int rv;
-    int sa_len;
+    socklen_t sa_len;
     SOCKET s = (SOCKET)fdval(env, fdo);
 
     if (NET_InetAddressToSockaddr(env, iao, port, (struct sockaddr *)&sa, &sa_len, preferIPv6) != 0) {
@@ -337,7 +337,8 @@ Java_sun_nio_ch_Net_setIntOption0(JNIEnv *env, jclass clazz, jobject fdo,
 {
     struct linger linger;
     char *parg;
-    int arglen, n;
+    socklen_t arglen;
+    int n;
 
     if (level == SOL_SOCKET && opt == SO_LINGER) {
         parg = (char *)&linger;
@@ -374,7 +375,8 @@ Java_sun_nio_ch_Net_joinOrDrop4(JNIEnv *env, jobject this, jboolean join, jobjec
 {
     struct ip_mreq mreq;
     struct my_ip_mreq_source mreq_source;
-    int opt, n, optlen;
+    int opt, n;
+    socklen_t optlen;
     void* optval;
 
     if (source == 0) {
@@ -492,7 +494,7 @@ JNIEXPORT void JNICALL
 Java_sun_nio_ch_Net_setInterface4(JNIEnv* env, jobject this, jobject fdo, jint interf)
 {
     struct in_addr in;
-    int arglen = sizeof(struct in_addr);
+    socklen_t arglen = sizeof(struct in_addr);
     int n;
 
     in.s_addr = htonl(interf);
@@ -523,7 +525,7 @@ JNIEXPORT void JNICALL
 Java_sun_nio_ch_Net_setInterface6(JNIEnv* env, jobject this, jobject fdo, jint index)
 {
     int value = (jint)index;
-    int arglen = sizeof(value);
+    socklen_t arglen = sizeof(value);
     int n;
 
     n = setsockopt(fdval(env, fdo), IPPROTO_IPV6, IPV6_MULTICAST_IF,
