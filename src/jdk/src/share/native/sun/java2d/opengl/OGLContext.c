@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2004, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -37,6 +37,8 @@
 #include "OGLSurfaceData.h"
 #include "GraphicsPrimitiveMgr.h"
 #include "Region.h"
+
+#include "jvm.h"
 
 /**
  * The following methods are implemented in the windowing system (i.e. GLX

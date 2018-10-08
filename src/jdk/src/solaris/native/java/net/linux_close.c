@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -282,7 +282,7 @@ int NET_ReadV(int s, const struct iovec * vector, int count) {
 }
 
 int NET_RecvFrom(int s, void *buf, int len, unsigned int flags,
-       struct sockaddr *from, int *fromlen) {
+       struct sockaddr *from, socklen_t *fromlen) {
     socklen_t socklen = *fromlen;
     BLOCKING_IO_RETURN_INT( s, recvfrom(s, buf, len, flags, from, &socklen) );
     *fromlen = socklen;
@@ -297,11 +297,11 @@ int NET_WriteV(int s, const struct iovec * vector, int count) {
 }
 
 int NET_SendTo(int s, const void *msg, int len,  unsigned  int
-       flags, const struct sockaddr *to, int tolen) {
+       flags, const struct sockaddr *to, socklen_t tolen) {
     BLOCKING_IO_RETURN_INT( s, sendto(s, msg, len, flags, to, tolen) );
 }
 
-int NET_Accept(int s, struct sockaddr *addr, int *addrlen) {
+int NET_Accept(int s, struct sockaddr *addr, socklen_t *addrlen) {
     socklen_t socklen = *addrlen;
     BLOCKING_IO_RETURN_INT( s, accept(s, addr, &socklen) );
     *addrlen = socklen;
