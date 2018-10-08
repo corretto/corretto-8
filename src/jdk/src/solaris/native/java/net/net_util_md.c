@@ -41,18 +41,21 @@
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#include <sys/ioctl.h>
 #ifndef MAXINT
 #define MAXINT INT_MAX
 #endif
 #endif
 
 #ifdef __solaris__
+#include <sys/filio.h>
 #include <sys/sockio.h>
 #include <stropts.h>
 #include <inet/nd.h>
 #endif
 
 #ifdef __linux__
+#include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <net/route.h>
 #include <sys/utsname.h>
@@ -188,7 +191,7 @@ static int findMaxBuf(int fd, int opt, int sotype) {
 
     if (setsockopt(fd, SOL_SOCKET, opt, &initial_guess, sizeof(int)) == 0) {
         initial_guess++;
-        if (setsockopt(fd, SOL_SOCKET, opt, &initial_guess,sizeof(int)) < 0) {
+        if (setsockopt(fd, SOL_SOCKET, opt, &initial_guess, sizeof(int)) < 0) {
             FAIL_IF_NOT_ENOBUFS;
             return initial_guess - 1;
         }
@@ -783,7 +786,7 @@ NET_EnableFastTcpLoopback(int fd) {
 */
 JNIEXPORT int JNICALL
 NET_InetAddressToSockaddr(JNIEnv *env, jobject iaObj, int port, struct sockaddr *him,
-                          int *len, jboolean v4MappedAddress) {
+                          socklen_t *len, jboolean v4MappedAddress) {
     jint family;
     family = getInetAddress_family(env, iaObj);
     JNU_CHECK_EXCEPTION_RETURN(env, -1);
@@ -1209,7 +1212,7 @@ int getDefaultIPv6Interface(struct in6_addr *target_addr) {
  */
 int
 NET_GetSockOpt(int fd, int level, int opt, void *result,
-               int *len)
+               socklen_t *len)
 {
     int rv;
     socklen_t socklen = *len;
@@ -1261,7 +1264,7 @@ NET_GetSockOpt(int fd, int level, int opt, void *result,
  */
 int
 NET_SetSockOpt(int fd, int level, int  opt, const void *arg,
-               int len)
+               socklen_t len)
 {
 
 #ifndef IPTOS_TOS_MASK
@@ -1302,7 +1305,7 @@ NET_SetSockOpt(int fd, int level, int  opt, const void *arg,
 
 #if defined(AF_INET6) && defined(__linux__)
         if (ipv6_available()) {
-            int optval = 1;
+            socklen_t optval = 1;
             if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND,
                            (void *)&optval, sizeof(optval)) < 0) {
                 return -1;
@@ -1331,7 +1334,8 @@ NET_SetSockOpt(int fd, int level, int  opt, const void *arg,
 #ifdef __solaris__
     if (level == SOL_SOCKET) {
         if (opt == SO_SNDBUF || opt == SO_RCVBUF) {
-            int sotype=0, arglen;
+            int sotype=0;
+            socklen_t arglen;
             int *bufsize, maxbuf;
             int ret;
 
@@ -1501,14 +1505,15 @@ NET_SetSockOpt(int fd, int level, int  opt, const void *arg,
  *
  */
 int
-NET_Bind(int fd, struct sockaddr *him, int len)
+NET_Bind(int fd, struct sockaddr *him, socklen_t len)
 {
 #if defined(__solaris__) && defined(AF_INET6)
     int level = -1;
     int exclbind = -1;
 #endif
     int rv;
-    int arg, alen;
+    int arg;
+    socklen_t alen;
 
 #ifdef __linux__
     /*

@@ -190,7 +190,7 @@ jboolean exceedSizeLimit(JNIEnv *env, jint fd, jint addr, jint size)
 
         } else {
             OSVERSIONINFO ver;
-            int len;
+            socklen_t len;
 
             /*
              * Step 1: Determine which OS this is.
@@ -433,7 +433,7 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_bind0(JNIEnv *env, jobject this,
     int ipv6_supported = ipv6_available();
 
     SOCKETADDRESS lcladdr;
-    int lcladdrlen = sizeof(lcladdr);
+    socklen_t lcladdrlen = sizeof(lcladdr);
     int address;
 
     memset((char *)&lcladdr, 0, sizeof(lcladdr));
@@ -542,7 +542,7 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_connect0(JNIEnv *env, jobject thi
     /* The packetAddress address, family and port */
     jint addr, family;
     SOCKETADDRESS rmtaddr;
-    int rmtaddrlen;
+    socklen_t rmtaddrlen;
     int ipv6_supported = ipv6_available();
 
     if (IS_NULL(fdObj) && IS_NULL(fd1Obj)) {
@@ -661,7 +661,7 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_send(JNIEnv *env, jobject this,
 
     SOCKETADDRESS rmtaddr;
     SOCKETADDRESS *addrp = &rmtaddr;
-    int addrlen = 0;
+    socklen_t addrlen = 0;
 
     memset((char *)&rmtaddr, 0, sizeof(rmtaddr));
 
@@ -1850,7 +1850,8 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_socketNativeSetOption(JNIEnv *env
                                                       jint opt,jobject value) {
 
     int fd=-1, fd1=-1;
-    int levelv4 = 0, levelv6 = 0, optnamev4 = 0, optnamev6 = 0, optlen = 0;
+    int levelv4 = 0, levelv6 = 0, optnamev4 = 0, optnamev6 = 0;
+    socklen_t optlen = 0;
     union {
         int i;
         char c;
@@ -1980,7 +1981,7 @@ static jobject getIPv4NetworkInterface (JNIEnv *env, jobject this, int fd, jint 
 
         struct in_addr in;
         struct in_addr *inP = &in;
-        int len = sizeof(struct in_addr);
+        socklen_t len = sizeof(struct in_addr);
         if (getsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
                            (char *)inP, &len) < 0) {
             NET_ThrowByNameWithLastError(env, JNU_JAVANETPKG "SocketException",
@@ -2098,7 +2099,7 @@ jobject getMulticastInterface(JNIEnv *env, jobject this, int fd, int fd1, jint o
         static jmethodID ia_anyLocalAddressID;
 
         int index;
-        int len = sizeof(index);
+        socklen_t len = sizeof(index);
 
         jobjectArray addrArray;
         jobject addr;
@@ -2218,7 +2219,8 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_socketGetOption(JNIEnv *env, jobj
                                                       jint opt) {
 
     int fd=-1, fd1=-1;
-    int level, optname, optlen;
+    int level, optname;
+    socklen_t optlen;
     union {
         int i;
     } optval = {0};
@@ -2306,7 +2308,7 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_socketLocalAddress(JNIEnv *env, j
 
     int fd=-1, fd1=-1;
     SOCKETADDRESS him;
-    int len = 0;
+    socklen_t len = 0;
     int port;
     jobject iaObj;
     int ipv6_supported = ipv6_available();
@@ -2415,7 +2417,7 @@ Java_java_net_TwoStacksPlainDatagramSocketImpl_getTimeToLive(JNIEnv *env, jobjec
     jobject fd1Obj = (*env)->GetObjectField(env, this, pdsi_fd1ID);
     int fd = -1, fd1 = -1;
     int ttl = 0;
-    int len = sizeof(ttl);
+    socklen_t len = sizeof(ttl);
 
     if (IS_NULL(fdObj) && IS_NULL(fd1Obj)) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "SocketException",
@@ -2478,7 +2480,8 @@ static void mcast_join_leave(JNIEnv *env, jobject this,
     struct in_addr in;
     DWORD ifindex = 0;
 
-    int len, family;
+    socklen_t len;
+    int family;
     int ipv6_supported = ipv6_available();
     int cmd ;
 

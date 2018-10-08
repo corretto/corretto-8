@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -532,7 +532,7 @@ awt_x11inputmethod_lookupString(XKeyPressedEvent *event, KeySym *keysymp)
             }
         }
         composing = False;
-        /*FALLTHRU*/
+        // Falls through.
     case XLookupChars:
     /*
      printf("lookupString: status=XLookupChars, type=%d, state=%x, keycode=%x, keysym=%x\n",
@@ -1238,6 +1238,9 @@ StatusDrawCallback(XIC ic, XPointer client_data,
           }
           else{
               char *mbstr = wcstombsdmp(text->string.wide_char, text->length);
+              if (mbstr == NULL) {
+                  goto finally;
+              }
               strcpy(statusWindow->status, mbstr);
           }
           statusWindow->on = True;
