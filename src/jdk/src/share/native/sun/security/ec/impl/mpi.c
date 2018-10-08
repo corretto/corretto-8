@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * This library is free software; you can redistribute it and/or
@@ -2191,7 +2191,7 @@ mp_err  s_mp_fixup_reciprocal(const mp_int *c, const mp_int *p, int k, mp_int *x
   r = 0 - s_mp_invmod_radix(MP_DIGIT(p,0));
 
   for (ix = 0; k > 0; ix++) {
-    int      j = MP_MIN(k, MP_DIGIT_BIT);
+    unsigned j = MP_MIN((unsigned)k, MP_DIGIT_BIT);
     mp_digit v = r * MP_DIGIT(x, ix);
     if (j < MP_DIGIT_BIT) {
       v &= ((mp_digit)1 << j) - 1;      /* v = v mod (2 ** j) */
@@ -2978,7 +2978,7 @@ mp_err   s_mp_lshd(mp_int *mp, mp_size p)
     DIGIT(mp, ix + p) = DIGIT(mp, ix);
 
   /* Fill the bottom digits with zeroes */
-  for(ix = 0; ix < p; ix++)
+  for(ix = 0; (mp_size)ix < p; ix++)
     DIGIT(mp, ix) = 0;
 
   return MP_OKAY;

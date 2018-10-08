@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,6 +29,8 @@
 #include "jvm.h"
 #include "jni.h"
 #include "jni_util.h"
+
+#include "io_util.h"
 
 /* Due to a bug in the win32 C runtime library strings
  * such as "z:" need to be appended with a "." so we

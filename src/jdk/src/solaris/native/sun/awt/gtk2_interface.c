@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -39,6 +39,7 @@
 
 #define G_TYPE_FUNDAMENTAL_SHIFT        (2)
 #define G_TYPE_MAKE_FUNDAMENTAL(x)      ((GType) ((x) << G_TYPE_FUNDAMENTAL_SHIFT))
+#define G_MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
 #define CONV_BUFFER_SIZE 128
 
@@ -1641,7 +1642,7 @@ void gtk2_paint_arrow(WidgetType widget_type, GtkStateType state_type,
             (*fp_gtk_widget_size_request)(gtk2_widget, &size);
             w = size.width - ((GtkMisc*)gtk2_widget)->xpad * 2;
             h = size.height - ((GtkMisc*)gtk2_widget)->ypad * 2;
-            w = h = MIN(MIN(w, h), MIN(width,height)) * 0.7;
+            w = h = G_MIN(G_MIN(w, h), G_MIN(width,height)) * 0.7;
             break;
 
         default:

@@ -1011,7 +1011,7 @@ int WriteInputMatrixShaper(cmsIOHANDLER* m, cmsHPROFILE hProfile, cmsStage* Matr
             return 0;
         }
 
-        return rc;
+    return rc;
 }
 
 
