@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -522,7 +522,7 @@ Java_sun_java2d_x11_X11SurfaceData_initSurface(JNIEnv *env, jclass xsd,
     xsdo->cData = xsdo->configData->color_data;
 
     XShared_initSurface(env, xsdo, depth, width, height, drawable);
-    xsdo->xrPic = NULL;
+    xsdo->xrPic = None;
 #endif /* !HEADLESS */
 }
 
@@ -1186,7 +1186,8 @@ X11SD_SwapBytes(X11SDOps *xsdo, XImage * img, int depth, int bpp) {
                 break;
             }
         }
-        /* FALL THROUGH for 32-bit case */
+        // Falls through.
+        // for 32-bit case
     case 32:
         {
             /* ABCD -> DCBA */
