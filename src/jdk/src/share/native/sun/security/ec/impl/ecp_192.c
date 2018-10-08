@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * This library is free software; you can redistribute it and/or
@@ -87,16 +87,22 @@ ec_GFp_nistp192_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                 switch (a_used) {
                 case 12:
                         a5b = MP_DIGIT(a, 11);
+                        // Falls through.
                 case 11:
                         a5a = MP_DIGIT(a, 10);
+                        // Falls through.
                 case 10:
                         a4b = MP_DIGIT(a, 9);
+                        // Falls through.
                 case 9:
                         a4a = MP_DIGIT(a, 8);
+                        // Falls through.
                 case 8:
                         a3b = MP_DIGIT(a, 7);
+                        // Falls through.
                 case 7:
                         a3a = MP_DIGIT(a, 6);
+                        break;
                 }
 
 
@@ -177,10 +183,13 @@ ec_GFp_nistp192_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                 switch (a_used) {
                 case 6:
                         a5 = MP_DIGIT(a, 5);
+                        // Falls through.
                 case 5:
                         a4 = MP_DIGIT(a, 4);
+                        // Falls through.
                 case 4:
                         a3 = MP_DIGIT(a, 3);
+                        break;
                 }
 
                 r2 = MP_DIGIT(a, 2);
@@ -299,18 +308,24 @@ ec_GFp_nistp192_add(const mp_int *a, const mp_int *b, mp_int *r,
         switch(MP_USED(a)) {
         case 3:
                 a2 = MP_DIGIT(a,2);
+                // Falls through.
         case 2:
                 a1 = MP_DIGIT(a,1);
+                // Falls through.
         case 1:
                 a0 = MP_DIGIT(a,0);
+                break;
         }
         switch(MP_USED(b)) {
         case 3:
                 r2 = MP_DIGIT(b,2);
+                // Falls through.
         case 2:
                 r1 = MP_DIGIT(b,1);
+                // Falls through.
         case 1:
                 r0 = MP_DIGIT(b,0);
+                break;
         }
 
 #ifndef MPI_AMD64_ADD
@@ -380,19 +395,25 @@ ec_GFp_nistp192_sub(const mp_int *a, const mp_int *b, mp_int *r,
         switch(MP_USED(a)) {
         case 3:
                 r2 = MP_DIGIT(a,2);
+                // Falls through.
         case 2:
                 r1 = MP_DIGIT(a,1);
+                // Falls through.
         case 1:
                 r0 = MP_DIGIT(a,0);
+                break;
         }
 
         switch(MP_USED(b)) {
         case 3:
                 b2 = MP_DIGIT(b,2);
+                // Falls through.
         case 2:
                 b1 = MP_DIGIT(b,1);
+                // Falls through.
         case 1:
                 b0 = MP_DIGIT(b,0);
+                break;
         }
 
 #ifndef MPI_AMD64_ADD
