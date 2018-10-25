@@ -30,7 +30,6 @@
 #include "runtime/init.hpp"
 #include "runtime/java.hpp"
 #include "runtime/javaCalls.hpp"
-#include "runtime/os.hpp"
 #include "runtime/thread.inline.hpp"
 #include "runtime/threadCritical.hpp"
 #include "utilities/events.hpp"
@@ -247,7 +246,8 @@ void Exceptions::fthrow(Thread* thread, const char* file, int line, Symbol* h_na
   va_list ap;
   va_start(ap, format);
   char msg[max_msg_size];
-  os::vsnprintf(msg, max_msg_size, format, ap);
+  vsnprintf(msg, max_msg_size, format, ap);
+  msg[max_msg_size-1] = '\0';
   va_end(ap);
   _throw_msg(thread, file, line, h_name, msg);
 }

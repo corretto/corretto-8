@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -66,8 +66,6 @@ class LinuxFileStore
         }
 
         // step 2: find mount point
-        List<UnixMountEntry> procMountsEntries =
-            fs.getMountEntries("/proc/mounts");
         UnixPath parent = path.getParent();
         while (parent != null) {
             UnixFileAttributes attrs = null;
@@ -76,23 +74,16 @@ class LinuxFileStore
             } catch (UnixException x) {
                 x.rethrowAsIOException(parent);
             }
-            if (attrs.dev() != dev()) {
-                // step 3: lookup mounted file systems (use /proc/mounts to
-                // ensure we find the file system even when not in /etc/mtab)
-                byte[] dir = path.asByteArray();
-                for (UnixMountEntry entry : procMountsEntries) {
-                    if (Arrays.equals(dir, entry.dir()))
-                        return entry;
-                }
-            }
+            if (attrs.dev() != dev())
+                break;
             path = parent;
             parent = parent.getParent();
         }
 
-        // step 3: lookup mounted file systems (use /proc/mounts to
-        // ensure we find the file system even when not in /etc/mtab)
+        // step 3: lookup mounted file systems (use /proc/mounts to ensure we
+        // find the file system even when not in /etc/mtab)
         byte[] dir = path.asByteArray();
-        for (UnixMountEntry entry : procMountsEntries) {
+        for (UnixMountEntry entry: fs.getMountEntries("/proc/mounts")) {
             if (Arrays.equals(dir, entry.dir()))
                 return entry;
         }

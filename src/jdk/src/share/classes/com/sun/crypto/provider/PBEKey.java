@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,7 +28,6 @@ package com.sun.crypto.provider;
 import java.security.MessageDigest;
 import java.security.KeyRep;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.Locale;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.PBEKeySpec;
@@ -69,7 +68,7 @@ final class PBEKey implements SecretKey {
         this.key = new byte[passwd.length];
         for (int i=0; i<passwd.length; i++)
             this.key[i] = (byte) (passwd[i] & 0x7f);
-        Arrays.fill(passwd, ' ');
+        java.util.Arrays.fill(passwd, ' ');
         type = keytype;
     }
 
@@ -111,20 +110,8 @@ final class PBEKey implements SecretKey {
 
         byte[] thatEncoded = that.getEncoded();
         boolean ret = MessageDigest.isEqual(this.key, thatEncoded);
-        Arrays.fill(thatEncoded, (byte)0x00);
+        java.util.Arrays.fill(thatEncoded, (byte)0x00);
         return ret;
-    }
-
-    /**
-     * Clears the internal copy of the key.
-     *
-     */
-    @Override
-    public void destroy() {
-        if (key != null) {
-            Arrays.fill(key, (byte) 0x00);
-            key = null;
-        }
     }
 
     /**

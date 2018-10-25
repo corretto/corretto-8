@@ -321,6 +321,7 @@ JRE_LIBRARIES := \
     jpeg \
     jsound \
     jsoundalsa \
+    kcms \
     mlib_image \
     splashscreen \
     t2k \

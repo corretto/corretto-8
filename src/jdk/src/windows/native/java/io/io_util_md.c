@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -169,6 +169,9 @@ pathToNTPath(JNIEnv *env, jstring path, jboolean throwFNFE) {
                      pathbuf = (WCHAR*)malloc((pathlen + 6) * sizeof(WCHAR));
                      if (pathbuf != 0) {
                          wcscpy(pathbuf, ps);
+                     } else {
+                         JNU_ThrowOutOfMemoryError(env, "native memory allocation failed");
+                         return NULL;
                      }
                  }
             } else {
@@ -196,6 +199,9 @@ pathToNTPath(JNIEnv *env, jstring path, jboolean throwFNFE) {
                     pathbuf = (WCHAR*)malloc((pathlen + 6) * sizeof(WCHAR));
                     if (pathbuf != 0) {
                         wcscpy(pathbuf, ps);
+                    } else {
+                        JNU_ThrowOutOfMemoryError(env, "native memory allocation failed");
+                        return NULL;
                     }
                 }
             }
@@ -212,6 +218,9 @@ pathToNTPath(JNIEnv *env, jstring path, jboolean throwFNFE) {
             pathbuf = (WCHAR*)malloc(sizeof(WCHAR));
             if (pathbuf != NULL) {
                 pathbuf[0] = L'\0';
+            } else {
+                JNU_ThrowOutOfMemoryError(env, "native memory allocation failed");
+                return NULL;
             }
         }
     }
@@ -219,6 +228,7 @@ pathToNTPath(JNIEnv *env, jstring path, jboolean throwFNFE) {
         if (!(*env)->ExceptionCheck(env)) {
             JNU_ThrowOutOfMemoryError(env, "native memory allocation failed");
         }
+        return NULL;
     }
     return pathbuf;
 }

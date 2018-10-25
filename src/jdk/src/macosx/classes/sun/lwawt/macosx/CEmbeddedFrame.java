@@ -159,6 +159,8 @@ public class CEmbeddedFrame extends EmbeddedFrame {
                         : this;
             }
         }
+        // ignore focus "lost" native request as it may mistakenly
+        // deactivate active window (see 8001161)
         if (globalFocusedWindow == this) {
             responder.handleWindowFocusEvent(parentWindowActive, null);
         }
@@ -172,19 +174,5 @@ public class CEmbeddedFrame extends EmbeddedFrame {
         // If globalFocusedWindow is located at inactive parent window or null, we have swithed to
         // another window.
         return globalFocusedWindow != null ? !globalFocusedWindow.isParentWindowActive() : true;
-    }
-
-    public void synthesizeWindowActivation(boolean doActivate) {
-        if (isParentWindowActive() != doActivate) {
-            handleWindowFocusEvent(doActivate);
-        }
-    }
-
-    public static void updateGlobalFocusedWindow(CEmbeddedFrame newGlobalFocusedWindow) {
-        synchronized (classLock) {
-            if (newGlobalFocusedWindow.isParentWindowActive()) {
-                globalFocusedWindow = newGlobalFocusedWindow;
-            }
-        }
     }
 }
