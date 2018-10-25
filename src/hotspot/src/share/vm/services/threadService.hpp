@@ -34,6 +34,7 @@
 #include "runtime/perfData.hpp"
 #include "services/management.hpp"
 #include "services/serviceUtil.hpp"
+#include "utilities/simpleOpenHashtable.hpp"
 
 class OopClosure;
 class ThreadDumpResult;
@@ -71,6 +72,13 @@ private:
   // keep references to Method* since thread dump can be
   // requested by multiple threads concurrently.
   static ThreadDumpResult* _threaddump_list;
+
+  // Map from java thread id to JavaThread*: used by 
+  // various ThreadMXBean methods
+public:
+  typedef SimpleOpenHashtable<jlong, JavaThread*> TidThreadMap;
+private:
+  static TidThreadMap* _tid_thread_map;
 
 public:
   static void init();
@@ -114,6 +122,8 @@ public:
   // GC support
   static void   oops_do(OopClosure* f);
   static void   metadata_do(void f(Metadata*));
+
+  static JavaThread* get_java_thread(jlong tid)                          { return _tid_thread_map->get(tid); } 
 };
 
 // Per-thread Statistics for synchronization

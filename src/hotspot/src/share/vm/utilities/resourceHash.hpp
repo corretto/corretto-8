@@ -27,31 +27,16 @@
 
 #include "memory/allocation.hpp"
 #include "utilities/top.hpp"
+#include "utilities/hashFns.hpp"
 
-template<typename K> struct ResourceHashtableFns {
-    typedef unsigned (*hash_fn)(K const&);
-    typedef bool (*equals_fn)(K const&, K const&);
-};
 
-template<typename K> unsigned primitive_hash(const K& k) {
-  unsigned hash = (unsigned)((uintptr_t)k);
-  return hash ^ (hash > 3); // just in case we're dealing with aligned ptrs
-}
-
-template<typename K> bool primitive_equals(const K& k0, const K& k1) {
-  return k0 == k1;
-}
-
-template<
-    typename K, typename V,
-    // xlC does not compile this:
-    // http://stackoverflow.com/questions/8532961/template-argument-of-type-that-is-defined-by-inner-typedef-from-other-template-c
-    //typename ResourceHashtableFns<K>::hash_fn   HASH   = primitive_hash<K>,
-    //typename ResourceHashtableFns<K>::equals_fn EQUALS = primitive_equals<K>,
-    unsigned (*HASH)  (K const&)           = primitive_hash<K>,
-    bool     (*EQUALS)(K const&, K const&) = primitive_equals<K>,
-    unsigned SIZE = 256
-    >
+template<typename K, typename V,
+         unsigned  (*HASH)  (K const&)           = HashFns<K>::primitive_hash,
+         bool      (*EQUALS)(K const&, K const&) = HashFns<K>::primitive_equals,
+         unsigned SIZE = 256,
+         ResourceObj::allocation_type ALLOC_TYPE = ResourceObj::RESOURCE_AREA,
+         MEMFLAGS MEM_TYPE = mtInternal
+>
 class ResourceHashtable : public ResourceObj {
  private:
 
