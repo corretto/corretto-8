@@ -169,6 +169,14 @@ class Label VALUE_OBJ_CLASS_SPEC {
   Label() {
     init();
   }
+
+  ~Label() {
+    assert(is_bound() || is_unused(), "Label was never bound to a location, but it was used as a jmp target");
+  }
+
+  void reset() {
+    init(); //leave _patch_overflow because it points to CodeBuffer.
+  }
 };
 
 // A union type for code which has to assemble both constant and
