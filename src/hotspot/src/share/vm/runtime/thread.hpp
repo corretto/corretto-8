@@ -1909,6 +1909,10 @@ class Threads: AllStatic {
   static bool        _vm_complete;
 #endif
 
+ private:
+  // Used by find_java_thread_from_tid 
+  static bool is_valid_java_thread(jlong java_tid, JavaThread* jt);
+
  public:
   // Thread management
   // force_daemon is a concession to JNI, where we may need to add a
@@ -1994,7 +1998,6 @@ class Threads: AllStatic {
   static void deoptimized_wrt_marked_nmethods();
 
   static JavaThread* find_java_thread_from_java_tid(jlong java_tid);
-
 };
 
 

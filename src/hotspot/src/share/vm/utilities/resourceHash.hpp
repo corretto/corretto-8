@@ -27,11 +27,8 @@
 
 #include "memory/allocation.hpp"
 #include "utilities/top.hpp"
+#include "utilities/hashFns.hpp"
 
-template<typename K> struct ResourceHashtableFns {
-    typedef unsigned (*hash_fn)(K const&);
-    typedef bool (*equals_fn)(K const&, K const&);
-};
 
 template<typename K> unsigned primitive_hash(const K& k) {
   unsigned hash = (unsigned)((uintptr_t)k);
