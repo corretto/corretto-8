@@ -1445,5 +1445,7 @@ void InterpreterMacroAssembler::increment_mask_and_jump(Address counter_addr,
   incrementl(scratch, increment);
   movl(counter_addr, scratch);
   andl(scratch, mask);
-  jcc(cond, *where);
+  if (where != NULL) {
+    jcc(cond, *where);
+  }
 }
