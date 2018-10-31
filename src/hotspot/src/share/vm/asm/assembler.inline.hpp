@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,6 +41,9 @@
 #endif
 #ifdef TARGET_ARCH_ppc
 # include "assembler_ppc.inline.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "assembler_aarch64.inline.hpp"
 #endif
 
 #endif // SHARE_VM_ASM_ASSEMBLER_INLINE_HPP

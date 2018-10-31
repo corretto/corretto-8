@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -975,6 +975,9 @@ class LinearScanTimers : public StackObj {
 // Pick up platform-dependent implementation details
 #ifdef TARGET_ARCH_x86
 # include "c1_LinearScan_x86.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "c1_LinearScan_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "c1_LinearScan_sparc.hpp"

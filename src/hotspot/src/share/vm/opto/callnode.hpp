@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -894,6 +894,20 @@ public:
 
   // Convenience for initialization->maybe_set_complete(phase)
   bool maybe_set_complete(PhaseGVN* phase);
+
+#ifdef AARCH64
+  // Return true if allocation doesn't escape thread, its escape state
+  // needs be noEscape or ArgEscape. InitializeNode._does_not_escape
+  // is true when its allocation's escape state is noEscape or
+  // ArgEscape. In case allocation's InitializeNode is NULL, check
+  // AlllocateNode._is_non_escaping flag.
+  // AlllocateNode._is_non_escaping is true when its escape state is
+  // noEscape.
+  bool does_not_escape_thread() {
+    InitializeNode* init = NULL;
+    return _is_non_escaping || (((init = initialization()) != NULL) && init->does_not_escape());
+  }
+#endif
 };
 
 //------------------------------AllocateArray---------------------------------
