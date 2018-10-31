@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -181,6 +181,9 @@ public:
 
 #ifdef TARGET_ARCH_x86
 # include "methodHandles_x86.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "methodHandles_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "methodHandles_sparc.hpp"

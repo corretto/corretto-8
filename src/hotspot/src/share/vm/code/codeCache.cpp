@@ -192,7 +192,7 @@ CodeBlob* CodeCache::allocate(int size, bool is_critical) {
     }
     if (PrintCodeCacheExtension) {
       ResourceMark rm;
-      tty->print_cr("code cache extended to [" INTPTR_FORMAT ", " INTPTR_FORMAT "] (" SSIZE_FORMAT " bytes)",
+      tty->print_cr("code cache extended to [" INTPTR_FORMAT ", " INTPTR_FORMAT "] (" INTX_FORMAT " bytes)",
                     (intptr_t)_heap->low_boundary(), (intptr_t)_heap->high(),
                     (address)_heap->high() - (address)_heap->low_boundary());
     }

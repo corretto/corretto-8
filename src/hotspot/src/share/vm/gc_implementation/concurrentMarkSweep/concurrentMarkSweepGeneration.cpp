@@ -961,7 +961,7 @@ void ConcurrentMarkSweepGeneration::compute_new_size_free_list() {
   if (free_percentage < desired_free_percentage) {
     size_t desired_capacity = (size_t)(used() / ((double) 1 - desired_free_percentage));
     assert(desired_capacity >= capacity(), "invalid expansion size");
-    size_t expand_bytes = MAX2(desired_capacity - capacity(), MinHeapDeltaBytes);
+    size_t expand_bytes = MAX2(desired_capacity - capacity(), (size_t) MinHeapDeltaBytes);
     if (PrintGCDetails && Verbose) {
       size_t desired_capacity = (size_t)(used() / ((double) 1 - desired_free_percentage));
       gclog_or_tty->print_cr("\nFrom compute_new_size: ");
@@ -6593,7 +6593,7 @@ void CMSCollector::reset(bool asynch) {
     HeapWord* curAddr = _markBitMap.startWord();
     while (curAddr < _markBitMap.endWord()) {
       size_t remaining  = pointer_delta(_markBitMap.endWord(), curAddr);
-      MemRegion chunk(curAddr, MIN2(CMSBitMapYieldQuantum, remaining));
+      MemRegion chunk(curAddr, MIN2((size_t) CMSBitMapYieldQuantum, remaining));
       _markBitMap.clear_large_range(chunk);
       if (ConcurrentMarkSweepThread::should_yield() &&
           !foregroundGCIsActive() &&
@@ -6891,7 +6891,7 @@ void CMSMarkStack::expand() {
     return;
   }
   // Double capacity if possible
-  size_t new_capacity = MIN2(_capacity*2, MarkStackSizeMax);
+  size_t new_capacity = MIN2(_capacity*2, (size_t) MarkStackSizeMax);
   // Do not give up existing stack until we have managed to
   // get the double capacity that we desired.
   ReservedSpace rs(ReservedSpace::allocation_align_size_up(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,6 +28,9 @@
 #include "runtime/arguments.hpp"
 #ifdef TARGET_ARCH_x86
 # include "vm_version_x86.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "vm_version_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "vm_version_sparc.hpp"
@@ -194,6 +197,7 @@ const char* Abstract_VM_Version::jre_release_version() {
 #define CPU      IA32_ONLY("x86")                \
                  IA64_ONLY("ia64")               \
                  AMD64_ONLY("amd64")             \
+                 AARCH64_ONLY("aarch64")         \
                  SPARC_ONLY("sparc")
 #endif // ZERO
 #endif

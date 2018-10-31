@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1239,7 +1239,14 @@ void JvmtiExport::post_method_exit(JavaThread *thread, Method* method, frame cur
     }
   }
 
+#ifdef AARCH64
+  // FIXME: this is just a kludge to get JVMTI going.  Compiled
+  // MethodHandle code doesn't call the JVMTI notify routines, so the
+  // stack depth we see here is wrong.
+  state->invalidate_cur_stack_depth();
+#else
   state->decr_cur_stack_depth();
+#endif
 }
 
 
