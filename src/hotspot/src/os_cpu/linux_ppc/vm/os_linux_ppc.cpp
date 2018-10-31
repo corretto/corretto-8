@@ -244,7 +244,7 @@ JVM_handle_linux_signal(int sig,
             stub = SharedRuntime::continuation_for_implicit_exception(thread, pc, SharedRuntime::STACK_OVERFLOW);
           } else {
             // Thread was in the vm or native code. Return and try to finish.
-            return 1;
+            return true;
           }
         } else if (thread->in_stack_red_zone(addr)) {
           // Fatal red zone violation.  Disable the guard pages and fall through
@@ -265,7 +265,7 @@ JVM_handle_linux_signal(int sig,
              thread->osthread()->set_expanding_stack();
              if (os::Linux::manually_expand_stack(thread, addr)) {
                thread->osthread()->clear_expanding_stack();
-               return 1;
+               return true;
              }
              thread->osthread()->clear_expanding_stack();
           } else {
@@ -435,7 +435,7 @@ report_and_die:
   err.report_and_die();
 
   ShouldNotReachHere();
-  return false;
+  return false; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {

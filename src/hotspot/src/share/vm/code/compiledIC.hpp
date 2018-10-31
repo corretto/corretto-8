@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,6 +29,9 @@
 #include "oops/compiledICHolder.hpp"
 #ifdef TARGET_ARCH_x86
 # include "nativeInst_x86.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "nativeInst_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "nativeInst_sparc.hpp"
@@ -320,7 +323,11 @@ class CompiledStaticCall: public NativeCall {
   friend CompiledStaticCall* compiledStaticCall_at(Relocation* call_site);
 
   // Code
+#if defined(AARCH64) && !defined(ZERO)
+  static address emit_to_interp_stub(CodeBuffer &cbuf, address mark);
+#else
   static address emit_to_interp_stub(CodeBuffer &cbuf);
+#endif
   static int to_interp_stub_size();
   static int reloc_to_interp_stub();
 

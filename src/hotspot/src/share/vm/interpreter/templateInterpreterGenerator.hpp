@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,7 +32,6 @@
 
 class TemplateInterpreterGenerator: public AbstractInterpreterGenerator {
  protected:
-
   // entry points for shared code sequence
   address _unimplemented_bytecode;
   address _illegal_bytecode_sequence;
@@ -88,6 +87,9 @@ class TemplateInterpreterGenerator: public AbstractInterpreterGenerator {
 
 #ifdef TARGET_ARCH_x86
 # include "templateInterpreterGenerator_x86.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "templateInterpreterGenerator_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "templateInterpreterGenerator_sparc.hpp"

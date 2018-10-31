@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -977,7 +977,7 @@ void CodeBuffer::log_section_sizes(const char* name) {
     for (int n = (int) CodeBuffer::SECT_FIRST; n < (int) CodeBuffer::SECT_LIMIT; n++) {
       CodeSection* sect = code_section(n);
       if (!sect->is_allocated() || sect->is_empty())  continue;
-      xtty->print_cr("<sect index='%d' size='" SIZE_FORMAT "' free='" SIZE_FORMAT "'/>",
+      xtty->print_cr("<sect index='%d' size='" INTX_FORMAT "' free='" INTX_FORMAT "'/>",
                      n, sect->limit() - sect->start(), sect->limit() - sect->end());
     }
     xtty->print_cr("</blob>");
