@@ -1463,7 +1463,7 @@ void MetaspaceGC::initialize() {
 
 void MetaspaceGC::post_initialize() {
   // Reset the high-water mark once the VM initialization is done.
-  _capacity_until_GC = MAX2(MetaspaceAux::committed_bytes(), MetaspaceSize);
+  _capacity_until_GC = MAX2(MetaspaceAux::committed_bytes(), (size_t) MetaspaceSize);
 }
 
 bool MetaspaceGC::can_expand(size_t word_size, bool is_class) {
@@ -1523,7 +1523,7 @@ void MetaspaceGC::compute_new_size() {
     (size_t)MIN2(min_tmp, double(max_uintx));
   // Don't shrink less than the initial generation size
   minimum_desired_capacity = MAX2(minimum_desired_capacity,
-                                  MetaspaceSize);
+                                  (size_t) MetaspaceSize);
 
   if (PrintGCDetails && Verbose) {
     gclog_or_tty->print_cr("\nMetaspaceGC::compute_new_size: ");
@@ -1581,7 +1581,7 @@ void MetaspaceGC::compute_new_size() {
     const double max_tmp = used_after_gc / minimum_used_percentage;
     size_t maximum_desired_capacity = (size_t)MIN2(max_tmp, double(max_uintx));
     maximum_desired_capacity = MAX2(maximum_desired_capacity,
-                                    MetaspaceSize);
+                                    (size_t) MetaspaceSize);
     if (PrintGCDetails && Verbose) {
       gclog_or_tty->print_cr("  "
                              "  maximum_free_percentage: %6.2f"
@@ -3302,7 +3302,7 @@ void Metaspace::global_initialize() {
     // on the medium chunk list.   The next chunk will be small and progress
     // from there.  This size calculated by -version.
     _first_class_chunk_word_size = MIN2((size_t)MediumChunk*6,
-                                       (CompressedClassSpaceSize/BytesPerWord)*2);
+                                        (size_t) ((CompressedClassSpaceSize/BytesPerWord)*2));
     _first_class_chunk_word_size = align_word_size_up(_first_class_chunk_word_size);
     // Arbitrarily set the initial virtual space to a multiple
     // of the boot class loader size.

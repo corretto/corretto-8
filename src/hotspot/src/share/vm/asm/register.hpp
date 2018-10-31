@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -107,6 +107,9 @@ const type name = ((type)name##_##type##EnumValue)
 #endif
 #ifdef TARGET_ARCH_ppc
 # include "register_ppc.hpp"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "register_aarch64.hpp"
 #endif
 
 

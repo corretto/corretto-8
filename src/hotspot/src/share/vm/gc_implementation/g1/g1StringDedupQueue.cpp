@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -38,7 +38,7 @@ G1StringDedupQueue::G1StringDedupQueue() :
   _cancel(false),
   _empty(true),
   _dropped(0) {
-  _nqueues = MAX2(ParallelGCThreads, (size_t)1);
+  _nqueues = MAX2((size_t) ParallelGCThreads, (size_t)1);
   _queues = NEW_C_HEAP_ARRAY(G1StringDedupWorkerQueue, _nqueues, mtGC);
   for (size_t i = 0; i < _nqueues; i++) {
     new (_queues + i) G1StringDedupWorkerQueue(G1StringDedupWorkerQueue::default_segment_size(), _max_cache_size, _max_size);

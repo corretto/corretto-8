@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1310,8 +1310,8 @@ void PhaseIdealLoop::do_unroll( IdealLoopTree *loop, Node_List &old_new, bool ad
           limit = new (C) Opaque2Node( C, limit );
           register_new_node( limit, opaq_ctrl );
         }
-        if (stride_con > 0 && ((limit_type->_lo - stride_con) < limit_type->_lo) ||
-                   stride_con < 0 && ((limit_type->_hi - stride_con) > limit_type->_hi)) {
+        if (stride_con > 0 && (java_subtract(limit_type->_lo, stride_con) < limit_type->_lo) ||
+            stride_con < 0 && (java_subtract(limit_type->_hi, stride_con) > limit_type->_hi)) {
           // No underflow.
           new_limit = new (C) SubINode(limit, stride);
         } else {

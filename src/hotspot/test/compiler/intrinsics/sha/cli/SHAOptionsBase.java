@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -92,6 +92,19 @@ public class SHAOptionsBase extends CommandLineOptionTest {
                 case SHAOptionsBase.USE_SHA256_INTRINSICS_OPTION:
                 case SHAOptionsBase.USE_SHA512_INTRINSICS_OPTION:
                     return SHAOptionsBase.SHA_INTRINSICS_ARE_NOT_AVAILABLE;
+                default:
+                    throw new Error("Unexpected option " + optionName);
+            }
+        } else if (Platform.isAArch64()) {
+            switch (optionName) {
+                case SHAOptionsBase.USE_SHA_OPTION:
+                    return SHAOptionsBase.SHA_INSTRUCTIONS_ARE_NOT_AVAILABLE;
+                case SHAOptionsBase.USE_SHA1_INTRINSICS_OPTION:
+                    return SHAOptionsBase.SHA1_INSTRUCTION_IS_NOT_AVAILABLE;
+                case SHAOptionsBase.USE_SHA256_INTRINSICS_OPTION:
+                    return SHAOptionsBase.SHA256_INSTRUCTION_IS_NOT_AVAILABLE;
+                case SHAOptionsBase.USE_SHA512_INTRINSICS_OPTION:
+                    return SHAOptionsBase.SHA512_INSTRUCTION_IS_NOT_AVAILABLE;
                 default:
                     throw new Error("Unexpected option " + optionName);
             }

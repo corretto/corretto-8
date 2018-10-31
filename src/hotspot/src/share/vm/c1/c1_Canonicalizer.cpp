@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -937,6 +937,13 @@ static bool match(UnsafeRawOp* x,
     *index = root->y();
     *log2_scale = 0;
   }
+
+// AARCH64 cannot handle shifts which are not either 0, or log2 of the type size
+#ifdef AARCH64
+  if (*log2_scale != 0 &&
+      (1 << *log2_scale) != type2aelembytes(x->basic_type(), true))
+    return false;
+#endif
 
   // If the value is pinned then it will be always be computed so
   // there's no profit to reshaping the expression.

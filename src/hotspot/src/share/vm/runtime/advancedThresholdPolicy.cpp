@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -57,7 +57,7 @@ void AdvancedThresholdPolicy::initialize() {
   FLAG_SET_ERGO(intx, CICompilerCount, c1_count() + c2_count());
 
   // Some inlining tuning
-#ifdef X86
+#if defined(X86) || defined(AARCH64)
   if (FLAG_IS_DEFAULT(InlineSmallCode)) {
     FLAG_SET_DEFAULT(InlineSmallCode, 2000);
   }
@@ -131,7 +131,8 @@ bool AdvancedThresholdPolicy::is_old(Method* method) {
 }
 
 double AdvancedThresholdPolicy::weight(Method* method) {
-  return (method->rate() + 1) * ((method->invocation_count() + 1) *  (method->backedge_count() + 1));
+  return (double)(method->rate() + 1) *
+    (method->invocation_count() + 1) * (method->backedge_count() + 1);
 }
 
 // Apply heuristics and return true if x should be compiled before y
