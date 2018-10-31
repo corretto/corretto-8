@@ -210,6 +210,7 @@ void Runtime1::generate_blob_for(BufferBlob* buffer_blob, StubID id) {
     // All other stubs should have oopmaps
     default:
       assert(oop_maps != NULL, "must have an oopmap");
+      break;
   }
 #endif
 
@@ -217,6 +218,7 @@ void Runtime1::generate_blob_for(BufferBlob* buffer_blob, StubID id) {
   sasm->align(BytesPerWord);
   // make sure all code is in code buffer
   sasm->flush();
+
   // create blob - distinguish a few special cases
   CodeBlob* blob = RuntimeStub::new_runtime_stub(name_for(id),
                                                  &code,
@@ -800,6 +802,11 @@ static Klass* resolve_field_return_klass(methodHandle caller, int bci, TRAPS) {
 JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_id ))
   NOT_PRODUCT(_patch_code_slowcase_cnt++;)
 
+  #ifdef AARCH64
+    // AArch64 does not patch C1-generated code.
+    ShouldNotReachHere();
+  #endif
+
   ResourceMark rm(thread);
   RegisterMap reg_map(thread, false);
   frame runtime_frame = thread->last_frame();
@@ -946,7 +953,6 @@ JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_i
   }
 
   // Now copy code back
-
   {
     MutexLockerEx ml_patch (Patching_lock, Mutex::_no_safepoint_check_flag);
     //
@@ -1129,6 +1135,7 @@ JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_i
               (stub_id == Runtime1::load_klass_patching_id) ?
                                    relocInfo::metadata_type :
                                    relocInfo::oop_type;
+
             // update relocInfo to metadata
             nmethod* nm = CodeCache::find_nmethod(instr_pc);
             assert(nm != NULL, "invalid nmethod_pc");
@@ -1189,6 +1196,7 @@ JRT_END
 // completes we can check for deoptimization. This simplifies the
 // assembly code in the cpu directories.
 //
+#ifndef TARGET_ARCH_aarch64
 int Runtime1::move_klass_patching(JavaThread* thread) {
 //
 // NOTE: we are still in Java
@@ -1274,6 +1282,7 @@ int Runtime1::access_field_patching(JavaThread* thread) {
   return caller_is_deopted();
 JRT_END
 
+#endif
 
 JRT_LEAF(void, Runtime1::trace_block_entry(jint block_id))
   // for now we just print out the block id

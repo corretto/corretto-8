@@ -599,17 +599,17 @@ JVM_handle_linux_signal(int sig,
     if ((sig == SIGSEGV) && checkSerializePage(thread, (address)info->si_addr)) {
       // Block current thread until the memory serialize page permission restored.
       os::block_on_serialize_page_trap();
-      return 1;
+      return true;
     }
 
     if (checkPrefetch(uc, pc)) {
-      return 1;
+      return true;
     }
 
     // Handle ALL stack overflow variations here
     if (sig == SIGSEGV) {
       if (checkOverflow(uc, pc, (address)info->si_addr, thread, &stub)) {
-        return 1;
+        return true;
       }
     }
 
@@ -695,6 +695,7 @@ JVM_handle_linux_signal(int sig,
   err.report_and_die();
 
   ShouldNotReachHere();
+  return false; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {
