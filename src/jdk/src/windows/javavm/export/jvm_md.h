@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2008, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,6 +41,9 @@
 
 #define JNI_LIB_PREFIX ""
 #define JNI_LIB_SUFFIX ".dll"
+
+// Network
+typedef int socklen_t;
 
 struct dirent {
     char d_name[MAX_PATH];
