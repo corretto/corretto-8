@@ -34,6 +34,7 @@ public class CacheNameTest {
         // Check simple name
         failures += testSimpleName(CacheNameTest.class, "CacheNameTest");
         failures += testSimpleName(String.class, "String");
+        failures += testSimpleName(String[].class, "String[]");
         failures += testSimpleName(java.lang.Thread.class, "Thread");
         failures += testSimpleName(java.math.RoundingMode.class, "RoundingMode");
         failures += testSimpleName(java.lang.reflect.Method.class, "Method");
@@ -45,6 +46,7 @@ public class CacheNameTest {
         // Check canonical name
         failures += testCanonicalName(CacheNameTest.class, "CacheNameTest");
         failures += testCanonicalName(String.class, "java.lang.String");
+        failures += testCanonicalName(String[].class, "java.lang.String[]");
         failures += testCanonicalName(java.lang.Thread.class, "java.lang.Thread");
         failures += testCanonicalName(java.math.RoundingMode.class, "java.math.RoundingMode");
         failures += testCanonicalName(java.lang.reflect.Method.class, "java.lang.reflect.Method");
