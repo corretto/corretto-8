@@ -1,0 +1,3 @@
+if [ $1 -eq 0 ] ; then
+    alternatives --remove java ${RPM_INSTALL_PREFIX}/jre/bin/java
+fi

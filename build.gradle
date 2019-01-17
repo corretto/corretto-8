@@ -45,6 +45,21 @@ allprojects {
 
     ext {
         buildRoot = file("$buildDir/buildRoot")
+        packageInfo = [
+                url       : "https://github.com/corretto/corretto-${project.version.major}",
+                vendor    : 'Amazon',
+                packager  : 'Amazon',
+                license   : 'ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with ' +
+                        'exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.',
+                maintainer: 'Amazon Corretto Team <corretto-team@amazon.com>',
+                buildHost : 'build.amazon.com'
+        ]
+        jdkTools = ['javac', 'appletviewer', 'extcheck', 'extcheck', 'jar', 'jarsigner', 'java-rmi.cgi', 'javadoc',
+                    'javah', 'javap', 'jcmd', 'jconsole', 'jdb', 'jdeps', 'jhat', 'jinfo', 'jmap', 'jps', 'jrunscript',
+                    'jsadebugd', 'jstack', 'jstat', 'jstatd', 'native2ascii', 'rmic', 'schemagen', 'serialver',
+                    'wsgen', 'wsimport', 'xjc']
+        jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
+                    'servertool', 'tnameserv', 'unpack200']
     }
 }
 
@@ -72,3 +87,4 @@ project(':openjdksrc') {
         archives sourceDistributionTarball
     }
 }
+
