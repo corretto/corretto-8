@@ -1,0 +1,243 @@
+# Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation. Amazon designates this
+# particular file as subject to the "Classpath" exception as provided
+# by Oracle in the LICENSE file that accompanied this code.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+%global javaver 1.8.0
+%global buildver b@build@
+%global java_home %{_jvmdir}/%{name}.%{_arch}
+
+# Higher numbers win for the alternatives program.
+# AL2 has chosen java-1.7.0-openjdk to be default (priority 17000)
+# with java-1.8.0-openjdk as second (priority 1800)
+%global alternatives_priority 100
+
+# Instruct rpmbuild to copy jars rather than de-compress and re-compress.
+%global __jar_repack 0
+
+# Disable checking of build-id headers.
+# OpenJDK's build system was producing binaries with the
+# same build-ids, but different md5 checksums.
+# https://www.redhat.com/archives/rpm-list/2005-November/msg00023.html
+%define debug_package %{nil}
+
+# abs2rel: A macro to convert an absolute path to a relative path.
+# When making a symlink in an RPM, prefer a symbolic link to ensure
+# the link will work in a chroot environment.
+%global script 'use File::Spec; print File::Spec->abs2rel($ARGV[0], $ARGV[1])'
+%global abs2rel %{__perl} -e %{script}
+
+# By default install a bootstrap jdk. If one is already available,
+# this can be skipped using --without bootjdk
+%bcond_without bootjdk
+
+# By default bundle OpenJFX on x86_64. To skip bundling, use --without bundlejfx
+%bcond_without bundlejfx
+%if %{_arch} == "x86_64" && %{with bundlejfx}
+%global perform_openjfx_overlay 1
+%else
+%global perform_openjfx_overlay 0
+%endif
+
+Summary: Amazon Corretto runtime environment
+Name: java-1.8.0-amazon-corretto
+# Matches the 'full version' from Java's release notes:
+# https://www.oracle.com/technetwork/java/javase/8u181-relnotes-4479407.html
+# Eg: 1.8.0_181-b13
+Version: 1.8.0_@update@.%{buildver}
+Release: @revision@%{?dist}
+Epoch: 1
+Group: Development/Languages
+License: ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.
+Vendor: Amazon
+Url: https://github.com/corretto/corretto-8
+Source0: %{name}.tar.gz
+ExclusiveArch: x86_64 aarch64
+
+# jpackage-utils is required for both build and runtime.
+# For build, it provides the jvmdir macro. For runtime,
+# it provides the /usr/lib/jvm directory.
+BuildRequires: jpackage-utils
+BuildRequires: autoconf
+BuildRequires: automake
+BuildRequires: alsa-lib-devel
+BuildRequires: binutils
+BuildRequires: cups-devel
+BuildRequires: fontconfig
+BuildRequires: freetype-devel
+BuildRequires: giflib-devel
+BuildRequires: gcc-c++
+BuildRequires: libjpeg-devel
+BuildRequires: libpng-devel
+BuildRequires: libxslt
+BuildRequires: libX11-devel
+BuildRequires: libXi-devel
+BuildRequires: libXinerama-devel
+BuildRequires: libXt-devel
+BuildRequires: libXrender-devel
+BuildRequires: libXtst-devel
+BuildRequires: pkgconfig
+BuildRequires: xorg-x11-proto-devel
+
+%if %{with bootjdk}
+BuildRequires: java-1.8.0-openjdk-devel
+%endif
+Requires: jpackage-utils
+
+Requires: dejavu-sans-fonts
+Requires: dejavu-serif-fonts
+Requires: dejavu-sans-mono-fonts
+Requires: ca-certificates
+Requires: zlib
+Requires: giflib
+Requires(post): chkconfig
+Requires(postun): chkconfig
+
+Provides: java = %{epoch}:%{javaver}
+Provides: java-%{javaver} = %{epoch}:%{version}-%{release}
+
+%description
+Amazon Corretto's packaging of the runtime core elements of the OpenJDK 8 code.
+
+%package devel
+Summary: Amazon Corretto development environment
+Group:   Development/Tools
+
+# Require base package.
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+Provides: java-devel = %{epoch}:%{javaver}
+Provides: java-%{javaver}-devel = %{epoch}:%{version}-%{release}
+
+%description devel
+Amazon Corretto's packaging of the OpenJDK 8 code.
+
+%prep
+%setup -q -n src
+
+%build
+bash ./configure \
+  --with-zlib=system \
+  --with-giflib=system \
+  --with-update-version="@update@" \
+  --with-build-number="%{buildver}" \
+  --with-user-release-suffix="@revision@" \
+  --with-milestone="fcs" \
+  --disable-debug-symbols \
+  --disable-zip-debug-info
+
+make images
+
+%install
+rm -rf %{buildroot}
+install -d -m 755 %{buildroot}%{java_home}
+cp -a build/linux-%{_arch}-normal-server-release/images/j2sdk-image/* %{buildroot}%{java_home}
+
+%if %{perform_openjfx_overlay}
+cp -a -v jfx/* %{buildroot}%{java_home}
+%endif
+
+# Make a *relative* symlink pointing to the cacerts file from ca-certificates.
+rm -f %{buildroot}%{java_home}/jre/lib/security/cacerts
+pushd %{buildroot}%{java_home}/jre/lib/security
+  RELATIVE=$(%{abs2rel} %{_sysconfdir}/pki/java %{buildroot}%{java_home}/jre/lib/security)
+  ln -sf $RELATIVE/cacerts .
+popd
+
+%post devel
+if [ $1 -eq 1 ] ; then
+  alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \
+               --slave %{_jvmdir}/java java_sdk %{java_home} \
+               --slave %{_bindir}/appletviewer appletviewer %{java_home}/bin/appletviewer \
+               --slave %{_bindir}/extcheck extcheck %{java_home}/bin/extcheck \
+               --slave %{_bindir}/idlj idlj %{java_home}/bin/idlj \
+               --slave %{_bindir}/jar jar %{java_home}/bin/jar \
+               --slave %{_bindir}/jarsigner jarsigner %{java_home}/bin/jarsigner \
+               --slave %{_bindir}/javadoc javadoc %{java_home}/bin/javadoc \
+               --slave %{_bindir}/javah javah %{java_home}/bin/javah \
+               --slave %{_bindir}/javap javap %{java_home}/bin/javap \
+               --slave %{_bindir}/jcmd jcmd %{java_home}/bin/jcmd \
+               --slave %{_bindir}/jconsole jconsole %{java_home}/bin/jconsole \
+               --slave %{_bindir}/jdb jdb %{java_home}/bin/jdb \
+               --slave %{_bindir}/jdeps jdeps %{java_home}/bin/jdeps \
+               --slave %{_bindir}/jhat jhat %{java_home}/bin/jhat \
+               --slave %{_bindir}/jinfo jinfo %{java_home}/bin/jinfo \
+               --slave %{_bindir}/jmap jmap %{java_home}/bin/jmap \
+               --slave %{_bindir}/jps jps %{java_home}/bin/jps \
+               --slave %{_bindir}/jrunscript jrunscript %{java_home}/bin/jrunscript \
+               --slave %{_bindir}/jsadebugd jsadebugd %{java_home}/bin/jsadebugd \
+               --slave %{_bindir}/jstack jstack %{java_home}/bin/jstack \
+               --slave %{_bindir}/jstat jstat %{java_home}/bin/jstat \
+               --slave %{_bindir}/jstatd jstatd %{java_home}/bin/jstatd \
+               --slave %{_bindir}/native2ascii native2ascii %{java_home}/bin/native2ascii \
+               --slave %{_bindir}/rmic rmic %{java_home}/bin/rmic \
+               --slave %{_bindir}/schemagen schemagen %{java_home}/bin/schemagen \
+               --slave %{_bindir}/serialver serialver %{java_home}/bin/serialver \
+               --slave %{_bindir}/wsgen wsgen %{java_home}/bin/wsgen \
+               --slave %{_bindir}/wsimport wsimport %{java_home}/bin/wsimport \
+               --slave %{_bindir}/xjc xjc %{java_home}/bin/xjc
+fi
+
+%postun devel
+if [ $1 -eq 0 ] ; then
+  alternatives --remove javac %{java_home}/bin/javac
+fi
+
+%post
+if [ $1 -eq 1 ] ; then
+  alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
+               --slave %{_jvmdir}/jre jre %{java_home}/jre \
+               --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
+               --slave %{_bindir}/keytool keytool %{java_home}/jre/bin/keytool \
+               --slave %{_bindir}/orbd orbd %{java_home}/jre/bin/orbd \
+               --slave %{_bindir}/pack200 pack200 %{java_home}/jre/bin/pack200 \
+               --slave %{_bindir}/policytool policytool %{java_home}/jre/bin/policytool \
+               --slave %{_bindir}/rmid rmid %{java_home}/jre/bin/rmid \
+               --slave %{_bindir}/rmiregistry rmiregistry %{java_home}/jre/bin/rmiregistry \
+               --slave %{_bindir}/servertool servertool %{java_home}/jre/bin/servertool \
+               --slave %{_bindir}/tnameserv tnameserv %{java_home}/jre/bin/tnameserv \
+               --slave %{_bindir}/unpack200 unpack200 %{java_home}/jre/bin/unpack200
+fi
+
+%postun
+if [ $1 -eq 0 ] ; then
+  alternatives --remove java %{java_home}/jre/bin/java
+fi
+
+%files devel
+%{java_home}/ASSEMBLY_EXCEPTION
+%{java_home}/LICENSE
+%{java_home}/THIRD_PARTY_README
+%{java_home}/bin
+%{java_home}/demo
+%{java_home}/include
+%{java_home}/lib
+%{java_home}/man
+%{java_home}/release
+%{java_home}/sample
+%{java_home}/src.zip
+%if %{perform_openjfx_overlay}
+%{java_home}/javafx-src.zip
+%endif
+
+%files
+%{java_home}/jre/ASSEMBLY_EXCEPTION
+%{java_home}/jre/LICENSE
+%{java_home}/jre/THIRD_PARTY_README
+%{java_home}/jre/bin
+%{java_home}/jre/lib
