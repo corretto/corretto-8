@@ -497,6 +497,21 @@ AC_DEFUN_ONCE([JDKOPT_SETUP_JDK_VERSION_NUMBERS],
     fi
   fi
 
+  AC_ARG_WITH(corretto-revision, [AS_HELP_STRING([--with-corretto-revision],
+      [Set corretto revision for build @<:@0@:>@])])
+  if test "x$with_corretto_revision" = xyes; then
+    AC_MSG_ERROR([Corretto revision must have a value])
+  elif test "x$with_corretto_revision" != x; then
+    CORRETTO_REVISION="$with_corretto_revision"
+  else
+    CORRETTO_REVISION="0"
+  fi
+
+  # Based on the CORRETTO_REVISION, generate CORRETTO_VERSION
+  JDK_BUILD_NUMBER_INT=`$ECHO $JDK_BUILD_NUMBER | $SED -e 's/^b//'`
+  CORRETTO_VERSION="${JDK_MINOR_VERSION}.${JDK_UPDATE_VERSION}.${JDK_BUILD_NUMBER_INT}.${CORRETTO_REVISION}"
+
+
   # Now set the JDK version, milestone, build number etc.
   AC_SUBST(USER_RELEASE_SUFFIX)
   AC_SUBST(JDK_MAJOR_VERSION)
@@ -511,6 +526,7 @@ AC_DEFUN_ONCE([JDKOPT_SETUP_JDK_VERSION_NUMBERS],
   AC_SUBST(JDK_RC_PLATFORM_NAME)
   AC_SUBST(MACOSX_BUNDLE_NAME_BASE)
   AC_SUBST(MACOSX_BUNDLE_ID_BASE)
+  AC_SUBST(CORRETTO_VERSION)
 
   # The vendor name, if any
   AC_ARG_WITH(vendor-name, [AS_HELP_STRING([--with-vendor-name],
