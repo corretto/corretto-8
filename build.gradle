@@ -47,3 +47,28 @@ allprojects {
         buildRoot = file("$buildDir/buildRoot")
     }
 }
+
+project(':openjdksrc') {
+    /**
+     * Compresses a snapshot of the source code used to perform the build.
+     */
+    task sourceDistributionTarball(type: Tar) {
+        description 'Assemble source files required for building and distributing Corretto.'
+        compression Compression.GZIP
+        archiveName "amazon-corretto-source-${project.version.full}.tar.gz"
+        from fileTree(rootDir) {
+            include 'src/**'
+            exclude 'src/corretto-build/**'
+            include 'LICENSE',
+                    'README.md',
+                    'THIRD_PARTY_README',
+                    'ASSEMBLY_EXCEPTION',
+                    'version.txt',
+                    'cacerts'
+        }
+    }
+
+    artifacts {
+        archives sourceDistributionTarball
+    }
+}
