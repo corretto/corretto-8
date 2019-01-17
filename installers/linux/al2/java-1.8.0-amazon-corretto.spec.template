@@ -136,7 +136,7 @@ bash ./configure \
   --with-giflib=system \
   --with-update-version="@update@" \
   --with-build-number="%{buildver}" \
-  --with-user-release-suffix="@revision@" \
+  --with-corretto-revision="@revision@" \
   --with-milestone="fcs" \
   --disable-debug-symbols \
   --disable-zip-debug-info

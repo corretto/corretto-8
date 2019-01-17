@@ -60,9 +60,8 @@ task configureBuild(type: Exec) {
     commandLine 'bash', 'configure',
             "--with-update-version=${project.version.update}",
             "--with-build-number=b${project.version.build}",
-            "--with-user-release-suffix=${project.version.revision}",
+            "--with-corretto-revision=${project.version.revision}",
             '--with-milestone=fcs',
-            '--with-user-release-suffix=amazon-corretto-preview',
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
             'LIBCXX=-static-libstdc++ -static-libgcc'
