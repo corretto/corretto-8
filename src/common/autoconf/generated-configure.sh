@@ -831,6 +831,7 @@ COOKED_BUILD_NUMBER
 COOKED_JDK_UPDATE_VERSION
 JDK_VERSION
 COPYRIGHT_YEAR
+CORRETTO_VERSION
 MACOSX_BUNDLE_ID_BASE
 MACOSX_BUNDLE_NAME_BASE
 COMPANY_NAME
@@ -1063,6 +1064,7 @@ with_milestone
 with_update_version
 with_user_release_suffix
 with_build_number
+with_corretto_revision
 with_copyright_year
 with_boot_jdk
 with_boot_jdk_jvmargs
@@ -1903,6 +1905,8 @@ Optional Packages:
                           Add a custom string to the version string if build
                           number isn't set.[username_builddateb00]
   --with-build-number     Set build number value for build [b00]
+  --with-corretto-revision
+                          Set corretto revision for build [0]
   --with-copyright-year   Set copyright year value for build [current year]
   --with-boot-jdk         path to Boot JDK (used to bootstrap build) [probed]
   --with-boot-jdk-jvmargs specify JVM arguments to be passed to all
@@ -19879,7 +19883,27 @@ fi
     fi
   fi
 
+
+# Check whether --with-corretto-revision was given.
+if test "${with_corretto_revision+set}" = set; then :
+  withval=$with_corretto_revision;
+fi
+
+  if test "x$with_corretto_revision" = xyes; then
+    as_fn_error $? "Corretto revision must have a value" "$LINENO" 5
+  elif test "x$with_corretto_revision" != x; then
+    CORRETTO_REVISION="$with_corretto_revision"
+  else
+    CORRETTO_REVISION="0"
+  fi
+
+  # Based on the CORRETTO_REVISION, generate CORRETTO_VERSION
+  JDK_BUILD_NUMBER_INT=`$ECHO $JDK_BUILD_NUMBER | $SED -e 's/^b//'`
+  CORRETTO_VERSION="${JDK_MINOR_VERSION}.${JDK_UPDATE_VERSION}.${JDK_BUILD_NUMBER_INT}.${CORRETTO_REVISION}"
+
+
   # Now set the JDK version, milestone, build number etc.
+
 
 
 
@@ -48140,24 +48164,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-         LCMS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "lcms2" 2>&1`
+	        LCMS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "lcms2" 2>&1`
         else
-         LCMS_PKG_ERRORS=`$PKG_CONFIG --print-errors "lcms2" 2>&1`
+	        LCMS_PKG_ERRORS=`$PKG_CONFIG --print-errors "lcms2" 2>&1`
         fi
- # Put the nasty error message in config.log where it belongs
- echo "$LCMS_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LCMS_PKG_ERRORS" >&5
 
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
                 LCMS_FOUND=no
 elif test $pkg_failed = untried; then
- LCMS_FOUND=no
+	LCMS_FOUND=no
 else
- LCMS_CFLAGS=$pkg_cv_LCMS_CFLAGS
- LCMS_LIBS=$pkg_cv_LCMS_LIBS
+	LCMS_CFLAGS=$pkg_cv_LCMS_CFLAGS
+	LCMS_LIBS=$pkg_cv_LCMS_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
- LCMS_FOUND=yes
+	LCMS_FOUND=yes
 fi
     if test "x${LCMS_FOUND}" = "xyes"; then
       USE_EXTERNAL_LCMS=true
@@ -48249,24 +48273,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-         PNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libpng" 2>&1`
+	        PNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libpng" 2>&1`
         else
-         PNG_PKG_ERRORS=`$PKG_CONFIG --print-errors "libpng" 2>&1`
+	        PNG_PKG_ERRORS=`$PKG_CONFIG --print-errors "libpng" 2>&1`
         fi
- # Put the nasty error message in config.log where it belongs
- echo "$PNG_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$PNG_PKG_ERRORS" >&5
 
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
                  LIBPNG_FOUND=no
 elif test $pkg_failed = untried; then
-  LIBPNG_FOUND=no
+	 LIBPNG_FOUND=no
 else
- PNG_CFLAGS=$pkg_cv_PNG_CFLAGS
- PNG_LIBS=$pkg_cv_PNG_LIBS
+	PNG_CFLAGS=$pkg_cv_PNG_CFLAGS
+	PNG_LIBS=$pkg_cv_PNG_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-  LIBPNG_FOUND=yes
+	 LIBPNG_FOUND=yes
 fi
       if test "x${LIBPNG_FOUND}" = "xyes"; then
           USE_EXTERNAL_LIBPNG=true
