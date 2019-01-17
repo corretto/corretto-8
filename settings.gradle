@@ -1,0 +1,3 @@
+rootProject.name = 'corretto8'
+
+include ':javafx'
