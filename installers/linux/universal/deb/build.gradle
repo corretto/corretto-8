@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation. Amazon designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+plugins {
+    id 'nebula.ospackage' version '5.2.0'
+}
+
+dependencies {
+    compile project(path: ':installers:linux:universal:tar', configuration: 'archives')
+}
+
+def jvmDir = '/usr/lib/jvm'
+def jdkInstallationDirName = "java-1.${project.version.major}.0-amazon-corretto"
+def jdkHome = "${jvmDir}/${jdkInstallationDirName}".toString()
+def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-x64"
+def jdkPackageName = "java-1.${project.version.major}.0-amazon-corretto-jdk"
+
+ospackage {
+    // Valid version must start with a digit and only contain [A-Za-z0-9.+:~-]
+    // See http://manpages.ubuntu.com/manpages/artful/en/man5/deb-version.5.html
+    version "${project.version.major}.${project.version.update}.${project.version.build}"
+    release project.version.revision
+
+    url "${packageInfo.url}"
+    vendor "${packageInfo.vendor}"
+    packager "${packageInfo.packager}"
+    license "${packageInfo.license}"
+    buildHost "${packageInfo.buildHost}"
+    maintainer "${packageInfo.maintainer}"
+    packageGroup 'java'
+    priority 'optional'
+    user 'root'
+    permissionGroup 'root'
+    epoch 1
+    arch 'amd64'
+    multiArch SAME
+}
+
+/**
+ * Uncompress and copy the universal Corretto artifact
+ * tar for DEB packaging.
+ */
+task extractUniversalTar(type: Copy) {
+    dependsOn project.configurations.compile
+    from tarTree(project.configurations.compile.singleFile)
+    into buildRoot
+}
+
+/**
+ * Populate version numbers, java home and alternatives
+ * priority to postin_jdk.sh.template and preun_jdk.sh.template.
+ * Create script copies under build root scripts folder.
+ */
+task inflateDebScriptTemplate(type: Copy) {
+    dependsOn extractUniversalTar 
+    // In trusty repo, openjdk7 has priority 1071 and openjdk6 has 1061
+    // Corretto uses the same priority in both rpm and deb
+    def priority = "10${project.version.major}00${project.version.update}".toString()
+    from('scripts') {
+        include '**/*.template'
+        rename { file -> file.replace('.template', '') }
+        filter(org.apache.tools.ant.filters.ReplaceTokens,
+                tokens: project.version + [java_home: jdkHome, alternatives_priority: priority,
+                                           jdk_tools: jdkTools.join(' '), jre_tools: jreTools.join(' ')])
+    }
+    into "${buildRoot}/scripts"
+}
+
+/**
+ * Generate DEB for JDK, with package published under
+ * distributions folder.
+ */
+task generateJdkDeb(type: Deb) {
+    description 'Create the DEB package for Corretto JDK'
+    dependsOn inflateDebScriptTemplate
+
+    packageName jdkPackageName
+    packageDescription "Amazon Corretto\'s packaging of the OpenJDK ${project.version.major} code."
+    summary "Amazon Corretto ${project.version.major} development environment"
+
+    postInstall file("$buildRoot/scripts/postin_jdk.sh")
+    preUninstall file("$buildRoot/scripts/preun_jdk.sh")
+
+    requires('java-common')
+    requires('libc6', '2.12', GREATER | EQUAL)
+
+    provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
+    provides('java8-jdk')
+    provides('java-compiler')
+    provides('java8-runtime')
+
+    from(jdkBinaryDir) {
+        into jdkHome
+    }
+}
+
+artifacts {
+    archives generateJdkDeb
+}

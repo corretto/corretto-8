@@ -1,0 +1,24 @@
+# postrm script for Corretto
+#
+# summary of how this script can be called:
+#        * <postrm> `remove'
+# for details, see https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html or
+# the debian-policy package
+
+case "$1" in
+    remove | deconfigure)
+        for i in @jdk_tools@; do
+            if [ -e @java_home@/bin/$i ]; then
+                update-alternatives --remove $i @java_home@/bin/$i
+            fi
+        done
+
+        for i in @jre_tools@; do
+            if [ -e @java_home@/jre/bin/$i ]; then
+                update-alternatives --remove $i @java_home@/jre/bin/$i
+            fi
+        done
+    ;;
+esac
+
+exit 0

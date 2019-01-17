@@ -4,6 +4,7 @@ include ':openjdksrc',
         ':installers:linux:al2',
         ':installers:linux:universal:tar',
         ':installers:linux:universal:rpm',
+        ':installers:linux:universal:deb',
         ':javafx'
 
 project(':openjdksrc').projectDir = file('src')
