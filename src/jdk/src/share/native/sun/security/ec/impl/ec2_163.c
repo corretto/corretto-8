@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * This library is free software; you can redistribute it and/or
@@ -188,20 +188,15 @@ ec_GF2m_163_mul(const mp_int *a, const mp_int *b, mp_int *r,
 #ifdef ECL_THIRTY_TWO_BIT
                 case 6:
                         a5 = MP_DIGIT(a, 5);
-                        // Falls through.
                 case 5:
                         a4 = MP_DIGIT(a, 4);
-                        // Falls through.
                 case 4:
                         a3 = MP_DIGIT(a, 3);
-                        // Falls through.
 #endif
                 case 3:
                         a2 = MP_DIGIT(a, 2);
-                        // Falls through.
                 case 2:
                         a1 = MP_DIGIT(a, 1);
-                        // Falls through.
                 default:
                         a0 = MP_DIGIT(a, 0);
                 }
@@ -209,20 +204,15 @@ ec_GF2m_163_mul(const mp_int *a, const mp_int *b, mp_int *r,
 #ifdef ECL_THIRTY_TWO_BIT
                 case 6:
                         b5 = MP_DIGIT(b, 5);
-                        // Falls through.
                 case 5:
                         b4 = MP_DIGIT(b, 4);
-                        // Falls through.
                 case 4:
                         b3 = MP_DIGIT(b, 3);
-                        // Falls through.
 #endif
                 case 3:
                         b2 = MP_DIGIT(b, 2);
-                        // Falls through.
                 case 2:
                         b1 = MP_DIGIT(b, 1);
-                        // Falls through.
                 default:
                         b0 = MP_DIGIT(b, 0);
                 }

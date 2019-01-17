@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -55,14 +55,14 @@ extern int NET_NonBlockingRead(int s, void* buf, size_t len);
 extern int NET_TimeoutWithCurrentTime(int s, long timeout, long currentTime);
 extern long NET_GetCurrentTime();
 extern int NET_RecvFrom(int s, void *buf, int len, unsigned int flags,
-       struct sockaddr *from, socklen_t *fromlen);
+       struct sockaddr *from, int *fromlen);
 extern int NET_ReadV(int s, const struct iovec * vector, int count);
 extern int NET_Send(int s, void *msg, int len, unsigned int flags);
 extern int NET_SendTo(int s, const void *msg, int len,  unsigned  int
-       flags, const struct sockaddr *to, socklen_t tolen);
+       flags, const struct sockaddr *to, int tolen);
 extern int NET_Writev(int s, const struct iovec * vector, int count);
 extern int NET_Connect(int s, struct sockaddr *addr, int addrlen);
-extern int NET_Accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+extern int NET_Accept(int s, struct sockaddr *addr, int *addrlen);
 extern int NET_SocketClose(int s);
 extern int NET_Dup2(int oldfd, int newfd);
 

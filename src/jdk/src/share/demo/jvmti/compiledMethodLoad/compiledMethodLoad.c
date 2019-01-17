@@ -41,7 +41,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
 #include "jni.h"
 #include "jvmti.h"
@@ -144,7 +143,7 @@ print_inline_info_record(jvmtiCompiledMethodLoadInlineRecord* record,
 
         for (i = 0; i < numpcs; i++) {
             PCStackInfo pcrecord = (record->pcinfo[i]);
-            fprintf(fp, "PcDescriptor(pc=0x%lx):\n", (unsigned long)(uintptr_t)(pcrecord.pc));
+            fprintf(fp, "PcDescriptor(pc=0x%lx):\n", (jint)(pcrecord.pc));
             print_stack_frames(&pcrecord, jvmti, fp);
         }
     }

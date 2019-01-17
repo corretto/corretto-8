@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1317,7 +1317,7 @@ Java_sun_font_FreetypeFontScaler_getGlyphVectorOutlineNative(
              (FTScalerInfo*) jlong_to_ptr(pScaler);
 
     glyphs = NULL;
-    if (numGlyphs > 0 && 0xffffffffu / sizeof(jint) >= (size_t)numGlyphs) {
+    if (numGlyphs > 0 && 0xffffffffu / sizeof(jint) >= numGlyphs) {
         glyphs = (jint*) malloc(numGlyphs*sizeof(jint));
     }
     if (glyphs == NULL) {
