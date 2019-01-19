@@ -1,0 +1,119 @@
+/*
+ * Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation. Amazon designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+plugins {
+    id 'com.bmuschko.docker-remote-api' version '4.3.0'
+}
+
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerWaitContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
+
+configurations {
+    deb
+}
+
+dependencies {
+    deb project(path: ':installers:linux:universal:deb', configuration: 'archives')
+}
+
+/**
+ * Copy the universal Corretto deb package for
+ * integration test
+ */
+task _copyDebPackage(type: Copy) {
+    dependsOn project.configurations.deb
+    from file(project.configurations.deb.singleFile)
+    into "$buildRoot/distributions/deb"
+}
+
+/**
+ * Prepare docker image for deb integration test and tagged
+ * as corretto8/universal:deb-integration-test.
+ */
+task  _buildDebDockerTestImage(type: DockerBuildImage) {
+    dependsOn _copyDebPackage
+    dockerFile = file('docker/deb/Dockerfile')
+    inputDir = file('.')
+    tags.add('corretto8/universal:deb-package-test')
+}
+
+/**
+ * Create a container instance for deb and enable removed on exit.
+ */
+task _createDebTestDocker(type: DockerCreateContainer) {
+    dependsOn  _buildDebDockerTestImage
+    targetImageId  _buildDebDockerTestImage.getImageId()
+    envVars = ['jdk_tools': jdkTools.join(' '), 'jre_tools': jreTools.join(' ')]
+    autoRemove = true
+}
+
+/**
+ * Start docker instance to execute integration test for deb.
+ */
+task _startDebTestDocker(type: DockerStartContainer) {
+    dependsOn _createDebTestDocker
+    targetContainerId _createDebTestDocker.getContainerId()
+}
+
+/**
+ * Copies the container output to the Gradle process
+ * standard out/err. Each log message from the container
+ * will be passed as it's made available
+ */
+task _logDebTestResult(type: DockerLogsContainer) {
+    dependsOn _startDebTestDocker
+    targetContainerId _startDebTestDocker.getContainerId()
+    follow = true
+    tailAll = true
+    onNext { message ->
+        logger.quiet message.toString()
+    }
+}
+
+/**
+ * Blocks until the deb testing instance stops. Throws exception
+ * if integration tests fail.
+ */
+task _waitForDebTestFinish(type: DockerWaitContainer) {
+    dependsOn _logDebTestResult
+    targetContainerId _startDebTestDocker.getContainerId()
+    awaitStatusTimeout = 60
+
+    doLast {
+        if (getExitCode() != 0) {
+            throw new GradleException('Deb package failed integration tests!')
+        }
+    }
+}
+
+/**
+ * Run integration test for deb package and remove the test
+ * image from the filesystem.
+ */
+task testDeb(type: DockerRemoveImage) {
+    dependsOn _waitForDebTestFinish
+    targetImageId _createDebTestDocker.getImageId()
+    force = true
+}
