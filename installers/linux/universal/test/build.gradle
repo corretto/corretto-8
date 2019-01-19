@@ -32,10 +32,12 @@ import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
 
 configurations {
     deb
+    rpm
 }
 
 dependencies {
     deb project(path: ':installers:linux:universal:deb', configuration: 'archives')
+    rpm project(path: ':installers:linux:universal:rpm', configuration: 'archives')
 }
 
 /**
@@ -46,6 +48,16 @@ task _copyDebPackage(type: Copy) {
     dependsOn project.configurations.deb
     from file(project.configurations.deb.singleFile)
     into "$buildRoot/distributions/deb"
+}
+
+/**
+ * Copy the universal Corretto rpm package for
+ * integration test
+ */
+task _copyRpmPackage(type: Copy) {
+    dependsOn project.configurations.rpm
+    from file(project.configurations.rpm.singleFile)
+    into "$buildRoot/distributions/rpm"
 }
 
 /**
@@ -60,12 +72,32 @@ task  _buildDebDockerTestImage(type: DockerBuildImage) {
 }
 
 /**
+ * Prepare docker image for rpm integration test and tagged
+ * as corretto8/universal:rpm-integration-test.
+ */
+task  _buildRpmDockerTestImage(type: DockerBuildImage) {
+    dependsOn _copyRpmPackage
+    dockerFile = file('docker/rpm/Dockerfile')
+    inputDir = file('.')
+    tags.add('corretto8/universal:rpm-package-test')
+}
+
+/**
  * Create a container instance for deb and enable removed on exit.
  */
 task _createDebTestDocker(type: DockerCreateContainer) {
     dependsOn  _buildDebDockerTestImage
     targetImageId  _buildDebDockerTestImage.getImageId()
     envVars = ['jdk_tools': jdkTools.join(' '), 'jre_tools': jreTools.join(' ')]
+    autoRemove = true
+}
+
+/**
+ * Create a container instance for rpm and enable removed on exit.
+ */
+task _createRpmTestDocker(type: DockerCreateContainer) {
+    dependsOn  _buildRpmDockerTestImage
+    targetImageId  _buildRpmDockerTestImage.getImageId()
     autoRemove = true
 }
 
@@ -78,6 +110,14 @@ task _startDebTestDocker(type: DockerStartContainer) {
 }
 
 /**
+ * Start docker instance to execute integration test for rpm.
+ */
+task _startRpmTestDocker(type: DockerStartContainer) {
+    dependsOn _createRpmTestDocker
+    targetContainerId _createRpmTestDocker.getContainerId()
+}
+
+/**
  * Copies the container output to the Gradle process
  * standard out/err. Each log message from the container
  * will be passed as it's made available
@@ -85,6 +125,21 @@ task _startDebTestDocker(type: DockerStartContainer) {
 task _logDebTestResult(type: DockerLogsContainer) {
     dependsOn _startDebTestDocker
     targetContainerId _startDebTestDocker.getContainerId()
+    follow = true
+    tailAll = true
+    onNext { message ->
+        logger.quiet message.toString()
+    }
+}
+
+/**
+ * Copies the container output to the Gradle process
+ * standard out/err. Each log message from the container
+ * will be passed as it's made available
+ */
+task _logRpmTestResult(type: DockerLogsContainer) {
+    dependsOn _startRpmTestDocker
+    targetContainerId _startRpmTestDocker.getContainerId()
     follow = true
     tailAll = true
     onNext { message ->
@@ -109,11 +164,37 @@ task _waitForDebTestFinish(type: DockerWaitContainer) {
 }
 
 /**
+ * Blocks until the rpm testing instance stops. Throws exception
+ * if integration tests fail.
+ */
+task _waitForRpmTestFinish(type: DockerWaitContainer) {
+    dependsOn _logRpmTestResult
+    targetContainerId _startRpmTestDocker.getContainerId()
+    awaitStatusTimeout = 60
+
+    doLast {
+        if (getExitCode() != 0) {
+            throw new GradleException('Rpm package failed integration tests!')
+        }
+    }
+}
+
+/**
  * Run integration test for deb package and remove the test
  * image from the filesystem.
  */
 task testDeb(type: DockerRemoveImage) {
     dependsOn _waitForDebTestFinish
     targetImageId _createDebTestDocker.getImageId()
+    force = true
+}
+
+/**
+ * Run integration test for rpm package and remove the test
+ * image from the filesystem.
+ */
+task testRpm(type: DockerRemoveImage) {
+    dependsOn _waitForRpmTestFinish
+    targetImageId _createRpmTestDocker.getImageId()
     force = true
 }
