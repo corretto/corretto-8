@@ -22,6 +22,7 @@
 // Tasks can refer to version information using the project.version
 // property. For an example of its usage, see ':installers:linux:rpm:buildLogic'
 // where the version numbers are used to populate a templated RPM spec file.
+
 allprojects {
     apply plugin: 'base'
 
@@ -45,6 +46,7 @@ allprojects {
 
     ext {
         buildRoot = file("$buildDir/buildRoot")
+        distributionDir = file("$buildDir/distributions")
         packageInfo = [
                 url       : "https://github.com/corretto/corretto-${project.version.major}",
                 vendor    : 'Amazon',

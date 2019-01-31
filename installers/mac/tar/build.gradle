@@ -1,0 +1,152 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+configurations {
+    javafx
+}
+
+dependencies {
+    javafx project(path: ':javafx', configuration: 'archives')
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+def jdkResultingImage = "$buildRoot/src/build/macosx-x86_64-normal-server-release/images/j2sdk-bundle"
+def correttoMacDir = 'amazon-corretto-8.jdk'
+
+/**
+ * Create a local copy of the source tree in our
+ * build root -- this is required since OpenJDK's
+ * build wants to occur inside the source tree,
+ * and we don't want to tamper with someone
+ * else's tree.
+ */
+task copySource(type: Copy) {
+    dependsOn project.configurations.compile
+    from tarTree(project.configurations.compile.singleFile)
+    into buildRoot
+}
+
+task configureBuild(type: Exec) {
+    dependsOn copySource
+    workingDir "$buildRoot/src"
+    def commands = ['bash', 'configure',
+            "--with-update-version=${project.version.update}",
+            "--with-build-number=b${project.version.build}",
+            "--with-corretto-revision=${project.version.revision}",
+            '--with-milestone=fcs',
+            '--with-x',
+            '--disable-debug-symbols',
+            '--disable-zip-debug-info',
+            "--with-cacerts-file=$buildRoot/cacerts"]
+    def extraCmd = System.getenv("EXTRA_CORRETTO_CONFIG_OPTIONS")
+    if (extraCmd != null) {
+        commands += extraCmd.split(" ")
+    }
+    commandLine commands.flatten()
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make', 'images'
+    outputs.dir jdkResultingImage
+}
+
+task renameBuildArtifacts {
+    dependsOn executeBuild
+    doLast {
+        file("${jdkResultingImage}/jdk1.8.0_${project.version.update}.jdk").
+                renameTo(file("${jdkResultingImage}/${correttoMacDir}"))
+    }
+}
+
+task inflatePlistTemplate(type: Copy) {
+    dependsOn renameBuildArtifacts
+    from('templates/Info.plist.template') {
+        rename { file -> file.replace('.template', '') }
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+    }
+    into "${jdkResultingImage}/${correttoMacDir}/Contents"
+}
+
+task applyJavafxOverlay(type: Copy) {
+    dependsOn project.configurations.javafx
+    dependsOn renameBuildArtifacts
+    from tarTree(project.configurations.javafx.singleFile)
+    into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+    eachFile {
+        if (it.path.startsWith('rt/')) {
+            it.path = it.path.replace('rt/', 'jre/')
+        }
+    }
+}
+
+task prepareArtifacts {
+    dependsOn applyJavafxOverlay
+    dependsOn inflatePlistTemplate
+    doLast {
+        if(file("${buildDir}/${correttoMacDir}").exists()) {
+            delete "${buildDir}/${correttoMacDir}"
+        }
+        copy {
+            from("${jdkResultingImage}/${correttoMacDir}") {
+                include "Contents/Home/bin/**"
+                include "Contents/Home/include/**"
+                include "Contents/Home/jre/**"
+                include "Contents/Home/lib/**"
+                include "Contents/Home/man/man1/**"
+                include "Contents/Home/src.zip"
+                include "Contents/Home/javafx-src.zip"
+                include "Contents/Info.plist"
+                include "Contents/MacOS/**"
+            }
+            from(buildRoot) {
+                include 'ASSEMBLY_EXCEPTION'
+                include 'LICENSE'
+                include 'THIRD_PARTY_README'
+                include 'version.txt'
+                into "Contents/Home"
+            }
+            into "${buildDir}/${correttoMacDir}"
+        }
+        // Set the directory as bundle
+        exec {
+            commandLine "SetFile", "-a", "B", "${buildDir}/${correttoMacDir}"
+        }
+        // Gradle does not preserve symlink, fix it before packaging
+        exec {
+            workingDir "${buildDir}/${correttoMacDir}/Contents"
+            commandLine "ln", "-sf", "../Home/jre/lib/jli/libjli.dylib", "MacOS/libjli.dylib"
+        }
+    }
+}
+
+task packaging(type: Exec) {
+    dependsOn prepareArtifacts
+    String tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macosx-x64.tar.gz"
+    workingDir buildDir
+    commandLine "tar", "czf", tarDir, correttoMacDir
+    outputs.file tarDir
+}
+
+artifacts {
+    archives file: packaging.outputs.getFiles().getSingleFile(), builtBy: packaging
+}

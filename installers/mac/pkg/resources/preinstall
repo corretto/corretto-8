@@ -1,0 +1,9 @@
+#!/bin/bash
+JDK_INSTALL_PATH="/Library/Java/JavaVirtualMachines"
+MKDIR=`which mkdir`
+
+if [[ ! -d ${JDK_INSTALL_PATH} ]]; then
+	${MKDIR} -p ${JDK_INSTALL_PATH}
+fi
+
+exit 0
