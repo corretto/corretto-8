@@ -68,6 +68,8 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import sun.font.FontManager;
 import sun.font.FontManagerFactory;
@@ -834,14 +836,25 @@ public final class WToolkit extends SunToolkit implements Runnable {
      * Event thread.
      */
     static public void displayChanged() {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ((Win32GraphicsEnvironment)GraphicsEnvironment
-                .getLocalGraphicsEnvironment())
-                .displayChanged();
+        final Runnable runnable = () -> {    
+            ((Win32GraphicsEnvironment)GraphicsEnvironment
+            .getLocalGraphicsEnvironment())
+            .displayChanged();
+        };
+        if (AppContext.getAppContext() != null) {
+            // Common case, standalone application
+            EventQueue.invokeLater(runnable);
+        } else {
+            if (displayChangeExecutor == null) {
+                // No synchronization, called on the Toolkit thread only
+                displayChangeExecutor = Executors.newFixedThreadPool(1, r -> {
+                    Thread t = Executors.defaultThreadFactory().newThread(r);
+                    t.setDaemon(true);
+                    return t;
+                });
             }
-        });
+            displayChangeExecutor.submit(runnable);
+        }
     }
 
     /**
