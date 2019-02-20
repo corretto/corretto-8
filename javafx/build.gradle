@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -18,6 +18,10 @@
 * 2 along with this work; if not, write to the Free Software Foundation,
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import static org.apache.tools.ant.taskdefs.condition.Os.OS_NAME
+import static org.apache.tools.ant.taskdefs.condition.Os.OS_ARCH
 
 Properties openJfxVersion = readAsProperties('upstream.version')
 
@@ -47,8 +51,18 @@ task unpackSource(type: Copy) {
     into buildRoot
 }
 
-task buildJfx(type: Exec) {
+task patchJfx {
     dependsOn unpackSource
+    doLast {
+        if (Os.isFamily(Os.FAMILY_MAC)) {
+            ant.patch(patchfile: "patches/MacOSXMinVersion.patch",
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        }
+    }
+}
+
+task buildJfx(type: Exec) {
+    dependsOn patchJfx
     workingDir "$buildRoot/rt-${openJfxVersion.getProperty('tag')}"
     commandLine 'bash', 'gradlew', 'sdk',
             '-PCOMPILE_WEBKIT=false',
@@ -61,7 +75,7 @@ task buildJfx(type: Exec) {
 
 task packageJfx(type: Tar) {
     dependsOn buildJfx
-    archiveName "amazon-corretto-openjfx-${openJfxVersion.getProperty('tag')}-linux-x64.tar.gz"
+    archiveName "amazon-corretto-openjfx-${openJfxVersion.getProperty('tag')}-${OS_NAME}-${OS_ARCH}.tar.gz"
     compression Compression.GZIP
     from buildJfx.outputs
 }
