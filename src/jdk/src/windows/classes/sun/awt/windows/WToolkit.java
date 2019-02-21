@@ -830,6 +830,8 @@ public final class WToolkit extends SunToolkit implements Runnable {
         .paletteChanged();
     }
 
+    private static ExecutorService displayChangeExecutor;
+
     /*
      * Called from Toolkit native code when a WM_DISPLAYCHANGE occurs.
      * Have Win32GraphicsEnvironment execute the display change code on the
