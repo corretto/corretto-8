@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -76,10 +76,7 @@ final class PiscesTileGenerator implements AATileGenerator {
     }
 
     public void getBbox(int bbox[]) {
-        bbox[0] = cache.bboxX0;
-        bbox[1] = cache.bboxY0;
-        bbox[2] = cache.bboxX1;
-        bbox[3] = cache.bboxY1;
+        cache.getBBox(bbox);
         //System.out.println("bbox["+bbox[0]+", "+bbox[1]+" => "+bbox[2]+", "+bbox[3]+"]");
     }
 
