@@ -49,19 +49,23 @@ Getting Started
 Making Changes
 --------------
 
-+ Create a _topic branch_ for your isolated work.
-  * Usually you should base your branch on the `master` branch.
-  * A good topic branch name can be the JIRA bug id plus a keyword, e.g. `issue-35-InputStream`.
-  * If you have submitted multiple JIRA issues, try to maintain separate branches and pull requests.
++ Create a topic branch from where you want to base your work (this is usually the master branch).
 + Make commits of logical units.
-  * Make sure your commit messages are meaningful and in the proper format. Your commit message should contain the key of the JIRA issue.
-  * e.g. `#35: Close input stream earlier`
++ In your commit message make sure it starts with `#XXX -` where "`#XXX`" represents the number of the github issue you created for tracking purposes. Note the syntax that you can use follows:
+    + fix #xxx
+    + fixes #xxx
+    + fixed #xxx
+    + close #xxx
+    + closes #xxx
+    + closed #xxx
+    + resolve #xxx
+    + resolves #xxx
++ resolved #xxx
 + Respect the original code style:
   + Only use spaces for indentation.
-  + Create minimal diffs - disable _On Save_ actions like _Reformat Source Code_ or _Organize Imports_. If you feel the source code should be reformatted create a separate PR for this change first.
-  + Check for unnecessary whitespace with `git diff` -- check before committing.
-+ Make sure you have added the necessary tests for your changes.
-+ Run all the tests with `mvn clean verify` to assure nothing else was accidentally broken.
+  + Create minimal diffs - disable on save actions like reformat source code or organize imports. If you feel the source code should be reformatted create a separate PR for this change.
+  + Check for unnecessary whitespace with git diff --check before committing.
++ Make sure your commit messages are in the proper format. Your commit message should contain the key of the GitHub issue.
 
 Making Trivial Changes
 ----------------------
