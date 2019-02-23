@@ -83,10 +83,10 @@ Submitting Changes
 + Submit a _Pull Request_ to the corresponding repository in the `apache` organization.
   * Verify _Files Changed_ shows only your intended changes and does not
   include additional files like `target/*.class`
-+ Update your JIRA ticket and include a link to the pull request in the ticket.
++ Update your GitHub Issue and include a link to the pull request in the ticket.
 
 If you prefer to not use GitHub, then you can instead use
-`git format-patch` (or `svn diff`) and attach the patch file to the JIRA issue.
+`git format-patch` (or `svn diff`) and attach the patch file to the GitHub issue.
 
 
 Additional Resources
