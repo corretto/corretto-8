@@ -21,9 +21,21 @@ Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 Contributing to Amazon Corretto
 ================================
 
-You have found a bug or you have an idea for a cool new feature? Contributing code is a great way to give something back to
-the open source community. Before you dig right into the code there are a few guidelines that we need contributors to
-follow so that we can have a chance of keeping on top of things.
+Thank you for taking the time to help improve OpenJDK and Corretto.
+
+If your pull request concerns a security vulnerability then please do not file it.
+Instead, report the problem by email to aws-security@amazon.com.
+(You can find more information regarding security issues at https://aws.amazon.com/security/vulnerability-reporting/.)
+
+Otherwise, if your pull request concerns OpenJDK 8
+and is not specific to Corretto 8,
+then we ask you to redirect your contribution to the OpenJDK project.
+See http://openjdk.java.net/contribute/ for details on how to do that.
+
+If you wish to contribute to Corretto 8,
+then you are in the right place.
+Please read below about how you should document your issues and pull requests.
+
 
 Getting Started
 ---------------
