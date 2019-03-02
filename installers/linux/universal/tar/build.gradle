@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* Copyright (c) 2018, 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -27,8 +27,23 @@ dependencies {
     javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
+ext {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
 
-def jdkResultingImage = "$buildRoot/src/build/linux-x86_64-normal-server-release/images/j2sdk-image"
+    switch (arch) {
+    case 'aarch64':
+        arch_alias = arch
+        break;
+    case 'x86_64':
+        arch_alias = 'x64'
+        break;
+    default:
+        throw new GradleException("${arch} is not suported")
+    }
+}
+
+def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
 
 /**
  * Create a local copy of the source tree in our
@@ -77,8 +92,7 @@ task executeBuild(type: Exec) {
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
     dependsOn executeBuild
-    dependsOn createJavafxOverlay
-    archiveName "amazon-corretto-${project.version.full}-linux-x64.tar.gz"
+    archiveName "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
     from(buildRoot) {
         include 'ASSEMBLY_EXCEPTION'
@@ -95,18 +109,23 @@ task packageBuildResults(type: Tar) {
         include 'src.zip'
         exclude '**/cacerts'
     }
-    from(createJavafxOverlay.destinationDir) {
-        include 'bin/**'
-        include 'jre/**'
-        include 'lib/**'
-        include 'man/man1/**'
-        include 'javafx-src.zip'
-    }
     from(buildRoot) {
         include 'cacerts'
         into 'jre/lib/security'
     }
-    into "amazon-corretto-${project.version.full}-linux-x64"
+    into "amazon-corretto-${project.version.full}-linux-${arch_alias}"
+
+    // currently, OpenJFX doesn't support aarch64
+    if (arch == 'x86_64') {
+        dependsOn createJavafxOverlay
+        from(createJavafxOverlay.destinationDir) {
+            include 'bin/**'
+            include 'jre/**'
+            include 'lib/**'
+            include 'man/man1/**'
+            include 'javafx-src.zip'
+        }
+    }
 }
 
 artifacts {
