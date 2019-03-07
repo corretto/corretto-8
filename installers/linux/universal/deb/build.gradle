@@ -109,6 +109,7 @@ task generateJdkDeb(type: Deb) {
 
     from(jdkBinaryDir) {
         into jdkHome
+        createDirectoryEntry = true
     }
 }
 
