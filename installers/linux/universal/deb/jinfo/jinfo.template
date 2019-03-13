@@ -1,0 +1,9 @@
+name=@directory_name@
+alias=@directory_name@
+priority=@alternatives_priority@
+section=main
+
+<% jre_tools.each {%>jre ${it} @java_home@/jre/bin/${it}
+<%}%>
+<% jdk_tools.each {%>jdk ${it} @java_home@/bin/${it}
+<%}%>
