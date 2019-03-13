@@ -63,6 +63,18 @@ function test_alternatives_after_installation() {
     fi
 }
 
+# Examine Corretto shows up in update_java_alternatives command
+# correctly and is switchable.
+function test_update_java_alternatives_after_installation() {
+    update-java-alternatives -s ${jdkInstallationDirectoryName} &> /dev/null
+    if [[ $? != 0 ]]; then
+        echo "[DEB Test] FAILED: test_update_java_alternatives_after_installation"
+        status=1
+    else
+        echo "[DEB Test] PASSED: test_update_java_alternatives_after_installation"
+    fi
+}
+
 function test_jdk_uninstallation() {
     dpkg -r ${simpleJdkPackageName} &> /dev/null
     if [[ $? != 0 ]]; then
@@ -100,6 +112,18 @@ function test_alternatives_after_uninstallation() {
     fi
 }
 
+function test_update_java_alternatives_after_uninstallation() {
+    # Corretto entry is expected to be removed from update-java-alternatives list
+    # after uninstallation.
+    update-java-alternatives -l | grep ${jdkInstallationDirectoryName} &> /dev/null
+    if [[ $? == 0 ]]; then
+        echo "[DEB Test] FAILED: test_update_java_alternatives_after_uninstallation"
+        status=1
+    else
+        echo "[DEB Test] PASSED: test_update_java_alternatives_after_uninstallation"
+    fi
+}
+
 # Delay test execution to make sure Gradle console
 # log output looks correct.
 sleep 5
@@ -107,8 +131,10 @@ sleep 5
 test_jdk_installation
 test_alternatives_after_installation "jdk"
 test_alternatives_after_installation "jre"
+test_update_java_alternatives_after_installation
 test_jdk_uninstallation
 test_alternatives_after_uninstallation "jdk"
 test_alternatives_after_uninstallation "jre"
+test_update_java_alternatives_after_uninstallation
 
 exit ${status}
