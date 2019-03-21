@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -165,6 +165,15 @@ final class PiscesCache {
         rowAARLE[row][end++] = a;
         rowAARLE[row][end++] = b;
         rowAARLE[row][1] = end;
+    }
+
+    void getBBox(int bbox[]) {
+        // Since we add +1 to bboxX1,bboxY1 so when PTG asks for bbox,
+        // we will give after -1
+        bbox[0] = bboxX0;
+        bbox[1] = bboxY0;
+        bbox[2] = bboxX1 - 1;
+        bbox[3] = bboxY1 - 1;
     }
 
     @Override
