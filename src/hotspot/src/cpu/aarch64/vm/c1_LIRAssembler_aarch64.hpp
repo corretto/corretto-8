@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP
-#define CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP
+#ifndef CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
+#define CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
 
 // ArrayCopyStub needs access to bailout
 friend class ArrayCopyStub;
@@ -65,7 +65,7 @@ friend class ArrayCopyStub;
   struct tableswitch switches[max_tableswitches];
   int tableswitch_count;
 
-  void pd_init() { tableswitch_count = 0; }
+  void init() { tableswitch_count = 0; }
 
   void deoptimize_trap(CodeEmitInfo *info);
 
@@ -80,4 +80,4 @@ enum { call_stub_size = 12 * NativeInstruction::instruction_size,
        deopt_handler_size = 7 * NativeInstruction::instruction_size };
 
 
-#endif // CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP
+#endif // CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
