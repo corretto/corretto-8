@@ -248,6 +248,8 @@ class Linux {
   // LinuxThreads work-around for 6292965
   static int safe_cond_timedwait(pthread_cond_t *_cond, pthread_mutex_t *_mutex, const struct timespec *_abstime);
 
+  static void expand_stack_to(address bottom);
+
 private:
   typedef int (*sched_getcpu_func_t)(void);
   typedef int (*numa_node_to_cpus_func_t)(int node, unsigned long *buffer, int bufferlen);
