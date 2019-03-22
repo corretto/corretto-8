@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,6 +30,7 @@
 #include "c1/c1_MacroAssembler.hpp"
 #include "c1/c1_ValueStack.hpp"
 #include "ci/ciInstance.hpp"
+#include "runtime/os.hpp"
 #ifdef TARGET_ARCH_x86
 # include "nativeInst_x86.hpp"
 # include "vmreg_x86.inline.hpp"
@@ -129,7 +130,7 @@ LIR_Assembler::LIR_Assembler(Compilation* c):
 {
   _slow_case_stubs = new CodeStubList();
 #ifdef TARGET_ARCH_aarch64
-  pd_init(); // Target-dependent initialization
+  init(); // Target-dependent initialization
 #endif
 }
 
@@ -169,8 +170,10 @@ void LIR_Assembler::emit_stubs(CodeStubList* stub_list) {
     }
 #endif
     s->emit_code(this);
+# ifndef AARCH64
 #ifdef ASSERT
     s->assert_no_unbound_labels();
+#endif
 #endif
   }
 }
@@ -881,7 +884,7 @@ void LIR_Assembler::verify_oop_map(CodeEmitInfo* info) {
           stringStream st;
           st.print("bad oop %s at %d", r->as_Register()->name(), _masm->offset());
 #ifdef SPARC
-          _masm->_verify_oop(r->as_Register(), strdup(st.as_string()), __FILE__, __LINE__);
+          _masm->_verify_oop(r->as_Register(), os::strdup(st.as_string(), mtCompiler), __FILE__, __LINE__);
 #else
           _masm->verify_oop(r->as_Register());
 #endif

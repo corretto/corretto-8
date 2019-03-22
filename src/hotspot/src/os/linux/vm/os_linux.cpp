@@ -1447,9 +1447,9 @@ void os::Linux::fast_thread_clock_init() {
   // must return at least tp.tv_sec == 0 which means a resolution
   // better than 1 sec. This is extra check for reliability.
 
-  if (pthread_getcpuclockid_func &&
-      pthread_getcpuclockid_func(_main_thread, &clockid) == 0 &&
-      sys_clock_getres(clockid, &tp) == 0 && tp.tv_sec == 0) {
+  if(pthread_getcpuclockid_func &&
+     pthread_getcpuclockid_func(_main_thread, &clockid) == 0 &&
+     sys_clock_getres(clockid, &tp) == 0 && tp.tv_sec == 0) {
 
     _supports_fast_thread_cpu_time = true;
     _pthread_getcpuclockid = pthread_getcpuclockid_func;
@@ -1947,7 +1947,7 @@ void * os::dll_load(const char *filename, char *ebuf, int ebuflen)
   } arch_t;
 
   #ifndef EM_486
-  #define EM_486       6               /* Intel 80486 */
+  #define EM_486     6        // Intel 80486
   #endif
 
   #ifndef EM_AARCH64
