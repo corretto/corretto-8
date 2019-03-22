@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -49,15 +49,13 @@ MemoryManager::MemoryManager() {
   (void)const_cast<instanceOop&>(_memory_mgr_obj = instanceOop(NULL));
 }
 
-int MemoryManager::add_pool(MemoryPool* pool) {
-  int index = _num_pools;
-  assert(index < MemoryManager::max_num_pools, "_num_pools exceeds the max");
-  if (index < MemoryManager::max_num_pools) {
-    _pools[index] = pool;
+void MemoryManager::add_pool(MemoryPool* pool) {
+  assert(_num_pools < MemoryManager::max_num_pools, "_num_pools exceeds the max");
+  if (_num_pools < MemoryManager::max_num_pools) {
+    _pools[_num_pools] = pool;
     _num_pools++;
   }
   pool->add_manager(this);
-  return index;
 }
 
 MemoryManager* MemoryManager::get_code_cache_memory_manager() {
@@ -219,12 +217,6 @@ GCMemoryManager::~GCMemoryManager() {
   delete _current_gc_stat;
 }
 
-int GCMemoryManager::add_pool(MemoryPool* pool, bool always_affected_by_gc) {
-  int index = MemoryManager::add_pool(pool);
-  _pool_always_affected_by_gc[index] = always_affected_by_gc;
-  return index;
-}
-
 void GCMemoryManager::initialize_gc_stat_info() {
   assert(MemoryService::num_memory_pools() > 0, "should have one or more memory pools");
   _last_gc_stat = new(ResourceObj::C_HEAP, mtGC) GCStatInfo(MemoryService::num_memory_pools());
@@ -274,8 +266,7 @@ void GCMemoryManager::gc_begin(bool recordGCBeginTime, bool recordPreGCUsage,
 void GCMemoryManager::gc_end(bool recordPostGCUsage,
                              bool recordAccumulatedGCTime,
                              bool recordGCEndTime, bool countCollection,
-                             GCCause::Cause cause,
-                             bool allMemoryPoolsAffected) {
+                             GCCause::Cause cause) {
   if (recordAccumulatedGCTime) {
     _accumulated_timer.stop();
   }
@@ -312,11 +303,9 @@ void GCMemoryManager::gc_end(bool recordPostGCUsage,
       MemoryPool* pool = get_memory_pool(i);
       MemoryUsage usage = pool->get_memory_usage();
 
-      if (allMemoryPoolsAffected || pool_always_affected_by_gc(i)) {
-        // Compare with GC usage threshold
-        pool->set_last_collection_usage(usage);
-        LowMemoryDetector::detect_after_gc_memory(pool);
-      }
+      // Compare with GC usage threshold
+      pool->set_last_collection_usage(usage);
+      LowMemoryDetector::detect_after_gc_memory(pool);
     }
   }
 
