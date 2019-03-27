@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -61,10 +61,9 @@ public class PlatformInfo {
       return "x86";
     } else if (cpu.equals("sparc") || cpu.equals("sparcv9")) {
       return "sparc";
-    } else if (cpu.equals("ia64") || cpu.equals("amd64") ||
-               cpu.equals("x86_64") || cpu.equals("aarch64")) {
+    } else if (cpu.equals("ia64") || cpu.equals("amd64") || cpu.equals("x86_64")) {
       return cpu;
-    } else
+    } else {
       try {
         Class pic = Class.forName("sun.jvm.hotspot.utilities.PlatformInfoClosed");
         AltPlatformInfo api = (AltPlatformInfo)pic.newInstance();
@@ -72,7 +71,8 @@ public class PlatformInfo {
           return cpu;
         }
       } catch (Exception e) {}
-    throw new UnsupportedPlatformException("CPU type " + cpu + " not yet supported");
+      throw new UnsupportedPlatformException("CPU type " + cpu + " not yet supported");
+    }
   }
 
   // this main is invoked from Makefile to make platform specific agent Makefile(s).
