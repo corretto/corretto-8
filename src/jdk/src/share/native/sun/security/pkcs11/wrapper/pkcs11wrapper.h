@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 /* Copyright  (c) 2002 Graz University of Technology. All rights reserved.
@@ -54,9 +54,6 @@
  * @author Karl Scheibelhofer <Karl.Scheibelhofer@iaik.at>
  * @author Martin Schlaeffer <schlaeff@sbox.tugraz.at>
  */
-
-#ifndef _PKCS11WRAPPER_H
-#define _PKCS11WRAPPER_H
 
 /* disable asserts in product mode */
 #ifndef DEBUG
@@ -463,6 +460,4 @@ void p11free(void *p, char *file, int line);
 #define malloc(c)       (p11malloc((c), THIS_FILE, __LINE__))
 #define free(c)         (p11free((c), THIS_FILE, __LINE__))
 
-#endif // P11_MEMORYDEBUG
-
-#endif /* _PKCS11WRAPPER_H */
+#endif

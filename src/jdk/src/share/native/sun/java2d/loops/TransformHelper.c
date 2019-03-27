@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2004, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -407,7 +407,7 @@ Java_sun_java2d_loops_TransformHelper_Transform
         /* numedges variable (jlong) can be at most ((1<<32)-1) */
         /* memsize can overflow a jint, but not a jlong */
         jlong memsize = ((numedges * 2) + 2) * sizeof(*pEdges);
-        pEdges = (memsize == ((jlong)(size_t) memsize))
+        pEdges = (memsize == ((size_t) memsize))
             ? malloc((size_t) memsize)
             : NULL;
     } else {

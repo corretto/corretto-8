@@ -1414,33 +1414,34 @@ JNIEXPORT jint JNICALL
 JVM_Listen(jint fd, jint count);
 
 JNIEXPORT jint JNICALL
-JVM_Connect(jint fd, struct sockaddr *him, socklen_t len);
+JVM_Connect(jint fd, struct sockaddr *him, jint len);
 
 JNIEXPORT jint JNICALL
-JVM_Bind(jint fd, struct sockaddr *him, socklen_t len);
+JVM_Bind(jint fd, struct sockaddr *him, jint len);
 
 JNIEXPORT jint JNICALL
-JVM_Accept(jint fd, struct sockaddr *him, socklen_t *len);
+JVM_Accept(jint fd, struct sockaddr *him, jint *len);
 
 JNIEXPORT jint JNICALL
 JVM_RecvFrom(jint fd, char *buf, int nBytes,
-                  int flags, struct sockaddr *from, socklen_t *fromlen);
+                  int flags, struct sockaddr *from, int *fromlen);
 
 JNIEXPORT jint JNICALL
 JVM_SendTo(jint fd, char *buf, int len,
-                int flags, struct sockaddr *to, socklen_t tolen);
+                int flags, struct sockaddr *to, int tolen);
 
 JNIEXPORT jint JNICALL
 JVM_SocketAvailable(jint fd, jint *result);
 
-JNIEXPORT jint JNICALL
-JVM_GetSockName(jint fd, struct sockaddr *him, socklen_t *len);
 
 JNIEXPORT jint JNICALL
-JVM_GetSockOpt(jint fd, int level, int optname, char *optval, socklen_t *optlen);
+JVM_GetSockName(jint fd, struct sockaddr *him, int *len);
 
 JNIEXPORT jint JNICALL
-JVM_SetSockOpt(jint fd, int level, int optname, const char *optval, socklen_t optlen);
+JVM_GetSockOpt(jint fd, int level, int optname, char *optval, int *optlen);
+
+JNIEXPORT jint JNICALL
+JVM_SetSockOpt(jint fd, int level, int optname, const char *optval, int optlen);
 
 JNIEXPORT int JNICALL
 JVM_GetHostName(char* name, int namelen);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -44,7 +44,7 @@
 #define SIZE_MAX ((size_t)-1)
 #endif
 
-#define IS_SAFE_SIZE_T(x) ((long long)(x) >= 0 && (unsigned long long)(x) <= SIZE_MAX)
+#define IS_SAFE_SIZE_T(x) ((x) >= 0 && (unsigned long long)(x) <= SIZE_MAX)
 
 #define IS_SAFE_SIZE_MUL(m, n) \
     (IS_SAFE_SIZE_T(m) && IS_SAFE_SIZE_T(n) && ((m) == 0 || (n) == 0 || (size_t)(n) <= (SIZE_MAX / (size_t)(m))))
@@ -115,3 +115,4 @@
 
 
 #endif /* SIZECALC_H */
+

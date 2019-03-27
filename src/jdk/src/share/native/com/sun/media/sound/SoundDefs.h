@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,13 +45,6 @@
 #define X_PPC           8
 #define X_PPC64         9
 #define X_PPC64LE      10
-#define X_MIPS         11
-#define X_MIPSEL       12
-#define X_S390         13
-#define X_S390X        14
-#define X_SH           15
-#define X_AARCH64      16
-#define X_AARCH32      17
 
 // **********************************
 // Make sure you set X_PLATFORM and X_ARCH defines correctly.

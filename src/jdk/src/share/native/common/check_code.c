@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1994, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1994, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1383,7 +1383,6 @@ verify_opcode_operands(context_type *context, unsigned int inumber, int offset)
     case JVM_OPC_invokedynamic:
         CCerror(context,
                 "invokedynamic bytecode is not supported in this class file version");
-	break;
 
     case JVM_OPC_instanceof:
     case JVM_OPC_checkcast:
