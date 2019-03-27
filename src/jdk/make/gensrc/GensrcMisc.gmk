@@ -39,7 +39,6 @@ $(PROFILE_VERSION_JAVA_TARGETS): \
 	$(SED) -e 's/@@launcher_name@@/$(LAUNCHER_NAME)/g' \
 	    -e 's/@@java_version@@/$(RELEASE)/g' \
 	    -e 's/@@java_runtime_version@@/$(FULL_VERSION)/g' \
-	    -e 's/@@corretto_version@@/$(CORRETTO_VERSION)/g' \
 	    -e 's/@@java_runtime_name@@/$(RUNTIME_NAME)/g' \
 	    -e 's/@@java_profile_name@@/$(call profile_version_name, $@)/g' \
 	    $< > $@.tmp
