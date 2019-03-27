@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -244,13 +244,13 @@ const Type *MulINode::mul_ring(const Type *t0, const Type *t1) const {
   double d = (double)hi1;
 
   // Compute all endpoints & check for overflow
-  int32 A = java_multiply(lo0, lo1);
+  int32 A = lo0*lo1;
   if( (double)A != a*c ) return TypeInt::INT; // Overflow?
-  int32 B = java_multiply(lo0, hi1);
+  int32 B = lo0*hi1;
   if( (double)B != a*d ) return TypeInt::INT; // Overflow?
-  int32 C = java_multiply(hi0, lo1);
+  int32 C = hi0*lo1;
   if( (double)C != b*c ) return TypeInt::INT; // Overflow?
-  int32 D = java_multiply(hi0, hi1);
+  int32 D = hi0*hi1;
   if( (double)D != b*d ) return TypeInt::INT; // Overflow?
 
   if( A < B ) { lo0 = A; hi0 = B; } // Sort range endpoints
@@ -340,13 +340,13 @@ const Type *MulLNode::mul_ring(const Type *t0, const Type *t1) const {
   double d = (double)hi1;
 
   // Compute all endpoints & check for overflow
-  jlong A = java_multiply(lo0, lo1);
+  jlong A = lo0*lo1;
   if( (double)A != a*c ) return TypeLong::LONG; // Overflow?
-  jlong B = java_multiply(lo0, hi1);
+  jlong B = lo0*hi1;
   if( (double)B != a*d ) return TypeLong::LONG; // Overflow?
-  jlong C = java_multiply(hi0, lo1);
+  jlong C = hi0*lo1;
   if( (double)C != b*c ) return TypeLong::LONG; // Overflow?
-  jlong D = java_multiply(hi0, hi1);
+  jlong D = hi0*hi1;
   if( (double)D != b*d ) return TypeLong::LONG; // Overflow?
 
   if( A < B ) { lo0 = A; hi0 = B; } // Sort range endpoints

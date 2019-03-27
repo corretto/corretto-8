@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -385,7 +385,7 @@ void TwoGenerationCollectorPolicy::initialize_flags() {
       uintx calculated_size = NewSize + OldSize;
       double shrink_factor = (double) MaxHeapSize / calculated_size;
       uintx smaller_new_size = align_size_down((uintx)(NewSize * shrink_factor), _gen_alignment);
-      FLAG_SET_ERGO(uintx, NewSize, MAX2((uintx) young_gen_size_lower_bound(), smaller_new_size));
+      FLAG_SET_ERGO(uintx, NewSize, MAX2(young_gen_size_lower_bound(), smaller_new_size));
       _initial_gen0_size = NewSize;
 
       // OldSize is already aligned because above we aligned MaxHeapSize to
@@ -423,7 +423,7 @@ void GenCollectorPolicy::initialize_size_info() {
 
   // Determine maximum size of gen0
 
-  uintx max_new_size = 0;
+  size_t max_new_size = 0;
   if (!FLAG_IS_DEFAULT(MaxNewSize)) {
     max_new_size = MaxNewSize;
   } else {
@@ -448,7 +448,7 @@ void GenCollectorPolicy::initialize_size_info() {
     _initial_gen0_size = max_new_size;
     _max_gen0_size = max_new_size;
   } else {
-    uintx desired_new_size = 0;
+    size_t desired_new_size = 0;
     if (FLAG_IS_CMDLINE(NewSize)) {
       // If NewSize is set on the command line, we must use it as
       // the initial size and it also makes sense to use it as the
@@ -461,7 +461,7 @@ void GenCollectorPolicy::initialize_size_info() {
       // limit, but use NewRatio to calculate the initial size.
       _min_gen0_size = NewSize;
       desired_new_size =
-        MAX2((uintx) (scale_by_NewRatio_aligned(_initial_heap_byte_size)), NewSize);
+        MAX2(scale_by_NewRatio_aligned(_initial_heap_byte_size), NewSize);
       max_new_size = MAX2(max_new_size, NewSize);
     } else {
       // For the case where NewSize is the default, use NewRatio
@@ -469,9 +469,9 @@ void GenCollectorPolicy::initialize_size_info() {
       // Use the default NewSize as the floor for these values.  If
       // NewRatio is overly large, the resulting sizes can be too
       // small.
-      _min_gen0_size = MAX2((uintx) (scale_by_NewRatio_aligned(_min_heap_byte_size)), NewSize);
+      _min_gen0_size = MAX2(scale_by_NewRatio_aligned(_min_heap_byte_size), NewSize);
       desired_new_size =
-        MAX2((uintx) (scale_by_NewRatio_aligned(_initial_heap_byte_size)), NewSize);
+        MAX2(scale_by_NewRatio_aligned(_initial_heap_byte_size), NewSize);
     }
 
     assert(_min_gen0_size > 0, "Sanity check");
@@ -573,7 +573,7 @@ void TwoGenerationCollectorPolicy::initialize_size_info() {
   } else {
     // It's been explicitly set on the command line.  Use the
     // OldSize and then determine the consequences.
-    _min_gen1_size = MIN2(OldSize, (uintx) (_min_heap_byte_size - _min_gen0_size));
+    _min_gen1_size = MIN2(OldSize, _min_heap_byte_size - _min_gen0_size);
     _initial_gen1_size = OldSize;
 
     // If the user has explicitly set an OldSize that is inconsistent
@@ -1056,8 +1056,7 @@ public:
     size_t expected = msp.scale_by_NewRatio_aligned(initial_heap_size);
     assert(msp.initial_gen0_size() == expected, err_msg("%zu != %zu", msp.initial_gen0_size(), expected));
     assert(FLAG_IS_ERGO(NewSize) && NewSize == expected,
-        err_msg("NewSize should have been set ergonomically to " SIZE_FORMAT ", but was " UINTX_FORMAT,
-		expected, NewSize));
+        err_msg("NewSize should have been set ergonomically to %zu, but was %zu", expected, NewSize));
   }
 
 private:

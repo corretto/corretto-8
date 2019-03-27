@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # The Universal Permissive License (UPL), Version 1.0
@@ -75,41 +75,29 @@ LDFLAGS         += -ldl
 OUTFLAGS	+= -o $@
 LIB_EXT		= .so
 else
-
 ## OS = Linux ##
 ifeq		($(OS),Linux)
-
 ifneq           ($(MINGW),)
-# GNU on Windows
 LIB_EXT		= .dll
-CPPFLAGS        += -I$(TARGET_DIR)/include
-LDFLAGS         += -L$(TARGET_DIR)/lib
-OS              = windows
+CPPFLAGS += -I$(TARGET_DIR)/include
+LDFLAGS += -L$(TARGET_DIR)/lib
+OS=windows
 ifneq           ($(findstring x86_64-,$(MINGW)),)
-ARCH            = amd64
+ARCH=amd64
 else
-ARCH            = i386
+ARCH=i386
 endif
 CC 		= $(MINGW)-gcc
 CONFIGURE_ARGS= --host=$(MINGW) --target=$(MINGW)
-# GNU on Windows
-
-else
-# GNU on Linux
+else   #linux
 CPU             = $(shell uname -m)
-ARCH1           = $(CPU:x86_64=amd64)
-ARCH            = $(ARCH1:i686=i386)
-ifeq ($(BUILD_AARCH64),true)
-LP64            = 1
-CONFIGURE_ARGS  = --target=aarch64-none-linux-gnu
-CFLAGS          += -DTARGET_ARCH_aarch64
-endif
+ARCH1=$(CPU:x86_64=amd64)
+ARCH=$(ARCH1:i686=i386)
 ifdef LP64
 CFLAGS/sparcv9	+= -m64
 CFLAGS/amd64	+= -m64
 CFLAGS/ppc64	+= -m64
 CFLAGS/ppc64le  += -m64 -DABI_ELFv2
-CFLAGS/aarch64  += -m64
 else
 ARCH=$(ARCH1:amd64=i386)
 CFLAGS/i386	+= -m32
@@ -120,15 +108,12 @@ CFLAGS		+= -fPIC
 OS		= linux
 LIB_EXT		= .so
 CC 		= gcc
-endif   # GNU on Linux
-
-# GNU on both Windows and Linux
+endif
 CFLAGS		+= -O
 DLDFLAGS	+= -shared
 LDFLAGS         += -ldl
 OUTFLAGS	+= -o $@
 else
-
 ## OS = AIX ##
 ifeq		($(OS),AIX)
 OS              = aix
@@ -141,7 +126,6 @@ DLDFLAGS        += -qmkshrobj -lz
 OUTFLAGS        += -o $@
 LIB_EXT		= .so
 else
-
 ## OS = Darwin ##
 ifeq ($(OS),Darwin)
 CPU             = $(shell uname -m)
@@ -167,7 +151,6 @@ DLDFLAGS        += -lz
 LDFLAGS         += -ldl
 OUTFLAGS        += -o $@
 else
-
 ## OS = Windows ##
 OS		= windows
 CC		= gcc
@@ -182,18 +165,15 @@ endif   # AIX
 endif	# Linux
 endif	# SunOS
 
-LIBARCH		  = $(ARCH)
+LIBARCH		= $(ARCH)
 ifdef		LP64
-LIBARCH64/sparc	  = sparcv9
-LIBARCH64/i386	  = amd64
-LIBARCH64/aarch64 = aarch64
-LIBARCH64	  = $(LIBARCH64/$(ARCH))
-ifneq		  ($(LIBARCH64),)
-LIBARCH		  = $(LIBARCH64)
+LIBARCH64/sparc	= sparcv9
+LIBARCH64/i386	= amd64
+LIBARCH64	= $(LIBARCH64/$(ARCH))
+ifneq		($(LIBARCH64),)
+LIBARCH		= $(LIBARCH64)
 endif   # LIBARCH64/$(ARCH)
 endif   # LP64
-
-__JUNK__ := $(shell echo >&2 "LIBARCH = $(LIBARCH)")
 
 JDKARCH=$(LIBARCH:i386=i586)
 
