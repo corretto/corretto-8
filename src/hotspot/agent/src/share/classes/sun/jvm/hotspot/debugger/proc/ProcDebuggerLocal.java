@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,11 +30,9 @@ import java.util.*;
 import java.lang.reflect.*;
 import sun.jvm.hotspot.debugger.*;
 import sun.jvm.hotspot.debugger.cdbg.*;
-import sun.jvm.hotspot.debugger.proc.aarch64.*;
 import sun.jvm.hotspot.debugger.proc.amd64.*;
 import sun.jvm.hotspot.debugger.proc.sparc.*;
 import sun.jvm.hotspot.debugger.proc.x86.*;
-import sun.jvm.hotspot.debugger.aarch64.*;
 import sun.jvm.hotspot.debugger.amd64.*;
 import sun.jvm.hotspot.debugger.sparc.*;
 import sun.jvm.hotspot.debugger.x86.*;
@@ -88,10 +86,6 @@ public class ProcDebuggerLocal extends DebuggerBase implements ProcDebugger {
             threadFactory = new ProcAMD64ThreadFactory(this);
             pcRegIndex = AMD64ThreadContext.RIP;
             fpRegIndex = AMD64ThreadContext.RBP;
-        } else if (cpu.equals("aarch64")) {
-            threadFactory = new ProcAARCH64ThreadFactory(this);
-            pcRegIndex = AARCH64ThreadContext.PC;
-            fpRegIndex = AARCH64ThreadContext.FP;
         } else {
           try {
             Class tfc = Class.forName("sun.jvm.hotspot.debugger.proc." +

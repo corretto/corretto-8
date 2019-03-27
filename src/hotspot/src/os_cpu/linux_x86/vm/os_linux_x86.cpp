@@ -270,7 +270,8 @@ JVM_handle_linux_signal(int sig,
 */
   // decide if this trap can be handled by a stub
   address stub = NULL;
-  address pc   = NULL;
+
+  address pc          = NULL;
 
   //%note os_trap_1
   if (info != NULL && uc != NULL && thread != NULL) {
@@ -278,7 +279,7 @@ JVM_handle_linux_signal(int sig,
 
     if (StubRoutines::is_safefetch_fault(pc)) {
       uc->uc_mcontext.gregs[REG_PC] = intptr_t(StubRoutines::continuation_for_safefetch_fault(pc));
-      return true;
+      return 1;
     }
 
 #ifndef AMD64
@@ -307,7 +308,7 @@ JVM_handle_linux_signal(int sig,
             stub = SharedRuntime::continuation_for_implicit_exception(thread, pc, SharedRuntime::STACK_OVERFLOW);
           } else {
             // Thread was in the vm or native code.  Return and try to finish.
-            return true;
+            return 1;
           }
         } else if (thread->in_stack_red_zone(addr)) {
           // Fatal red zone violation.  Disable the guard pages and fall through
@@ -328,7 +329,7 @@ JVM_handle_linux_signal(int sig,
              thread->osthread()->set_expanding_stack();
              if (os::Linux::manually_expand_stack(thread, addr)) {
                thread->osthread()->clear_expanding_stack();
-               return true;
+               return 1;
              }
              thread->osthread()->clear_expanding_stack();
           } else {
@@ -540,7 +541,6 @@ JVM_handle_linux_signal(int sig,
   err.report_and_die();
 
   ShouldNotReachHere();
-  return false; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {

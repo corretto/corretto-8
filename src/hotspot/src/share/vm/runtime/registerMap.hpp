@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,9 +29,6 @@
 #include "utilities/globalDefinitions.hpp"
 #ifdef TARGET_ARCH_x86
 # include "register_x86.hpp"
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "register_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "register_sparc.hpp"
@@ -140,10 +137,6 @@ class RegisterMap : public StackObj {
   // the following contains the definition of pd_xxx methods
 #ifdef TARGET_ARCH_x86
 # include "registerMap_x86.hpp"
-
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "registerMap_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "registerMap_sparc.hpp"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -414,16 +414,8 @@ enum RTMState {
   ProfileRTM = 0x0  // Use RTM with abort ratio calculation
 };
 
-// The maximum size of the code cache.  Can be overridden by targets.
-#define CODE_CACHE_SIZE_LIMIT (2*G)
-// Allow targets to reduce the default size of the code cache.
-#define CODE_CACHE_DEFAULT_LIMIT CODE_CACHE_SIZE_LIMIT
-
 #ifdef TARGET_ARCH_x86
 # include "globalDefinitions_x86.hpp"
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "globalDefinitions_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "globalDefinitions_sparc.hpp"
@@ -1410,32 +1402,6 @@ inline intptr_t p2i(const void * p) {
 # endif /* ASSERT */
 
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof((array)[0]))
-
-//----------------------------------------------------------------------------------------------------
-// Sum and product which can never overflow: they wrap, just like the
-// Java operations.  Note that we don't intend these to be used for
-// general-purpose arithmetic: their purpose is to emulate Java
-// operations.
-
-// The goal of this code to avoid undefined or implementation-defined
-// behaviour.  The use of an lvalue to reference cast is explicitly
-// permitted by Lvalues and rvalues [basic.lval].  [Section 3.10 Para
-// 15 in C++03]
-#define JAVA_INTEGER_OP(OP, NAME, TYPE, UNSIGNED_TYPE)  \
-inline TYPE NAME (TYPE in1, TYPE in2) {                 \
-  UNSIGNED_TYPE ures = static_cast<UNSIGNED_TYPE>(in1); \
-  ures OP ## = static_cast<UNSIGNED_TYPE>(in2);         \
-  return reinterpret_cast<TYPE&>(ures);                 \
-}
-
-JAVA_INTEGER_OP(+, java_add, jint, juint)
-JAVA_INTEGER_OP(-, java_subtract, jint, juint)
-JAVA_INTEGER_OP(*, java_multiply, jint, juint)
-JAVA_INTEGER_OP(+, java_add, jlong, julong)
-JAVA_INTEGER_OP(-, java_subtract, jlong, julong)
-JAVA_INTEGER_OP(*, java_multiply, jlong, julong)
-
-#undef JAVA_INTEGER_OP
 
 // Dereference vptr
 // All C++ compilers that we know of have the vtbl pointer in the first
