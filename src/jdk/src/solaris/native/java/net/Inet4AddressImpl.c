@@ -694,7 +694,7 @@ Java_java_net_Inet4AddressImpl_isReachable0(JNIEnv *env, jobject this,
     struct sockaddr_in him;
     struct sockaddr_in* netif = NULL;
     struct sockaddr_in inf;
-    socklen_t len = 0;
+    int len = 0;
     int connect_rv = -1;
     int sz;
 
@@ -788,7 +788,7 @@ Java_java_net_Inet4AddressImpl_isReachable0(JNIEnv *env, jobject this,
         close(fd);
         return JNI_TRUE;
     } else {
-        socklen_t optlen;
+        int optlen;
 
         switch (errno) {
         case ENETUNREACH: /* Network Unreachable */

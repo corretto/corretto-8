@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -131,7 +131,7 @@ Java_sun_nio_ch_IOUtil_fdLimit(JNIEnv *env, jclass this)
         JNU_ThrowIOExceptionWithLastError(env, "getrlimit failed");
         return -1;
     }
-    if (rlp.rlim_max > java_lang_Integer_MAX_VALUE) {
+    if (rlp.rlim_max < 0 || rlp.rlim_max > java_lang_Integer_MAX_VALUE) {
         return java_lang_Integer_MAX_VALUE;
     } else {
         return (jint)rlp.rlim_max;

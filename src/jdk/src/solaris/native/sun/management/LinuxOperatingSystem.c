@@ -57,7 +57,7 @@ static struct perfbuf {
     ticks *cpus;
 } counters;
 
-#define DEC_64 "%llu"
+#define DEC_64 "%lld"
 
 static void next_line(FILE *f) {
     while (fgetc(f) != '\n');
@@ -74,19 +74,19 @@ static void next_line(FILE *f) {
  * Returns a negative value if the reading of the ticks failed.
  */
 static int get_totalticks(int which, ticks *pticks) {
-    FILE *fh;
-    int  n;
-    // "unsigned long long" is 64 bits on all known platforms, and always works with "%llu"
-    unsigned long long userTicks = 0, niceTicks = 0, systemTicks = 0, idleTicks = 0;
-    unsigned long long iowTicks = 0, irqTicks = 0, sirqTicks= 0;
+    FILE         *fh;
+    uint64_t        userTicks, niceTicks, systemTicks, idleTicks;
+    uint64_t        iowTicks = 0, irqTicks = 0, sirqTicks= 0;
+    int             n;
 
     if((fh = fopen("/proc/stat", "r")) == NULL) {
         return -1;
     }
 
-    n = fscanf(fh, "cpu %llu %llu %llu %llu %llu %llu %llu",
-               &userTicks, &niceTicks, &systemTicks, &idleTicks,
-               &iowTicks, &irqTicks, &sirqTicks);
+    n = fscanf(fh, "cpu " DEC_64 " " DEC_64 " " DEC_64 " " DEC_64 " " DEC_64 " "
+                   DEC_64 " " DEC_64,
+           &userTicks, &niceTicks, &systemTicks, &idleTicks,
+           &iowTicks, &irqTicks, &sirqTicks);
 
     // Move to next line
     next_line(fh);
@@ -95,17 +95,19 @@ static int get_totalticks(int which, ticks *pticks) {
     if (which != -1) {
         int i;
         for (i = 0; i < which; i++) {
-            if (fscanf(fh, "cpu%*d %llu %llu %llu %llu %llu %llu %llu",
-                       &userTicks, &niceTicks, &systemTicks, &idleTicks,
-                       &iowTicks, &irqTicks, &sirqTicks) < 4) {
+            if (fscanf(fh, "cpu%*d " DEC_64 " " DEC_64 " " DEC_64 " " DEC_64 " "
+                            DEC_64 " " DEC_64 " " DEC_64,
+                   &userTicks, &niceTicks, &systemTicks, &idleTicks,
+                   &iowTicks, &irqTicks, &sirqTicks) < 4) {
                 fclose(fh);
                 return -2;
             }
             next_line(fh);
         }
-        n = fscanf(fh, "cpu%*d %llu %llu %llu %llu %llu %llu %llu\n",
-                   &userTicks, &niceTicks, &systemTicks, &idleTicks,
-                   &iowTicks, &irqTicks, &sirqTicks);
+        n = fscanf(fh, "cpu%*d " DEC_64 " " DEC_64 " " DEC_64 " " DEC_64 " "
+                       DEC_64 " " DEC_64 " " DEC_64 "\n",
+           &userTicks, &niceTicks, &systemTicks, &idleTicks,
+           &iowTicks, &irqTicks, &sirqTicks);
     }
 
     fclose(fh);
@@ -113,10 +115,10 @@ static int get_totalticks(int which, ticks *pticks) {
         return -2;
     }
 
-    pticks->used       = (uint64_t)(userTicks + niceTicks);
-    pticks->usedKernel = (uint64_t)(systemTicks + irqTicks + sirqTicks);
-    pticks->total      = (uint64_t)(userTicks + niceTicks + systemTicks + idleTicks +
-                                    iowTicks + irqTicks + sirqTicks);
+    pticks->used       = userTicks + niceTicks;
+    pticks->usedKernel = systemTicks + irqTicks + sirqTicks;
+    pticks->total      = userTicks + niceTicks + systemTicks + idleTicks +
+                         iowTicks + irqTicks + sirqTicks;
 
     return 0;
 }
@@ -163,13 +165,9 @@ static int read_statdata(const char *procfile, const char *fmt, ...) {
 
 /** read user and system ticks from a named procfile, assumed to be in 'stat' format then. */
 static int read_ticks(const char *procfile, uint64_t *userTicks, uint64_t *systemTicks) {
-    unsigned long long read_userTicks = 0, read_systemTicks = 0;
-    int retval =
-        read_statdata(procfile, "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %llu %llu",
-                      &read_userTicks, &read_systemTicks);
-    *userTicks = (uint64_t)read_userTicks;
-    *systemTicks = (uint64_t)read_systemTicks;
-    return retval;
+    return read_statdata(procfile, "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "DEC_64" "DEC_64,
+             userTicks, systemTicks
+             );
 }
 
 /**

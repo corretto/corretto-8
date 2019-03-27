@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1995, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -502,7 +502,7 @@ awtJNI_GetFontData(JNIEnv * env, jobject font, char **errmsg)
             jio_snprintf(fdata->flist[i].xlfd, strlen(nativename) + 10,
                          nativename, size * 10);
 
-            if (nativename != NULL && nativename[0] != '\0')
+            if (nativename != NULL && nativename != "")
                 JNU_ReleaseStringPlatformChars(env, fontDescriptorName, (const char *) nativename);
 
             /*
@@ -632,7 +632,7 @@ awtJNI_GetFontData(JNIEnv * env, jobject font, char **errmsg)
 
             /* XXX: sometimes XLoadQueryFont returns a bogus font structure */
             /* with negative ascent. */
-            if (xfont == NULL || xfont->ascent < 0) {
+            if (xfont == (Font) NULL || xfont->ascent < 0) {
                 if (xfont != NULL) {
                     XFreeFont(display, xfont);
                 }

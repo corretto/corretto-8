@@ -650,7 +650,7 @@ Java_java_net_Inet6AddressImpl_isReachable0(JNIEnv *env, jobject this,
     struct sockaddr_in6 him6;
     struct sockaddr_in6 inf6;
     struct sockaddr_in6* netif = NULL;
-    socklen_t len = 0;
+    int len = 0;
     int connect_rv = -1;
 
     /*
@@ -751,7 +751,7 @@ Java_java_net_Inet6AddressImpl_isReachable0(JNIEnv *env, jobject this,
         close(fd);
         return JNI_TRUE;
     } else {
-        socklen_t optlen;
+        int optlen;
 
         switch (errno) {
         case ENETUNREACH: /* Network Unreachable */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -217,7 +217,7 @@ Java_java_net_PlainSocketImpl_socketCreate(JNIEnv *env, jobject this,
 #ifdef AF_INET6
     /* Disable IPV6_V6ONLY to ensure dual-socket support */
     if (domain == AF_INET6) {
-        socklen_t arg = 0;
+        int arg = 0;
         if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&arg,
                        sizeof(int)) < 0) {
             NET_ThrowNew(env, errno, "cannot set IPPROTO_IPV6");
@@ -233,7 +233,7 @@ Java_java_net_PlainSocketImpl_socketCreate(JNIEnv *env, jobject this,
      */
     ssObj = (*env)->GetObjectField(env, this, psi_serverSocketID);
     if (ssObj != NULL) {
-        socklen_t arg = 1;
+        int arg = 1;
         SET_NONBLOCKING(fd);
         if (JVM_SetSockOpt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&arg,
                            sizeof(arg)) < 0) {
@@ -260,7 +260,7 @@ Java_java_net_PlainSocketImpl_socketConnect(JNIEnv *env, jobject this,
                                             jint timeout)
 {
     jint localport = (*env)->GetIntField(env, this, psi_localportID);
-    socklen_t len = 0;
+    int len = 0;
 
     /* fdObj is the FileDescriptor field on this */
     jobject fdObj = (*env)->GetObjectField(env, this, psi_fdID);
@@ -338,7 +338,7 @@ Java_java_net_PlainSocketImpl_socketConnect(JNIEnv *env, jobject this,
                     }
                 }
                 if (connect_rv > 0) {
-                    socklen_t optlen;
+                    int optlen;
                     /* has connection been established */
                     optlen = sizeof(connect_rv);
                     if (JVM_GetSockOpt(fd, SOL_SOCKET, SO_ERROR,
@@ -369,7 +369,7 @@ Java_java_net_PlainSocketImpl_socketConnect(JNIEnv *env, jobject this,
 
         /* connection not established immediately */
         if (connect_rv != 0) {
-            socklen_t optlen;
+            int optlen;
             jlong prevTime = JVM_CurrentTimeMillis(env, 0);
 
             if (errno != EINPROGRESS) {
@@ -556,7 +556,7 @@ Java_java_net_PlainSocketImpl_socketBind(JNIEnv *env, jobject this,
     jobject fdObj = (*env)->GetObjectField(env, this, psi_fdID);
     /* fd is an int field on fdObj */
     int fd;
-    socklen_t len;
+    int len;
     SOCKADDR him;
 
     if (IS_NULL(fdObj)) {
@@ -671,7 +671,9 @@ Java_java_net_PlainSocketImpl_socketAccept(JNIEnv *env, jobject this,
     jint newfd;
 
     SOCKADDR him;
-    socklen_t len = SOCKADDR_LEN;
+    int len;
+
+    len = SOCKADDR_LEN;
 
     if (IS_NULL(fdObj)) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "SocketException",
@@ -728,7 +730,7 @@ Java_java_net_PlainSocketImpl_socketAccept(JNIEnv *env, jobject this,
             return;
         }
 
-        newfd = NET_Accept(fd, (struct sockaddr *)&him, &len);
+        newfd = NET_Accept(fd, (struct sockaddr *)&him, (jint*)&len);
 
         /* connection accepted */
         if (newfd >= 0) {
@@ -894,8 +896,7 @@ Java_java_net_PlainSocketImpl_socketSetOption0(JNIEnv *env, jobject this,
                                               jint cmd, jboolean on,
                                               jobject value) {
     int fd;
-    int level, optname;
-    socklen_t optlen;
+    int level, optname, optlen;
     union {
         int i;
         struct linger ling;
@@ -962,6 +963,7 @@ Java_java_net_PlainSocketImpl_socketSetOption0(JNIEnv *env, jobject this,
         default :
             optval.i = (on ? 1 : 0);
             optlen = sizeof(optval.i);
+
     }
 
     if (NET_SetSockOpt(fd, level, optname, (const void *)&optval, optlen) < 0) {
@@ -990,8 +992,7 @@ Java_java_net_PlainSocketImpl_socketGetOption(JNIEnv *env, jobject this,
                                               jint cmd, jobject iaContainerObj) {
 
     int fd;
-    int level, optname;
-    socklen_t optlen;
+    int level, optname, optlen;
     union {
         int i;
         struct linger ling;
