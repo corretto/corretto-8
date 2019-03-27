@@ -194,7 +194,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketConnect(JNIEnv *env, jobject this,
     /* family and localport are int fields of iaObj */
     int family;
     jint fd, fd1=-1;
-    socklen_t len;
+    jint len;
     int  ipv6_supported = ipv6_available();
 
     /* fd initially points to the IPv4 socket and fd1 to the IPv6 socket
@@ -265,7 +265,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketConnect(JNIEnv *env, jobject this,
         }
     } else {
         int optval;
-        socklen_t optlen = sizeof(optval);
+        int optlen = sizeof(optval);
 
         /* make socket non-blocking */
         optval = 1;
@@ -401,8 +401,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketBind(JNIEnv *env, jobject this,
     /* fdObj is the FileDescriptor field on this */
     jobject fdObj, fd1Obj;
     /* fd is an int field on fdObj */
-    int fd, fd1;
-    socklen_t len = 0;
+    int fd, fd1, len = 0;
     int ipv6_supported = ipv6_available();
 
     /* family is an int field of iaObj */
@@ -523,8 +522,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketListen (JNIEnv *env, jobject this,
     jobject address;
     /* fdObj's int fd field */
     int fd, fd1;
-    SOCKETADDRESS addr;
-    socklen_t addrlen;
+    SOCKETADDRESS addr; int addrlen;
 
     if (IS_NULL(fdObj) && IS_NULL(fd1Obj)) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "SocketException",
@@ -761,7 +759,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketAccept(JNIEnv *env, jobject this,
             NET_SocketClose(fd);
             return;
         }
-        (void)setInet6Address_ipaddress(env, socketAddressObj, (const char *)&him.him6.sin6_addr);
+        setInet6Address_ipaddress(env, socketAddressObj, (const char *)&him.him6.sin6_addr);
         setInetAddress_family(env, socketAddressObj, IPv6);
         JNU_CHECK_EXCEPTION(env);
         setInet6Address_scopeid(env, socketAddressObj, him.him6.sin6_scope_id);
@@ -851,8 +849,7 @@ Java_java_net_TwoStacksPlainSocketImpl_socketNativeSetOption(JNIEnv *env,
                                               jint cmd, jboolean on,
                                               jobject value) {
     int fd, fd1;
-    int level = 0, optname = 0;
-    socklen_t optlen = 0;
+    int level = 0, optname = 0, optlen = 0;
     union {
         int i;
         struct linger ling;
