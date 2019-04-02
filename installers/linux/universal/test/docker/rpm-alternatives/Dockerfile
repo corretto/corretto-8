@@ -1,4 +1,4 @@
-#Copyright (c) 2018,2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#Copyright (c) 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 #This code is free software; you can redistribute it and/or modify it
@@ -20,13 +20,10 @@
 # This image is used for integration testing toward Corretto
 # Debian package.
 
-FROM ubuntu:18.04
+FROM amazonlinux:2
 
-# Pre-install OpenJDK8 as default JDK
-RUN apt update && apt install -y openjdk-8-jdk-headless
-
-WORKDIR /distributions
-COPY *.deb /distributions
+COPY *.rpm .
 COPY run_test.sh .
+RUN yum localinstall -y *.rpm
 
-ENTRYPOINT ["/distributions/run_test.sh"]
+ENTRYPOINT ["/run_test.sh"]

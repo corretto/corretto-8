@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright (c) 2018,2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,88 +32,84 @@ import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
 
 configurations {
     deb
+    rpm
 }
 
 dependencies {
     deb project(path: ':installers:linux:universal:deb', configuration: 'archives')
+    rpm project(path: ':installers:linux:universal:rpm', configuration: 'archives')
 }
 
-/**
- * Copy the universal Corretto deb package for
- * integration test
- */
-task _copyDebPackage(type: Copy) {
+task assembleInstallers(type: Copy) {
     dependsOn project.configurations.deb
+    dependsOn project.configurations.rpm
     from file(project.configurations.deb.singleFile)
-    into "$buildRoot/distributions/deb"
+    from file(project.configurations.rpm.singleFile)
+    into "$buildRoot/installers"
 }
 
-/**
- * Prepare docker image for deb integration test and tagged
- * as corretto8/universal:deb-integration-test.
- */
-task  _buildDebDockerTestImage(type: DockerBuildImage) {
-    dependsOn _copyDebPackage
-    dockerFile = file('docker/deb/Dockerfile')
-    inputDir = file('.')
-    tags.add('corretto8/universal:deb-package-test')
-}
+// Create a test runner for each directory under 'docker', and attach its run
+// method to the check phase for this project.
+file('docker').list().each {
 
-/**
- * Create a container instance for deb and enable removed on exit.
- */
-task _createDebTestDocker(type: DockerCreateContainer) {
-    dependsOn  _buildDebDockerTestImage
-    targetImageId  _buildDebDockerTestImage.getImageId()
-    envVars = ['jdk_tools': jdkTools.join(' '), 'jre_tools': jreTools.join(' ')]
-    autoRemove = true
-}
+    def suite = it
 
-/**
- * Start docker instance to execute integration test for deb.
- */
-task _startDebTestDocker(type: DockerStartContainer) {
-    dependsOn _createDebTestDocker
-    targetContainerId _createDebTestDocker.getContainerId()
-}
-
-/**
- * Copies the container output to the Gradle process
- * standard out/err. Each log message from the container
- * will be passed as it's made available
- */
-task _logDebTestResult(type: DockerLogsContainer) {
-    dependsOn _startDebTestDocker
-    targetContainerId _startDebTestDocker.getContainerId()
-    follow = true
-    tailAll = true
-    onNext { message ->
-        logger.quiet message.toString()
+    def _setupDockerRoot = tasks.create(name: "${suite}_setupDockerRoot", type: Copy) {
+        dependsOn assembleInstallers
+        from "docker/$suite"
+        from "$buildRoot/installers"
+        into "$buildRoot/docker/$suite"
     }
-}
 
-/**
- * Blocks until the deb testing instance stops. Throws exception
- * if integration tests fail.
- */
-task _waitForDebTestFinish(type: DockerWaitContainer) {
-    dependsOn _logDebTestResult
-    targetContainerId _startDebTestDocker.getContainerId()
-    awaitStatusTimeout = 60
+    def _build = tasks.create(name: "${suite}_buildDockerTestImage", type: DockerBuildImage) {
+        dependsOn _setupDockerRoot
+        inputDir = file("$buildRoot/docker/$suite")
+        tags.add("corretto8/universal:${suite}-package-test")
+    }
 
-    doLast {
-        if (getExitCode() != 0) {
-            throw new GradleException('Deb package failed integration tests!')
+    def _create = tasks.create(name: "${suite}_createTestDocker", type: DockerCreateContainer) {
+        dependsOn  _build
+        targetImageId  _build.getImageId()
+        envVars = [
+                'tools': jdkTools.join(' ') + ' ' + jreTools.join(' '),
+                'jdk_tools': jdkTools.join(' '),
+                'jre_tools': jreTools.join(' ')]
+        autoRemove = true
+    }
+
+    def _start = tasks.create(name: "${suite}_startTestDocker", type: DockerStartContainer) {
+        dependsOn _create
+        targetContainerId _create.getContainerId()
+    }
+
+    def _log = tasks.create(name: "${suite}_logTestResult", type: DockerLogsContainer) {
+        dependsOn _start
+        targetContainerId _start.getContainerId()
+        follow = true
+        tailAll = true
+        onNext { message ->
+            logger.quiet message.toString()
         }
     }
+
+    def _wait = tasks.create(name: "${suite}_waitForTestFinish", type: DockerWaitContainer) {
+        dependsOn _log
+        targetContainerId _start.getContainerId()
+        awaitStatusTimeout = 60
+
+        doLast {
+            if (getExitCode() != 0) {
+                throw new GradleException("Suite ${suite} failed integration tests!")
+            }
+        }
+    }
+
+    def _run = tasks.create(name: "test${suite}", type: DockerRemoveImage) {
+        dependsOn _wait
+        targetImageId _create.getImageId()
+        force = true
+    }
+
+    check.dependsOn(_run)
 }
 
-/**
- * Run integration test for deb package and remove the test
- * image from the filesystem.
- */
-task testDeb(type: DockerRemoveImage) {
-    dependsOn _waitForDebTestFinish
-    targetImageId _createDebTestDocker.getImageId()
-    force = true
-}
