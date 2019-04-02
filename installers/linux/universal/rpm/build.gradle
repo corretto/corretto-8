@@ -98,6 +98,8 @@ task generateJdkRpm(type: Rpm) {
     preUninstall file("$buildRoot/scripts/preun_javac.sh")
 
     provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
+    provides('java', "${epoch}:1.8.0", EQUAL)
+    provides('java-headless', "${epoch}:1.8.0", EQUAL)
     provides('java-devel', "${epoch}:1.8.0", EQUAL)
     provides('java-devel-openjdk', "${epoch}:${project.version.full}", EQUAL)
     provides('java-devel-openjdk-devel', "${epoch}:${version}-${release}.x86_64", EQUAL)
