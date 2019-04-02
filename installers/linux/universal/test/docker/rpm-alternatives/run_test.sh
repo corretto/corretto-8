@@ -1,4 +1,6 @@
-#Copyright (c) 2018,2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#!/usr/bin/env bash
+#
+#Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 #This code is free software; you can redistribute it and/or modify it
@@ -17,16 +19,40 @@
 #2 along with this work; if not, write to the Free Software Foundation,
 #Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# This image is used for integration testing toward Corretto
-# Debian package.
 
-FROM ubuntu:18.04
+set -Eeuo pipefail
 
-# Pre-install OpenJDK8 as default JDK
-RUN apt update && apt install -y openjdk-8-jdk-headless
+#
+# Test 1: Ensure that alternatives installs tools.
+#
+for b in ${jdk_tools}; do
+    if [ "/usr/bin/$b" -ef "/usr/lib/jvm/java-1.8.0-amazon-corretto/bin/$b" ]; then
+        echo "$b - OK"
+    else
+        echo "$b - Error. Not on path."
+        exit 1
+    fi
+done
 
-WORKDIR /distributions
-COPY *.deb /distributions
-COPY run_test.sh .
+for b in ${jre_tools}; do
+    if [ "/usr/bin/$b" -ef "/usr/lib/jvm/java-1.8.0-amazon-corretto/jre/bin/$b" ]; then
+        echo "$b - OK"
+    else
+        echo "$b - Error. Not on path."
+        exit 1
+    fi
+done
 
-ENTRYPOINT ["/distributions/run_test.sh"]
+#
+# Test 2: Remove the RPM and ensure that tools are removed.
+#
+yum remove -y java-1.8.0-amazon-corretto-devel
+
+for b in ${tools}; do
+    if [ ! -f "/usr/bin/$b" ]; then
+        echo "$b - OK"
+    else
+        echo "$b - Error. $b still installed."
+        exit 1
+    fi
+done
