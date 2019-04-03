@@ -55,7 +55,10 @@ task configureBuild(type: Exec) {
             '--with-x',
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
-            "--with-cacerts-file=$buildRoot/cacerts"]
+            "--with-cacerts-file=$buildRoot/cacerts",
+            '--with-vendor-name=Amazon.com Inc.',
+            '--with-vendor-url=https://aws.amazon.com/corretto/',
+            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"]
     def extraCmd = System.getenv("EXTRA_CORRETTO_CONFIG_OPTIONS")
     if (extraCmd != null) {
         commands += extraCmd.split(" ")
