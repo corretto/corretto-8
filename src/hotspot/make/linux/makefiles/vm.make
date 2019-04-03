@@ -89,7 +89,6 @@ HS_LIB_ARCH   = -DHOTSPOT_LIB_ARCH=\"$(LIBARCH)\"
 BUILD_TARGET  = -DHOTSPOT_BUILD_TARGET="\"$(TARGET)\""
 BUILD_USER    = -DHOTSPOT_BUILD_USER="\"$(HOTSPOT_BUILD_USER)\""
 VM_DISTRO     = -DHOTSPOT_VM_DISTRO="\"$(HOTSPOT_VM_DISTRO)\""
-VENDOR        = -DVENDOR="Amazon.com Inc."
 
 CXXFLAGS =           \
   ${SYSDEFS}         \
@@ -98,8 +97,7 @@ CXXFLAGS =           \
   ${BUILD_TARGET}    \
   ${BUILD_USER}      \
   ${HS_LIB_ARCH}     \
-  ${VM_DISTRO}       \
-  ${VENDOR}
+  ${VM_DISTRO}
 
 # This is VERY important! The version define must only be supplied to vm_version.o
 # If not, ccache will not re-use the cache at all, since the version string might contain
