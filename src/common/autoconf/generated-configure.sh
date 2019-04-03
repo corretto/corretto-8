@@ -831,10 +831,13 @@ COOKED_BUILD_NUMBER
 COOKED_JDK_UPDATE_VERSION
 JDK_VERSION
 COPYRIGHT_YEAR
+VENDOR_URL_VM_BUG
+VENDOR_URL_BUG
+VENDOR_URL
+COMPANY_NAME
 CORRETTO_VERSION
 MACOSX_BUNDLE_ID_BASE
 MACOSX_BUNDLE_NAME_BASE
-COMPANY_NAME
 JDK_RC_PLATFORM_NAME
 PRODUCT_SUFFIX
 PRODUCT_NAME
@@ -1065,6 +1068,10 @@ with_update_version
 with_user_release_suffix
 with_build_number
 with_corretto_revision
+with_vendor_name
+with_vendor_url
+with_vendor_bug_url
+with_vendor_vm_bug_url
 with_copyright_year
 with_boot_jdk
 with_boot_jdk_jvmargs
@@ -1907,6 +1914,16 @@ Optional Packages:
   --with-build-number     Set build number value for build [b00]
   --with-corretto-revision
                           Set corretto revision for build [0]
+  --with-vendor-name      Set vendor name. Among others, used to set the
+                          'java.vendor' and 'java.vm.vendor' system
+                          properties. [not specified]
+  --with-vendor-url       Set the 'java.vendor.url' system property [not
+                          specified]
+  --with-vendor-bug-url   Set the 'java.vendor.url.bug' system property [not
+                          specified]
+  --with-vendor-vm-bug-url
+                          Sets the bug URL which will be displayed when the VM
+                          crashes [not specified]
   --with-copyright-year   Set copyright year value for build [current year]
   --with-boot-jdk         path to Boot JDK (used to bootstrap build) [probed]
   --with-boot-jdk-jvmargs specify JVM arguments to be passed to all
@@ -4385,7 +4402,7 @@ VS_SDK_PLATFORM_NAME_2017=
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1552344461
+DATE_WHEN_GENERATED=1553405262
 
 ###############################################################################
 #
@@ -19917,6 +19934,70 @@ fi
 
 
 
+  # The vendor name, if any
+
+# Check whether --with-vendor-name was given.
+if test "${with_vendor_name+set}" = set; then :
+  withval=$with_vendor_name;
+fi
+
+  if test "x$with_vendor_name" = xyes; then
+    as_fn_error $? "--with-vendor-name must have a value" "$LINENO" 5
+  elif  ! [[ $with_vendor_name =~ ^[[:print:]]*$ ]] ; then
+    as_fn_error $? "--with-vendor-name contains non-printing characters: $with_vendor_name" "$LINENO" 5
+  elif test "x$with_vendor_name" != x; then
+    # Only set COMPANY_NAME if '--with-vendor-name' was used and is not empty.
+    # Otherwise we will use the value from "version-numbers" included above.
+    COMPANY_NAME="$with_vendor_name"
+  fi
+
+
+  # The vendor URL, if any
+
+# Check whether --with-vendor-url was given.
+if test "${with_vendor_url+set}" = set; then :
+  withval=$with_vendor_url;
+fi
+
+  if test "x$with_vendor_url" = xyes; then
+    as_fn_error $? "--with-vendor-url must have a value" "$LINENO" 5
+  elif  ! [[ $with_vendor_url =~ ^[[:print:]]*$ ]] ; then
+    as_fn_error $? "--with-vendor-url contains non-printing characters: $with_vendor_url" "$LINENO" 5
+  else
+    VENDOR_URL="$with_vendor_url"
+  fi
+
+
+  # The vendor bug URL, if any
+
+# Check whether --with-vendor-bug-url was given.
+if test "${with_vendor_bug_url+set}" = set; then :
+  withval=$with_vendor_bug_url;
+fi
+
+  if test "x$with_vendor_bug_url" = xyes; then
+    as_fn_error $? "--with-vendor-bug-url must have a value" "$LINENO" 5
+  elif  ! [[ $with_vendor_bug_url =~ ^[[:print:]]*$ ]] ; then
+    as_fn_error $? "--with-vendor-bug-url contains non-printing characters: $with_vendor_bug_url" "$LINENO" 5
+  else
+    VENDOR_URL_BUG="$with_vendor_bug_url"
+  fi
+
+
+  # The vendor VM bug URL, if any
+
+# Check whether --with-vendor-vm-bug-url was given.
+if test "${with_vendor_vm_bug_url+set}" = set; then :
+  withval=$with_vendor_vm_bug_url;
+fi
+
+  if test "x$with_vendor_vm_bug_url" = xyes; then
+    as_fn_error $? "--with-vendor-vm-bug-url must have a value" "$LINENO" 5
+  elif  ! [[ $with_vendor_vm_bug_url =~ ^[[:print:]]*$ ]] ; then
+    as_fn_error $? "--with-vendor-vm-bug-url contains non-printing characters: $with_vendor_vm_bug_url" "$LINENO" 5
+  else
+    VENDOR_URL_VM_BUG="$with_vendor_vm_bug_url"
+  fi
 
 
 
@@ -48164,24 +48245,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LCMS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "lcms2" 2>&1`
+         LCMS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "lcms2" 2>&1`
         else
-	        LCMS_PKG_ERRORS=`$PKG_CONFIG --print-errors "lcms2" 2>&1`
+         LCMS_PKG_ERRORS=`$PKG_CONFIG --print-errors "lcms2" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LCMS_PKG_ERRORS" >&5
+ # Put the nasty error message in config.log where it belongs
+ echo "$LCMS_PKG_ERRORS" >&5
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
                 LCMS_FOUND=no
 elif test $pkg_failed = untried; then
-	LCMS_FOUND=no
+ LCMS_FOUND=no
 else
-	LCMS_CFLAGS=$pkg_cv_LCMS_CFLAGS
-	LCMS_LIBS=$pkg_cv_LCMS_LIBS
+ LCMS_CFLAGS=$pkg_cv_LCMS_CFLAGS
+ LCMS_LIBS=$pkg_cv_LCMS_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	LCMS_FOUND=yes
+ LCMS_FOUND=yes
 fi
     if test "x${LCMS_FOUND}" = "xyes"; then
       USE_EXTERNAL_LCMS=true
@@ -48273,24 +48354,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        PNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libpng" 2>&1`
+         PNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libpng" 2>&1`
         else
-	        PNG_PKG_ERRORS=`$PKG_CONFIG --print-errors "libpng" 2>&1`
+         PNG_PKG_ERRORS=`$PKG_CONFIG --print-errors "libpng" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$PNG_PKG_ERRORS" >&5
+ # Put the nasty error message in config.log where it belongs
+ echo "$PNG_PKG_ERRORS" >&5
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
                  LIBPNG_FOUND=no
 elif test $pkg_failed = untried; then
-	 LIBPNG_FOUND=no
+  LIBPNG_FOUND=no
 else
-	PNG_CFLAGS=$pkg_cv_PNG_CFLAGS
-	PNG_LIBS=$pkg_cv_PNG_LIBS
+ PNG_CFLAGS=$pkg_cv_PNG_CFLAGS
+ PNG_LIBS=$pkg_cv_PNG_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	 LIBPNG_FOUND=yes
+  LIBPNG_FOUND=yes
 fi
       if test "x${LIBPNG_FOUND}" = "xyes"; then
           USE_EXTERNAL_LIBPNG=true
