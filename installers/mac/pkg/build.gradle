@@ -42,12 +42,26 @@ task copyResources(type: Copy) {
     into buildRoot
 }
 
-task inflatePkgTemplate(type: Copy) {
-    from('templates/CorrettoPkg.pkgproj.template') {
-        rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+task inflatePkgTemplate {
+    dependsOn copyResources
+    doLast {
+        copy {
+            from('templates/CorrettoPkg.pkgproj.template') {
+                rename { file -> file.replace('.template', '') }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+            }
+            into buildRoot
+        }
+
+        copy {
+            from('templates/introduction.html.template') {
+                rename { file -> file.replace('.template', '') }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+            }
+            into "${buildRoot}/resources"
+        }
     }
-    into buildRoot
+    
 }
 
 task generateInstaller {
