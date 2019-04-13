@@ -1,0 +1,60 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+dependencies {
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+task copySource(type: Copy) {
+    dependsOn project.configurations.compile
+    from tarTree(project.configurations.compile.singleFile)
+    into buildRoot
+}
+
+task configureBuild(type: Exec) {
+    dependsOn copySource
+    workingDir "$buildRoot/src"
+
+    ext.freetype_path = project.getProperty('freetype_path')
+
+    commandLine 'bash', 'configure',
+            "--with-update-version=${project.version.update}",
+            "--with-build-number=b${project.version.build}",
+            "--with-corretto-revision=${project.version.revision}",
+            '--with-milestone=fcs',
+            '--disable-debug-symbols',
+            '--disable-zip-debug-info',
+            "--with-freetype=$freetype_path",
+            "--with-cacerts-file=$buildRoot/cacerts",
+            '--with-vendor-name=Amazon.com Inc.',
+            '--with-vendor-url=https://aws.amazon.com/corretto/',
+            '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
+            project.hasProperty('vcruntime_path') ? "--with-msvcr-dll=$vcruntime_path" : ""
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+
+    commandLine 'make', 'clean', 'images'
+}
+
+build.dependsOn executeBuild

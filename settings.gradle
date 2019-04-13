@@ -8,6 +8,8 @@ include ':openjdksrc',
         ':installers:linux:universal:test',
         ':installers:mac:pkg',
         ':installers:mac:tar',
+        ':installers:windows:internal',
+        ':installers:windows:images',
         ':javafx'
 
 project(':openjdksrc').projectDir = file('src')
