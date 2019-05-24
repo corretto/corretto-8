@@ -27,10 +27,30 @@ dependencies {
     compile project(path: ':installers:linux:universal:tar', configuration: 'archives')
 }
 
+ext {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
+
+    switch (arch) {
+        case 'aarch64':
+            arch_alias = arch
+            // Ubuntu arch designation for 64bit ARM is arm64
+            arch_deb = 'arm64'
+            break
+        case 'x86_64':
+            arch_alias = 'x64'
+            // Ubuntu arch designation for AMD64 & Intel 64 is amd64
+            arch_deb = 'amd64'
+            break
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
 def jvmDir = '/usr/lib/jvm'
 def jdkInstallationDirName = "java-1.${project.version.major}.0-amazon-corretto"
 def jdkHome = "${jvmDir}/${jdkInstallationDirName}".toString()
-def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-x64"
+def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-${arch_alias}"
 def jdkPackageName = "java-1.${project.version.major}.0-amazon-corretto-jdk"
 
 // In trusty repo, openjdk7 has priority 1071 and openjdk6 has 1061
@@ -56,7 +76,7 @@ ospackage {
     user 'root'
     permissionGroup 'root'
     epoch 1
-    arch 'amd64'
+    arch arch_deb
     multiArch SAME
 }
 
