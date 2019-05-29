@@ -19,18 +19,67 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-plugins {
-    id "nebula.ospackage" version "5.2.0"
+import java.nio.file.Paths
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    // An utility method to download jar from url.
+    def urlDeps = { urlStr ->
+        def url = new URL(urlStr)
+        def name = Paths.get(url.getPath()).getFileName().toString()
+        File file = new File("$buildDir/download/${name}")
+        file.parentFile.mkdirs()
+        if (!file.exists()) {
+            url.withInputStream { downloadStream ->
+                file.withOutputStream { fileOut ->
+                    fileOut << downloadStream
+                }
+            }
+        }
+        files(file.absolutePath)
+    }
+
+    dependencies {
+        classpath urlDeps('https://github.com/corretto/redline/releases/download/redline-1.2.8/redline-1.2.8.jar')
+        classpath("com.netflix.nebula:gradle-ospackage-plugin:5.2.0") {
+            exclude group: 'org.redline-rpm', module: 'redline'
+        }
+    }
 }
 
 dependencies {
     compile project(path: ':installers:linux:universal:tar', configuration: 'archives')
 }
 
+apply plugin: "nebula.ospackage"
+
+ext {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
+
+    switch (arch) {
+        case 'aarch64':
+            arch_redline = 'AARCH64'
+            arch_alias = arch
+            break;
+        case 'x86_64':
+            arch_redline = arch
+            arch_alias = 'x64'
+            break;
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
 def jvmDir = '/usr/lib/jvm'
 def jdkInstallationDirName = "java-1.${project.version.major}.0-amazon-corretto"
 def jdkHome = "${jvmDir}/${jdkInstallationDirName}"
-def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-x64"
+def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-${arch_alias}"
 def jdkPackageName = "java-1.${project.version.major}.0-amazon-corretto-devel"
 
 
@@ -46,7 +95,7 @@ ospackage {
     user 'root'
     permissionGroup 'root'
     epoch 1
-    arch X86_64
+    arch "${arch_redline}"
     os LINUX
     type BINARY
 }
@@ -118,3 +167,4 @@ task generateJdkRpm(type: Rpm) {
 artifacts {
     archives generateJdkRpm
 }
+
