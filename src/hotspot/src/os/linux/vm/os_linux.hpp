@@ -248,8 +248,6 @@ class Linux {
   // LinuxThreads work-around for 6292965
   static int safe_cond_timedwait(pthread_cond_t *_cond, pthread_mutex_t *_mutex, const struct timespec *_abstime);
 
-  static void expand_stack_to(address bottom);
-
 private:
   static void expand_stack_to(address bottom);
 
