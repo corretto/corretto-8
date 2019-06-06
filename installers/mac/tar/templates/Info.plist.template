@@ -21,7 +21,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>1.8.0_@update@</string>
+        <string>@full@</string>
         <key>JavaVM</key>
         <dict>
                 <key>JVMCapabilities</key>
