@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -448,7 +448,11 @@ const band_init all_band_inits[] = {
   BAND_INIT(file_modtime, DELTA5_spec, 0),
   BAND_INIT(file_options, UNSIGNED5_spec, 0),
 //BAND_INIT(file_bits, BYTE1_spec, 0),
+#ifndef PRODUCT
   { 0, 0, 0, 0 }
+#else
+  { 0, 0 }
+#endif
 };
 #define NUM_BAND_INITS \
         (sizeof(all_band_inits)/sizeof(all_band_inits[0]))

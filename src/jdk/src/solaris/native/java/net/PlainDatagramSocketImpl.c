@@ -192,7 +192,7 @@ Java_java_net_PlainDatagramSocketImpl_bind0(JNIEnv *env, jobject this,
     jobject fdObj = (*env)->GetObjectField(env, this, pdsi_fdID);
     /* fd is an int field on fdObj */
     int fd;
-    socklen_t len = 0;
+    int len = 0;
     SOCKADDR him;
 
     if (IS_NULL(fdObj)) {
@@ -259,7 +259,7 @@ Java_java_net_PlainDatagramSocketImpl_connect0(JNIEnv *env, jobject this,
     jint fd;
     /* The packetAddress address, family and port */
     SOCKADDR rmtaddr;
-    socklen_t len = 0;
+    int len = 0;
 
     if (IS_NULL(fdObj)) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "SocketException",
@@ -284,6 +284,7 @@ Java_java_net_PlainDatagramSocketImpl_connect0(JNIEnv *env, jobject this,
                         "Connect failed");
         return;
     }
+
 }
 
 /*
@@ -300,7 +301,7 @@ Java_java_net_PlainDatagramSocketImpl_disconnect0(JNIEnv *env, jobject this, jin
 
 #if defined(__linux__) || defined(_ALLBSD_SOURCE)
     SOCKADDR addr;
-    socklen_t len;
+    int len;
 #endif
 
     if (IS_NULL(fdObj)) {
@@ -375,7 +376,7 @@ Java_java_net_PlainDatagramSocketImpl_send(JNIEnv *env, jobject this,
     jint fd;
 
     SOCKADDR rmtaddr, *rmtaddrP=&rmtaddr;
-    socklen_t len;
+    int len;
 
     if (IS_NULL(fdObj)) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "SocketException",
@@ -500,7 +501,7 @@ Java_java_net_PlainDatagramSocketImpl_peek(JNIEnv *env, jobject this,
     jint fd;
     ssize_t n;
     SOCKADDR remote_addr;
-    socklen_t len;
+    int len;
     char buf[1];
     jint family;
     jobject iaObj;
@@ -598,7 +599,7 @@ Java_java_net_PlainDatagramSocketImpl_peekData(JNIEnv *env, jobject this,
 
     int n;
     SOCKADDR remote_addr;
-    socklen_t len;
+    int len;
     int port;
 
     if (IS_NULL(fdObj)) {
@@ -778,8 +779,7 @@ Java_java_net_PlainDatagramSocketImpl_receive0(JNIEnv *env, jobject this,
 
     int n;
     SOCKADDR remote_addr;
-
-    socklen_t len;
+    int len;
     jboolean retry;
 #ifdef __linux__
     jboolean connected = JNI_FALSE;
@@ -1513,7 +1513,7 @@ jobject getMulticastInterface(JNIEnv *env, jobject this, int fd, jint opt) {
 
         struct in_addr in;
         struct in_addr *inP = &in;
-        socklen_t len = sizeof(struct in_addr);
+        int len = sizeof(struct in_addr);
 
         if (JVM_GetSockOpt(fd, IPPROTO_IP, IP_MULTICAST_IF,
                            (char *)inP, &len) < 0) {
@@ -1607,7 +1607,7 @@ jobject getMulticastInterface(JNIEnv *env, jobject this, int fd, jint opt) {
         static jmethodID ia_anyLocalAddressID;
 
         int index = 0;
-        socklen_t len = sizeof(index);
+        int len = sizeof(index);
 
         jobjectArray addrArray;
         jobject addr;
@@ -1726,8 +1726,7 @@ JNIEXPORT jobject JNICALL
 Java_java_net_PlainDatagramSocketImpl_socketGetOption(JNIEnv *env, jobject this,
                                                       jint opt) {
     int fd;
-    int level, optname;
-    socklen_t optlen;
+    int level, optname, optlen;
     union {
         int i;
         char c;
@@ -1929,7 +1928,7 @@ Java_java_net_PlainDatagramSocketImpl_getTimeToLive(JNIEnv *env, jobject this) {
 #ifdef AF_INET6
     if (ipv6_available()) {
         int ttl = 0;
-        socklen_t len = sizeof(ttl);
+        int len = sizeof(ttl);
 
         if (JVM_GetSockOpt(fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
                                (char*)&ttl, &len) < 0) {
@@ -1942,7 +1941,7 @@ Java_java_net_PlainDatagramSocketImpl_getTimeToLive(JNIEnv *env, jobject this) {
 #endif /* AF_INET6 */
         {
             u_char ttl = 0;
-            socklen_t len = sizeof(ttl);
+            int len = sizeof(ttl);
             if (JVM_GetSockOpt(fd, IPPROTO_IP, IP_MULTICAST_TTL,
                                (char*)&ttl, &len) < 0) {
                 NET_ThrowByNameWithLastError(env, JNU_JAVANETPKG "SocketException",
@@ -2027,7 +2026,7 @@ static void mcast_join_leave(JNIEnv *env, jobject this,
 #else
         struct ip_mreq mname;
 #endif
-        socklen_t mname_len;
+        int mname_len;
 
         /*
          * joinGroup(InetAddress, NetworkInterface) implementation :-
@@ -2102,8 +2101,9 @@ static void mcast_join_leave(JNIEnv *env, jobject this,
 
 #if defined(__linux__) && defined(AF_INET6)
             if (ipv6_available()) {
+
                 int index;
-                socklen_t len = sizeof(index);
+                int len = sizeof(index);
 
                 if (JVM_GetSockOpt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
                                    (char*)&index, &len) < 0) {
@@ -2221,7 +2221,7 @@ static void mcast_join_leave(JNIEnv *env, jobject this,
         memcpy((void *)&(mname6.ipv6mr_multiaddr), caddr, sizeof(struct in6_addr));
         if (IS_NULL(niObj)) {
             int index;
-            socklen_t len = sizeof(index);
+            int len = sizeof(index);
 
             if (JVM_GetSockOpt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
                              (char*)&index, &len) < 0) {

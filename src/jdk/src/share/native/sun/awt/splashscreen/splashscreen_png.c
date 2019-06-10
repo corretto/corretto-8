@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -53,8 +53,8 @@ SplashDecodePng(Splash * splash, png_rw_ptr read_func, void *io_ptr)
     int success = 0;
     double gamma;
 
-    png_structp png_ptr;
-    png_infop info_ptr;
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
 
     png_uint_32 width, height;
     int bit_depth, color_type;
@@ -77,10 +77,6 @@ SplashDecodePng(Splash * splash, png_rw_ptr read_func, void *io_ptr)
 #else
     if (setjmp(png_jmpbuf(png_ptr))) {
 #endif
-        // initialize them again because compiler believes that those variables may change
-        row_pointers = NULL;
-        image_data = NULL;
-        success = 0;
         goto done;
     }
 

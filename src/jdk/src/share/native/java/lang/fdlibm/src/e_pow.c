@@ -1,5 +1,6 @@
+
 /*
- * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2004, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -145,7 +146,7 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
                 k = (iy>>20)-0x3ff;        /* exponent */
                 if(k>20) {
                     j = ly>>(52-k);
-                    if((unsigned)(j<<(52-k))==ly) yisint = 2-(j&1);
+                    if((j<<(52-k))==ly) yisint = 2-(j&1);
                 } else if(ly==0) {
                     j = iy>>(20-k);
                     if((j<<(20-k))==iy) yisint = 2-(j&1);

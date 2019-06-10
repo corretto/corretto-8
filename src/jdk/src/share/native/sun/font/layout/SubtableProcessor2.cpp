@@ -41,7 +41,7 @@ SubtableProcessor2::SubtableProcessor2()
 }
 
 SubtableProcessor2::SubtableProcessor2(const LEReferenceTo<MorphSubtableHeader2> &morphSubtableHeader, LEErrorCode &success)
-  : length(0), coverage(0), subtableFeatures(0L), subtableHeader(morphSubtableHeader, success)
+  : subtableHeader(morphSubtableHeader, success), length(0), coverage(0), subtableFeatures(0L)
 {
   if(LE_FAILURE(success)) return;
 

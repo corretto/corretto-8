@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -167,7 +167,6 @@ Java_java_util_zip_Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
         switch (res) {
         case Z_OK:
             (*env)->SetBooleanField(env, this, setParamsID, JNI_FALSE);
-	    // Falls through.
         case Z_BUF_ERROR:
             this_off += this_len - strm->avail_in;
             (*env)->SetIntField(env, this, offID, this_off);
