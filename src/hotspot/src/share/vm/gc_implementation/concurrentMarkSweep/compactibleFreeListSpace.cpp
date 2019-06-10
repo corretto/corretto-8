@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -2659,7 +2659,7 @@ void CFLS_LAB::get_from_global_pool(size_t word_sz, AdaptiveFreeList<FreeChunk>*
   if (ResizeOldPLAB && CMSOldPLABResizeQuicker) {
     size_t multiple = _num_blocks[word_sz]/(CMSOldPLABToleranceFactor*CMSOldPLABNumRefills*n_blks);
     n_blks +=  CMSOldPLABReactivityFactor*multiple*n_blks;
-    n_blks = MIN2(n_blks, (size_t) CMSOldPLABMax);
+    n_blks = MIN2(n_blks, CMSOldPLABMax);
   }
   assert(n_blks > 0, "Error");
   _cfls->par_get_chunk_of_blocks(word_sz, n_blks, fl);

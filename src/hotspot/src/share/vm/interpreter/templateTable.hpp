@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,8 +32,6 @@
 # include INTERP_MASM_MD_HPP
 #elif defined TARGET_ARCH_x86
 # include "interp_masm_x86.hpp"
-#elif defined TARGET_ARCH_MODEL_aarch64
-# include "interp_masm_aarch64.hpp"
 #elif defined TARGET_ARCH_MODEL_sparc
 # include "interp_masm_sparc.hpp"
 #elif defined TARGET_ARCH_MODEL_zero
@@ -99,19 +97,17 @@ class TemplateTable: AllStatic {
   static bool            _is_initialized;        // true if TemplateTable has been initialized
   static Template        _template_table     [Bytecodes::number_of_codes];
   static Template        _template_table_wide[Bytecodes::number_of_codes];
-  static Template*       _desc;                  // the current template to be generated
 
- public:
+  static Template*       _desc;                  // the current template to be generated
   static Bytecodes::Code bytecode()              { return _desc->bytecode(); }
 
- private:
   static BarrierSet*     _bs;                    // Cache the barrier set.
-
  public:
   //%note templates_1
   static InterpreterMacroAssembler* _masm;       // the assembler used when generating templates
 
  private:
+
   // special registers
   static inline Address at_bcp(int offset);
 
@@ -361,8 +357,6 @@ class TemplateTable: AllStatic {
 # include "templateTable_x86_32.hpp"
 #elif defined TARGET_ARCH_MODEL_x86_64
 # include "templateTable_x86_64.hpp"
-#elif defined TARGET_ARCH_MODEL_aarch64
-# include "templateTable_aarch64.hpp"
 #elif defined TARGET_ARCH_MODEL_sparc
 # include "templateTable_sparc.hpp"
 #elif defined TARGET_ARCH_MODEL_zero
