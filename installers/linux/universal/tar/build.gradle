@@ -92,9 +92,22 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
+task importAmazonCacerts(type: Exec) {
+    dependsOn executeBuild
+    workingDir jdkResultingImage
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'bin/keytool', '-importkeystore', '-noprompt',
+                '-srckeystore', "${buildRoot}/amazon-cacerts",
+                '-srcstorepass', keystore_password,
+                '-destkeystore', 'jre/lib/security/cacerts',
+                '-deststorepass', keystore_password
+}
+
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
     dependsOn executeBuild
+    dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
     from(buildRoot) {
@@ -110,11 +123,6 @@ task packageBuildResults(type: Tar) {
         include 'lib/**'
         include 'man/man1/**'
         include 'src.zip'
-        exclude '**/cacerts'
-    }
-    from(buildRoot) {
-        include 'cacerts'
-        into 'jre/lib/security'
     }
     into "amazon-corretto-${project.version.full}-linux-${arch_alias}"
 
