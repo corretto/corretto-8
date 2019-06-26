@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -68,7 +68,7 @@ static BOOL IsSupportedLevel(HANDLE hPrinter, DWORD dwLevel) {
 extern "C" {
 
 JNIEXPORT jstring JNICALL
-Java_sun_print_Win32PrintServiceLookup_getDefaultPrinterName(JNIEnv *env,
+Java_sun_print_PrintServiceLookupProvider_getDefaultPrinterName(JNIEnv *env,
                                                              jobject peer)
 {
     TRY;
@@ -118,10 +118,7 @@ Java_sun_print_Win32PrintServiceLookup_getDefaultPrinterName(JNIEnv *env,
 }
 
 
-JNIEXPORT jobjectArray JNICALL
-Java_sun_print_Win32PrintServiceLookup_getAllPrinterNames(JNIEnv *env,
-                                                          jobject peer)
-{
+static jobjectArray getPrinterNames(JNIEnv *env, DWORD flags) {
     TRY;
 
     DWORD cbNeeded = 0;
@@ -136,10 +133,10 @@ Java_sun_print_Win32PrintServiceLookup_getAllPrinterNames(JNIEnv *env,
     jobjectArray nameArray;
 
     try {
-        ::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+        ::EnumPrinters(flags,
                        NULL, 4, NULL, 0, &cbNeeded, &cReturned);
         pPrinterEnum = new BYTE[cbNeeded];
-        ::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+        ::EnumPrinters(flags,
                        NULL, 4, pPrinterEnum, cbNeeded, &cbNeeded,
                        &cReturned);
 
@@ -174,9 +171,23 @@ Java_sun_print_Win32PrintServiceLookup_getAllPrinterNames(JNIEnv *env,
     CATCH_BAD_ALLOC_RET(NULL);
 }
 
+JNIEXPORT jobjectArray JNICALL
+Java_sun_print_PrintServiceLookupProvider_getAllPrinterNames(JNIEnv *env,
+                                                             jobject peer)
+{
+    return getPrinterNames(env, PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS);
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_sun_print_PrintServiceLookupProvider_getRemotePrintersNames(JNIEnv *env,
+                                                                 jobject peer)
+{
+    return getPrinterNames(env, PRINTER_ENUM_CONNECTIONS);
+}
+
 
 JNIEXPORT jlong JNICALL
-Java_sun_print_Win32PrintServiceLookup_notifyFirstPrinterChange(JNIEnv *env,
+Java_sun_print_PrintServiceLookupProvider_notifyFirstPrinterChange(JNIEnv *env,
                                                                 jobject peer,
                                                                 jstring printer) {
     HANDLE hPrinter;
@@ -210,7 +221,7 @@ Java_sun_print_Win32PrintServiceLookup_notifyFirstPrinterChange(JNIEnv *env,
 
 
 JNIEXPORT void JNICALL
-Java_sun_print_Win32PrintServiceLookup_notifyClosePrinterChange(JNIEnv *env,
+Java_sun_print_PrintServiceLookupProvider_notifyClosePrinterChange(JNIEnv *env,
                                                                 jobject peer,
                                                                 jlong chgObject) {
     FindClosePrinterChangeNotification((HANDLE)chgObject);
@@ -218,7 +229,7 @@ Java_sun_print_Win32PrintServiceLookup_notifyClosePrinterChange(JNIEnv *env,
 
 
 JNIEXPORT jint JNICALL
-Java_sun_print_Win32PrintServiceLookup_notifyPrinterChange(JNIEnv *env,
+Java_sun_print_PrintServiceLookupProvider_notifyPrinterChange(JNIEnv *env,
                                                            jobject peer,
                                                            jlong chgObject) {
     DWORD dwChange;

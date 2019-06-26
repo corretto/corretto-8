@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -619,7 +619,7 @@ void GenCollectedHeap::process_roots(bool activate_scope,
                                      OopClosure* weak_roots,
                                      CLDClosure* strong_cld_closure,
                                      CLDClosure* weak_cld_closure,
-                                     CodeBlobClosure* code_roots) {
+                                     CodeBlobToOopClosure* code_roots) {
   StrongRootsScope srs(this, activate_scope);
 
   // General roots.
@@ -638,7 +638,7 @@ void GenCollectedHeap::process_roots(bool activate_scope,
   // Don't process them if they will be processed during the ClassLoaderDataGraph phase.
   CLDClosure* roots_from_clds_p = (strong_cld_closure != weak_cld_closure) ? strong_cld_closure : NULL;
   // Only process code roots from thread stacks if we aren't visiting the entire CodeCache anyway
-  CodeBlobClosure* roots_from_code_p = (so & SO_AllCodeCache) ? NULL : code_roots;
+  CodeBlobToOopClosure* roots_from_code_p = (so & SO_AllCodeCache) ? NULL : code_roots;
 
   Threads::possibly_parallel_oops_do(strong_roots, roots_from_clds_p, roots_from_code_p);
 
@@ -745,14 +745,8 @@ void GenCollectedHeap::gen_process_roots(int level,
 }
 
 
-class AlwaysTrueClosure: public BoolObjectClosure {
-public:
-  bool do_object_b(oop p) { return true; }
-};
-static AlwaysTrueClosure always_true;
-
 void GenCollectedHeap::gen_process_weak_roots(OopClosure* root_closure) {
-  JNIHandles::weak_oops_do(&always_true, root_closure);
+  JNIHandles::weak_oops_do(root_closure);
   for (int i = 0; i < _n_gens; i++) {
     _gens[i]->ref_processor()->weak_oops_do(root_closure);
   }
