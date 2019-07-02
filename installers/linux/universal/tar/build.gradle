@@ -18,7 +18,6 @@
 * 2 along with this work; if not, write to the Free Software Foundation,
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-
 configurations {
     javafx
 }
@@ -32,18 +31,20 @@ ext {
     arch = ['uname', '-m'].execute().text.trim()
 
     switch (arch) {
-    case 'aarch64':
-        arch_alias = arch
-        break;
-    case 'x86_64':
-        arch_alias = 'x64'
-        break;
-    default:
-        throw new GradleException("${arch} is not suported")
+        case 'aarch64':
+            arch_alias = arch
+            break;
+        case 'x86_64':
+            arch_alias = 'x64'
+            break;
+        default:
+            throw new GradleException("${arch} is not suported")
     }
 }
 
 def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
+def binaryResultName = "amazon-corretto-${project.version.full}-linux-${arch_alias}"
+def archiveName = "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
 
 /**
  * Create a local copy of the source tree in our
@@ -104,41 +105,47 @@ task importAmazonCacerts(type: Exec) {
                 '-deststorepass', keystore_password
 }
 
-task packageBuildResults(type: Tar) {
-    description 'Compresses the JDK image and puts the results in build/distributions.'
+task copyBuildResults() {
+    description 'Copy the JDK image and puts the results in build/.'
     dependsOn executeBuild
     dependsOn importAmazonCacerts
-    archiveName "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
-    compression Compression.GZIP
-    from(buildRoot) {
-        include 'ASSEMBLY_EXCEPTION'
-        include 'LICENSE'
-        include 'THIRD_PARTY_README'
-        include 'version.txt'
-    }
-    from(jdkResultingImage) {
-        include 'bin/**'
-        include 'include/**'
-        include 'jre/**'
-        include 'lib/**'
-        include 'man/man1/**'
-        include 'src.zip'
-    }
-    into "amazon-corretto-${project.version.full}-linux-${arch_alias}"
-
-    // currently, OpenJFX doesn't support aarch64
     if (arch == 'x86_64') {
         dependsOn createJavafxOverlay
-        from(createJavafxOverlay.destinationDir) {
-            include 'bin/**'
-            include 'jre/**'
-            include 'lib/**'
-            include 'man/man1/**'
-            include 'javafx-src.zip'
+    }
+
+    doLast {
+        def destination = "${buildDir}/${binaryResultName}"
+        copy {
+            from(buildRoot) {
+                include 'ASSEMBLY_EXCEPTION'
+                include 'LICENSE'
+                include 'THIRD_PARTY_README'
+                include 'version.txt'
+            }
+            into destination
+        }
+        exec {
+            workingDir jdkResultingImage
+            commandLine 'cp', '-Rf', '--parents', 'bin', 'include', 'jre', 'lib', 'man/man1', 'src.zip', destination
+        }
+
+        if (arch == 'x86_64') {
+            exec {
+                workingDir createJavafxOverlay.destinationDir
+                commandLine 'cp', '-Rf', '--parents', 'bin', 'jre', 'lib', 'man/man1', 'javafx-src.zip', destination
+            }
         }
     }
 }
 
+task packageBuildResults(type: Exec) {
+    description 'Package the JDK image and puts the results in build/distributions.'
+    dependsOn copyBuildResults
+    outputs.dir distributionDir
+    workingDir buildDir
+    commandLine 'tar', 'cfz', "${distributionDir}/${archiveName}", binaryResultName
+}
+
 artifacts {
-    archives packageBuildResults
+    archives file: packageBuildResults.outputs.getFiles().getSingleFile(), builtBy: packageBuildResults
 }

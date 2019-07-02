@@ -101,13 +101,21 @@ ospackage {
 }
 
 /**
- * Uncompress and copy the universal Corretto artifact
- * tar for RPM packaging.
+ * Extract universal Corretto universal tar for RPM packaging.
  */
-task extractUniversalTar(type: Copy) {
+task extractUniversalTar() {
     dependsOn project.configurations.compile
-    from tarTree(project.configurations.compile.singleFile)
-    into buildRoot
+    doLast {
+        exec {
+            def universalTar = fileTree(project.configurations.compile.singleFile).getSingleFile().getPath()
+            workingDir buildRoot
+            if (!buildRoot.exists()) {
+                buildRoot.mkdirs()
+            }
+
+            commandLine 'tar', 'xfz', universalTar
+        }
+    }
 }
 
 /**
