@@ -1,0 +1,72 @@
+From f1640975f28d916d31235ed91052142868e21b0a Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Mon, 10 Jun 2019 08:42:52 -0700
+Subject: [PATCH 07/12] apply JDK-8215799
+
+---
+ .../java/com/sun/javafx/font/CompositeGlyphMapper.java     |  1 -
+ .../main/java/com/sun/javafx/webkit/prism/WCFontImpl.java  | 14 ++++++++++++++
+ .../platform/graphics/java/ComplexTextControllerJava.cpp   |  6 ++++++
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/CompositeGlyphMapper.java b/modules/graphics/src/main/java/com/sun/javafx/font/CompositeGlyphMapper.java
+index b5d2cfe..8cc8d4a 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/CompositeGlyphMapper.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/CompositeGlyphMapper.java
+@@ -100,7 +100,6 @@ public class CompositeGlyphMapper extends CharToGlyphMapper {
+                 return glyphCode;
+             }
+         }
+-        glyphMap.put(unicode, missingGlyph);
+         return missingGlyph;
+     }
+ 
+diff --git a/modules/web/src/main/java/com/sun/javafx/webkit/prism/WCFontImpl.java b/modules/web/src/main/java/com/sun/javafx/webkit/prism/WCFontImpl.java
+index 9d6ac80..3a7fb68 100644
+--- a/modules/web/src/main/java/com/sun/javafx/webkit/prism/WCFontImpl.java
++++ b/modules/web/src/main/java/com/sun/javafx/webkit/prism/WCFontImpl.java
+@@ -125,10 +125,24 @@ final class WCFontImpl extends WCFont {
+         return getFontStrike().getMetrics().getXHeight();
+     }
+ 
++    private static boolean needsTextLayout(final int glyphs[]) {
++        for (int g : glyphs) {
++            if (g == 0) {
++                return true;
++            }
++        }
++        return false;
++    }
++
+     @Override public int[] getGlyphCodes(char[] chars) {
+         int[] glyphs = new int[chars.length];
+         CharToGlyphMapper mapper = getFontStrike().getFontResource().getGlyphMapper();
+         mapper.charsToGlyphs(chars.length, chars, glyphs);
++        if (needsTextLayout(glyphs)) {
++            // Call charsToGlyphs once again after doing layout if any of the glyph index is zero
++            TextUtilities.createLayout(new String(chars), getPlatformFont()).getRuns();
++            mapper.charsToGlyphs(chars.length, chars, glyphs);
++        }
+         return glyphs;
+     }
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/graphics/java/ComplexTextControllerJava.cpp b/modules/web/src/main/native/Source/WebCore/platform/graphics/java/ComplexTextControllerJava.cpp
+index a108cb8..daea113 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/graphics/java/ComplexTextControllerJava.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/graphics/java/ComplexTextControllerJava.cpp
+@@ -92,6 +92,12 @@ unsigned jGetEnd(jobject jRun)
+ 
+ unsigned jGetCharOffset(jobject jRun, unsigned glyphIndex)
+ {
++    if (!jGetGlyphCount(jRun)) {
++        // Return same value as TextRun.getCharOffset() when there is
++        // no glyph information available.
++        return glyphIndex;
++    }
++
+     JNIEnv* env = WebCore_GetJavaEnv();
+     static jmethodID mID = env->GetMethodID(
+         PG_GetTextRun(env),
+-- 
+1.8.3.1
+

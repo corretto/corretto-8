@@ -1,0 +1,1860 @@
+From b1cb6477b85203bdcccfe25958400ff45a1e8b2d Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Tue, 4 Jun 2019 08:25:48 -0700
+Subject: [PATCH 05/12] apply JDK-8220147
+
+---
+ .../Source/JavaScriptCore/bytecode/CodeBlock.cpp   |   3 +
+ .../dfg/DFGAbstractInterpreterInlines.h            |  13 +-
+ .../dfg/DFGArgumentsEliminationPhase.cpp           |   5 +-
+ .../JavaScriptCore/dfg/DFGByteCodeParser.cpp       |   5 +-
+ .../Source/JavaScriptCore/dfg/DFGClobberize.h      |   6 +-
+ .../Source/JavaScriptCore/dfg/DFGCommonData.cpp    |   7 +
+ .../Source/JavaScriptCore/dfg/DFGCommonData.h      |   2 +
+ .../JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp |   7 +-
+ .../native/Source/JavaScriptCore/dfg/DFGDoesGC.cpp |  46 +++-
+ .../Source/JavaScriptCore/dfg/DFGFixupPhase.cpp    |  31 ++-
+ .../dfg/DFGIntegerCheckCombiningPhase.cpp          |  10 +-
+ .../dfg/DFGIntegerRangeOptimizationPhase.cpp       |  10 +-
+ .../native/Source/JavaScriptCore/dfg/DFGNodeType.h |   4 +-
+ .../JavaScriptCore/dfg/DFGSSALoweringPhase.cpp     |   9 +-
+ .../JavaScriptCore/dfg/DFGSpeculativeJIT.cpp       |  16 +-
+ .../Source/JavaScriptCore/ftl/FTLLowerDFGToB3.cpp  |  27 +-
+ .../JavaScriptCore/runtime/SamplingProfiler.cpp    |   6 +-
+ .../Source/JavaScriptCore/runtime/TypeSet.cpp      |  18 +-
+ .../native/Source/JavaScriptCore/yarr/YarrJIT.cpp  |  13 +-
+ .../Source/WebCore/accessibility/AXObjectCache.cpp |  30 ++-
+ .../Source/WebCore/accessibility/AXObjectCache.h   |   2 +
+ .../WebCore/accessibility/AccessibilityObject.cpp  |   4 +
+ .../src/main/native/Source/WebCore/dom/Document.h  |   6 +-
+ .../Source/WebCore/html/HTMLPlugInElement.cpp      |  19 +-
+ .../Source/WebCore/loader/DocumentLoader.cpp       |  11 +-
+ .../native/Source/WebCore/loader/DocumentLoader.h  |   5 +
+ .../Source/WebCore/loader/FrameLoadRequest.h       |   4 +
+ .../native/Source/WebCore/loader/FrameLoader.cpp   |   2 +
+ .../native/Source/WebCore/loader/FrameLoader.h     |   6 +
+ .../main/native/Source/WebCore/page/DOMTimer.cpp   |  14 +-
+ .../native/Source/WebCore/page/DragController.cpp  |   4 +-
+ .../Source/WebCore/platform/ThreadTimers.cpp       |  30 ++-
+ .../native/Source/WebCore/platform/ThreadTimers.h  |  82 +++++-
+ .../main/native/Source/WebCore/platform/Timer.cpp  | 278 ++++++++++++++-------
+ .../main/native/Source/WebCore/platform/Timer.h    |  22 +-
+ .../native/Source/WebCore/testing/Internals.cpp    |   8 +-
+ .../main/native/Source/WebCore/testing/Internals.h |   2 +-
+ .../native/Source/WebCore/testing/Internals.idl    |   2 +-
+ 38 files changed, 518 insertions(+), 251 deletions(-)
+
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/CodeBlock.cpp b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/CodeBlock.cpp
+index 0c18c19..756471b 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/CodeBlock.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/CodeBlock.cpp
+@@ -1948,6 +1948,9 @@ void CodeBlock::jettison(Profiler::JettisonReason reason, ReoptimizationMode mod
+     // 2) Make sure that if we call the owner executable, then we shouldn't call this CodeBlock.
+ 
+ #if ENABLE(DFG_JIT)
++    if (JITCode::isOptimizingJIT(jitType()))
++        jitCode()->dfgCommon()->clearWatchpoints();
++
+     if (reason != Profiler::JettisonDueToOldAge) {
+         Profiler::Compilation* compilation = jitCode()->dfgCommon()->compilation.get();
+         if (UNLIKELY(compilation))
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGAbstractInterpreterInlines.h b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGAbstractInterpreterInlines.h
+index 0c888f0..86e48d1 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGAbstractInterpreterInlines.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGAbstractInterpreterInlines.h
+@@ -3370,11 +3370,16 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
+     case CheckInBounds: {
+         JSValue left = forNode(node->child1()).value();
+         JSValue right = forNode(node->child2()).value();
+-        if (left && right && left.isInt32() && right.isInt32()
+-            && static_cast<uint32_t>(left.asInt32()) < static_cast<uint32_t>(right.asInt32())) {
++        if (left && right && left.isInt32() && right.isInt32() && static_cast<uint32_t>(left.asInt32()) < static_cast<uint32_t>(right.asInt32()))
+             m_state.setFoundConstants(true);
+-            break;
+-        }
++
++        // We claim we result in Int32. It's not really important what our result is (though we
++        // don't want to claim we may result in the empty value), other nodes with data flow edges
++        // to us just do that to maintain the invariant that they can't be hoisted higher than us.
++        // So we just arbitrarily pick Int32. In some ways, StorageResult may be the more correct
++        // thing to do here. We pick NodeResultJS because it makes converting this to an identity
++        // easier.
++        setNonCellTypeForNode(node, SpecInt32Only);
+         break;
+     }
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGArgumentsEliminationPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGArgumentsEliminationPhase.cpp
+index 37621f4..20afbe0 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGArgumentsEliminationPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGArgumentsEliminationPhase.cpp
+@@ -767,14 +767,15 @@ private:
+                                 arg += inlineCallFrame->stackOffset;
+                             data = m_graph.m_stackAccessData.add(arg, FlushedJSValue);
+ 
++                            Node* check = nullptr;
+                             if (!inlineCallFrame || inlineCallFrame->isVarargs()) {
+-                                insertionSet.insertNode(
++                                check = insertionSet.insertNode(
+                                     nodeIndex, SpecNone, CheckInBounds, node->origin,
+                                     m_graph.varArgChild(node, 1), Edge(getArrayLength(candidate), Int32Use));
+                             }
+ 
+                             result = insertionSet.insertNode(
+-                                nodeIndex, node->prediction(), GetStack, node->origin, OpInfo(data));
++                                nodeIndex, node->prediction(), GetStack, node->origin, OpInfo(data), Edge(check, UntypedUse));
+                         }
+                     }
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp
+index 5cde2d4..40328b8 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGByteCodeParser.cpp
+@@ -6714,7 +6714,10 @@ void ByteCodeParser::parseBlock(unsigned limit)
+             Node* base = get(VirtualRegister(currentInstruction[2].u.operand));
+             ArrayMode arrayMode = getArrayMode(arrayProfileFor<OpHasIndexedPropertyShape>(currentInstruction), Array::Read);
+             Node* property = get(VirtualRegister(currentInstruction[3].u.operand));
+-            Node* hasIterableProperty = addToGraph(HasIndexedProperty, OpInfo(arrayMode.asWord()), OpInfo(static_cast<uint32_t>(PropertySlot::InternalMethodType::GetOwnProperty)), base, property);
++            addVarArgChild(base);
++            addVarArgChild(property);
++            addVarArgChild(nullptr);
++            Node* hasIterableProperty = addToGraph(Node::VarArg, HasIndexedProperty, OpInfo(arrayMode.asWord()), OpInfo(static_cast<uint32_t>(PropertySlot::InternalMethodType::GetOwnProperty)));
+             set(VirtualRegister(currentInstruction[1].u.operand), hasIterableProperty);
+             NEXT_OPCODE(op_has_indexed_property);
+         }
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGClobberize.h b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGClobberize.h
+index c41f9f4..4748df1 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGClobberize.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGClobberize.h
+@@ -306,7 +306,7 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
+             if (mode.isInBounds()) {
+                 read(Butterfly_publicLength);
+                 read(IndexedInt32Properties);
+-                def(HeapLocation(HasIndexedPropertyLoc, IndexedInt32Properties, node->child1(), node->child2()), LazyNode(node));
++                def(HeapLocation(HasIndexedPropertyLoc, IndexedInt32Properties, graph.varArgChild(node, 0), graph.varArgChild(node, 1)), LazyNode(node));
+                 return;
+             }
+             read(Heap);
+@@ -317,7 +317,7 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
+             if (mode.isInBounds()) {
+                 read(Butterfly_publicLength);
+                 read(IndexedDoubleProperties);
+-                def(HeapLocation(HasIndexedPropertyLoc, IndexedDoubleProperties, node->child1(), node->child2()), LazyNode(node));
++                def(HeapLocation(HasIndexedPropertyLoc, IndexedDoubleProperties, graph.varArgChild(node, 0), graph.varArgChild(node, 1)), LazyNode(node));
+                 return;
+             }
+             read(Heap);
+@@ -328,7 +328,7 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
+             if (mode.isInBounds()) {
+                 read(Butterfly_publicLength);
+                 read(IndexedContiguousProperties);
+-                def(HeapLocation(HasIndexedPropertyLoc, IndexedContiguousProperties, node->child1(), node->child2()), LazyNode(node));
++                def(HeapLocation(HasIndexedPropertyLoc, IndexedContiguousProperties, graph.varArgChild(node, 0), graph.varArgChild(node, 1)), LazyNode(node));
+                 return;
+             }
+             read(Heap);
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.cpp
+index 7a80e8f..ece3c5d 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.cpp
+@@ -205,6 +205,13 @@ void CommonData::finalizeCatchEntrypoints()
+ #endif
+ }
+ 
++void CommonData::clearWatchpoints()
++{
++    watchpoints.clear();
++    adaptiveStructureWatchpoints.clear();
++    adaptiveInferredPropertyValueWatchpoints.clear();
++}
++
+ } } // namespace JSC::DFG
+ 
+ #endif // ENABLE(DFG_JIT)
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.h b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.h
+index 149aaae..ad97f4a 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGCommonData.h
+@@ -115,6 +115,8 @@ public:
+ 
+     static ptrdiff_t frameRegisterCountOffset() { return OBJECT_OFFSETOF(CommonData, frameRegisterCount); }
+ 
++    void clearWatchpoints();
++
+     RefPtr<InlineCallFrameSet> inlineCallFrames;
+     Vector<CodeOrigin, 0, UnsafeVectorOverflow> codeOrigins;
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp
+index 8e4432d..6add1b4 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp
+@@ -341,7 +341,9 @@ private:
+                 JSValue right = m_state.forNode(node->child2()).value();
+                 if (left && right && left.isInt32() && right.isInt32()
+                     && static_cast<uint32_t>(left.asInt32()) < static_cast<uint32_t>(right.asInt32())) {
+-                    node->remove(m_graph);
++
++                    Node* zero = m_insertionSet.insertConstant(indexInBlock, node->origin, jsNumber(0));
++                    node->convertToIdentityOn(zero);
+                     eliminated = true;
+                     break;
+                 }
+@@ -410,10 +412,11 @@ private:
+ 
+                 Node* length = emitCodeToGetArgumentsArrayLength(
+                     m_insertionSet, arguments, indexInBlock, node->origin);
+-                m_insertionSet.insertNode(
++                Node* check = m_insertionSet.insertNode(
+                     indexInBlock, SpecNone, CheckInBounds, node->origin,
+                     node->child2(), Edge(length, Int32Use));
+                 node->convertToGetStack(data);
++                node->child1() = Edge(check, UntypedUse);
+                 eliminated = true;
+                 break;
+             }
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGDoesGC.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGDoesGC.cpp
+index 3c0a162..acdecee 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGDoesGC.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGDoesGC.cpp
+@@ -146,14 +146,8 @@ bool doesGC(Graph& graph, Node* node)
+     case RegExpTest:
+     case RegExpMatchFast:
+     case RegExpMatchFastGlobal:
+-    case CompareLess:
+-    case CompareLessEq:
+-    case CompareGreater:
+-    case CompareGreaterEq:
+     case CompareBelow:
+     case CompareBelowEq:
+-    case CompareEq:
+-    case CompareStrictEq:
+     case CompareEqPtr:
+     case SameValue:
+     case Call:
+@@ -374,6 +368,46 @@ bool doesGC(Graph& graph, Node* node)
+     case MapSet:
+         return true;
+ 
++    case CompareEq:
++    case CompareLess:
++    case CompareLessEq:
++    case CompareGreater:
++    case CompareGreaterEq:
++        if (node->isBinaryUseKind(Int32Use)
++#if USE(JSVALUE64)
++            || node->isBinaryUseKind(Int52RepUse)
++#endif
++            || node->isBinaryUseKind(DoubleRepUse)
++            || node->isBinaryUseKind(StringIdentUse)
++            )
++            return false;
++        if (node->op() == CompareEq) {
++            if (node->isBinaryUseKind(BooleanUse)
++                || node->isBinaryUseKind(SymbolUse)
++                || node->isBinaryUseKind(ObjectUse)
++                || node->isBinaryUseKind(ObjectUse, ObjectOrOtherUse) || node->isBinaryUseKind(ObjectOrOtherUse, ObjectUse))
++                return false;
++        }
++        return true;
++
++    case CompareStrictEq:
++        if (node->isBinaryUseKind(BooleanUse)
++            || node->isBinaryUseKind(Int32Use)
++#if USE(JSVALUE64)
++            || node->isBinaryUseKind(Int52RepUse)
++#endif
++            || node->isBinaryUseKind(DoubleRepUse)
++            || node->isBinaryUseKind(SymbolUse)
++            || node->isBinaryUseKind(SymbolUse, UntypedUse)
++            || node->isBinaryUseKind(UntypedUse, SymbolUse)
++            || node->isBinaryUseKind(StringIdentUse)
++            || node->isBinaryUseKind(ObjectUse, UntypedUse) || node->isBinaryUseKind(UntypedUse, ObjectUse)
++            || node->isBinaryUseKind(ObjectUse)
++            || node->isBinaryUseKind(MiscUse, UntypedUse) || node->isBinaryUseKind(UntypedUse, MiscUse)
++            || node->isBinaryUseKind(StringIdentUse, NotStringVarUse) || node->isBinaryUseKind(NotStringVarUse, StringIdentUse))
++            return false;
++        return true;
++
+     case GetIndexedPropertyStorage:
+         if (node->arrayMode().type() == Array::String)
+             return true;
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGFixupPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGFixupPhase.cpp
+index 2f7b702..ce46e9e 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGFixupPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGFixupPhase.cpp
+@@ -1698,13 +1698,13 @@ private:
+             node->setArrayMode(
+                 node->arrayMode().refine(
+                     m_graph, node,
+-                    node->child1()->prediction(),
+-                    node->child2()->prediction(),
++                    m_graph.varArgChild(node, 0)->prediction(),
++                    m_graph.varArgChild(node, 1)->prediction(),
+                     SpecNone));
+ 
+-            blessArrayOperation(node->child1(), node->child2(), node->child3());
+-            fixEdge<CellUse>(node->child1());
+-            fixEdge<KnownInt32Use>(node->child2());
++            blessArrayOperation(m_graph.varArgChild(node, 0), m_graph.varArgChild(node, 1), m_graph.varArgChild(node, 2));
++            fixEdge<CellUse>(m_graph.varArgChild(node, 0));
++            fixEdge<KnownInt32Use>(m_graph.varArgChild(node, 1));
+             break;
+         }
+         case GetDirectPname: {
+@@ -3322,18 +3322,29 @@ private:
+     {
+         node->setOp(HasIndexedProperty);
+         node->clearFlags(NodeMustGenerate);
++
++        {
++            unsigned firstChild = m_graph.m_varArgChildren.size();
++            unsigned numChildren = 3;
++            m_graph.m_varArgChildren.append(node->child1());
++            m_graph.m_varArgChildren.append(node->child2());
++            m_graph.m_varArgChildren.append(Edge());
++            node->mergeFlags(NodeHasVarArgs);
++            node->children = AdjacencyList(AdjacencyList::Variable, firstChild, numChildren);
++        }
++
+         node->setArrayMode(
+             node->arrayMode().refine(
+                 m_graph, node,
+-                node->child1()->prediction(),
+-                node->child2()->prediction(),
++                m_graph.varArgChild(node, 0)->prediction(),
++                m_graph.varArgChild(node, 1)->prediction(),
+                 SpecNone));
+         node->setInternalMethodType(PropertySlot::InternalMethodType::HasProperty);
+ 
+-        blessArrayOperation(node->child1(), node->child2(), node->child3());
++        blessArrayOperation(m_graph.varArgChild(node, 0), m_graph.varArgChild(node, 1), m_graph.varArgChild(node, 2));
+ 
+-        fixEdge<CellUse>(node->child1());
+-        fixEdge<Int32Use>(node->child2());
++        fixEdge<CellUse>(m_graph.varArgChild(node, 0));
++        fixEdge<Int32Use>(m_graph.varArgChild(node, 1));
+     }
+ 
+     void fixupNormalizeMapKey(Node* node)
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerCheckCombiningPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerCheckCombiningPhase.cpp
+index e7da482..46edd9a 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerCheckCombiningPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerCheckCombiningPhase.cpp
+@@ -150,6 +150,7 @@ public:
+         CodeOrigin m_maxOrigin;
+         unsigned m_count { 0 }; // If this is zero then the bounds won't necessarily make sense.
+         bool m_hoisted { false };
++        Node* m_dependency { nullptr };
+     };
+ 
+     IntegerCheckCombiningPhase(Graph& graph)
+@@ -257,14 +258,15 @@ private:
+                             Arith::Unchecked);
+                     }
+ 
++                    Node* minCheck = nullptr;
+                     if (minNode) {
+-                        m_insertionSet.insertNode(
++                        minCheck = m_insertionSet.insertNode(
+                             nodeIndex, SpecNone, CheckInBounds, node->origin,
+                             Edge(minNode, Int32Use), Edge(data.m_key.m_key, Int32Use));
+                     }
+-                    m_insertionSet.insertNode(
++                    m_map[data.m_key].m_dependency = m_insertionSet.insertNode(
+                         nodeIndex, SpecNone, CheckInBounds, node->origin,
+-                        Edge(maxNode, Int32Use), Edge(data.m_key.m_key, Int32Use));
++                        Edge(maxNode, Int32Use), Edge(data.m_key.m_key, Int32Use), Edge(minCheck, UntypedUse));
+                     break;
+                 }
+ 
+@@ -284,7 +286,7 @@ private:
+                 break;
+ 
+             case ArrayBounds:
+-                node->remove(m_graph);
++                node->convertToIdentityOn(m_map[data.m_key].m_dependency);
+                 m_changed = true;
+                 break;
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerRangeOptimizationPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerRangeOptimizationPhase.cpp
+index 0d78277..26b1549 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerRangeOptimizationPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGIntegerRangeOptimizationPhase.cpp
+@@ -1010,16 +1010,8 @@ public:
+         ASSERT(m_graph.m_form == SSA);
+ 
+         // Before we do anything, make sure that we have a zero constant at the top.
+-        for (Node* node : *m_graph.block(0)) {
+-            if (node->isInt32Constant() && !node->asInt32()) {
+-                m_zero = node;
+-                break;
+-            }
+-        }
+-        if (!m_zero) {
+             m_zero = m_insertionSet.insertConstant(0, m_graph.block(0)->at(0)->origin, jsNumber(0));
+             m_insertionSet.execute(m_graph.block(0));
+-        }
+ 
+         if (DFGIntegerRangeOptimizationPhaseInternal::verbose) {
+             dataLog("Graph before integer range optimization:\n");
+@@ -1330,7 +1322,7 @@ public:
+ 
+                     if (nonNegative && lessThanLength) {
+                         executeNode(block->at(nodeIndex));
+-                        node->remove(m_graph);
++                        node->convertToIdentityOn(m_zero);
+                         changed = true;
+                     }
+                     break;
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGNodeType.h b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGNodeType.h
+index 99972bf..d59afdd 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGNodeType.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGNodeType.h
+@@ -250,7 +250,7 @@ namespace JSC { namespace DFG {
+     macro(CheckNotEmpty, NodeMustGenerate) \
+     macro(AssertNotEmpty, NodeMustGenerate) \
+     macro(CheckBadCell, NodeMustGenerate) \
+-    macro(CheckInBounds, NodeMustGenerate) \
++    macro(CheckInBounds, NodeMustGenerate | NodeResultJS) \
+     macro(CheckStringIdent, NodeMustGenerate) \
+     macro(CheckTypeInfoFlags, NodeMustGenerate) /* Takes an OpInfo with the flags you want to test are set */\
+     macro(CheckSubClass, NodeMustGenerate) \
+@@ -441,7 +441,7 @@ namespace JSC { namespace DFG {
+     \
+     /* For-in enumeration opcodes */\
+     macro(GetEnumerableLength, NodeMustGenerate | NodeResultJS) \
+-    macro(HasIndexedProperty, NodeResultBoolean) \
++    macro(HasIndexedProperty, NodeResultBoolean | NodeHasVarArgs) \
+     macro(HasStructureProperty, NodeResultBoolean) \
+     macro(HasGenericProperty, NodeResultBoolean) \
+     macro(GetDirectPname, NodeMustGenerate | NodeHasVarArgs | NodeResultJS) \
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSSALoweringPhase.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSSALoweringPhase.cpp
+index ca39dd6..feb4108 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSSALoweringPhase.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSSALoweringPhase.cpp
+@@ -130,10 +130,15 @@ private:
+ 
+         Node* length = m_insertionSet.insertNode(
+             m_nodeIndex, SpecInt32Only, op, m_node->origin,
+-            OpInfo(m_node->arrayMode().asWord()), base, storage);
+-        m_insertionSet.insertNode(
++            OpInfo(m_node->arrayMode().asWord()), Edge(base.node(), KnownCellUse), storage);
++        Node* checkInBounds = m_insertionSet.insertNode(
+             m_nodeIndex, SpecInt32Only, CheckInBounds, m_node->origin,
+             index, Edge(length, KnownInt32Use));
++
++        AdjacencyList adjacencyList = m_graph.copyVarargChildren(m_node);
++        m_graph.m_varArgChildren.append(Edge(checkInBounds, UntypedUse));
++        adjacencyList.setNumChildren(adjacencyList.numChildren() + 1);
++        m_node->children = adjacencyList;
+         return true;
+     }
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSpeculativeJIT.cpp b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSpeculativeJIT.cpp
+index 37d8db7..8f4a46d 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSpeculativeJIT.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/dfg/DFGSpeculativeJIT.cpp
+@@ -12808,8 +12808,8 @@ void SpeculativeJIT::compileAllocateNewArrayWithSize(JSGlobalObject* globalObjec
+ 
+ void SpeculativeJIT::compileHasIndexedProperty(Node* node)
+ {
+-    SpeculateCellOperand base(this, node->child1());
+-    SpeculateStrictInt32Operand index(this, node->child2());
++    SpeculateCellOperand base(this, m_graph.varArgChild(node, 0));
++    SpeculateStrictInt32Operand index(this, m_graph.varArgChild(node, 1));
+     GPRTemporary result(this);
+ 
+     GPRReg baseGPR = base.gpr();
+@@ -12821,8 +12821,8 @@ void SpeculativeJIT::compileHasIndexedProperty(Node* node)
+     switch (mode.type()) {
+     case Array::Int32:
+     case Array::Contiguous: {
+-        ASSERT(!!node->child3());
+-        StorageOperand storage(this, node->child3());
++        ASSERT(!!m_graph.varArgChild(node, 2));
++        StorageOperand storage(this, m_graph.varArgChild(node, 2));
+         GPRTemporary scratch(this);
+ 
+         GPRReg storageGPR = storage.gpr();
+@@ -12845,8 +12845,8 @@ void SpeculativeJIT::compileHasIndexedProperty(Node* node)
+         break;
+     }
+     case Array::Double: {
+-        ASSERT(!!node->child3());
+-        StorageOperand storage(this, node->child3());
++        ASSERT(!!m_graph.varArgChild(node, 2));
++        StorageOperand storage(this, m_graph.varArgChild(node, 2));
+         FPRTemporary scratch(this);
+         FPRReg scratchFPR = scratch.fpr();
+         GPRReg storageGPR = storage.gpr();
+@@ -12863,8 +12863,8 @@ void SpeculativeJIT::compileHasIndexedProperty(Node* node)
+         break;
+     }
+     case Array::ArrayStorage: {
+-        ASSERT(!!node->child3());
+-        StorageOperand storage(this, node->child3());
++        ASSERT(!!m_graph.varArgChild(node, 2));
++        StorageOperand storage(this, m_graph.varArgChild(node, 2));
+         GPRTemporary scratch(this);
+ 
+         GPRReg storageGPR = storage.gpr();
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/ftl/FTLLowerDFGToB3.cpp b/modules/web/src/main/native/Source/JavaScriptCore/ftl/FTLLowerDFGToB3.cpp
+index cc2f486..03f0e5c 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/ftl/FTLLowerDFGToB3.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/ftl/FTLLowerDFGToB3.cpp
+@@ -3755,6 +3755,10 @@ private:
+         speculate(
+             OutOfBounds, noValue(), 0,
+             m_out.aboveOrEqual(lowInt32(m_node->child1()), lowInt32(m_node->child2())));
++
++        // Even though we claim to have JSValue result, no user of us should
++        // depend on our value. Users of this node just need to maintain that
++        // we dominate them.
+     }
+ 
+     void compileGetByVal()
+@@ -10188,12 +10192,13 @@ private:
+ 
+     void compileHasIndexedProperty()
+     {
++        LValue base = lowCell(m_graph.varArgChild(m_node, 0));
++        LValue index = lowInt32(m_graph.varArgChild(m_node, 1));
++
+         switch (m_node->arrayMode().type()) {
+         case Array::Int32:
+         case Array::Contiguous: {
+-            LValue base = lowCell(m_node->child1());
+-            LValue index = lowInt32(m_node->child2());
+-            LValue storage = lowStorage(m_node->child3());
++            LValue storage = lowStorage(m_graph.varArgChild(m_node, 2));
+             LValue internalMethodType = m_out.constInt32(static_cast<int32_t>(m_node->internalMethodType()));
+ 
+             IndexedAbstractHeap& heap = m_node->arrayMode().type() == Array::Int32 ?
+@@ -10214,7 +10219,7 @@ private:
+                 lastNext = m_out.insertNewBlocksBefore(slowCase);
+ 
+             LValue checkHoleResultValue =
+-                m_out.notZero64(m_out.load64(baseIndex(heap, storage, index, m_node->child2())));
++                m_out.notZero64(m_out.load64(baseIndex(heap, storage, index, m_graph.varArgChild(m_node, 1))));
+             ValueFromBlock checkHoleResult = m_out.anchor(checkHoleResultValue);
+             m_out.branch(checkHoleResultValue, usually(continuation), rarely(slowCase));
+ 
+@@ -10228,9 +10233,7 @@ private:
+             return;
+         }
+         case Array::Double: {
+-            LValue base = lowCell(m_node->child1());
+-            LValue index = lowInt32(m_node->child2());
+-            LValue storage = lowStorage(m_node->child3());
++            LValue storage = lowStorage(m_graph.varArgChild(m_node, 2));
+             LValue internalMethodType = m_out.constInt32(static_cast<int32_t>(m_node->internalMethodType()));
+ 
+             IndexedAbstractHeap& heap = m_heaps.indexedDoubleProperties;
+@@ -10249,7 +10252,7 @@ private:
+             } else
+                 lastNext = m_out.insertNewBlocksBefore(slowCase);
+ 
+-            LValue doubleValue = m_out.loadDouble(baseIndex(heap, storage, index, m_node->child2()));
++            LValue doubleValue = m_out.loadDouble(baseIndex(heap, storage, index, m_graph.varArgChild(m_node, 1)));
+             LValue checkHoleResultValue = m_out.doubleEqual(doubleValue, doubleValue);
+             ValueFromBlock checkHoleResult = m_out.anchor(checkHoleResultValue);
+             m_out.branch(checkHoleResultValue, usually(continuation), rarely(slowCase));
+@@ -10265,9 +10268,7 @@ private:
+         }
+ 
+         case Array::ArrayStorage: {
+-            LValue base = lowCell(m_node->child1());
+-            LValue index = lowInt32(m_node->child2());
+-            LValue storage = lowStorage(m_node->child3());
++            LValue storage = lowStorage(m_graph.varArgChild(m_node, 2));
+             LValue internalMethodType = m_out.constInt32(static_cast<int32_t>(m_node->internalMethodType()));
+ 
+             LBasicBlock slowCase = m_out.newBlock();
+@@ -10285,7 +10286,7 @@ private:
+                 lastNext = m_out.insertNewBlocksBefore(slowCase);
+ 
+             LValue checkHoleResultValue =
+-                m_out.notZero64(m_out.load64(baseIndex(m_heaps.ArrayStorage_vector, storage, index, m_node->child2())));
++                m_out.notZero64(m_out.load64(baseIndex(m_heaps.ArrayStorage_vector, storage, index, m_graph.varArgChild(m_node, 1))));
+             ValueFromBlock checkHoleResult = m_out.anchor(checkHoleResultValue);
+             m_out.branch(checkHoleResultValue, usually(continuation), rarely(slowCase));
+ 
+@@ -10300,8 +10301,6 @@ private:
+         }
+ 
+         default: {
+-            LValue base = lowCell(m_node->child1());
+-            LValue index = lowInt32(m_node->child2());
+             LValue internalMethodType = m_out.constInt32(static_cast<int32_t>(m_node->internalMethodType()));
+             setBoolean(m_out.notZero64(vmCall(Int64, m_out.operation(operationHasIndexedPropertyByInt), m_callFrame, base, index, internalMethodType)));
+             break;
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/SamplingProfiler.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/SamplingProfiler.cpp
+index dc576a8..0e2644e 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/SamplingProfiler.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/SamplingProfiler.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2016-2018 Apple Inc. All rights reserved.
++ * Copyright (C) 2016-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -895,9 +895,7 @@ String SamplingProfiler::stackTracesAsJSON()
+         loopedOnce = false;
+         for (StackFrame& stackFrame : stackTrace.frames) {
+             comma();
+-            json.append('"');
+-            json.append(stackFrame.displayNameForJSONTests(m_vm));
+-            json.append('"');
++            json.appendQuotedJSONString(stackFrame.displayNameForJSONTests(m_vm));
+             loopedOnce = true;
+         }
+         json.append(']');
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/TypeSet.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/TypeSet.cpp
+index bc8dab7..cd6acca 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/TypeSet.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/TypeSet.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2014, 2015 Apple Inc. All Rights Reserved.
++ * Copyright (C) 2014-2019 Apple Inc. All Rights Reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -253,9 +253,7 @@ String TypeSet::toJSONString() const
+     json.append('{');
+ 
+     json.appendLiteral("\"displayTypeName\":");
+-    json.append('"');
+-    json.append(displayName());
+-    json.append('"');
++    json.appendQuotedJSONString(displayName());
+     json.append(',');
+ 
+     json.appendLiteral("\"primitiveTypeNames\":");
+@@ -442,9 +440,7 @@ String StructureShape::toJSONString() const
+     json.append('{');
+ 
+     json.appendLiteral("\"constructorName\":");
+-    json.append('"');
+-    json.append(m_constructorName);
+-    json.append('"');
++    json.appendQuotedJSONString(m_constructorName);
+     json.append(',');
+ 
+     json.appendLiteral("\"isInDictionaryMode\":");
+@@ -463,9 +459,7 @@ String StructureShape::toJSONString() const
+         hasAnItem = true;
+ 
+         String fieldName((*it).get());
+-        json.append('"');
+-        json.append(fieldName);
+-        json.append('"');
++        json.appendQuotedJSONString(fieldName);
+     }
+     json.append(']');
+     json.append(',');
+@@ -479,9 +473,7 @@ String StructureShape::toJSONString() const
+         hasAnItem = true;
+ 
+         String fieldName((*it).get());
+-        json.append('"');
+-        json.append(fieldName);
+-        json.append('"');
++        json.appendQuotedJSONString(fieldName);
+     }
+     json.append(']');
+     json.append(',');
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/yarr/YarrJIT.cpp b/modules/web/src/main/native/Source/JavaScriptCore/yarr/YarrJIT.cpp
+index 5e507d7..f9cddcf 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/yarr/YarrJIT.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/yarr/YarrJIT.cpp
+@@ -1192,6 +1192,9 @@ class YarrGenerator : public YarrJITInfo, private MacroAssembler {
+                 ignoreCaseMask |= 32ULL << shiftAmount;
+         }
+ 
++        if (m_decodeSurrogatePairs)
++            op.m_jumps.append(jumpIfNoAvailableInput());
++
+         if (m_charSize == Char8) {
+             auto check1 = [&] (Checked<unsigned> offset, UChar32 characters) {
+                 op.m_jumps.append(jumpIfCharNotEquals(characters, offset, character));
+@@ -1324,6 +1327,9 @@ class YarrGenerator : public YarrJITInfo, private MacroAssembler {
+         const RegisterID character = regT0;
+         const RegisterID countRegister = regT1;
+ 
++        if (m_decodeSurrogatePairs)
++            op.m_jumps.append(jumpIfNoAvailableInput());
++
+         move(index, countRegister);
+         Checked<unsigned> scaledMaxCount = term->quantityMaxCount;
+         scaledMaxCount *= U_IS_BMP(ch) ? 1 : 2;
+@@ -1477,8 +1483,10 @@ class YarrGenerator : public YarrJITInfo, private MacroAssembler {
+ 
+         const RegisterID character = regT0;
+ 
+-        if (m_decodeSurrogatePairs)
++        if (m_decodeSurrogatePairs) {
++            op.m_jumps.append(jumpIfNoAvailableInput());
+             storeToFrame(index, term->frameLocation + BackTrackInfoCharacterClass::beginIndex());
++        }
+ 
+         JumpList matchDest;
+         readCharacter(m_checkedOffset - term->inputPosition, character);
+@@ -1525,6 +1533,9 @@ class YarrGenerator : public YarrJITInfo, private MacroAssembler {
+         const RegisterID character = regT0;
+         const RegisterID countRegister = regT1;
+ 
++        if (m_decodeSurrogatePairs)
++            op.m_jumps.append(jumpIfNoAvailableInput());
++
+         move(index, countRegister);
+         sub32(Imm32(term->quantityMaxCount.unsafeGet()), countRegister);
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.cpp b/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.cpp
+index 8d5ba12..fe94b6d 100644
+--- a/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.cpp
++++ b/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.cpp
+@@ -739,6 +739,7 @@ void AXObjectCache::remove(Node& node)
+     if (is<Element>(node)) {
+         m_deferredRecomputeIsIgnoredList.remove(downcast<Element>(&node));
+         m_deferredSelectedChildredChangedList.remove(downcast<Element>(&node));
++        m_deferredChildrenChangedNodeList.remove(&node);
+         m_deferredTextFormControlValue.remove(downcast<Element>(&node));
+         m_deferredAttributeChange.remove(downcast<Element>(&node));
+     }
+@@ -851,10 +852,8 @@ void AXObjectCache::handleLiveRegionCreated(Node* node)
+ 
+ void AXObjectCache::childrenChanged(Node* node, Node* newChild)
+ {
+-    if (newChild) {
+-        handleMenuOpened(newChild);
+-        handleLiveRegionCreated(newChild);
+-    }
++    if (newChild)
++        m_deferredChildrenChangedNodeList.add(newChild);
+ 
+     childrenChanged(get(node));
+ }
+@@ -864,13 +863,8 @@ void AXObjectCache::childrenChanged(RenderObject* renderer, RenderObject* newChi
+     if (!renderer)
+         return;
+ 
+-    // FIXME: Refactor the code to avoid calling updateLayout in this call stack.
+-    ScriptDisallowedScope::LayoutAssertionDisableScope disableScope;
+-
+-    if (newChild) {
+-        handleMenuOpened(newChild->node());
+-        handleLiveRegionCreated(newChild->node());
+-    }
++    if (newChild && newChild->node())
++        m_deferredChildrenChangedNodeList.add(newChild->node());
+ 
+     childrenChanged(get(renderer));
+ }
+@@ -880,7 +874,7 @@ void AXObjectCache::childrenChanged(AccessibilityObject* obj)
+     if (!obj)
+         return;
+ 
+-    obj->childrenChanged();
++    m_deferredChildredChangedList.add(obj);
+ }
+ 
+ void AXObjectCache::notificationPostTimerFired()
+@@ -2846,6 +2840,7 @@ void AXObjectCache::prepareForDocumentDestruction(const Document& document)
+     filterListForRemoval(m_deferredRecomputeIsIgnoredList, document, nodesToRemove);
+     filterListForRemoval(m_deferredTextChangedList, document, nodesToRemove);
+     filterListForRemoval(m_deferredSelectedChildredChangedList, document, nodesToRemove);
++    filterListForRemoval(m_deferredChildrenChangedNodeList, document, nodesToRemove);
+     filterMapForRemoval(m_deferredTextFormControlValue, document, nodesToRemove);
+     filterMapForRemoval(m_deferredAttributeChange, document, nodesToRemove);
+     filterVectorPairForRemoval(m_deferredFocusedNodeChange, document, nodesToRemove);
+@@ -2878,6 +2873,17 @@ void AXObjectCache::performDeferredCacheUpdate()
+         return;
+ 
+     SetForScope<bool> performingDeferredCacheUpdate(m_performingDeferredCacheUpdate, true);
++
++    for (auto* nodeChild : m_deferredChildrenChangedNodeList) {
++        handleMenuOpened(nodeChild);
++        handleLiveRegionCreated(nodeChild);
++    }
++    m_deferredChildrenChangedNodeList.clear();
++
++    for (auto& child : m_deferredChildredChangedList)
++        child->childrenChanged();
++    m_deferredChildredChangedList.clear();
++
+     for (auto* node : m_deferredTextChangedList)
+         textChanged(node);
+     m_deferredTextChangedList.clear();
+diff --git a/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.h b/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.h
+index 43ab347..574438a 100644
+--- a/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.h
++++ b/modules/web/src/main/native/Source/WebCore/accessibility/AXObjectCache.h
+@@ -452,6 +452,8 @@ private:
+     ListHashSet<Element*> m_deferredRecomputeIsIgnoredList;
+     ListHashSet<Node*> m_deferredTextChangedList;
+     ListHashSet<Element*> m_deferredSelectedChildredChangedList;
++    ListHashSet<RefPtr<AccessibilityObject>> m_deferredChildredChangedList;
++    ListHashSet<Node*> m_deferredChildrenChangedNodeList;
+     HashMap<Element*, String> m_deferredTextFormControlValue;
+     HashMap<Element*, QualifiedName> m_deferredAttributeChange;
+     Vector<std::pair<Node*, Node*>> m_deferredFocusedNodeChange;
+diff --git a/modules/web/src/main/native/Source/WebCore/accessibility/AccessibilityObject.cpp b/modules/web/src/main/native/Source/WebCore/accessibility/AccessibilityObject.cpp
+index 132598c..0ac7378 100644
+--- a/modules/web/src/main/native/Source/WebCore/accessibility/AccessibilityObject.cpp
++++ b/modules/web/src/main/native/Source/WebCore/accessibility/AccessibilityObject.cpp
+@@ -1786,6 +1786,10 @@ void AccessibilityObject::updateBackingStore()
+         if (!document->view()->layoutContext().isInRenderTreeLayout() && !document->inRenderTreeUpdate() && !document->inStyleRecalc())
+             document->updateLayoutIgnorePendingStylesheets();
+     }
++
++    if (auto cache = axObjectCache())
++        cache->performDeferredCacheUpdate();
++
+     updateChildrenIfNecessary();
+ }
+ #endif
+diff --git a/modules/web/src/main/native/Source/WebCore/dom/Document.h b/modules/web/src/main/native/Source/WebCore/dom/Document.h
+index f7cd380..7b86b8d 100644
+--- a/modules/web/src/main/native/Source/WebCore/dom/Document.h
++++ b/modules/web/src/main/native/Source/WebCore/dom/Document.h
+@@ -1483,9 +1483,7 @@ public:
+     void setAsRunningUserScripts() { m_isRunningUserScripts = true; }
+     bool isRunningUserScripts() const { return m_isRunningUserScripts; }
+ 
+-    // Used in webarchive loading tests.
+-    void setAlwaysAllowLocalWebarchive() { m_alwaysAllowLocalWebarchive = true; }
+-    bool alwaysAllowLocalWebarchive() const { return m_alwaysAllowLocalWebarchive; }
++    void frameWasDisconnectedFromOwner();
+ 
+ protected:
+     enum ConstructionFlags { Synthesized = 1, NonRenderedPlaceholder = 1 << 1 };
+@@ -2007,8 +2005,6 @@ private:
+     std::unique_ptr<UserGestureIndicator> m_temporaryUserGesture;
+ 
+     bool m_isRunningUserScripts { false };
+-
+-    bool m_alwaysAllowLocalWebarchive { false };
+ };
+ 
+ Element* eventTargetElementForDocument(Document*);
+diff --git a/modules/web/src/main/native/Source/WebCore/html/HTMLPlugInElement.cpp b/modules/web/src/main/native/Source/WebCore/html/HTMLPlugInElement.cpp
+index f84a368..791318a 100644
+--- a/modules/web/src/main/native/Source/WebCore/html/HTMLPlugInElement.cpp
++++ b/modules/web/src/main/native/Source/WebCore/html/HTMLPlugInElement.cpp
+@@ -425,13 +425,18 @@ bool HTMLPlugInElement::setReplacement(RenderEmbeddedObject::PluginUnavailabilit
+ 
+ bool HTMLPlugInElement::isReplacementObscured()
+ {
+-    // We should always start hit testing a clean tree.
+-    if (document().view())
+-        document().view()->updateLayoutAndStyleIfNeededRecursive();
+-    // Check if style recalc/layout destroyed the associated renderer.
+-    auto* renderView = document().topDocument().renderView();
+-    if (!document().view() || !renderView)
++    auto topDocument = makeRef(document().topDocument());
++    auto topFrameView = makeRefPtr(topDocument->view());
++    if (!topFrameView)
+         return false;
++
++    topFrameView->updateLayoutAndStyleIfNeededRecursive();
++
++    // Updating the layout may have detached this document from the top document.
++    auto* renderView = topDocument->renderView();
++    if (!renderView || !document().view() || &document().topDocument() != topDocument.ptr())
++        return false;
++
+     if (!renderer() || !is<RenderEmbeddedObject>(*renderer()))
+         return false;
+     auto& pluginRenderer = downcast<RenderEmbeddedObject>(*renderer());
+@@ -457,6 +462,8 @@ bool HTMLPlugInElement::isReplacementObscured()
+     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowUserAgentShadowContent | HitTestRequest::AllowChildFrameContent);
+     HitTestResult result;
+     HitTestLocation location = LayoutPoint(x + width / 2, y + height / 2);
++    ASSERT(!renderView->needsLayout());
++    ASSERT(!renderView->document().needsStyleRecalc());
+     bool hit = renderView->hitTest(request, location, result);
+     if (!hit || result.innerNode() != &pluginRenderer.frameOwnerElement())
+         return true;
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
+index b99aa6e..fa38842 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
++++ b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
+@@ -843,8 +843,11 @@ void DocumentLoader::responseReceived(const ResourceResponse& response, Completi
+     });
+ }
+ 
+-// Prevent web archives from loading if it is remote or it is not the main frame because they
+-// can claim to be from any domain and thus avoid cross-domain security checks (4120255, 45524528).
++// Prevent web archives from loading if
++// 1) it is remote;
++// 2) it is not the main frame;
++// 3) it is not any of { loaded by clients; loaded by drag; reloaded from any of the previous two };
++// because they can claim to be from any domain and thus avoid cross-domain security checks (4120255, 45524528, 47610130).
+ bool DocumentLoader::disallowWebArchive() const
+ {
+     using MIMETypeHashSet = HashSet<String, ASCIICaseInsensitiveHash>;
+@@ -874,11 +877,11 @@ bool DocumentLoader::disallowWebArchive() const
+     if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol().toStringWithoutCopying()))
+         return true;
+ 
+-    if (!frame() || frame()->isMainFrame())
++    if (!frame() || (frame()->isMainFrame() && m_allowsWebArchiveForMainFrame))
+         return false;
+ 
+     // On purpose of maintaining existing tests.
+-    if (!frame()->document() || frame()->document()->topDocument().alwaysAllowLocalWebarchive())
++    if (frame()->mainFrame().loader().alwaysAllowLocalWebarchive())
+         return false;
+     return true;
+ }
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.h b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.h
+index e6fdc7a..afea68a 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.h
++++ b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.h
+@@ -329,6 +329,9 @@ public:
+     WEBCORE_EXPORT void setCustomHeaderFields(Vector<HTTPHeaderField>&& fields);
+     const Vector<HTTPHeaderField>& customHeaderFields() { return m_customHeaderFields; }
+ 
++    void setAllowsWebArchiveForMainFrame(bool allowsWebArchiveForMainFrame) { m_allowsWebArchiveForMainFrame = allowsWebArchiveForMainFrame; }
++    bool allowsWebArchiveForMainFrame() const { return m_allowsWebArchiveForMainFrame; }
++
+ protected:
+     WEBCORE_EXPORT DocumentLoader(const ResourceRequest&, const SubstituteData&);
+ 
+@@ -540,6 +543,8 @@ private:
+ #ifndef NDEBUG
+     bool m_hasEverBeenAttached { false };
+ #endif
++
++    bool m_allowsWebArchiveForMainFrame { false };
+ };
+ 
+ inline void DocumentLoader::recordMemoryCacheLoadForFutureClientNotification(const ResourceRequest& request)
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/FrameLoadRequest.h b/modules/web/src/main/native/Source/WebCore/loader/FrameLoadRequest.h
+index 0c86c99..6f7ce1f 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/FrameLoadRequest.h
++++ b/modules/web/src/main/native/Source/WebCore/loader/FrameLoadRequest.h
+@@ -90,6 +90,9 @@ public:
+     bool isSystemPreview() const { return m_systemPreviewInfo.isSystemPreview; }
+     const IntRect& systemPreviewRect() const { return m_systemPreviewInfo.systemPreviewRect; }
+ 
++    void setIsRequestFromClientOrUserInput() { m_isRequestFromClientOrUserInput = true; }
++    bool isRequestFromClientOrUserInput() const { return m_isRequestFromClientOrUserInput; }
++
+ private:
+     Ref<Document> m_requester;
+     Ref<SecurityOrigin> m_requesterSecurityOrigin;
+@@ -110,6 +113,7 @@ private:
+     InitiatedByMainFrame m_initiatedByMainFrame { InitiatedByMainFrame::Unknown };
+     bool m_isCrossOriginWindowOpenNavigation { false };
+     SystemPreviewInfo m_systemPreviewInfo;
++    bool m_isRequestFromClientOrUserInput { false };
+ };
+ 
+ } // namespace WebCore
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.cpp b/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.cpp
+index 6f5efbb..3c10251 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.cpp
++++ b/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.cpp
+@@ -1466,6 +1466,7 @@ void FrameLoader::load(FrameLoadRequest&& request)
+         request.setSubstituteData(defaultSubstituteDataForURL(request.resourceRequest().url()));
+ 
+     Ref<DocumentLoader> loader = m_client.createDocumentLoader(request.resourceRequest(), request.substituteData());
++    loader->setAllowsWebArchiveForMainFrame(request.isRequestFromClientOrUserInput());
+     addSameSiteInfoToRequestIfNeeded(loader->request());
+     applyShouldOpenExternalURLsPolicyToNewDocumentLoader(m_frame, loader, request);
+ 
+@@ -1740,6 +1741,7 @@ void FrameLoader::reload(OptionSet<ReloadOption> options)
+     // Create a new document loader for the reload, this will become m_documentLoader eventually,
+     // but first it has to be the "policy" document loader, and then the "provisional" document loader.
+     Ref<DocumentLoader> loader = m_client.createDocumentLoader(initialRequest, defaultSubstituteDataForURL(initialRequest.url()));
++    loader->setAllowsWebArchiveForMainFrame(m_documentLoader->allowsWebArchiveForMainFrame());
+     applyShouldOpenExternalURLsPolicyToNewDocumentLoader(m_frame, loader, InitiatedByMainFrame::Unknown, m_documentLoader->shouldOpenExternalURLsPolicyToPropagate());
+ 
+     loader->setUserContentExtensionsEnabled(!options.contains(ReloadOption::DisableContentBlockers));
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.h b/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.h
+index ff5a6dd..915a684 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.h
++++ b/modules/web/src/main/native/Source/WebCore/loader/FrameLoader.h
+@@ -311,6 +311,10 @@ public:
+     bool shouldSuppressTextInputFromEditing() const;
+     bool isReloadingFromOrigin() const { return m_loadType == FrameLoadType::ReloadFromOrigin; }
+ 
++    // Used in webarchive loading tests.
++    void setAlwaysAllowLocalWebarchive(bool alwaysAllowLocalWebarchive) { m_alwaysAllowLocalWebarchive = alwaysAllowLocalWebarchive; }
++    bool alwaysAllowLocalWebarchive() const { return m_alwaysAllowLocalWebarchive; }
++
+ private:
+     enum FormSubmissionCacheLoadPolicy {
+         MayAttemptCacheOnlyLoadForFormSubmissionItem,
+@@ -474,6 +478,8 @@ private:
+ 
+     URL m_previousURL;
+     RefPtr<HistoryItem> m_requestedHistoryItem;
++
++    bool m_alwaysAllowLocalWebarchive { false };
+ };
+ 
+ // This function is called by createWindow() in JSDOMWindowBase.cpp, for example, for
+diff --git a/modules/web/src/main/native/Source/WebCore/page/DOMTimer.cpp b/modules/web/src/main/native/Source/WebCore/page/DOMTimer.cpp
+index 8df1bc7..38d3519 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/DOMTimer.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/DOMTimer.cpp
+@@ -113,7 +113,7 @@ private:
+ DOMTimerFireState* DOMTimerFireState::current = nullptr;
+ 
+ struct NestedTimersMap {
+-    typedef HashMap<int, DOMTimer*>::const_iterator const_iterator;
++    typedef HashMap<int, Ref<DOMTimer>>::const_iterator const_iterator;
+ 
+     static NestedTimersMap* instanceForContext(ScriptExecutionContext& context)
+     {
+@@ -139,10 +139,10 @@ struct NestedTimersMap {
+         nestedTimers.clear();
+     }
+ 
+-    void add(int timeoutId, DOMTimer* timer)
++    void add(int timeoutId, Ref<DOMTimer>&& timer)
+     {
+         if (isTrackingNestedTimers)
+-            nestedTimers.add(timeoutId, timer);
++            nestedTimers.add(timeoutId, WTFMove(timer));
+     }
+ 
+     void remove(int timeoutId)
+@@ -162,7 +162,7 @@ private:
+     }
+ 
+     static bool isTrackingNestedTimers;
+-    HashMap<int /* timeoutId */, DOMTimer*> nestedTimers;
++    HashMap<int /* timeoutId */, Ref<DOMTimer>> nestedTimers;
+ };
+ 
+ bool NestedTimersMap::isTrackingNestedTimers = false;
+@@ -234,7 +234,7 @@ int DOMTimer::install(ScriptExecutionContext& context, std::unique_ptr<Scheduled
+ 
+     // Keep track of nested timer installs.
+     if (NestedTimersMap* nestedTimers = NestedTimersMap::instanceForContext(context))
+-        nestedTimers->add(timer->m_timeoutId, timer);
++        nestedTimers->add(timer->m_timeoutId, *timer);
+ 
+     return timer->m_timeoutId;
+ }
+@@ -380,8 +380,8 @@ void DOMTimer::fired()
+ 
+     // Check if we should throttle nested single-shot timers.
+     if (nestedTimers) {
+-        for (auto& keyValue : *nestedTimers) {
+-            auto* timer = keyValue.value;
++        for (auto& idAndTimer : *nestedTimers) {
++            auto& timer = idAndTimer.value;
+             if (timer->isActive() && !timer->repeatInterval())
+                 timer->updateThrottlingStateIfNecessary(fireState);
+         }
+diff --git a/modules/web/src/main/native/Source/WebCore/page/DragController.cpp b/modules/web/src/main/native/Source/WebCore/page/DragController.cpp
+index d8a8b66..78b2323 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/DragController.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/DragController.cpp
+@@ -290,7 +290,9 @@ bool DragController::performDragOperation(const DragData& dragData)
+         return false;
+ 
+     m_client.willPerformDragDestinationAction(DragDestinationActionLoad, dragData);
+-    m_page.mainFrame().loader().load(FrameLoadRequest(m_page.mainFrame(), { urlString }, shouldOpenExternalURLsPolicy));
++    FrameLoadRequest frameLoadRequest { m_page.mainFrame(), { urlString }, shouldOpenExternalURLsPolicy };
++    frameLoadRequest.setIsRequestFromClientOrUserInput();
++    m_page.mainFrame().loader().load(WTFMove(frameLoadRequest));
+     return true;
+ }
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.cpp b/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.cpp
+index 3569d5c..69af981 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.cpp
+@@ -76,11 +76,17 @@ void ThreadTimers::updateSharedTimer()
+     if (!m_sharedTimer)
+         return;
+ 
++    while (!m_timerHeap.isEmpty() && !m_timerHeap.first()->hasTimer()) {
++        ASSERT_NOT_REACHED();
++        TimerBase::heapDeleteNullMin(m_timerHeap);
++    }
++    ASSERT(m_timerHeap.isEmpty() || m_timerHeap.first()->hasTimer());
++
+     if (m_firingTimers || m_timerHeap.isEmpty()) {
+         m_pendingSharedTimerFireTime = MonotonicTime { };
+         m_sharedTimer->stop();
+     } else {
+-        MonotonicTime nextFireTime = m_timerHeap.first()->m_nextFireTime;
++        MonotonicTime nextFireTime = m_timerHeap.first()->time;
+         MonotonicTime currentMonotonicTime = MonotonicTime::now();
+         if (m_pendingSharedTimerFireTime) {
+             // No need to restart the timer if both the pending fire time and the new fire time are in the past.
+@@ -104,17 +110,23 @@ void ThreadTimers::sharedTimerFiredInternal()
+     MonotonicTime fireTime = MonotonicTime::now();
+     MonotonicTime timeToQuit = fireTime + maxDurationOfFiringTimers;
+ 
+-    while (!m_timerHeap.isEmpty() && m_timerHeap.first()->m_nextFireTime <= fireTime) {
+-        TimerBase* timer = m_timerHeap.first();
+-        timer->m_nextFireTime = MonotonicTime { };
+-        timer->m_unalignedNextFireTime = MonotonicTime { };
+-        timer->heapDeleteMin();
++    while (!m_timerHeap.isEmpty()) {
++        Ref<ThreadTimerHeapItem> item = *m_timerHeap.first();
++        ASSERT(item->hasTimer());
++        if (!item->hasTimer()) {
++            TimerBase::heapDeleteNullMin(m_timerHeap);
++            continue;
++        }
++
++        if (item->time > fireTime)
++            break;
+ 
+-        Seconds interval = timer->repeatInterval();
+-        timer->setNextFireTime(interval ? fireTime + interval : MonotonicTime { });
++        auto& timer = item->timer();
++        Seconds interval = timer.repeatInterval();
++        timer.setNextFireTime(interval ? fireTime + interval : MonotonicTime { });
+ 
+         // Once the timer has been fired, it may be deleted, so do nothing else with it after this point.
+-        timer->fired();
++        item->timer().fired();
+ 
+         // Catch the case where the timer asked timers to fire in a nested event loop, or we are over time limit.
+         if (!m_firingTimers || timeToQuit < MonotonicTime::now())
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.h b/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.h
+index 3843159..0c037df 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.h
++++ b/modules/web/src/main/native/Source/WebCore/platform/ThreadTimers.h
+@@ -29,36 +29,100 @@
+ 
+ #include <wtf/MonotonicTime.h>
+ #include <wtf/Noncopyable.h>
++#include <wtf/RefCounted.h>
++#include <wtf/ThreadSafeRefCounted.h>
+ #include <wtf/Vector.h>
+ 
+ namespace WebCore {
+ 
+-    class SharedTimer;
+-    class TimerBase;
++class SharedTimer;
++class ThreadTimers;
++class TimerBase;
+ 
+-    // A collection of timers per thread. Kept in ThreadGlobalData.
+-    class ThreadTimers {
++struct ThreadTimerHeapItem;
++typedef Vector<RefPtr<ThreadTimerHeapItem>> ThreadTimerHeap;
++
++// A collection of timers per thread. Kept in ThreadGlobalData.
++class ThreadTimers {
+         WTF_MAKE_NONCOPYABLE(ThreadTimers); WTF_MAKE_FAST_ALLOCATED;
+-    public:
++public:
+         ThreadTimers();
+ 
+         // On a thread different then main, we should set the thread's instance of the SharedTimer.
+         void setSharedTimer(SharedTimer*);
+ 
+-        Vector<TimerBase*>& timerHeap() { return m_timerHeap; }
++    ThreadTimerHeap& timerHeap() { return m_timerHeap; }
+ 
+         void updateSharedTimer();
+         void fireTimersInNestedEventLoop();
+ 
+-    private:
++private:
+         void sharedTimerFiredInternal();
+         void fireTimersInNestedEventLoopInternal();
+ 
+-        Vector<TimerBase*> m_timerHeap;
++    ThreadTimerHeap m_timerHeap;
+         SharedTimer* m_sharedTimer { nullptr }; // External object, can be a run loop on a worker thread. Normally set/reset by worker thread.
+         bool m_firingTimers { false }; // Reentrancy guard.
+         MonotonicTime m_pendingSharedTimerFireTime;
+-    };
++};
++
++struct ThreadTimerHeapItem : ThreadSafeRefCounted<ThreadTimerHeapItem> {
++    static RefPtr<ThreadTimerHeapItem> create(TimerBase&, MonotonicTime, unsigned);
++
++    bool hasTimer() const { return m_timer; }
++    TimerBase& timer();
++    void clearTimer();
++
++    ThreadTimerHeap& timerHeap() const;
++
++    unsigned heapIndex() const;
++    void setHeapIndex(unsigned newIndex);
++    void setNotInHeap() { m_heapIndex = invalidHeapIndex; }
++
++    bool isInHeap() const { return m_heapIndex != invalidHeapIndex; }
++    bool isFirstInHeap() const { return !m_heapIndex; }
++
++    MonotonicTime time;
++    unsigned insertionOrder { 0 };
++
++private:
++    ThreadTimers& m_threadTimers;
++    TimerBase* m_timer { nullptr };
++    unsigned m_heapIndex { invalidHeapIndex };
++
++    static const unsigned invalidHeapIndex = static_cast<unsigned>(-1);
++
++    ThreadTimerHeapItem(TimerBase&, MonotonicTime, unsigned);
++};
++
++inline TimerBase& ThreadTimerHeapItem::timer()
++{
++    ASSERT(m_timer);
++    return *m_timer;
++}
++
++inline void ThreadTimerHeapItem::clearTimer()
++{
++    ASSERT(!isInHeap());
++    m_timer = nullptr;
++}
++
++inline unsigned ThreadTimerHeapItem::heapIndex() const
++{
++    ASSERT(m_heapIndex != invalidHeapIndex);
++    return static_cast<unsigned>(m_heapIndex);
++}
++
++inline void ThreadTimerHeapItem::setHeapIndex(unsigned newIndex)
++{
++    ASSERT(newIndex != invalidHeapIndex);
++    m_heapIndex = newIndex;
++}
++
++inline ThreadTimerHeap& ThreadTimerHeapItem::timerHeap() const
++{
++    return m_threadTimers.timerHeap();
++}
+ 
+ }
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/Timer.cpp b/modules/web/src/main/native/Source/WebCore/platform/Timer.cpp
+index 4bce687..74dff75 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/Timer.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/Timer.cpp
+@@ -50,69 +50,111 @@ class TimerHeapReference;
+ // Then we set a single shared system timer to fire at that time.
+ //
+ // When a timer's "next fire time" changes, we need to move it around in the priority queue.
+-static Vector<TimerBase*>& threadGlobalTimerHeap()
++#if !ASSERT_DISABLED
++static ThreadTimerHeap& threadGlobalTimerHeap()
+ {
+     return threadGlobalData().threadTimers().timerHeap();
+ }
++#endif
++
++inline ThreadTimerHeapItem::ThreadTimerHeapItem(TimerBase& timer, MonotonicTime time, unsigned insertionOrder)
++    : time(time)
++    , insertionOrder(insertionOrder)
++    , m_threadTimers(threadGlobalData().threadTimers())
++    , m_timer(&timer)
++{
++    ASSERT(m_timer);
++}
++
++inline RefPtr<ThreadTimerHeapItem> ThreadTimerHeapItem::create(TimerBase& timer, MonotonicTime time, unsigned insertionOrder)
++{
++    return adoptRef(*new ThreadTimerHeapItem { timer, time, insertionOrder });
++}
++
+ // ----------------
+ 
+ class TimerHeapPointer {
+ public:
+-    TimerHeapPointer(TimerBase** pointer) : m_pointer(pointer) { }
++    TimerHeapPointer(RefPtr<ThreadTimerHeapItem>* pointer)
++        : m_pointer(pointer)
++    { }
++
+     TimerHeapReference operator*() const;
+-    TimerBase* operator->() const { return *m_pointer; }
++    RefPtr<ThreadTimerHeapItem>& operator->() const { return *m_pointer; }
+ private:
+-    TimerBase** m_pointer;
++    RefPtr<ThreadTimerHeapItem>* m_pointer;
+ };
+ 
+ class TimerHeapReference {
+ public:
+-    TimerHeapReference(TimerBase*& reference) : m_reference(reference) { }
+-    operator TimerBase*() const { return m_reference; }
++    TimerHeapReference(RefPtr<ThreadTimerHeapItem>& reference)
++        : m_reference(reference)
++    { }
++
++    TimerHeapReference(const TimerHeapReference& other)
++        : m_reference(other.m_reference)
++    { }
++
++    operator RefPtr<ThreadTimerHeapItem>&() const { return m_reference; }
+     TimerHeapPointer operator&() const { return &m_reference; }
+-    TimerHeapReference& operator=(TimerBase*);
+-    TimerHeapReference& operator=(TimerHeapReference);
++    TimerHeapReference& operator=(TimerHeapReference&&);
++    TimerHeapReference& operator=(RefPtr<ThreadTimerHeapItem>&&);
++
++    void swap(TimerHeapReference& other);
++
++    void updateHeapIndex();
++
+ private:
+-    TimerBase*& m_reference;
++    RefPtr<ThreadTimerHeapItem>& m_reference;
++
++    friend void swap(TimerHeapReference a, TimerHeapReference b);
+ };
+ 
+ inline TimerHeapReference TimerHeapPointer::operator*() const
+ {
+-    return *m_pointer;
++    return TimerHeapReference { *m_pointer };
+ }
+ 
+-inline TimerHeapReference& TimerHeapReference::operator=(TimerBase* timer)
++inline TimerHeapReference& TimerHeapReference::operator=(TimerHeapReference&& other)
+ {
+-    m_reference = timer;
+-    Vector<TimerBase*>& heap = timer->timerHeap();
+-    if (&m_reference >= heap.data() && &m_reference < heap.data() + heap.size())
+-        timer->m_heapIndex = &m_reference - heap.data();
++    m_reference = WTFMove(other.m_reference);
++    updateHeapIndex();
+     return *this;
+ }
+ 
+-inline TimerHeapReference& TimerHeapReference::operator=(TimerHeapReference b)
++inline TimerHeapReference& TimerHeapReference::operator=(RefPtr<ThreadTimerHeapItem>&& item)
+ {
+-    TimerBase* timer = b;
+-    return *this = timer;
++    m_reference = WTFMove(item);
++    updateHeapIndex();
++    return *this;
+ }
+ 
+-inline void swap(TimerHeapReference a, TimerHeapReference b)
++inline void TimerHeapReference::swap(TimerHeapReference& other)
+ {
+-    TimerBase* timerA = a;
+-    TimerBase* timerB = b;
++    m_reference.swap(other.m_reference);
++    updateHeapIndex();
++    other.updateHeapIndex();
++}
+ 
+-    // Invoke the assignment operator, since that takes care of updating m_heapIndex.
+-    a = timerB;
+-    b = timerA;
++inline void TimerHeapReference::updateHeapIndex()
++{
++    auto& heap = m_reference->timerHeap();
++    if (&m_reference >= heap.data() && &m_reference < heap.data() + heap.size())
++        m_reference->setHeapIndex(&m_reference - heap.data());
++}
++
++inline void swap(TimerHeapReference a, TimerHeapReference b)
++{
++    a.swap(b);
+ }
+ 
+ // ----------------
+ 
+ // Class to represent iterators in the heap when calling the standard library heap algorithms.
+ // Uses a custom pointer and reference type that update indices for pointers in the heap.
+-class TimerHeapIterator : public std::iterator<std::random_access_iterator_tag, TimerBase*, ptrdiff_t, TimerHeapPointer, TimerHeapReference> {
++class TimerHeapIterator : public std::iterator<std::random_access_iterator_tag, RefPtr<ThreadTimerHeapItem>, ptrdiff_t, TimerHeapPointer, TimerHeapReference> {
+ public:
+-    explicit TimerHeapIterator(TimerBase** pointer) : m_pointer(pointer) { checkConsistency(); }
++    explicit TimerHeapIterator(RefPtr<ThreadTimerHeapItem>* pointer) : m_pointer(pointer) { checkConsistency(); }
+ 
+     TimerHeapIterator& operator++() { checkConsistency(); ++m_pointer; checkConsistency(); return *this; }
+     TimerHeapIterator operator++(int) { checkConsistency(1); return TimerHeapIterator(m_pointer++); }
+@@ -125,7 +167,7 @@ public:
+ 
+     TimerHeapReference operator*() const { return TimerHeapReference(*m_pointer); }
+     TimerHeapReference operator[](ptrdiff_t i) const { return TimerHeapReference(m_pointer[i]); }
+-    TimerBase* operator->() const { return *m_pointer; }
++    RefPtr<ThreadTimerHeapItem>& operator->() const { return *m_pointer; }
+ 
+ private:
+     void checkConsistency(ptrdiff_t offset = 0) const
+@@ -149,7 +191,7 @@ private:
+     friend TimerHeapIterator operator-(TimerHeapIterator, size_t);
+     friend ptrdiff_t operator-(TimerHeapIterator, TimerHeapIterator);
+ 
+-    TimerBase** m_pointer;
++    RefPtr<ThreadTimerHeapItem>* m_pointer;
+ };
+ 
+ inline bool operator==(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer == b.m_pointer; }
+@@ -169,23 +211,34 @@ inline ptrdiff_t operator-(TimerHeapIterator a, TimerHeapIterator b) { return a.
+ 
+ class TimerHeapLessThanFunction {
+ public:
+-    bool operator()(const TimerBase*, const TimerBase*) const;
+-};
++    static bool compare(const TimerBase& a, const RefPtr<ThreadTimerHeapItem>& b)
++    {
++        return compare(a.m_heapItem->time, a.m_heapItem->insertionOrder, b->time, b->insertionOrder);
++    }
+ 
+-inline bool TimerHeapLessThanFunction::operator()(const TimerBase* a, const TimerBase* b) const
+-{
++    static bool compare(const RefPtr<ThreadTimerHeapItem>& a, const TimerBase& b)
++    {
++        return compare(a->time, a->insertionOrder, b.m_heapItem->time, b.m_heapItem->insertionOrder);
++    }
++
++    bool operator()(const RefPtr<ThreadTimerHeapItem>& a, const RefPtr<ThreadTimerHeapItem>& b) const
++    {
++        return compare(a->time, a->insertionOrder, b->time, b->insertionOrder);
++    }
++
++private:
++    static bool compare(MonotonicTime aTime, unsigned aOrder, MonotonicTime bTime, unsigned bOrder)
++    {
+     // The comparisons below are "backwards" because the heap puts the largest
+     // element first and we want the lowest time to be the first one in the heap.
+-    MonotonicTime aFireTime = a->m_nextFireTime;
+-    MonotonicTime bFireTime = b->m_nextFireTime;
+-    if (bFireTime != aFireTime)
+-        return bFireTime < aFireTime;
+-
++        if (bTime != aTime)
++            return bTime < aTime;
+     // We need to look at the difference of the insertion orders instead of comparing the two
+     // outright in case of overflow.
+-    unsigned difference = a->m_heapInsertionOrder - b->m_heapInsertionOrder;
++        unsigned difference = aOrder - bOrder;
+     return difference < std::numeric_limits<unsigned>::max() / 2;
+-}
++    }
++};
+ 
+ // ----------------
+ 
+@@ -201,8 +254,7 @@ static bool shouldSuppressThreadSafetyCheck()
+ }
+ 
+ TimerBase::TimerBase()
+-    : m_heapIndex(-1)
+-    , m_wasDeleted(false)
++    : m_wasDeleted(false)
+ {
+ }
+ 
+@@ -210,8 +262,13 @@ TimerBase::~TimerBase()
+ {
+     ASSERT(canAccessThreadLocalDataForThread(m_thread.get()));
+     RELEASE_ASSERT(canAccessThreadLocalDataForThread(m_thread.get()) || shouldSuppressThreadSafetyCheck());
++    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(canAccessThreadLocalDataForThread(m_thread.get()));
+     stop();
+     ASSERT(!inHeap());
++    if (m_heapItem) {
++        m_heapItem->clearTimer();
++        m_heapItem = nullptr;
++    }
+     m_wasDeleted = true;
+ }
+ 
+@@ -230,7 +287,7 @@ void TimerBase::stop()
+     m_repeatInterval = 0_s;
+     setNextFireTime(MonotonicTime { });
+ 
+-    ASSERT(!static_cast<bool>(m_nextFireTime));
++    ASSERT(!static_cast<bool>(nextFireTime()));
+     ASSERT(m_repeatInterval == 0_s);
+     ASSERT(!inHeap());
+ }
+@@ -238,57 +295,66 @@ void TimerBase::stop()
+ Seconds TimerBase::nextFireInterval() const
+ {
+     ASSERT(isActive());
++    ASSERT(m_heapItem);
+     MonotonicTime current = MonotonicTime::now();
+-    if (m_nextFireTime < current)
++    auto fireTime = nextFireTime();
++    if (fireTime < current)
+         return 0_s;
+-    return m_nextFireTime - current;
++    return fireTime - current;
+ }
+ 
+ inline void TimerBase::checkHeapIndex() const
+ {
+-    ASSERT(timerHeap() == threadGlobalTimerHeap());
+-    ASSERT(!timerHeap().isEmpty());
+-    ASSERT(m_heapIndex >= 0);
+-    ASSERT(m_heapIndex < static_cast<int>(timerHeap().size()));
+-    ASSERT(timerHeap()[m_heapIndex] == this);
++#if !ASSERT_DISABLED
++    ASSERT(m_heapItem);
++    auto& heap = m_heapItem->timerHeap();
++    ASSERT(&heap == &threadGlobalTimerHeap());
++    ASSERT(!heap.isEmpty());
++    ASSERT(m_heapItem->isInHeap());
++    ASSERT(m_heapItem->heapIndex() < m_heapItem->timerHeap().size());
++    ASSERT(heap[m_heapItem->heapIndex()] == m_heapItem);
++    for (unsigned i = 0, size = heap.size(); i < size; i++)
++        ASSERT(heap[i]->heapIndex() == i);
++#endif
+ }
+ 
+ inline void TimerBase::checkConsistency() const
+ {
+     // Timers should be in the heap if and only if they have a non-zero next fire time.
+-    ASSERT(inHeap() == static_cast<bool>(m_nextFireTime));
++    ASSERT(inHeap() == static_cast<bool>(nextFireTime()));
+     if (inHeap())
+         checkHeapIndex();
+ }
+ 
+ void TimerBase::heapDecreaseKey()
+ {
+-    ASSERT(static_cast<bool>(m_nextFireTime));
++    ASSERT(static_cast<bool>(nextFireTime()));
++    ASSERT(m_heapItem);
+     checkHeapIndex();
+-    TimerBase** heapData = timerHeap().data();
+-    push_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + m_heapIndex + 1), TimerHeapLessThanFunction());
++    auto* heapData = m_heapItem->timerHeap().data();
++    push_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + m_heapItem->heapIndex() + 1), TimerHeapLessThanFunction());
+     checkHeapIndex();
+ }
+ 
+ inline void TimerBase::heapDelete()
+ {
+-    ASSERT(!static_cast<bool>(m_nextFireTime));
++    ASSERT(!static_cast<bool>(nextFireTime()));
+     heapPop();
+-    timerHeap().removeLast();
+-    m_heapIndex = -1;
++    m_heapItem->timerHeap().removeLast();
++    m_heapItem->setNotInHeap();
+ }
+ 
+ void TimerBase::heapDeleteMin()
+ {
+-    ASSERT(!static_cast<bool>(m_nextFireTime));
++    ASSERT(!static_cast<bool>(nextFireTime()));
+     heapPopMin();
+-    timerHeap().removeLast();
+-    m_heapIndex = -1;
++    m_heapItem->timerHeap().removeLast();
++    m_heapItem->setNotInHeap();
+ }
+ 
+ inline void TimerBase::heapIncreaseKey()
+ {
+-    ASSERT(static_cast<bool>(m_nextFireTime));
++    ASSERT(static_cast<bool>(nextFireTime()));
+     heapPop();
+     heapDecreaseKey();
+ }
+@@ -296,81 +362,105 @@ inline void TimerBase::heapIncreaseKey()
+ inline void TimerBase::heapInsert()
+ {
+     ASSERT(!inHeap());
+-    timerHeap().append(this);
+-    m_heapIndex = timerHeap().size() - 1;
++    ASSERT(m_heapItem);
++    auto& heap = m_heapItem->timerHeap();
++    heap.append(m_heapItem.copyRef());
++    m_heapItem->setHeapIndex(heap.size() - 1);
+     heapDecreaseKey();
+ }
+ 
+ inline void TimerBase::heapPop()
+ {
++    ASSERT(m_heapItem);
+     // Temporarily force this timer to have the minimum key so we can pop it.
+-    MonotonicTime fireTime = m_nextFireTime;
+-    m_nextFireTime = -MonotonicTime::infinity();
++    MonotonicTime fireTime = m_heapItem->time;
++    m_heapItem->time = -MonotonicTime::infinity();
+     heapDecreaseKey();
+     heapPopMin();
+-    m_nextFireTime = fireTime;
++    m_heapItem->time = fireTime;
+ }
+ 
+ void TimerBase::heapPopMin()
+ {
+-    ASSERT(this == timerHeap().first());
++    ASSERT(m_heapItem == m_heapItem->timerHeap().first());
+     checkHeapIndex();
+-    Vector<TimerBase*>& heap = timerHeap();
+-    TimerBase** heapData = heap.data();
++    auto& heap = m_heapItem->timerHeap();
++    auto* heapData = heap.data();
+     pop_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + heap.size()), TimerHeapLessThanFunction());
+     checkHeapIndex();
+-    ASSERT(this == timerHeap().last());
++    ASSERT(m_heapItem == m_heapItem->timerHeap().last());
+ }
+ 
+-static inline bool parentHeapPropertyHolds(const TimerBase* current, const Vector<TimerBase*>& heap, unsigned currentIndex)
++void TimerBase::heapDeleteNullMin(ThreadTimerHeap& heap)
++{
++    RELEASE_ASSERT(!heap.first()->hasTimer());
++    heap.first()->time = -MonotonicTime::infinity();
++    auto* heapData = heap.data();
++    pop_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + heap.size()), TimerHeapLessThanFunction());
++    heap.removeLast();
++}
++
++static inline bool parentHeapPropertyHolds(const TimerBase* current, const ThreadTimerHeap& heap, unsigned currentIndex)
+ {
+     if (!currentIndex)
+         return true;
+     unsigned parentIndex = (currentIndex - 1) / 2;
+-    TimerHeapLessThanFunction compareHeapPosition;
+-    return compareHeapPosition(current, heap[parentIndex]);
++    return TimerHeapLessThanFunction::compare(*current, heap[parentIndex]);
+ }
+ 
+-static inline bool childHeapPropertyHolds(const TimerBase* current, const Vector<TimerBase*>& heap, unsigned childIndex)
++static inline bool childHeapPropertyHolds(const TimerBase* current, const ThreadTimerHeap& heap, unsigned childIndex)
+ {
+     if (childIndex >= heap.size())
+         return true;
+-    TimerHeapLessThanFunction compareHeapPosition;
+-    return compareHeapPosition(heap[childIndex], current);
++    return TimerHeapLessThanFunction::compare(heap[childIndex], *current);
+ }
+ 
+ bool TimerBase::hasValidHeapPosition() const
+ {
+-    ASSERT(m_nextFireTime);
++    ASSERT(nextFireTime());
++    ASSERT(m_heapItem);
+     if (!inHeap())
+         return false;
+     // Check if the heap property still holds with the new fire time. If it does we don't need to do anything.
+     // This assumes that the STL heap is a standard binary heap. In an unlikely event it is not, the assertions
+     // in updateHeapIfNeeded() will get hit.
+-    const Vector<TimerBase*>& heap = timerHeap();
+-    if (!parentHeapPropertyHolds(this, heap, m_heapIndex))
++    const auto& heap = m_heapItem->timerHeap();
++    unsigned heapIndex = m_heapItem->heapIndex();
++    if (!parentHeapPropertyHolds(this, heap, heapIndex))
+         return false;
+-    unsigned childIndex1 = 2 * m_heapIndex + 1;
++    unsigned childIndex1 = 2 * heapIndex + 1;
+     unsigned childIndex2 = childIndex1 + 1;
+     return childHeapPropertyHolds(this, heap, childIndex1) && childHeapPropertyHolds(this, heap, childIndex2);
+ }
+ 
+ void TimerBase::updateHeapIfNeeded(MonotonicTime oldTime)
+ {
+-    if (m_nextFireTime && hasValidHeapPosition())
++    auto fireTime = nextFireTime();
++    if (fireTime && hasValidHeapPosition())
+         return;
+-#ifndef NDEBUG
+-    int oldHeapIndex = m_heapIndex;
++
++#if !ASSERT_DISABLED
++    Optional<unsigned> oldHeapIndex;
++    if (m_heapItem->isInHeap())
++        oldHeapIndex = m_heapItem->heapIndex();
+ #endif
++
+     if (!oldTime)
+         heapInsert();
+-    else if (!m_nextFireTime)
++    else if (!fireTime)
+         heapDelete();
+-    else if (m_nextFireTime < oldTime)
++    else if (fireTime < oldTime)
+         heapDecreaseKey();
+     else
+         heapIncreaseKey();
+-    ASSERT(m_heapIndex != oldHeapIndex);
++
++#if !ASSERT_DISABLED
++    Optional<unsigned> newHeapIndex;
++    if (m_heapItem->isInHeap())
++        newHeapIndex = m_heapItem->heapIndex();
++    ASSERT(newHeapIndex != oldHeapIndex);
++#endif
++
+     ASSERT(!inHeap() || hasValidHeapPosition());
+ }
+ 
+@@ -383,12 +473,8 @@ void TimerBase::setNextFireTime(MonotonicTime newTime)
+     if (m_unalignedNextFireTime != newTime)
+         m_unalignedNextFireTime = newTime;
+ 
+-    // Accessing thread global data is slow. Cache the heap pointer.
+-    if (!m_cachedThreadGlobalTimerHeap)
+-        m_cachedThreadGlobalTimerHeap = &threadGlobalTimerHeap();
+-
+     // Keep heap valid while changing the next-fire time.
+-    MonotonicTime oldTime = m_nextFireTime;
++    MonotonicTime oldTime = nextFireTime();
+     // Don't realign zero-delay timers.
+     if (newTime) {
+         if (auto newAlignedTime = alignedFireTime(newTime))
+@@ -396,16 +482,20 @@ void TimerBase::setNextFireTime(MonotonicTime newTime)
+     }
+ 
+     if (oldTime != newTime) {
+-        m_nextFireTime = newTime;
+         // FIXME: This should be part of ThreadTimers, or another per-thread structure.
+         static std::atomic<unsigned> currentHeapInsertionOrder;
+-        m_heapInsertionOrder = currentHeapInsertionOrder++;
++        auto newOrder = currentHeapInsertionOrder++;
++
++        if (!m_heapItem)
++            m_heapItem = ThreadTimerHeapItem::create(*this, newTime, 0);
++        m_heapItem->time = newTime;
++        m_heapItem->insertionOrder = newOrder;
+ 
+-        bool wasFirstTimerInHeap = m_heapIndex == 0;
++        bool wasFirstTimerInHeap = m_heapItem->isFirstInHeap();
+ 
+         updateHeapIfNeeded(oldTime);
+ 
+-        bool isFirstTimerInHeap = m_heapIndex == 0;
++        bool isFirstTimerInHeap = m_heapItem->isFirstInHeap();
+ 
+         if (wasFirstTimerInHeap || isFirstTimerInHeap)
+             threadGlobalData().threadTimers().updateSharedTimer();
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/Timer.h b/modules/web/src/main/native/Source/WebCore/platform/Timer.h
+index 38d5da0..64ceb05 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/Timer.h
++++ b/modules/web/src/main/native/Source/WebCore/platform/Timer.h
+@@ -25,6 +25,7 @@
+ 
+ #pragma once
+ 
++#include "ThreadTimers.h"
+ #include <functional>
+ #include <wtf/Function.h>
+ #include <wtf/MonotonicTime.h>
+@@ -33,6 +34,7 @@
+ #include <wtf/Seconds.h>
+ #include <wtf/Threading.h>
+ #include <wtf/Vector.h>
++#include <wtf/WeakPtr.h>
+ 
+ #if PLATFORM(IOS)
+ #include "WebCoreThread.h"
+@@ -40,10 +42,6 @@
+ 
+ namespace WebCore {
+ 
+-// Time intervals are all in seconds.
+-
+-class TimerHeapElement;
+-
+ class TimerBase {
+     WTF_MAKE_NONCOPYABLE(TimerBase);
+     WTF_MAKE_FAST_ALLOCATED;
+@@ -63,7 +61,7 @@ public:
+     Seconds nextUnalignedFireInterval() const;
+     Seconds repeatInterval() const { return m_repeatInterval; }
+ 
+-    void augmentFireInterval(Seconds delta) { setNextFireTime(m_nextFireTime + delta); }
++    void augmentFireInterval(Seconds delta) { setNextFireTime(m_heapItem->time + delta); }
+     void augmentRepeatInterval(Seconds delta) { augmentFireInterval(delta); m_repeatInterval += delta; }
+ 
+     void didChangeAlignmentInterval();
+@@ -80,7 +78,7 @@ private:
+ 
+     void setNextFireTime(MonotonicTime);
+ 
+-    bool inHeap() const { return m_heapIndex != -1; }
++    bool inHeap() const { return m_heapItem && m_heapItem->isInHeap(); }
+ 
+     bool hasValidHeapPosition() const;
+     void updateHeapIfNeeded(MonotonicTime oldTime);
+@@ -92,17 +90,15 @@ private:
+     void heapInsert();
+     void heapPop();
+     void heapPopMin();
++    static void heapDeleteNullMin(ThreadTimerHeap&);
+ 
+-    Vector<TimerBase*>& timerHeap() const { ASSERT(m_cachedThreadGlobalTimerHeap); return *m_cachedThreadGlobalTimerHeap; }
++    MonotonicTime nextFireTime() const { return m_heapItem ? m_heapItem->time : MonotonicTime { }; }
+ 
+-    MonotonicTime m_nextFireTime; // 0 if inactive
+     MonotonicTime m_unalignedNextFireTime; // m_nextFireTime not considering alignment interval
+     Seconds m_repeatInterval; // 0 if not repeating
+-    signed int m_heapIndex : 31; // -1 if not in heap
+-    bool m_wasDeleted : 1;
+-    unsigned m_heapInsertionOrder; // Used to keep order among equal-fire-time timers
+-    Vector<TimerBase*>* m_cachedThreadGlobalTimerHeap { nullptr };
++    bool m_wasDeleted { false };
+ 
++    RefPtr<ThreadTimerHeapItem> m_heapItem;
+     Ref<Thread> m_thread { Thread::current() };
+ 
+     friend class ThreadTimers;
+@@ -142,7 +138,7 @@ inline bool TimerBase::isActive() const
+ #else
+     ASSERT(WebThreadIsCurrent() || pthread_main_np() || m_thread.ptr() == &Thread::current());
+ #endif // PLATFORM(IOS)
+-    return static_cast<bool>(m_nextFireTime);
++    return static_cast<bool>(nextFireTime());
+ }
+ 
+ class DeferrableOneShotTimer : protected TimerBase {
+diff --git a/modules/web/src/main/native/Source/WebCore/testing/Internals.cpp b/modules/web/src/main/native/Source/WebCore/testing/Internals.cpp
+index f48a7a4..295379a 100644
+--- a/modules/web/src/main/native/Source/WebCore/testing/Internals.cpp
++++ b/modules/web/src/main/native/Source/WebCore/testing/Internals.cpp
+@@ -4693,12 +4693,12 @@ void Internals::notifyResourceLoadObserver()
+     ResourceLoadObserver::shared().notifyObserver();
+ }
+ 
+-void Internals::setAlwaysAllowLocalWebarchive() const
++void Internals::setAlwaysAllowLocalWebarchive(bool alwaysAllowLocalWebarchive)
+ {
+-    auto* document = contextDocument();
+-    if (!document)
++    auto* localFrame = frame();
++    if (!localFrame)
+         return;
+-    document->setAlwaysAllowLocalWebarchive();
++    localFrame->loader().setAlwaysAllowLocalWebarchive(alwaysAllowLocalWebarchive);
+ }
+ 
+ } // namespace WebCore
+diff --git a/modules/web/src/main/native/Source/WebCore/testing/Internals.h b/modules/web/src/main/native/Source/WebCore/testing/Internals.h
+index 5db0301..681ff3e 100644
+--- a/modules/web/src/main/native/Source/WebCore/testing/Internals.h
++++ b/modules/web/src/main/native/Source/WebCore/testing/Internals.h
+@@ -731,7 +731,7 @@ public:
+ 
+     void notifyResourceLoadObserver();
+ 
+-    void setAlwaysAllowLocalWebarchive() const;
++    void setAlwaysAllowLocalWebarchive(bool);
+ 
+ private:
+     explicit Internals(Document&);
+diff --git a/modules/web/src/main/native/Source/WebCore/testing/Internals.idl b/modules/web/src/main/native/Source/WebCore/testing/Internals.idl
+index f0723c0..6de83d3 100644
+--- a/modules/web/src/main/native/Source/WebCore/testing/Internals.idl
++++ b/modules/web/src/main/native/Source/WebCore/testing/Internals.idl
+@@ -667,5 +667,5 @@ enum CompositingPolicy {
+ 
+     void notifyResourceLoadObserver();
+ 
+-    void setAlwaysAllowLocalWebarchive();
++    void setAlwaysAllowLocalWebarchive(boolean alwaysAllowLocalWebarchive);
+ };
+-- 
+1.8.3.1
+

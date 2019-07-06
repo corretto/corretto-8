@@ -1,0 +1,1513 @@
+From 91d83462e7567c8495811bd2cea87e2d20d065bf Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Tue, 4 Jun 2019 08:25:18 -0700
+Subject: [PATCH 04/12] apply JDK-8219539
+
+---
+ .../JavaScriptCore/bytecode/GetByIdStatus.cpp      |  6 +-
+ .../JavaScriptCore/bytecode/InByIdStatus.cpp       |  2 +-
+ .../JavaScriptCore/bytecode/PropertyCondition.cpp  |  2 +-
+ .../JavaScriptCore/bytecode/PutByIdStatus.cpp      |  2 +-
+ .../Source/JavaScriptCore/runtime/JSFunction.cpp   |  2 +-
+ .../Source/JavaScriptCore/runtime/JSObject.cpp     |  8 +++
+ .../Source/JavaScriptCore/runtime/JSObject.h       |  4 +-
+ .../JavaScriptCore/runtime/JSObjectInlines.h       |  5 +-
+ .../runtime/JSPropertyNameEnumerator.h             |  5 +-
+ .../JavaScriptCore/runtime/LiteralParser.cpp       | 11 ++--
+ .../Source/JavaScriptCore/runtime/LiteralParser.h  |  4 +-
+ .../JavaScriptCore/runtime/PropertyDescriptor.cpp  | 10 +++-
+ .../Source/JavaScriptCore/runtime/PropertySlot.h   |  3 +
+ .../JavaScriptCore/runtime/ScopedArguments.h       |  9 ++-
+ .../main/native/Source/JavaScriptCore/runtime/VM.h |  4 +-
+ .../src/main/native/Source/WTF/wtf/Gigacage.cpp    |  5 +-
+ .../web/src/main/native/Source/WTF/wtf/Gigacage.h  | 11 +++-
+ .../src/main/native/Source/WTF/wtf/WorkQueue.cpp   |  2 +-
+ .../Source/WebCore/Modules/fetch/FetchResponse.cpp |  2 +-
+ .../web/src/main/native/Source/WebCore/Sources.txt |  2 +
+ .../WebCore/bindings/js/JSMicrotaskCallback.h      |  7 ++-
+ .../WebCore/bindings/js/JSSVGViewSpecCustom.cpp    | 39 ++++++++++++
+ .../WebCore/bindings/scripts/CodeGeneratorJS.pm    |  2 +-
+ .../src/main/native/Source/WebCore/html/URLUtils.h |  2 +
+ .../Source/WebCore/loader/DocumentLoader.cpp       |  2 +
+ .../src/main/native/Source/WebCore/page/Frame.cpp  | 13 ++--
+ .../main/native/Source/WebCore/page/FrameView.cpp  | 38 +++++++-----
+ .../native/Source/WebCore/page/PrintContext.cpp    | 62 +++++++++++++------
+ .../main/native/Source/WebCore/page/PrintContext.h |  6 +-
+ .../WebCore/page/scrolling/ScrollingThread.cpp     |  7 +--
+ .../WebCore/platform/ScrollAnimationKinetic.cpp    |  8 ++-
+ .../WebCore/platform/graphics/glx/GLContextGLX.cpp | 69 +++++++++++++++++++---
+ .../main/native/Source/WebCore/svg/SVGElement.h    |  3 +-
+ .../native/Source/WebCore/svg/SVGPathElement.h     |  2 +-
+ .../main/native/Source/WebCore/svg/SVGViewSpec.cpp |  2 +-
+ .../main/native/Source/WebCore/svg/SVGViewSpec.h   |  4 +-
+ .../main/native/Source/WebCore/svg/SVGViewSpec.idl |  1 +
+ .../svg/properties/SVGAttributeOwnerProxy.cpp      | 43 ++++++++++++++
+ .../svg/properties/SVGAttributeOwnerProxy.h        | 10 ++--
+ .../svg/properties/SVGAttributeOwnerProxyImpl.h    | 10 ++--
+ .../main/native/Source/bmalloc/bmalloc/BAssert.h   |  1 +
+ .../native/Source/bmalloc/bmalloc/Gigacage.cpp     | 47 ++++++++++-----
+ .../main/native/Source/bmalloc/bmalloc/Gigacage.h  | 17 +++++-
+ .../main/native/Source/bmalloc/bmalloc/HeapKind.h  |  4 +-
+ 44 files changed, 376 insertions(+), 122 deletions(-)
+ create mode 100644 modules/web/src/main/native/Source/WebCore/bindings/js/JSSVGViewSpecCustom.cpp
+ create mode 100644 modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.cpp
+
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/GetByIdStatus.cpp b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/GetByIdStatus.cpp
+index ff39d40..786d078 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/GetByIdStatus.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/GetByIdStatus.cpp
+@@ -73,7 +73,7 @@ GetByIdStatus GetByIdStatus::computeFromLLInt(CodeBlock* profiledBlock, unsigned
+         PropertyOffset offset = structure->getConcurrently(uid, attributes);
+         if (!isValidOffset(offset))
+             return GetByIdStatus(NoInformation, false);
+-        if (attributes & PropertyAttribute::CustomAccessor)
++        if (attributes & PropertyAttribute::CustomAccessorOrValue)
+             return GetByIdStatus(NoInformation, false);
+ 
+         return GetByIdStatus(Simple, false, GetByIdVariant(StructureSet(structure), offset));
+@@ -168,7 +168,7 @@ GetByIdStatus GetByIdStatus::computeForStubInfoWithoutExitSiteFeedback(
+         variant.m_offset = structure->getConcurrently(uid, attributes);
+         if (!isValidOffset(variant.m_offset))
+             return GetByIdStatus(JSC::slowVersion(summary));
+-        if (attributes & PropertyAttribute::CustomAccessor)
++        if (attributes & PropertyAttribute::CustomAccessorOrValue)
+             return GetByIdStatus(JSC::slowVersion(summary));
+ 
+         variant.m_structureSet.add(structure);
+@@ -367,7 +367,7 @@ GetByIdStatus GetByIdStatus::computeFor(const StructureSet& set, UniquedStringIm
+             return GetByIdStatus(TakesSlowPath); // It's probably a prototype lookup. Give up on life for now, even though we could totally be way smarter about it.
+         if (attributes & PropertyAttribute::Accessor)
+             return GetByIdStatus(MakesCalls); // We could be smarter here, like strength-reducing this to a Call.
+-        if (attributes & PropertyAttribute::CustomAccessor)
++        if (attributes & PropertyAttribute::CustomAccessorOrValue)
+             return GetByIdStatus(TakesSlowPath);
+ 
+         if (!result.appendVariant(GetByIdVariant(structure, offset)))
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/InByIdStatus.cpp b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/InByIdStatus.cpp
+index d5c8fa0..da6e2da 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/InByIdStatus.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/InByIdStatus.cpp
+@@ -139,7 +139,7 @@ InByIdStatus InByIdStatus::computeForStubInfoWithoutExitSiteFeedback(const Concu
+         variant.m_offset = structure->getConcurrently(uid, attributes);
+         if (!isValidOffset(variant.m_offset))
+             return InByIdStatus(TakesSlowPath);
+-        if (attributes & PropertyAttribute::CustomAccessor)
++        if (attributes & PropertyAttribute::CustomAccessorOrValue)
+             return InByIdStatus(TakesSlowPath);
+ 
+         variant.m_structureSet.add(structure);
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PropertyCondition.cpp b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PropertyCondition.cpp
+index 5cb21c6..6e376b8 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PropertyCondition.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PropertyCondition.cpp
+@@ -161,7 +161,7 @@ bool PropertyCondition::isStillValidAssumingImpurePropertyWatchpoint(
+         unsigned currentAttributes;
+         PropertyOffset currentOffset = structure->getConcurrently(uid(), currentAttributes);
+         if (currentOffset != invalidOffset) {
+-            if (currentAttributes & (PropertyAttribute::ReadOnly | PropertyAttribute::Accessor | PropertyAttribute::CustomAccessor)) {
++            if (currentAttributes & (PropertyAttribute::ReadOnly | PropertyAttribute::Accessor | PropertyAttribute::CustomAccessorOrValue)) {
+                 if (PropertyConditionInternal::verbose) {
+                     dataLog(
+                         "Invalid because we expected not to have a setter, but we have one at offset ",
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PutByIdStatus.cpp b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PutByIdStatus.cpp
+index 6d43710..07dae84 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PutByIdStatus.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/bytecode/PutByIdStatus.cpp
+@@ -305,7 +305,7 @@ PutByIdStatus PutByIdStatus::computeFor(JSGlobalObject* globalObject, const Stru
+         unsigned attributes;
+         PropertyOffset offset = structure->getConcurrently(uid, attributes);
+         if (isValidOffset(offset)) {
+-            if (attributes & PropertyAttribute::CustomAccessor)
++            if (attributes & PropertyAttribute::CustomAccessorOrValue)
+                 return PutByIdStatus(MakesCalls);
+ 
+             if (attributes & (PropertyAttribute::Accessor | PropertyAttribute::ReadOnly))
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSFunction.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSFunction.cpp
+index 256279c..d3e8f16 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSFunction.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSFunction.cpp
+@@ -645,7 +645,7 @@ String getCalculatedDisplayName(VM& vm, JSObject* object)
+     unsigned attributes;
+     // This function may be called when the mutator isn't running and we are lazily generating a stack trace.
+     PropertyOffset offset = structure->getConcurrently(vm.propertyNames->displayName.impl(), attributes);
+-    if (offset != invalidOffset && !(attributes & (PropertyAttribute::Accessor | PropertyAttribute::CustomAccessor))) {
++    if (offset != invalidOffset && !(attributes & (PropertyAttribute::Accessor | PropertyAttribute::CustomAccessorOrValue))) {
+         JSValue displayName = object->getDirect(offset);
+         if (displayName && displayName.isString())
+             return asString(displayName)->tryGetValue();
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.cpp
+index 2b7ec71..95a9ac7 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.cpp
+@@ -1866,9 +1866,15 @@ bool JSObject::putDirectAccessor(ExecState* exec, PropertyName propertyName, Get
+     return putDirectNonIndexAccessor(exec->vm(), propertyName, accessor, attributes);
+ }
+ 
++// FIXME: Introduce a JSObject::putDirectCustomValue() method instead of using
++// JSObject::putDirectCustomAccessor() to put CustomValues.
++// https://bugs.webkit.org/show_bug.cgi?id=192576
+ bool JSObject::putDirectCustomAccessor(VM& vm, PropertyName propertyName, JSValue value, unsigned attributes)
+ {
+     ASSERT(!parseIndex(propertyName));
++    ASSERT(value.isCustomGetterSetter());
++    if (!(attributes & PropertyAttribute::CustomAccessor))
++        attributes |= PropertyAttribute::CustomValue;
+ 
+     PutPropertySlot slot(this);
+     bool result = putDirectInternal<PutModeDefineOwnProperty>(vm, propertyName, value, attributes, slot);
+@@ -1884,6 +1890,7 @@ bool JSObject::putDirectCustomAccessor(VM& vm, PropertyName propertyName, JSValu
+ 
+ bool JSObject::putDirectNonIndexAccessor(VM& vm, PropertyName propertyName, GetterSetter* accessor, unsigned attributes)
+ {
++    ASSERT(attributes & PropertyAttribute::Accessor);
+     PutPropertySlot slot(this);
+     bool result = putDirectInternal<PutModeDefineOwnProperty>(vm, propertyName, accessor, attributes, slot);
+ 
+@@ -3000,6 +3007,7 @@ bool JSObject::putDirectIndexBeyondVectorLengthWithArrayStorage(ExecState* exec,
+ bool JSObject::putDirectIndexSlowOrBeyondVectorLength(ExecState* exec, unsigned i, JSValue value, unsigned attributes, PutDirectIndexMode mode)
+ {
+     VM& vm = exec->vm();
++    ASSERT(!value.isCustomGetterSetter());
+ 
+     if (!canDoFastPutDirectIndex(vm, this)) {
+         PropertyDescriptor descriptor;
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.h
+index d3472a7..1d37f63 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObject.h
+@@ -217,6 +217,7 @@ public:
+     // otherwise, it creates a property with the provided attributes. Semantically, this is performing defineOwnProperty.
+     bool putDirectIndex(ExecState* exec, unsigned propertyName, JSValue value, unsigned attributes, PutDirectIndexMode mode)
+     {
++        ASSERT(!value.isCustomGetterSetter());
+         auto canSetIndexQuicklyForPutDirect = [&] () -> bool {
+             switch (indexingMode()) {
+             case ALL_BLANK_INDEXING_TYPES:
+@@ -1374,6 +1375,7 @@ ALWAYS_INLINE bool JSObject::getOwnNonIndexPropertySlot(VM& vm, Structure* struc
+ 
+ ALWAYS_INLINE void JSObject::fillCustomGetterPropertySlot(VM& vm, PropertySlot& slot, CustomGetterSetter* customGetterSetter, unsigned attributes, Structure* structure)
+ {
++    ASSERT(attributes & PropertyAttribute::CustomAccessorOrValue);
+     if (customGetterSetter->inherits<DOMAttributeGetterSetter>(vm)) {
+         auto* domAttribute = jsCast<DOMAttributeGetterSetter*>(customGetterSetter);
+         if (structure->isUncacheableDictionary())
+@@ -1499,7 +1501,7 @@ inline bool JSObject::putOwnDataPropertyMayBeIndex(ExecState* exec, PropertyName
+ inline bool JSObject::putDirect(VM& vm, PropertyName propertyName, JSValue value, unsigned attributes)
+ {
+     ASSERT(!value.isGetterSetter() && !(attributes & PropertyAttribute::Accessor));
+-    ASSERT(!value.isCustomGetterSetter());
++    ASSERT(!value.isCustomGetterSetter() && !(attributes & PropertyAttribute::CustomAccessorOrValue));
+     PutPropertySlot slot(this);
+     return putDirectInternal<PutModeDefineOwnProperty>(vm, propertyName, value, attributes, slot);
+ }
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObjectInlines.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObjectInlines.h
+index 492d0ef..49660c3 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObjectInlines.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSObjectInlines.h
+@@ -279,6 +279,7 @@ ALWAYS_INLINE bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName
+ {
+     ASSERT(value);
+     ASSERT(value.isGetterSetter() == !!(attributes & PropertyAttribute::Accessor));
++    ASSERT(value.isCustomGetterSetter() == !!(attributes & PropertyAttribute::CustomAccessorOrValue));
+     ASSERT(!Heap::heap(value) || Heap::heap(value) == Heap::heap(this));
+     ASSERT(!parseIndex(propertyName));
+ 
+@@ -297,7 +298,7 @@ ALWAYS_INLINE bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName
+             putDirect(vm, offset, value);
+             structure->didReplaceProperty(offset);
+ 
+-            if ((attributes & PropertyAttribute::Accessor) != (currentAttributes & PropertyAttribute::Accessor) || (attributes & PropertyAttribute::CustomAccessor) != (currentAttributes & PropertyAttribute::CustomAccessor)) {
++            if ((attributes & PropertyAttribute::Accessor) != (currentAttributes & PropertyAttribute::Accessor) || (attributes & PropertyAttribute::CustomAccessorOrValue) != (currentAttributes & PropertyAttribute::CustomAccessorOrValue)) {
+                 ASSERT(!(attributes & PropertyAttribute::ReadOnly));
+                 setStructure(vm, Structure::attributeChangeTransition(vm, structure, propertyName, attributes));
+             } else
+@@ -360,7 +361,7 @@ ALWAYS_INLINE bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName
+ 
+         putDirect(vm, offset, value);
+ 
+-        if ((attributes & PropertyAttribute::Accessor) != (currentAttributes & PropertyAttribute::Accessor) || (attributes & PropertyAttribute::CustomAccessor) != (currentAttributes & PropertyAttribute::CustomAccessor)) {
++        if ((attributes & PropertyAttribute::Accessor) != (currentAttributes & PropertyAttribute::Accessor) || (attributes & PropertyAttribute::CustomAccessorOrValue) != (currentAttributes & PropertyAttribute::CustomAccessorOrValue)) {
+             ASSERT(!(attributes & PropertyAttribute::ReadOnly));
+             setStructure(vm, Structure::attributeChangeTransition(vm, structure, propertyName, attributes));
+         } else
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSPropertyNameEnumerator.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSPropertyNameEnumerator.h
+index d55aac7..4608c63 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSPropertyNameEnumerator.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/JSPropertyNameEnumerator.h
+@@ -135,8 +135,9 @@ inline JSPropertyNameEnumerator* propertyNameEnumerator(ExecState* exec, JSObjec
+     bool sawPolyProto;
+     bool successfullyNormalizedChain = normalizePrototypeChain(exec, base, sawPolyProto) != InvalidPrototypeChain;
+ 
+-    enumerator = JSPropertyNameEnumerator::create(vm, structure, indexedLength, numberStructureProperties, WTFMove(propertyNames));
+-    if (!indexedLength && successfullyNormalizedChain && base->structure(vm) == structure) {
++    Structure* structureAfterGettingPropertyNames = base->structure(vm);
++    enumerator = JSPropertyNameEnumerator::create(vm, structureAfterGettingPropertyNames, indexedLength, numberStructureProperties, WTFMove(propertyNames));
++    if (!indexedLength && successfullyNormalizedChain && structureAfterGettingPropertyNames == structure) {
+         enumerator->setCachedPrototypeChain(vm, structure->prototypeChain(exec, base));
+         if (structure->canCachePropertyNameEnumerator())
+             structure->setCachedPropertyNameEnumerator(vm, enumerator);
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.cpp
+index 8c0838b..a4ff628 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.cpp
+@@ -37,6 +37,7 @@
+ #include "StrongInlines.h"
+ #include <wtf/ASCIICType.h>
+ #include <wtf/dtoa.h>
++#include <wtf/text/StringConcatenate.h>
+ 
+ namespace JSC {
+ 
+@@ -515,7 +516,7 @@ ALWAYS_INLINE TokenType LiteralParser<CharType>::Lexer::lex(LiteralParserToken<C
+             return tokenType;
+         }
+     }
+-    m_lexErrorMessage = String::format("Unrecognized token '%c'", *m_ptr);
++    m_lexErrorMessage = makeString("Unrecognized token '", StringView { m_ptr, 1 }, '\'');
+     return TokError;
+ }
+ 
+@@ -673,7 +674,7 @@ slowPathBegin:
+                     } // uNNNN == 5 characters
+                     for (int i = 1; i < 5; i++) {
+                         if (!isASCIIHexDigit(m_ptr[i])) {
+-                            m_lexErrorMessage = String::format("\"\\%s\" is not a valid unicode escape", String(m_ptr, 5).ascii().data());
++                            m_lexErrorMessage = makeString("\"\\", StringView { m_ptr, 5 }, "\" is not a valid unicode escape");
+                             return TokError;
+                         }
+                     }
+@@ -687,7 +688,7 @@ slowPathBegin:
+                         m_ptr++;
+                         break;
+                     }
+-                    m_lexErrorMessage = String::format("Invalid escape character %c", *m_ptr);
++                    m_lexErrorMessage = makeString("Invalid escape character ", StringView { m_ptr, 1 });
+                     return TokError;
+             }
+         }
+@@ -995,9 +996,9 @@ JSValue LiteralParser<CharType>::parse(ParserState initialState)
+                     case TokIdentifier: {
+                         typename Lexer::LiteralParserTokenPtr token = m_lexer.currentToken();
+                         if (token->stringIs8Bit)
+-                            m_parseErrorMessage = String::format("Unexpected identifier \"%s\"", String(token->stringToken8, token->stringLength).ascii().data());
++                            m_parseErrorMessage = makeString("Unexpected identifier \"", StringView { token->stringToken8, token->stringLength }, '"');
+                         else
+-                            m_parseErrorMessage = String::format("Unexpected identifier \"%s\"", String(token->stringToken16, token->stringLength).ascii().data());
++                            m_parseErrorMessage = makeString("Unexpected identifier \"", StringView { token->stringToken16, token->stringLength }, '"');
+                         return JSValue();
+                     }
+                     case TokColon:
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.h
+index a7554a5..759a9bc 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/LiteralParser.h
+@@ -102,9 +102,9 @@ public:
+     String getErrorMessage()
+     {
+         if (!m_lexer.getErrorMessage().isEmpty())
+-            return String::format("JSON Parse error: %s", m_lexer.getErrorMessage().ascii().data());
++            return "JSON Parse error: " + m_lexer.getErrorMessage();
+         if (!m_parseErrorMessage.isEmpty())
+-            return String::format("JSON Parse error: %s", m_parseErrorMessage.ascii().data());
++            return "JSON Parse error: " + m_parseErrorMessage;
+         return "JSON Parse error: Unable to parse JSON string"_s;
+     }
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertyDescriptor.cpp b/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertyDescriptor.cpp
+index 5d07209..0053f4b 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertyDescriptor.cpp
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertyDescriptor.cpp
+@@ -109,7 +109,13 @@ void PropertyDescriptor::setDescriptor(JSValue value, unsigned attributes)
+ {
+     ASSERT(value);
+ 
+-    m_attributes = attributes;
++    // We need to mask off the PropertyAttribute::CustomValue bit because
++    // PropertyDescriptor::attributesEqual() does an equivalent test on
++    // m_attributes, and a property that has a CustomValue should be indistinguishable
++    // from a property that has a normal value as far as JS code is concerned.
++    // PropertyAttribute does not need knowledge of the underlying implementation
++    // actually being a CustomValue. So, we'll just mask it off up front here.
++    m_attributes = attributes & ~PropertyAttribute::CustomValue;
+     if (value.isGetterSetter()) {
+         m_attributes &= ~PropertyAttribute::ReadOnly; // FIXME: we should be able to ASSERT this!
+ 
+@@ -125,6 +131,7 @@ void PropertyDescriptor::setDescriptor(JSValue value, unsigned attributes)
+ 
+ void PropertyDescriptor::setCustomDescriptor(unsigned attributes)
+ {
++    ASSERT(!(attributes & PropertyAttribute::CustomValue));
+     m_attributes = attributes | PropertyAttribute::Accessor | PropertyAttribute::CustomAccessor;
+     m_attributes &= ~PropertyAttribute::ReadOnly;
+     m_seenAttributes = EnumerablePresent | ConfigurablePresent;
+@@ -136,6 +143,7 @@ void PropertyDescriptor::setCustomDescriptor(unsigned attributes)
+ void PropertyDescriptor::setAccessorDescriptor(GetterSetter* accessor, unsigned attributes)
+ {
+     ASSERT(attributes & PropertyAttribute::Accessor);
++    ASSERT(!(attributes & PropertyAttribute::CustomValue));
+     attributes &= ~PropertyAttribute::ReadOnly; // FIXME: we should be able to ASSERT this!
+ 
+     m_attributes = attributes;
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertySlot.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertySlot.h
+index 37f650a..6bd1c3c 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertySlot.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/PropertySlot.h
+@@ -43,6 +43,8 @@ enum class PropertyAttribute : unsigned {
+     DontDelete        = 1 << 3,  // property can't be deleted
+     Accessor          = 1 << 4,  // property is a getter/setter
+     CustomAccessor    = 1 << 5,
++    CustomValue       = 1 << 6,
++    CustomAccessorOrValue = CustomAccessor | CustomValue,
+ 
+     // Things that are used by static hashtables are not in the attributes byte in PropertyMapEntry.
+     Function          = 1 << 8,  // property is a function - only used by static hashtables
+@@ -299,6 +301,7 @@ public:
+     void setCustomGetterSetter(JSObject* slotBase, unsigned attributes, CustomGetterSetter* getterSetter)
+     {
+         ASSERT(attributes == attributesForStructure(attributes));
++        ASSERT(attributes & PropertyAttribute::CustomAccessor);
+ 
+         disableCaching();
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/ScopedArguments.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/ScopedArguments.h
+index 4608e23..4a88eb5 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/ScopedArguments.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/ScopedArguments.h
+@@ -74,8 +74,13 @@ public:
+     uint32_t length(ExecState* exec) const
+     {
+         VM& vm = exec->vm();
+-        if (UNLIKELY(storageHeader().overrodeThings))
+-            return get(exec, vm.propertyNames->length).toUInt32(exec);
++        auto scope = DECLARE_THROW_SCOPE(vm);
++        if (UNLIKELY(storageHeader().overrodeThings)) {
++            auto value = get(exec, vm.propertyNames->length);
++            RETURN_IF_EXCEPTION(scope, 0);
++            scope.release();
++            return value.toUInt32(exec);
++        }
+         return internalLength();
+     }
+ 
+diff --git a/modules/web/src/main/native/Source/JavaScriptCore/runtime/VM.h b/modules/web/src/main/native/Source/JavaScriptCore/runtime/VM.h
+index 095c4f6..f2c3895 100644
+--- a/modules/web/src/main/native/Source/JavaScriptCore/runtime/VM.h
++++ b/modules/web/src/main/native/Source/JavaScriptCore/runtime/VM.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2008-2018 Apple Inc. All rights reserved.
++ * Copyright (C) 2008-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -344,6 +344,8 @@ public:
+     ALWAYS_INLINE CompleteSubspace& gigacageAuxiliarySpace(Gigacage::Kind kind)
+     {
+         switch (kind) {
++        case Gigacage::ReservedForFlagsAndNotABasePtr:
++            RELEASE_ASSERT_NOT_REACHED();
+         case Gigacage::Primitive:
+             return primitiveGigacageAuxiliarySpace;
+         case Gigacage::JSValue:
+diff --git a/modules/web/src/main/native/Source/WTF/wtf/Gigacage.cpp b/modules/web/src/main/native/Source/WTF/wtf/Gigacage.cpp
+index 6fb841b..4321efe 100644
+--- a/modules/web/src/main/native/Source/WTF/wtf/Gigacage.cpp
++++ b/modules/web/src/main/native/Source/WTF/wtf/Gigacage.cpp
+@@ -41,9 +41,10 @@ void* tryMalloc(Kind, size_t size)
+     return FastMalloc::tryMalloc(size);
+ }
+ 
+-void* tryAllocateZeroedVirtualPages(Kind, size_t size)
++void* tryAllocateZeroedVirtualPages(Kind, size_t requestedSize)
+ {
+-    size = roundUpToMultipleOf(WTF::pageSize(), size);
++    size_t size = roundUpToMultipleOf(WTF::pageSize(), requestedSize);
++    RELEASE_ASSERT(size >= requestedSize);
+     void* result = OSAllocator::reserveAndCommit(size);
+ #if !ASSERT_DISABLED
+     if (result) {
+diff --git a/modules/web/src/main/native/Source/WTF/wtf/Gigacage.h b/modules/web/src/main/native/Source/WTF/wtf/Gigacage.h
+index bda95ba..605d259 100644
+--- a/modules/web/src/main/native/Source/WTF/wtf/Gigacage.h
++++ b/modules/web/src/main/native/Source/WTF/wtf/Gigacage.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2017-2018 Apple Inc. All rights reserved.
++ * Copyright (C) 2017-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -40,15 +40,20 @@ alignas(void*) extern WTF_EXPORT_PRIVATE char g_gigacageBasePtrs[GIGACAGE_BASE_P
+ namespace Gigacage {
+ 
+ struct BasePtrs {
++    uintptr_t reservedForFlags;
+     void* primitive;
+     void* jsValue;
+ };
+ 
+ enum Kind {
++    ReservedForFlagsAndNotABasePtr = 0,
+     Primitive,
+     JSValue,
+ };
+ 
++static_assert(offsetof(BasePtrs, primitive) == Kind::Primitive * sizeof(void*), "");
++static_assert(offsetof(BasePtrs, jsValue) == Kind::JSValue * sizeof(void*), "");
++
+ inline void ensureGigacage() { }
+ inline void disablePrimitiveGigacage() { }
+ inline bool shouldBeEnabled() { return false; }
+@@ -65,6 +70,8 @@ inline bool canPrimitiveGigacageBeDisabled() { return true; }
+ ALWAYS_INLINE const char* name(Kind kind)
+ {
+     switch (kind) {
++    case ReservedForFlagsAndNotABasePtr:
++        RELEASE_ASSERT_NOT_REACHED();
+     case Primitive:
+         return "Primitive";
+     case JSValue:
+@@ -77,6 +84,8 @@ ALWAYS_INLINE const char* name(Kind kind)
+ ALWAYS_INLINE void*& basePtr(BasePtrs& basePtrs, Kind kind)
+ {
+     switch (kind) {
++    case ReservedForFlagsAndNotABasePtr:
++        RELEASE_ASSERT_NOT_REACHED();
+     case Primitive:
+         return basePtrs.primitive;
+     case JSValue:
+diff --git a/modules/web/src/main/native/Source/WTF/wtf/WorkQueue.cpp b/modules/web/src/main/native/Source/WTF/wtf/WorkQueue.cpp
+index 1143eb3..e71fe9a 100644
+--- a/modules/web/src/main/native/Source/WTF/wtf/WorkQueue.cpp
++++ b/modules/web/src/main/native/Source/WTF/wtf/WorkQueue.cpp
+@@ -75,7 +75,7 @@ void WorkQueue::concurrentApply(size_t iterations, WTF::Function<void (size_t in
+ 
+             m_workers.reserveInitialCapacity(threadCount);
+             for (unsigned i = 0; i < threadCount; ++i) {
+-                m_workers.append(Thread::create(String::format("ThreadPool Worker %u", i).utf8().data(), [this] {
++                m_workers.append(Thread::create("ThreadPool Worker", [this] {
+                     threadBody();
+                 }));
+             }
+diff --git a/modules/web/src/main/native/Source/WebCore/Modules/fetch/FetchResponse.cpp b/modules/web/src/main/native/Source/WebCore/Modules/fetch/FetchResponse.cpp
+index f78580c..1efbd69 100644
+--- a/modules/web/src/main/native/Source/WebCore/Modules/fetch/FetchResponse.cpp
++++ b/modules/web/src/main/native/Source/WebCore/Modules/fetch/FetchResponse.cpp
+@@ -205,7 +205,7 @@ void FetchResponse::fetch(ScriptExecutionContext& context, FetchRequest& request
+ const String& FetchResponse::url() const
+ {
+     if (m_responseURL.isNull()) {
+-        URL url = m_internalResponse.url();
++        URL url = filteredResponse().url();
+         url.removeFragmentIdentifier();
+         m_responseURL = url.string();
+     }
+diff --git a/modules/web/src/main/native/Source/WebCore/Sources.txt b/modules/web/src/main/native/Source/WebCore/Sources.txt
+index 3e5b456..4ea89c0 100644
+--- a/modules/web/src/main/native/Source/WebCore/Sources.txt
++++ b/modules/web/src/main/native/Source/WebCore/Sources.txt
+@@ -439,6 +439,7 @@ bindings/js/JSReadableStreamSourceCustom.cpp
+ bindings/js/JSRemoteDOMWindowBase.cpp
+ bindings/js/JSRemoteDOMWindowCustom.cpp
+ bindings/js/JSSVGPathSegCustom.cpp
++bindings/js/JSSVGViewSpecCustom.cpp
+ bindings/js/JSStyleSheetCustom.cpp
+ bindings/js/JSServiceWorkerClientCustom.cpp
+ bindings/js/JSServiceWorkerGlobalScopeCustom.cpp
+@@ -2280,6 +2281,7 @@ svg/graphics/filters/SVGFilterBuilder.cpp
+ 
+ svg/properties/SVGAnimatedPathSegListPropertyTearOff.cpp
+ svg/properties/SVGAnimatedProperty.cpp
++svg/properties/SVGAttributeOwnerProxy.cpp
+ 
+ workers/AbstractWorker.cpp
+ workers/DedicatedWorkerGlobalScope.cpp
+diff --git a/modules/web/src/main/native/Source/WebCore/bindings/js/JSMicrotaskCallback.h b/modules/web/src/main/native/Source/WebCore/bindings/js/JSMicrotaskCallback.h
+index c9b8e64..d132cf5 100644
+--- a/modules/web/src/main/native/Source/WebCore/bindings/js/JSMicrotaskCallback.h
++++ b/modules/web/src/main/native/Source/WebCore/bindings/js/JSMicrotaskCallback.h
+@@ -27,6 +27,7 @@
+ #pragma once
+ 
+ #include "JSExecState.h"
++#include <JavaScriptCore/VM.h>
+ 
+ namespace WebCore {
+ 
+@@ -40,8 +41,8 @@ public:
+     void call()
+     {
+         auto protectedThis { makeRef(*this) };
+-        VM& vm = m_globalObject->vm();
+-        JSLockHolder lock(vm);
++        JSC::VM& vm = m_globalObject->vm();
++        JSC::JSLockHolder lock(vm);
+         auto scope = DECLARE_THROW_SCOPE(vm);
+         JSExecState::runTask(m_globalObject->globalExec(), m_task);
+         scope.assertNoException();
+@@ -54,7 +55,7 @@ private:
+     {
+     }
+ 
+-    Strong<JSDOMGlobalObject> m_globalObject;
++    JSC::Strong<JSDOMGlobalObject> m_globalObject;
+     Ref<JSC::Microtask> m_task;
+ };
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/bindings/js/JSSVGViewSpecCustom.cpp b/modules/web/src/main/native/Source/WebCore/bindings/js/JSSVGViewSpecCustom.cpp
+new file mode 100644
+index 0000000..f1ca384
+--- /dev/null
++++ b/modules/web/src/main/native/Source/WebCore/bindings/js/JSSVGViewSpecCustom.cpp
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (C) 2018 Apple Inc. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
++ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
++ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
++ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "config.h"
++#include "JSSVGViewSpec.h"
++
++#include "JSNode.h"
++
++namespace WebCore {
++
++void JSSVGViewSpec::visitAdditionalChildren(JSC::SlotVisitor& visitor)
++{
++    ASSERT(wrapped().contextElementConcurrently().get());
++    visitor.addOpaqueRoot(root(wrapped().contextElementConcurrently().get()));
++}
++
++}
+diff --git a/modules/web/src/main/native/Source/WebCore/bindings/scripts/CodeGeneratorJS.pm b/modules/web/src/main/native/Source/WebCore/bindings/scripts/CodeGeneratorJS.pm
+index 873ed6b..fbc0bcb 100644
+--- a/modules/web/src/main/native/Source/WebCore/bindings/scripts/CodeGeneratorJS.pm
++++ b/modules/web/src/main/native/Source/WebCore/bindings/scripts/CodeGeneratorJS.pm
+@@ -4445,7 +4445,7 @@ sub GenerateImplementation
+         } else {
+             push(@implContent, "    JSValue constructor = ${className}Constructor::create(state->vm(), ${className}Constructor::createStructure(state->vm(), *prototype->globalObject(), prototype->globalObject()->objectPrototype()), *jsCast<JSDOMGlobalObject*>(prototype->globalObject()));\n");
+             push(@implContent, "    // Shadowing constructor property to ensure reusing the same constructor object\n");
+-            push(@implContent, "    prototype->putDirect(vm, vm.propertyNames->constructor, constructor, JSC::PropertyAttribute::DontEnum | JSC::PropertyAttribute::ReadOnly);\n");
++            push(@implContent, "    prototype->putDirect(vm, vm.propertyNames->constructor, constructor, static_cast<unsigned>(JSC::PropertyAttribute::DontEnum));\n");
+             push(@implContent, "    return JSValue::encode(constructor);\n");
+         }
+         push(@implContent, "}\n\n");
+diff --git a/modules/web/src/main/native/Source/WebCore/html/URLUtils.h b/modules/web/src/main/native/Source/WebCore/html/URLUtils.h
+index a07c081..c0f414e 100644
+--- a/modules/web/src/main/native/Source/WebCore/html/URLUtils.h
++++ b/modules/web/src/main/native/Source/WebCore/html/URLUtils.h
+@@ -90,6 +90,8 @@ String URLUtils<T>::origin() const
+ template <typename T>
+ String URLUtils<T>::protocol() const
+ {
++    if (protocolIsJavaScript(href()))
++        return "javascript:"_s;
+     return makeString(href().protocol(), ':');
+ }
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
+index eaf4c64..b99aa6e 100644
+--- a/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
++++ b/modules/web/src/main/native/Source/WebCore/loader/DocumentLoader.cpp
+@@ -434,6 +434,8 @@ void DocumentLoader::finishedLoading()
+     if (!m_mainDocumentError.isNull())
+         return;
+     clearMainResourceLoader();
++    if (!frameLoader())
++        return;
+     if (!frameLoader()->stateMachine().creatingInitialEmptyDocument())
+         frameLoader()->checkLoadComplete();
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/page/Frame.cpp b/modules/web/src/main/native/Source/WebCore/page/Frame.cpp
+index 7a5600a..771a6f2 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/Frame.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/Frame.cpp
+@@ -676,22 +676,23 @@ bool Frame::selectionChangeCallbacksDisabled() const
+ 
+ void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot shouldAdjustViewSize)
+ {
++    if (!view())
++        return;
+     // In setting printing, we should not validate resources already cached for the document.
+     // See https://bugs.webkit.org/show_bug.cgi?id=43704
+     ResourceCacheValidationSuppressor validationSuppressor(m_doc->cachedResourceLoader());
+ 
+     m_doc->setPrinting(printing);
+-    if (auto* frameView = view()) {
+-        frameView->adjustMediaTypeForPrinting(printing);
++    auto& frameView = *view();
++    frameView.adjustMediaTypeForPrinting(printing);
+ 
+         m_doc->styleScope().didChangeStyleSheetEnvironment();
+         if (shouldUsePrintingLayout())
+-            frameView->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio, shouldAdjustViewSize);
++        frameView.forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio, shouldAdjustViewSize);
+         else {
+-            frameView->forceLayout();
++        frameView.forceLayout();
+             if (shouldAdjustViewSize == AdjustViewSize)
+-                frameView->adjustViewSize();
+-        }
++            frameView.adjustViewSize();
+     }
+ 
+     // Subframes of the one we're printing don't lay out to the page size.
+diff --git a/modules/web/src/main/native/Source/WebCore/page/FrameView.cpp b/modules/web/src/main/native/Source/WebCore/page/FrameView.cpp
+index 4f00f02..affbe5b 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/FrameView.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/FrameView.cpp
+@@ -4438,22 +4438,29 @@ void FrameView::forceLayout(bool allowSubtreeLayout)
+ 
+ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor, AdjustViewSizeOrNot shouldAdjustViewSize)
+ {
++    if (!renderView())
++        return;
++
++    Ref<FrameView> protectedThis(*this);
++    auto& renderView = *this->renderView();
++
+     // Dumping externalRepresentation(frame().renderer()).ascii() is a good trick to see
+     // the state of things before and after the layout
+-    if (RenderView* renderView = this->renderView()) {
+-        float pageLogicalWidth = renderView->style().isHorizontalWritingMode() ? pageSize.width() : pageSize.height();
+-        float pageLogicalHeight = renderView->style().isHorizontalWritingMode() ? pageSize.height() : pageSize.width();
++    float pageLogicalWidth = renderView.style().isHorizontalWritingMode() ? pageSize.width() : pageSize.height();
++    float pageLogicalHeight = renderView.style().isHorizontalWritingMode() ? pageSize.height() : pageSize.width();
+ 
+-        renderView->setPageLogicalSize({ floor(pageLogicalWidth), floor(pageLogicalHeight) });
+-        renderView->setNeedsLayoutAndPrefWidthsRecalc();
++    renderView.setPageLogicalSize({ floor(pageLogicalWidth), floor(pageLogicalHeight) });
++    renderView.setNeedsLayoutAndPrefWidthsRecalc();
+         forceLayout();
++    if (hasOneRef())
++        return;
+ 
+         // If we don't fit in the given page width, we'll lay out again. If we don't fit in the
+         // page width when shrunk, we will lay out at maximum shrink and clip extra content.
+         // FIXME: We are assuming a shrink-to-fit printing implementation.  A cropping
+         // implementation should not do this!
+-        bool horizontalWritingMode = renderView->style().isHorizontalWritingMode();
+-        const LayoutRect& documentRect = renderView->documentRect();
++    bool horizontalWritingMode = renderView.style().isHorizontalWritingMode();
++    const LayoutRect& documentRect = renderView.documentRect();
+         LayoutUnit docLogicalWidth = horizontalWritingMode ? documentRect.width() : documentRect.height();
+         if (docLogicalWidth > pageLogicalWidth) {
+             int expectedPageWidth = std::min<float>(documentRect.width(), pageSize.width() * maximumShrinkFactor);
+@@ -4462,24 +4469,25 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
+             pageLogicalWidth = horizontalWritingMode ? maxPageSize.width() : maxPageSize.height();
+             pageLogicalHeight = horizontalWritingMode ? maxPageSize.height() : maxPageSize.width();
+ 
+-            renderView->setPageLogicalSize({ floor(pageLogicalWidth), floor(pageLogicalHeight) });
+-            renderView->setNeedsLayoutAndPrefWidthsRecalc();
++        renderView.setPageLogicalSize({ floor(pageLogicalWidth), floor(pageLogicalHeight) });
++        renderView.setNeedsLayoutAndPrefWidthsRecalc();
+             forceLayout();
++        if (hasOneRef())
++            return;
+ 
+-            const LayoutRect& updatedDocumentRect = renderView->documentRect();
++        const LayoutRect& updatedDocumentRect = renderView.documentRect();
+             LayoutUnit docLogicalHeight = horizontalWritingMode ? updatedDocumentRect.height() : updatedDocumentRect.width();
+             LayoutUnit docLogicalTop = horizontalWritingMode ? updatedDocumentRect.y() : updatedDocumentRect.x();
+             LayoutUnit docLogicalRight = horizontalWritingMode ? updatedDocumentRect.maxX() : updatedDocumentRect.maxY();
+-            LayoutUnit clippedLogicalLeft = 0;
+-            if (!renderView->style().isLeftToRightDirection())
++        LayoutUnit clippedLogicalLeft;
++        if (!renderView.style().isLeftToRightDirection())
+                 clippedLogicalLeft = docLogicalRight - pageLogicalWidth;
+             LayoutRect overflow(clippedLogicalLeft, docLogicalTop, pageLogicalWidth, docLogicalHeight);
+ 
+             if (!horizontalWritingMode)
+                 overflow = overflow.transposedRect();
+-            renderView->clearLayoutOverflow();
+-            renderView->addLayoutOverflow(overflow); // This is how we clip in case we overflow again.
+-        }
++        renderView.clearLayoutOverflow();
++        renderView.addLayoutOverflow(overflow); // This is how we clip in case we overflow again.
+     }
+ 
+     if (shouldAdjustViewSize)
+diff --git a/modules/web/src/main/native/Source/WebCore/page/PrintContext.cpp b/modules/web/src/main/native/Source/WebCore/page/PrintContext.cpp
+index 43e6ae3..8b148a7 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/PrintContext.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/PrintContext.cpp
+@@ -34,7 +34,7 @@
+ namespace WebCore {
+ 
+ PrintContext::PrintContext(Frame* frame)
+-    : m_frame(frame)
++    : FrameDestructionObserver(frame)
+ {
+ }
+ 
+@@ -46,10 +46,14 @@ PrintContext::~PrintContext()
+ 
+ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight, bool allowHorizontalTiling)
+ {
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
+     m_pageRects.clear();
+     outPageHeight = 0;
+ 
+-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->renderView())
++    if (!frame.document() || !frame.view() || !frame.document()->renderView())
+         return;
+ 
+     if (userScaleFactor <= 0) {
+@@ -57,9 +61,9 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
+         return;
+     }
+ 
+-    RenderView* view = m_frame->document()->renderView();
++    RenderView* view = frame.document()->renderView();
+     const IntRect& documentRect = view->documentRect();
+-    FloatSize pageSize = m_frame->resizePageRectsKeepingRatio(FloatSize(printRect.width(), printRect.height()), FloatSize(documentRect.width(), documentRect.height()));
++    FloatSize pageSize = frame.resizePageRectsKeepingRatio(FloatSize(printRect.width(), printRect.height()), FloatSize(documentRect.width(), documentRect.height()));
+     float pageWidth = pageSize.width();
+     float pageHeight = pageSize.height();
+ 
+@@ -82,10 +86,14 @@ void PrintContext::computePageRectsWithPageSize(const FloatSize& pageSizeInPixel
+ 
+ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels, bool allowInlineDirectionTiling)
+ {
+-    if (!m_frame->document() || !m_frame->view() || !m_frame->document()->renderView())
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
++    if (!frame.document() || !frame.view() || !frame.document()->renderView())
+         return;
+ 
+-    RenderView* view = m_frame->document()->renderView();
++    RenderView* view = frame.document()->renderView();
+ 
+     IntRect docRect = view->documentRect();
+ 
+@@ -151,26 +159,34 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
+ 
+ void PrintContext::begin(float width, float height)
+ {
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
+     // This function can be called multiple times to adjust printing parameters without going back to screen mode.
+     m_isPrinting = true;
+ 
+     FloatSize originalPageSize = FloatSize(width, height);
+-    FloatSize minLayoutSize = m_frame->resizePageRectsKeepingRatio(originalPageSize, FloatSize(width * minimumShrinkFactor(), height * minimumShrinkFactor()));
++    FloatSize minLayoutSize = frame.resizePageRectsKeepingRatio(originalPageSize, FloatSize(width * minimumShrinkFactor(), height * minimumShrinkFactor()));
+ 
+     // This changes layout, so callers need to make sure that they don't paint to screen while in printing mode.
+-    m_frame->setPrinting(true, minLayoutSize, originalPageSize, maximumShrinkFactor() / minimumShrinkFactor(), AdjustViewSize);
++    frame.setPrinting(true, minLayoutSize, originalPageSize, maximumShrinkFactor() / minimumShrinkFactor(), AdjustViewSize);
+ }
+ 
+ float PrintContext::computeAutomaticScaleFactor(const FloatSize& availablePaperSize)
+ {
+-    if (!m_frame->view())
++    if (!frame())
++        return 1;
++
++    auto& frame = *this->frame();
++    if (!frame.view())
+         return 1;
+ 
+     bool useViewWidth = true;
+-    if (m_frame->document() && m_frame->document()->renderView())
+-        useViewWidth = m_frame->document()->renderView()->style().isHorizontalWritingMode();
++    if (frame.document() && frame.document()->renderView())
++        useViewWidth = frame.document()->renderView()->style().isHorizontalWritingMode();
+ 
+-    float viewLogicalWidth = useViewWidth ? m_frame->view()->contentsWidth() : m_frame->view()->contentsHeight();
++    float viewLogicalWidth = useViewWidth ? frame.view()->contentsWidth() : frame.view()->contentsHeight();
+     if (viewLogicalWidth < 1)
+         return 1;
+ 
+@@ -181,6 +197,10 @@ float PrintContext::computeAutomaticScaleFactor(const FloatSize& availablePaperS
+ 
+ void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
+ {
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
+     // FIXME: Not correct for vertical text.
+     IntRect pageRect = m_pageRects[pageNumber];
+     float scale = width / pageRect.width();
+@@ -189,27 +209,35 @@ void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
+     ctx.scale(scale);
+     ctx.translate(-pageRect.x(), -pageRect.y());
+     ctx.clip(pageRect);
+-    m_frame->view()->paintContents(ctx, pageRect);
+-    outputLinkedDestinations(ctx, *m_frame->document(), pageRect);
++    frame.view()->paintContents(ctx, pageRect);
++    outputLinkedDestinations(ctx, *frame.document(), pageRect);
+     ctx.restore();
+ }
+ 
+ void PrintContext::spoolRect(GraphicsContext& ctx, const IntRect& rect)
+ {
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
+     // FIXME: Not correct for vertical text.
+     ctx.save();
+     ctx.translate(-rect.x(), -rect.y());
+     ctx.clip(rect);
+-    m_frame->view()->paintContents(ctx, rect);
+-    outputLinkedDestinations(ctx, *m_frame->document(), rect);
++    frame.view()->paintContents(ctx, rect);
++    outputLinkedDestinations(ctx, *frame.document(), rect);
+     ctx.restore();
+ }
+ 
+ void PrintContext::end()
+ {
++    if (!frame())
++        return;
++
++    auto& frame = *this->frame();
+     ASSERT(m_isPrinting);
+     m_isPrinting = false;
+-    m_frame->setPrinting(false, FloatSize(), FloatSize(), 0, AdjustViewSize);
++    frame.setPrinting(false, FloatSize(), FloatSize(), 0, AdjustViewSize);
+     m_linkedDestinations = nullptr;
+ }
+ 
+diff --git a/modules/web/src/main/native/Source/WebCore/page/PrintContext.h b/modules/web/src/main/native/Source/WebCore/page/PrintContext.h
+index d36c704..3ef4b60 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/PrintContext.h
++++ b/modules/web/src/main/native/Source/WebCore/page/PrintContext.h
+@@ -20,6 +20,7 @@
+ 
+ #pragma once
+ 
++#include "FrameDestructionObserver.h"
+ #include <wtf/Forward.h>
+ #include <wtf/HashMap.h>
+ #include <wtf/Vector.h>
+@@ -36,13 +37,11 @@ class GraphicsContext;
+ class IntRect;
+ class Node;
+ 
+-class PrintContext {
++class PrintContext : public FrameDestructionObserver {
+ public:
+     WEBCORE_EXPORT explicit PrintContext(Frame*);
+     WEBCORE_EXPORT ~PrintContext();
+ 
+-    Frame* frame() const { return m_frame; }
+-
+     // Break up a page into rects without relayout.
+     // FIXME: This means that CSS page breaks won't be on page boundary if the size is different than what was passed to begin(). That's probably not always desirable.
+     // FIXME: Header and footer height should be applied before layout, not after.
+@@ -96,7 +95,6 @@ public:
+     static constexpr float maximumShrinkFactor() { return 2; }
+ 
+ protected:
+-    Frame* m_frame;
+     Vector<IntRect> m_pageRects;
+ 
+ private:
+diff --git a/modules/web/src/main/native/Source/WebCore/page/scrolling/ScrollingThread.cpp b/modules/web/src/main/native/Source/WebCore/page/scrolling/ScrollingThread.cpp
+index 8a5970c..f44496d 100644
+--- a/modules/web/src/main/native/Source/WebCore/page/scrolling/ScrollingThread.cpp
++++ b/modules/web/src/main/native/Source/WebCore/page/scrolling/ScrollingThread.cpp
+@@ -72,24 +72,21 @@ ScrollingThread& ScrollingThread::singleton()
+ 
+ void ScrollingThread::createThreadIfNeeded()
+ {
+-    if (m_thread)
+-        return;
+-
+     // Wait for the thread to initialize the run loop.
+-    {
+         std::unique_lock<Lock> lock(m_initializeRunLoopMutex);
+ 
++    if (!m_thread) {
+         m_thread = Thread::create("WebCore: Scrolling", [this] {
+             WTF::Thread::setCurrentThreadIsUserInteractive();
+             initializeRunLoop();
+         });
++    }
+ 
+ #if PLATFORM(COCOA)
+         m_initializeRunLoopConditionVariable.wait(lock, [this]{ return m_threadRunLoop; });
+ #else
+         m_initializeRunLoopConditionVariable.wait(lock, [this]{ return m_runLoop; });
+ #endif
+-    }
+ }
+ 
+ void ScrollingThread::dispatchFunctionsFromScrollingThread()
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/ScrollAnimationKinetic.cpp b/modules/web/src/main/native/Source/WebCore/platform/ScrollAnimationKinetic.cpp
+index ab47793..14518dd 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/ScrollAnimationKinetic.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/ScrollAnimationKinetic.cpp
+@@ -89,12 +89,14 @@ bool ScrollAnimationKinetic::PerAxisData::animateScroll(Seconds timeDelta)
+     m_velocity = -decelFriction * m_coef2 * exponentialPart;
+ 
+     if (m_position < m_lower) {
++        m_velocity = m_lower - m_position;
+         m_position = m_lower;
+-        m_velocity = 0;
+     } else if (m_position > m_upper) {
++        m_velocity = m_upper - m_position;
+         m_position = m_upper;
+-        m_velocity = 0;
+-    } else if (fabs(m_velocity) < 1 || (lastTime && fabs(m_position - lastPosition) < 1)) {
++    }
++
++    if (fabs(m_velocity) < 1 || (lastTime && fabs(m_position - lastPosition) < 1)) {
+         m_position = round(m_position);
+         m_velocity = 0;
+     }
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/graphics/glx/GLContextGLX.cpp b/modules/web/src/main/native/Source/WebCore/platform/graphics/glx/GLContextGLX.cpp
+index 451b914..97b10bd 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/graphics/glx/GLContextGLX.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/graphics/glx/GLContextGLX.cpp
+@@ -114,8 +114,24 @@ static GLXContext createGLXARBContext(Display* display, GLXFBConfig config, GLXC
+     return glXCreateContextAttribsARB(display, config, sharingContext, GL_TRUE, nullptr);
+ }
+ 
++static bool compatibleVisuals(XVisualInfo* a, XVisualInfo* b)
++{
++    return a->c_class == b->c_class
++        && a->depth == b->depth
++        && a->red_mask == b->red_mask
++        && a->green_mask == b->green_mask
++        && a->blue_mask == b->blue_mask
++        && a->colormap_size == b->colormap_size
++        && a->bits_per_rgb == b->bits_per_rgb;
++}
++
+ std::unique_ptr<GLContextGLX> GLContextGLX::createWindowContext(GLNativeWindowType window, PlatformDisplay& platformDisplay, GLXContext sharingContext)
+ {
++    // In order to create the GLContext, we need to select a GLXFBConfig that has depth and stencil
++    // buffers that is compatible with the Visual used to create the window. To do this, we request
++    // all the GLXFBConfigs that have the features we need and compare their XVisualInfo to check whether
++    // they are compatible with the window one. Then we try to create the GLContext with each of those
++    // configs until we succeed, and finally fallback to the window config if nothing else works.
+     Display* display = downcast<PlatformDisplayX11>(platformDisplay).native();
+     XWindowAttributes attributes;
+     if (!XGetWindowAttributes(display, static_cast<Window>(window), &attributes))
+@@ -125,27 +141,66 @@ std::unique_ptr<GLContextGLX> GLContextGLX::createWindowContext(GLNativeWindowTy
+     visualInfo.visualid = XVisualIDFromVisual(attributes.visual);
+ 
+     int numConfigs = 0;
+-    GLXFBConfig config = nullptr;
++    GLXFBConfig windowConfig = nullptr;
+     XUniquePtr<GLXFBConfig> configs(glXGetFBConfigs(display, DefaultScreen(display), &numConfigs));
+     for (int i = 0; i < numConfigs; i++) {
+         XUniquePtr<XVisualInfo> glxVisualInfo(glXGetVisualFromFBConfig(display, configs.get()[i]));
+         if (!glxVisualInfo)
+             continue;
+-
+         if (glxVisualInfo.get()->visualid == visualInfo.visualid) {
+-            config = configs.get()[i];
++            windowConfig = configs.get()[i];
+             break;
+         }
+     }
+-    ASSERT(config);
++    ASSERT(windowConfig);
++    XUniquePtr<XVisualInfo> windowVisualInfo(glXGetVisualFromFBConfig(display, windowConfig));
+ 
++    static const int fbConfigAttributes[] = {
++        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
++        GLX_RENDER_TYPE, GLX_RGBA_BIT,
++        GLX_X_RENDERABLE, GL_TRUE,
++        GLX_RED_SIZE, 1,
++        GLX_GREEN_SIZE, 1,
++        GLX_BLUE_SIZE, 1,
++        GLX_ALPHA_SIZE, 1,
++        GLX_DEPTH_SIZE, 1,
++        GLX_STENCIL_SIZE, 1,
++        GLX_DOUBLEBUFFER, GL_TRUE,
++        GLX_CONFIG_CAVEAT, GLX_NONE,
++#ifdef GLX_FRAMEBUFFER_SRGB_CAPABLE_EXT
++        // Discard sRGB configs if any sRGB extension is installed.
++        GLX_FRAMEBUFFER_SRGB_CAPABLE_EXT, GL_FALSE,
++#endif
++        0
++    };
++    configs.reset(glXChooseFBConfig(display, DefaultScreen(display), fbConfigAttributes, &numConfigs));
+     XUniqueGLXContext context;
++    for (int i = 0; i < numConfigs; i++) {
++        XUniquePtr<XVisualInfo> configVisualInfo(glXGetVisualFromFBConfig(display, configs.get()[i]));
++        if (!configVisualInfo)
++            continue;
++        if (compatibleVisuals(windowVisualInfo.get(), configVisualInfo.get())) {
++            // Try to create a context with this config. Use the trapper in case we get an XError.
++            XErrorTrapper trapper(display, XErrorTrapper::Policy::Ignore);
++            if (hasGLXARBCreateContextExtension(display))
++                context.reset(createGLXARBContext(display, configs.get()[i], sharingContext));
++            else {
++                // Legacy OpenGL version.
++                context.reset(glXCreateContext(display, configVisualInfo.get(), sharingContext, True));
++            }
++
++            if (context)
++                return std::unique_ptr<GLContextGLX>(new GLContextGLX(platformDisplay, WTFMove(context), window));
++        }
++    }
++
++    // Fallback to the config used by the window. We don't probably have the buffers we need in
++    // this config and that will cause artifacts, but it's better than not rendering anything.
+     if (hasGLXARBCreateContextExtension(display))
+-        context.reset(createGLXARBContext(display, config, sharingContext));
++        context.reset(createGLXARBContext(display, windowConfig, sharingContext));
+     else {
+         // Legacy OpenGL version.
+-        XUniquePtr<XVisualInfo> visualInfoList(glXGetVisualFromFBConfig(display, config));
+-        context.reset(glXCreateContext(display, visualInfoList.get(), sharingContext, True));
++        context.reset(glXCreateContext(display, windowVisualInfo.get(), sharingContext, True));
+     }
+ 
+     if (!context)
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/SVGElement.h b/modules/web/src/main/native/Source/WebCore/svg/SVGElement.h
+index e58bb73..f62aa60 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/SVGElement.h
++++ b/modules/web/src/main/native/Source/WebCore/svg/SVGElement.h
+@@ -31,6 +31,7 @@
+ #include "StyledElement.h"
+ #include <wtf/HashMap.h>
+ #include <wtf/HashSet.h>
++#include <wtf/WeakPtr.h>
+ 
+ namespace WebCore {
+ 
+@@ -45,7 +46,7 @@ class SVGUseElement;
+ 
+ void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
+ 
+-class SVGElement : public StyledElement, public SVGLangSpace {
++class SVGElement : public StyledElement, public SVGLangSpace, public CanMakeWeakPtr<SVGElement> {
+     WTF_MAKE_ISO_ALLOCATED(SVGElement);
+ public:
+     bool isOutermostSVGSVGElement() const;
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/SVGPathElement.h b/modules/web/src/main/native/Source/WebCore/svg/SVGPathElement.h
+index b4f41c9..576d0be 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/SVGPathElement.h
++++ b/modules/web/src/main/native/Source/WebCore/svg/SVGPathElement.h
+@@ -55,7 +55,7 @@ class SVGPathSegCurvetoQuadraticSmoothRel;
+ class SVGPathSegList;
+ class SVGPoint;
+ 
+-class SVGPathElement final : public SVGGeometryElement, public SVGExternalResourcesRequired, public CanMakeWeakPtr<SVGPathElement> {
++class SVGPathElement final : public SVGGeometryElement, public SVGExternalResourcesRequired {
+     WTF_MAKE_ISO_ALLOCATED(SVGPathElement);
+ public:
+     static Ref<SVGPathElement> create(const QualifiedName&, Document&);
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.cpp b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.cpp
+index 984a267..b413ed3 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.cpp
++++ b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.cpp
+@@ -34,7 +34,7 @@ namespace WebCore {
+ 
+ SVGViewSpec::SVGViewSpec(SVGElement& contextElement)
+     : SVGFitToViewBox(&contextElement, PropertyIsReadOnly)
+-    , m_contextElement(&contextElement)
++    , m_contextElement(makeWeakPtr(contextElement))
+     , m_attributeOwnerProxy(*this, contextElement)
+ {
+     registerAttributes();
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.h b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.h
+index b884996..b6fd7bc 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.h
++++ b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.h
+@@ -49,6 +49,8 @@ public:
+     RefPtr<SVGTransformList> transform();
+     SVGTransformListValues transformValue() const { return m_transform.value(); }
+ 
++    const WeakPtr<SVGElement>& contextElementConcurrently() const { return m_contextElement; }
++
+ private:
+     explicit SVGViewSpec(SVGElement&);
+ 
+@@ -58,7 +60,7 @@ private:
+     static AttributeOwnerProxy::AttributeRegistry& attributeRegistry() { return AttributeOwnerProxy::attributeRegistry(); }
+     static bool isKnownAttribute(const QualifiedName& attributeName) { return AttributeOwnerProxy::isKnownAttribute(attributeName); }
+ 
+-    SVGElement* m_contextElement;
++    WeakPtr<SVGElement> m_contextElement;
+     String m_viewTargetString;
+     AttributeOwnerProxy m_attributeOwnerProxy;
+     SVGAnimatedTransformListAttribute m_transform;
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.idl b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.idl
+index 4411d57..012c9e1 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.idl
++++ b/modules/web/src/main/native/Source/WebCore/svg/SVGViewSpec.idl
+@@ -28,6 +28,7 @@
+ // It would require that any of those classes would be RefCounted, and we want to avoid that.
+ [
+     ImplementationLacksVTable,
++    JSCustomMarkFunction,
+     JSGenerateToJSObject,
+ ] interface SVGViewSpec {
+     readonly attribute SVGTransformList transform;
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.cpp b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.cpp
+new file mode 100644
+index 0000000..840233b
+--- /dev/null
++++ b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.cpp
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (C) 2018 Apple Inc.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
++ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
++ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
++ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#pragma once
++
++#include "config.h"
++#include "SVGAttributeOwnerProxy.h"
++
++namespace WebCore {
++
++SVGAttributeOwnerProxy::SVGAttributeOwnerProxy(SVGElement& element)
++    : m_element(makeWeakPtr(element))
++{
++}
++
++SVGElement& SVGAttributeOwnerProxy::element() const
++{
++    return *m_element;
++}
++
++}
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.h b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.h
+index 00d03b0..c6b6821 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.h
++++ b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxy.h
+@@ -26,6 +26,7 @@
+ #pragma once
+ 
+ #include "SVGAnimatedPropertyType.h"
++#include <wtf/WeakPtr.h>
+ 
+ namespace WebCore {
+ 
+@@ -35,14 +36,11 @@ class SVGElement;
+ 
+ class SVGAttributeOwnerProxy {
+ public:
+-    SVGAttributeOwnerProxy(SVGElement& element)
+-        : m_element(element)
+-    {
+-    }
++    SVGAttributeOwnerProxy(SVGElement&);
+ 
+     virtual ~SVGAttributeOwnerProxy() = default;
+ 
+-    SVGElement& element() const { return m_element; }
++    SVGElement& element() const;
+ 
+     virtual void synchronizeAttributes() const = 0;
+     virtual void synchronizeAttribute(const QualifiedName&) const = 0;
+@@ -54,7 +52,7 @@ public:
+     virtual Vector<RefPtr<SVGAnimatedProperty>> lookupOrCreateAnimatedProperties(const QualifiedName&) const = 0;
+ 
+ protected:
+-    SVGElement& m_element;
++    WeakPtr<SVGElement> m_element;
+ };
+ 
+ }
+diff --git a/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxyImpl.h b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxyImpl.h
+index 51d21ec..2dd22bb 100644
+--- a/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxyImpl.h
++++ b/modules/web/src/main/native/Source/WebCore/svg/properties/SVGAttributeOwnerProxyImpl.h
+@@ -68,12 +68,12 @@ public:
+ private:
+     void synchronizeAttributes() const override
+     {
+-        attributeRegistry().synchronizeAttributes(m_owner, m_element);
++        attributeRegistry().synchronizeAttributes(m_owner, *m_element);
+     }
+ 
+     void synchronizeAttribute(const QualifiedName& attributeName) const override
+     {
+-        attributeRegistry().synchronizeAttribute(m_owner, m_element, attributeName);
++        attributeRegistry().synchronizeAttribute(m_owner, *m_element, attributeName);
+     }
+ 
+     Vector<AnimatedPropertyType> animatedTypes(const QualifiedName& attributeName) const override
+@@ -83,17 +83,17 @@ private:
+ 
+     RefPtr<SVGAnimatedProperty> lookupOrCreateAnimatedProperty(const SVGAttribute& attribute) const override
+     {
+-        return attributeRegistry().lookupOrCreateAnimatedProperty(m_owner, m_element, attribute, m_animatedState);
++        return attributeRegistry().lookupOrCreateAnimatedProperty(m_owner, *m_element, attribute, m_animatedState);
+     }
+ 
+     RefPtr<SVGAnimatedProperty> lookupAnimatedProperty(const SVGAttribute& attribute) const override
+     {
+-        return attributeRegistry().lookupAnimatedProperty(m_owner, m_element, attribute);
++        return attributeRegistry().lookupAnimatedProperty(m_owner, *m_element, attribute);
+     }
+ 
+     Vector<RefPtr<SVGAnimatedProperty>> lookupOrCreateAnimatedProperties(const QualifiedName& attributeName) const override
+     {
+-        return attributeRegistry().lookupOrCreateAnimatedProperties(m_owner, m_element, attributeName, m_animatedState);
++        return attributeRegistry().lookupOrCreateAnimatedProperties(m_owner, *m_element, attributeName, m_animatedState);
+     }
+ 
+     OwnerType& m_owner;
+diff --git a/modules/web/src/main/native/Source/bmalloc/bmalloc/BAssert.h b/modules/web/src/main/native/Source/bmalloc/bmalloc/BAssert.h
+index 572d4b5..10e4518 100644
+--- a/modules/web/src/main/native/Source/bmalloc/bmalloc/BAssert.h
++++ b/modules/web/src/main/native/Source/bmalloc/bmalloc/BAssert.h
+@@ -81,6 +81,7 @@
+ } while (0)
+ 
+ #define RELEASE_BASSERT(x) BASSERT_IMPL(x)
++#define RELEASE_BASSERT_NOT_REACHED() BCRASH()
+ 
+ #if BUSE(OS_LOG)
+ #define BMALLOC_LOGGING_PREFIX "bmalloc: "
+diff --git a/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.cpp b/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.cpp
+index 8923086..b7fbdbb 100644
+--- a/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.cpp
++++ b/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2017-2018 Apple Inc. All rights reserved.
++ * Copyright (C) 2017-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -42,14 +42,16 @@
+ // If this were less than 32GB, those OOB accesses could reach outside of the cage.
+ #define GIGACAGE_RUNWAY (32llu * 1024 * 1024 * 1024)
+ 
++// Note: g_gigacageBasePtrs[0] is reserved for storing the wasEnabled flag.
++// The first gigacageBasePtr will start at g_gigacageBasePtrs[sizeof(void*)].
++// This is done so that the wasEnabled flag will also be protected along with the
++// gigacageBasePtrs.
+ alignas(GIGACAGE_BASE_PTRS_SIZE) char g_gigacageBasePtrs[GIGACAGE_BASE_PTRS_SIZE];
+ 
+ using namespace bmalloc;
+ 
+ namespace Gigacage {
+ 
+-bool g_wasEnabled;
+-
+ namespace {
+ 
+ bool s_isDisablingPrimitiveGigacageDisabled;
+@@ -99,6 +101,21 @@ struct PrimitiveDisableCallbacks {
+     Vector<Callback> callbacks;
+ };
+ 
++#if GIGACAGE_ENABLED
++size_t runwaySize(Kind kind)
++{
++    switch (kind) {
++    case Kind::ReservedForFlagsAndNotABasePtr:
++        RELEASE_BASSERT_NOT_REACHED();
++    case Kind::Primitive:
++        return static_cast<size_t>(GIGACAGE_RUNWAY);
++    case Kind::JSValue:
++        return static_cast<size_t>(0);
++    }
++    return static_cast<size_t>(0);
++}
++#endif
++
+ } // anonymous namespace
+ 
+ void ensureGigacage()
+@@ -113,7 +130,7 @@ void ensureGigacage()
+ 
+             Kind shuffledKinds[numKinds];
+             for (unsigned i = 0; i < numKinds; ++i)
+-                shuffledKinds[i] = static_cast<Kind>(i);
++                shuffledKinds[i] = static_cast<Kind>(i + 1); // + 1 to skip Kind::ReservedForFlagsAndNotABasePtr.
+ 
+             // We just go ahead and assume that 64 bits is enough randomness. That's trivially true right
+             // now, but would stop being true if we went crazy with gigacages. Based on my math, 21 is the
+@@ -140,9 +157,9 @@ void ensureGigacage()
+ 
+             for (Kind kind : shuffledKinds) {
+                 totalSize = bump(kind, alignTo(kind, totalSize));
++                totalSize += runwaySize(kind);
+                 maxAlignment = std::max(maxAlignment, alignment(kind));
+             }
+-            totalSize += GIGACAGE_RUNWAY;
+ 
+             // FIXME: Randomize where this goes.
+             // https://bugs.webkit.org/show_bug.cgi?id=175245
+@@ -155,23 +172,22 @@ void ensureGigacage()
+                 BCRASH();
+             }
+ 
+-            if (GIGACAGE_RUNWAY > 0) {
+-                char* runway = reinterpret_cast<char*>(base) + totalSize - GIGACAGE_RUNWAY;
+-                // Make OOB accesses into the runway crash.
+-                vmRevokePermissions(runway, GIGACAGE_RUNWAY);
+-            }
+-
+-            vmDeallocatePhysicalPages(base, totalSize);
+-
+             size_t nextCage = 0;
+             for (Kind kind : shuffledKinds) {
+                 nextCage = alignTo(kind, nextCage);
+                 basePtr(kind) = reinterpret_cast<char*>(base) + nextCage;
+                 nextCage = bump(kind, nextCage);
++                if (runwaySize(kind) > 0) {
++                    char* runway = reinterpret_cast<char*>(base) + nextCage;
++                    // Make OOB accesses into the runway crash.
++                    vmRevokePermissions(runway, runwaySize(kind));
++                    nextCage += runwaySize(kind);
++                }
+             }
+ 
++            vmDeallocatePhysicalPages(base, totalSize);
++            setWasEnabled();
+             protectGigacageBasePtrs();
+-            g_wasEnabled = true;
+         });
+ #endif // GIGACAGE_ENABLED
+ }
+@@ -224,6 +240,9 @@ void removePrimitiveDisableCallback(void (*function)(void*), void* argument)
+ 
+ static void primitiveGigacageDisabled(void*)
+ {
++    if (GIGACAGE_ALLOCATION_CAN_FAIL && !wasEnabled())
++        return;
++
+     static bool s_false;
+     fprintf(stderr, "FATAL: Primitive gigacage disabled, but we don't want that in this process.\n");
+     if (!s_false)
+diff --git a/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.h b/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.h
+index 8741d67..bd25e22 100644
+--- a/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.h
++++ b/modules/web/src/main/native/Source/bmalloc/bmalloc/Gigacage.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2017 Apple Inc. All rights reserved.
++ * Copyright (C) 2017-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -75,19 +75,24 @@ extern "C" alignas(GIGACAGE_BASE_PTRS_SIZE) BEXPORT char g_gigacageBasePtrs[GIGA
+ 
+ namespace Gigacage {
+ 
+-extern BEXPORT bool g_wasEnabled;
+-BINLINE bool wasEnabled() { return g_wasEnabled; }
++BINLINE bool wasEnabled() { return g_gigacageBasePtrs[0]; }
++BINLINE void setWasEnabled() { g_gigacageBasePtrs[0] = true; }
+ 
+ struct BasePtrs {
++    uintptr_t reservedForFlags;
+     void* primitive;
+     void* jsValue;
+ };
+ 
+ enum Kind {
++    ReservedForFlagsAndNotABasePtr = 0,
+     Primitive,
+     JSValue,
+ };
+ 
++static_assert(offsetof(BasePtrs, primitive) == Kind::Primitive * sizeof(void*), "");
++static_assert(offsetof(BasePtrs, jsValue) == Kind::JSValue * sizeof(void*), "");
++
+ static constexpr unsigned numKinds = 2;
+ 
+ BEXPORT void ensureGigacage();
+@@ -107,6 +112,8 @@ inline bool canPrimitiveGigacageBeDisabled() { return !isDisablingPrimitiveGigac
+ BINLINE const char* name(Kind kind)
+ {
+     switch (kind) {
++    case ReservedForFlagsAndNotABasePtr:
++        RELEASE_BASSERT_NOT_REACHED();
+     case Primitive:
+         return "Primitive";
+     case JSValue:
+@@ -119,6 +126,8 @@ BINLINE const char* name(Kind kind)
+ BINLINE void*& basePtr(BasePtrs& basePtrs, Kind kind)
+ {
+     switch (kind) {
++    case ReservedForFlagsAndNotABasePtr:
++        RELEASE_BASSERT_NOT_REACHED();
+     case Primitive:
+         return basePtrs.primitive;
+     case JSValue:
+@@ -146,6 +155,8 @@ BINLINE bool isEnabled(Kind kind)
+ BINLINE size_t size(Kind kind)
+ {
+     switch (kind) {
++    case ReservedForFlagsAndNotABasePtr:
++        RELEASE_BASSERT_NOT_REACHED();
+     case Primitive:
+         return static_cast<size_t>(PRIMITIVE_GIGACAGE_SIZE);
+     case JSValue:
+diff --git a/modules/web/src/main/native/Source/bmalloc/bmalloc/HeapKind.h b/modules/web/src/main/native/Source/bmalloc/bmalloc/HeapKind.h
+index 5ac7921..0a978d0 100644
+--- a/modules/web/src/main/native/Source/bmalloc/bmalloc/HeapKind.h
++++ b/modules/web/src/main/native/Source/bmalloc/bmalloc/HeapKind.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2017 Apple Inc. All rights reserved.
++ * Copyright (C) 2017-2019 Apple Inc. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+@@ -70,6 +70,8 @@ BINLINE Gigacage::Kind gigacageKind(HeapKind kind)
+ BINLINE HeapKind heapKind(Gigacage::Kind kind)
+ {
+     switch (kind) {
++    case Gigacage::ReservedForFlagsAndNotABasePtr:
++        RELEASE_BASSERT_NOT_REACHED();
+     case Gigacage::Primitive:
+         return HeapKind::PrimitiveGigacage;
+     case Gigacage::JSValue:
+-- 
+1.8.3.1
+

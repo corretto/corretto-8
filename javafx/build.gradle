@@ -55,29 +55,37 @@ task patchJfx {
     dependsOn unpackSource
     doLast {
         ant.patch(patchfile: "patches/0001-JDK-8087581-fix.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         ant.patch(patchfile: "patches/0002-apply-JDK-8214808-Better-framerate-computation.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         ant.patch(patchfile: "patches/0003-apply-JDK-8160464-Application.getHostServices-throws.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0004-apply-JDK-8219539.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0005-apply-JDK-8220147.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         ant.patch(patchfile: "patches/0006-apply-JDK-8213806.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0007-apply-JDK-8215799.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         ant.patch(patchfile: "patches/0008-apply-JDK-8215702.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0009-Disable-compiling-errors.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         ant.patch(patchfile: "patches/0010-The-version-is-not-always-on-the-second-line-notably.patch",
-                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         if (Os.isFamily(Os.FAMILY_MAC)) {
             ant.patch(patchfile: "patches/MacOSXMinVersion.patch",
-                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}", strip: "1", failonerror: true)
         }
     }
 }
 
 task buildJfx(type: Exec) {
     dependsOn patchJfx
-    workingDir "$buildRoot/rt-${openJfxVersion.getProperty('tag')}"
+    workingDir "$buildRoot/rt-${openJfxVersion.getProperty('changeset')}"
     commandLine 'bash', 'gradlew', 'sdk',
-            '-PCOMPILE_WEBKIT=false',
+            '-PCOMPILE_WEBKIT=true',
             '-PCOMPILE_MEDIA=false',
             '-PBUILD_JAVADOC=false',
             '-PBUILD_SRC_ZIP=true',
