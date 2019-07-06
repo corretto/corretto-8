@@ -1,0 +1,26 @@
+From 2990674d2e459a8c38a6d0236f8d1b9686ffff71 Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Mon, 10 Jun 2019 09:22:08 -0700
+Subject: [PATCH 08/12] apply JDK-8215702
+
+---
+ .../Source/WebCore/platform/graphics/java/GraphicsContextJava.cpp      | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/graphics/java/GraphicsContextJava.cpp b/modules/web/src/main/native/Source/WebCore/platform/graphics/java/GraphicsContextJava.cpp
+index cf056f1..cfe8665 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/graphics/java/GraphicsContextJava.cpp
++++ b/modules/web/src/main/native/Source/WebCore/platform/graphics/java/GraphicsContextJava.cpp
+@@ -84,6 +84,9 @@ static void setGradient(Gradient &gradient, PlatformGraphicsContext* context, ji
+             }
+     );
+ 
++    p0 = gt.mapPoint(p0);
++    p1 = gt.mapPoint(p1);
++
+     context->rq().freeSpace(4 * 11 + 8 * nStops)
+     << id
+     << (jfloat)p0.x()
+-- 
+1.8.3.1
+

@@ -1,0 +1,88 @@
+From ba22c94b3bd86bbcf82292e05dadb669ba1ed0ba Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Tue, 23 Apr 2019 03:32:41 -0700
+Subject: [PATCH 02/12] apply JDK-8214808: Better framerate computation
+
+---
+ .../src/main/java/com/sun/media/jfxmedia/MediaPlayer.java     |  5 +++++
+ .../java/com/sun/media/jfxmediaimpl/NativeMediaPlayer.java    | 11 +++++++++++
+ .../media/jfxmediaimpl/platform/gstreamer/GSTPlatform.java    |  7 +++++++
+ .../gstreamer-lite/gst-plugins-good/gst/isomp4/qtdemux.c      |  8 ++++++++
+ 4 files changed, 31 insertions(+)
+
+diff --git a/modules/media/src/main/java/com/sun/media/jfxmedia/MediaPlayer.java b/modules/media/src/main/java/com/sun/media/jfxmedia/MediaPlayer.java
+index 3177b42..289a86c 100644
+--- a/modules/media/src/main/java/com/sun/media/jfxmedia/MediaPlayer.java
++++ b/modules/media/src/main/java/com/sun/media/jfxmedia/MediaPlayer.java
+@@ -349,4 +349,9 @@ public interface MediaPlayer {
+      * after this method is invoked.
+      */
+     public void dispose();
++
++    /**
++     * Returns true if we have cached error event.
++     */
++    public boolean isErrorEventCached();
+ }
+diff --git a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/NativeMediaPlayer.java b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/NativeMediaPlayer.java
+index 9143a94..0327964 100644
+--- a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/NativeMediaPlayer.java
++++ b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/NativeMediaPlayer.java
+@@ -1411,6 +1411,17 @@ public abstract class NativeMediaPlayer implements MediaPlayer, MarkerStateListe
+         }
+     }
+ 
++    @Override
++    public boolean isErrorEventCached() {
++        synchronized (cachedErrorEvents) {
++            if (cachedErrorEvents.isEmpty()) {
++                return false;
++            } else {
++                return true;
++            }
++        }
++    }
++
+     //**************************************************************************
+     //***** Non-JNI methods called by the native layer. These methods are called
+     //***** from the native layer via the invocation API. Their purpose is to
+diff --git a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/gstreamer/GSTPlatform.java b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/gstreamer/GSTPlatform.java
+index 704e1d1..cae2eb3 100644
+--- a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/gstreamer/GSTPlatform.java
++++ b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/gstreamer/GSTPlatform.java
+@@ -154,6 +154,13 @@ public final class GSTPlatform extends Platform {
+                         // Ignore it.
+                     }
+ 
++                    // Check if error event was set. We will not go to READY or
++                    // HALT state in this case. Error event is basically same
++                    // as HALT.
++                    if (player.isErrorEventCached()) {
++                        break;
++                    }
++
+                     state = player.getState();
+                 }
+ 
+diff --git a/modules/media/src/main/native/gstreamer/gstreamer-lite/gst-plugins-good/gst/isomp4/qtdemux.c b/modules/media/src/main/native/gstreamer/gstreamer-lite/gst-plugins-good/gst/isomp4/qtdemux.c
+index c6624bd..98de457 100644
+--- a/modules/media/src/main/native/gstreamer/gstreamer-lite/gst-plugins-good/gst/isomp4/qtdemux.c
++++ b/modules/media/src/main/native/gstreamer/gstreamer-lite/gst-plugins-good/gst/isomp4/qtdemux.c
+@@ -9944,6 +9944,14 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+ 
+   stream->stsd_entries_length = stsd_entry_count = QT_UINT32 (stsd_data + 12);
+   stream->stsd_entries = g_new0 (QtDemuxStreamStsdEntry, stsd_entry_count);
++#ifdef GSTREAMER_LITE
++  // Even if we check stsd header length (stsd_len) to make sure we have at least
++  // one entry, we still might have actual entry count set to 0. g_new0() will
++  // return NULL if fail or count is 0.
++  if (stream->stsd_entries == NULL) {
++    goto corrupt_file;
++  }
++#endif // GSTREAMER_LITE
+   GST_LOG_OBJECT (qtdemux, "stsd len:           %d", stsd_len);
+   GST_LOG_OBJECT (qtdemux, "stsd entry count:   %u", stsd_entry_count);
+ 
+-- 
+1.8.3.1
+

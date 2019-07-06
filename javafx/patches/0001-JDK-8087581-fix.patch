@@ -1,0 +1,146 @@
+From 8e52dd64251413453d0e297cf866db75f51dc6d8 Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Sun, 25 Feb 2018 15:42:25 -0800
+Subject: [PATCH 01/12] JDK-8087581 fix
+
+---
+ .../graphics/src/main/java/com/sun/javafx/font/FontFactory.java   | 2 ++
+ .../src/main/java/com/sun/javafx/font/PrismFontFactory.java       | 4 ++++
+ .../src/main/java/com/sun/javafx/font/directwrite/DWFactory.java  | 8 ++++++++
+ .../src/main/java/com/sun/javafx/font/directwrite/OS.java         | 3 +++
+ .../graphics/src/main/java/com/sun/prism/GraphicsPipeline.java    | 2 +-
+ modules/graphics/src/main/java/com/sun/prism/d3d/D3DPipeline.java | 3 +++
+ .../graphics/src/main/java/com/sun/prism/j2d/J2DFontFactory.java  | 4 ++++
+ modules/graphics/src/main/native-font/directwrite.cpp             | 8 ++++++--
+ 8 files changed, 31 insertions(+), 3 deletions(-)
+
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/FontFactory.java b/modules/graphics/src/main/java/com/sun/javafx/font/FontFactory.java
+index 7cbeb30..138e8d1 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/FontFactory.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/FontFactory.java
+@@ -130,4 +130,6 @@ public interface FontFactory {
+                                    float size, boolean register);
+ 
+     public boolean isPlatformFont(String name);
++
++    public void dispose();
+ }
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFactory.java b/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFactory.java
+index 06bc5af..40e75e7 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFactory.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFactory.java
+@@ -1898,6 +1898,10 @@ public abstract class PrismFontFactory implements FontFactory {
+         }
+     }
+ 
++    @Override
++    public void dispose() {
++    }
++
+     static native int getLCDContrastWin32();
+     private static native int getSystemFontSizeNative();
+     private static native String getSystemFontNative();
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/DWFactory.java b/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/DWFactory.java
+index b2d5165..5e16d23 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/DWFactory.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/DWFactory.java
+@@ -71,6 +71,14 @@ public class DWFactory extends PrismFontFactory {
+     }
+ 
+     @Override
++    public void dispose() {
++        checkThread();
++        if (WIC_FACTORY != null) {
++            OS.CoUninitialize();
++        }
++    }
++
++    @Override
+     protected boolean registerEmbeddedFont(String path) {
+         IDWriteFactory factory = DWFactory.getDWriteFactory();
+         IDWriteFontFile fontFile = factory.CreateFontFileReference(path);
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/OS.java b/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/OS.java
+index d49149e..9156d63 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/OS.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/directwrite/OS.java
+@@ -295,6 +295,9 @@ class OS {
+     static final native int AddRef(long ptr);
+     static final native int Release(long ptr);
+ 
++    //CoUninitialize
++    static final native void CoUninitialize();
++
+     //IDWriteTextAnalyzer
+     static final native int AnalyzeScript(long ptr, long source, int start, int length, long sink);
+     static final native int GetGlyphs(long ptr,
+diff --git a/modules/graphics/src/main/java/com/sun/prism/GraphicsPipeline.java b/modules/graphics/src/main/java/com/sun/prism/GraphicsPipeline.java
+index f10d819..73d91d4 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/GraphicsPipeline.java
++++ b/modules/graphics/src/main/java/com/sun/prism/GraphicsPipeline.java
+@@ -55,7 +55,7 @@ public abstract class GraphicsPipeline {
+          */
+         SM3
+     }
+-    private FontFactory fontFactory;
++    protected FontFactory fontFactory;
+ 
+     public abstract boolean init();
+     public void dispose() {
+diff --git a/modules/graphics/src/main/java/com/sun/prism/d3d/D3DPipeline.java b/modules/graphics/src/main/java/com/sun/prism/d3d/D3DPipeline.java
+index 4bbde2c..5d4bb98 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/d3d/D3DPipeline.java
++++ b/modules/graphics/src/main/java/com/sun/prism/d3d/D3DPipeline.java
+@@ -161,6 +161,9 @@ public final class D3DPipeline extends GraphicsPipeline {
+                     + Thread.currentThread().getName() + "]");
+         }
+         notifyAllResourcesReleased();
++        if (null != fontFactory) {
++            fontFactory.dispose();
++        }
+         nDispose();
+         for (int i=0; i!=factories.length; ++i) {
+             factories[i] = null;
+diff --git a/modules/graphics/src/main/java/com/sun/prism/j2d/J2DFontFactory.java b/modules/graphics/src/main/java/com/sun/prism/j2d/J2DFontFactory.java
+index 656365e..de82f57 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/j2d/J2DFontFactory.java
++++ b/modules/graphics/src/main/java/com/sun/prism/j2d/J2DFontFactory.java
+@@ -166,6 +166,10 @@ final class J2DFontFactory implements FontFactory {
+         return font;
+     }
+ 
++    @Override
++    public void dispose() {
++    }
++
+     private static boolean compositeFontMethodsInitialized = false;
+     private static Method getCompositeFontUIResource = null;
+ 
+diff --git a/modules/graphics/src/main/native-font/directwrite.cpp b/modules/graphics/src/main/native-font/directwrite.cpp
+index 96e751c..ae9984f 100644
+--- a/modules/graphics/src/main/native-font/directwrite.cpp
++++ b/modules/graphics/src/main/native-font/directwrite.cpp
+@@ -867,8 +867,6 @@ JNIEXPORT jlong JNICALL OS_NATIVE(_1WICCreateImagingFactory)
+             IID_PPV_ARGS(&result)
+             );
+ 
+-    /* Unload COM as no other COM objects will be create directly */
+-    CoUninitialize();
+     return SUCCEEDED(hr) ? (jlong)result : NULL;
+ }
+ 
+@@ -924,6 +922,12 @@ JNIEXPORT jint JNICALL OS_NATIVE(Release)
+     return ((IUnknown *)arg0)->Release();
+ }
+ 
++JNIEXPORT void JNICALL OS_NATIVE(CoUninitialize)
++    (JNIEnv *env, jclass that)
++{
++    CoUninitialize();
++}
++
+ /***********************************************/
+ /*         Text Source and Sink                */
+ /***********************************************/
+-- 
+1.8.3.1
+

@@ -54,6 +54,18 @@ task unpackSource(type: Copy) {
 task patchJfx {
     dependsOn unpackSource
     doLast {
+        ant.patch(patchfile: "patches/0001-JDK-8087581-fix.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0002-apply-JDK-8214808-Better-framerate-computation.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0003-apply-JDK-8160464-Application.getHostServices-throws.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0006-apply-JDK-8213806.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0008-apply-JDK-8215702.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        ant.patch(patchfile: "patches/0010-The-version-is-not-always-on-the-second-line-notably.patch",
+                dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
         if (Os.isFamily(Os.FAMILY_MAC)) {
             ant.patch(patchfile: "patches/MacOSXMinVersion.patch",
                     dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)

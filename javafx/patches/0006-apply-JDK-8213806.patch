@@ -1,0 +1,62 @@
+From 7f02c518078fc8cf51b9a8eae1d3faa33871e6c8 Mon Sep 17 00:00:00 2001
+From: akashche <akashche@redhat.com>
+Date: Mon, 10 Jun 2019 08:19:22 -0700
+Subject: [PATCH 06/12] apply JDK-8213806
+
+---
+ .../main/native/Source/WebCore/platform/URLHash.h  |  2 +-
+ .../java/javafx/scene/web/MiscellaneousTest.java   | 27 ++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/modules/web/src/main/native/Source/WebCore/platform/URLHash.h b/modules/web/src/main/native/Source/WebCore/platform/URLHash.h
+index be2c5db..8c4a784 100644
+--- a/modules/web/src/main/native/Source/WebCore/platform/URLHash.h
++++ b/modules/web/src/main/native/Source/WebCore/platform/URLHash.h
+@@ -35,7 +35,7 @@ namespace WebCore {
+     struct URLHash {
+         static unsigned hash(const URL& key)
+         {
+-            return key.string().impl()->hash();
++            return key.string().hash();
+         }
+ 
+         static bool equal(const URL& a, const URL& b)
+diff --git a/modules/web/src/test/java/javafx/scene/web/MiscellaneousTest.java b/modules/web/src/test/java/javafx/scene/web/MiscellaneousTest.java
+index a010143..f8475f7 100644
+--- a/modules/web/src/test/java/javafx/scene/web/MiscellaneousTest.java
++++ b/modules/web/src/test/java/javafx/scene/web/MiscellaneousTest.java
+@@ -421,4 +421,31 @@ public class MiscellaneousTest extends TestBase {
+             throw new AssertionError(e);
+         }
+     }
++
++    @Test public void testShadowDOMWithLoadContent() {
++        loadContent("<html>\n" +
++                    "  <body>\n" +
++                    "    <template id='element-details-template'>\n" +
++                    "      <style>\n" +
++                    "        p { font-weight: bold; }\n" +
++                    "      </style>\n" +
++                    "    </template>\n" +
++                    "    <element-details>\n" +
++                    "    </element-details>\n" +
++                    "    <script>\n" +
++                    "    customElements.define('element-details',\n" +
++                    "      class extends HTMLElement {\n" +
++                    "        constructor() {\n" +
++                    "          super();\n" +
++                    "          const template = document\n" +
++                    "            .getElementById('element-details-template')\n" +
++                    "            .content;\n" +
++                    "          const shadowRoot = this.attachShadow({mode: 'open'})\n" +
++                    "            .appendChild(template.cloneNode(true));\n" +
++                    "        }\n" +
++                    "      })\n" +
++                    "    </script>\n" +
++                    "  </body>\n" +
++                    "</html>");
++    }
+ }
+-- 
+1.8.3.1
+

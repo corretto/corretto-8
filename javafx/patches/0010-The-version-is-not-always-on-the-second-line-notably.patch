@@ -1,0 +1,48 @@
+From aa38424c8ce9014349f6d170fc45df1435034e49 Mon Sep 17 00:00:00 2001
+From: Julius Schwartzenberg <julius.schwartzenberg@asml.com>
+Date: Wed, 3 Jul 2019 16:35:54 +0200
+Subject: [PATCH 10/12] The version is not always on the second line, notably
+ when _JAVA_OPTIONS is set.
+
+---
+ build.gradle | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index c155b24..4aa0d48 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -739,18 +739,18 @@ if (!file(JAVADOC).exists()) throw new Exception("Missing or incorrect path to '
+ // We need to parse the second line
+ def inStream = new java.io.BufferedReader(new java.io.InputStreamReader(new java.lang.ProcessBuilder(JAVA, "-version").start().getErrorStream()));
+ try {
+-    if (inStream.readLine() != null) {
+-        String v = inStream.readLine();
+-        if (v != null) {
+-            int ib = v.indexOf(" (build ");
+-            if (ib != -1) {
+-                String ver = v.substring(ib + 8, v.size() - 1);
+-
+-                defineProperty("jdkRuntimeVersion", ver)
+-                defineProperty("jdkVersion", jdkRuntimeVersion.split("-")[0])
+-                defineProperty("jdkBuildNumber", jdkRuntimeVersion.substring(jdkRuntimeVersion.lastIndexOf("-b") + 2))
+-            }
+-        }
++    String v = inStream.readLine();
++    String ver = null;
++    while (v != null && ver == null) {
++        int ib = v.indexOf(" (build ");
++        if (ib != -1) {
++            ver = v.substring(ib + 8, v.size() - 1);
++
++            defineProperty("jdkRuntimeVersion", ver)
++            defineProperty("jdkVersion", jdkRuntimeVersion.split("-")[0])
++            defineProperty("jdkBuildNumber", jdkRuntimeVersion.substring(jdkRuntimeVersion.lastIndexOf("-b") + 2))
++        }
++        v = inStream.readLine();
+     }
+ } finally {
+     inStream.close();
+-- 
+1.8.3.1
+
