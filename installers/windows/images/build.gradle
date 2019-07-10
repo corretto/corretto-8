@@ -29,8 +29,20 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-task configureBuild(type: Exec) {
+task importAmazonCacerts(type: Exec) {
     dependsOn copySource
+    workingDir buildRoot
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'keytool', '-importkeystore', '-noprompt',
+            '-srckeystore', "amazon-cacerts",
+            '-srcstorepass', keystore_password,
+            '-destkeystore', "src/jdk/src/share/lib/security/cacerts",
+            '-deststorepass', keystore_password
+}
+
+task configureBuild(type: Exec) {
+    dependsOn importAmazonCacerts
     workingDir "$buildRoot/src"
 
     ext.freetype_path = project.getProperty('freetype_path')
@@ -43,7 +55,7 @@ task configureBuild(type: Exec) {
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
             "--with-freetype=$freetype_path",
-            "--with-cacerts-file=$buildRoot/cacerts",
+            "--with-cacerts-file=$buildRoot/src/jdk/src/share/lib/security/cacerts",
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
             '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
