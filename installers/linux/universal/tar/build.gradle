@@ -32,7 +32,6 @@ ext {
 
     switch (arch) {
         case 'aarch64':
-        case 'i686':
             arch_alias = arch
             break;
         case 'x86_64':

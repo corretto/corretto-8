@@ -1,15 +1,24 @@
 rootProject.name = 'corretto8'
 
-include ':openjdksrc',
-        ':installers:linux:al2',
-        ':installers:linux:universal:tar',
-        ':installers:linux:universal:rpm',
-        ':installers:linux:universal:deb',
-        ':installers:linux:universal:test',
-        ':installers:mac:pkg',
-        ':installers:mac:tar',
-        ':installers:windows:internal',
-        ':installers:windows:images',
-        ':javafx'
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def subProjects = [':openjdksrc']
+
+if (Os.isFamily(Os.FAMILY_MAC)) {
+    subProjects += [':installers:mac:pkg',
+                    ':installers:mac:tar']
+} else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    subProjects += [':installers:linux:al2',
+                    ':installers:linux:universal:tar',
+                    ':installers:linux:universal:rpm',
+                    ':installers:linux:universal:deb',
+                    ':installers:linux:universal:test']
+} else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    subProjects += [':installers:windows:internal',
+                    ':installers:windows:images']
+}
+
+subProjects += [':javafx']
+include subProjects as String[]
 
 project(':openjdksrc').projectDir = file('src')
