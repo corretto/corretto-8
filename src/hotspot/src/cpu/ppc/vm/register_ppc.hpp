@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2012, 2014 SAP AG. All rights reserved.
+ * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012, 2018 SAP AG. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -399,6 +399,11 @@ inline VectorRegister as_VectorRegister(int encoding) {
   return (VectorRegister)(intptr_t)encoding;
 }
 
+// Forward declaration
+// Use VectorSRegister as a shortcut.
+class VectorSRegisterImpl;
+typedef VectorSRegisterImpl* VectorSRegister;
+
 // The implementation of vector registers for the Power architecture
 class VectorRegisterImpl: public AbstractRegisterImpl {
  public:
@@ -416,6 +421,9 @@ class VectorRegisterImpl: public AbstractRegisterImpl {
   bool is_valid()       const { return   0 <=  value()       &&  value() < number_of_registers; }
 
   const char* name() const;
+
+  // convert to VSR
+  VectorSRegister to_vsr() const;
 };
 
 // The Vector registers of the Power architecture
@@ -492,6 +500,166 @@ CONSTANT_REGISTER_DECLARATION(VectorRegister, VR31, (31));
 #endif // DONT_USE_REGISTER_DEFINES
 
 
+inline VectorSRegister as_VectorSRegister(int encoding) {
+  return (VectorSRegister)(intptr_t)encoding;
+}
+
+// The implementation of Vector-Scalar (VSX) registers on POWER architecture.
+class VectorSRegisterImpl: public AbstractRegisterImpl {
+ public:
+  enum {
+    number_of_registers = 64
+  };
+
+  // construction
+  inline friend VectorSRegister as_VectorSRegister(int encoding);
+
+  // accessors
+  int encoding() const { assert(is_valid(), "invalid register"); return value(); }
+
+  // testers
+  bool is_valid() const { return 0 <=  value() &&  value() < number_of_registers; }
+
+  const char* name() const;
+};
+
+// The Vector-Scalar (VSX) registers of the POWER architecture.
+
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, vsnoreg, (-1));
+
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR0,  ( 0));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR1,  ( 1));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR2,  ( 2));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR3,  ( 3));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR4,  ( 4));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR5,  ( 5));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR6,  ( 6));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR7,  ( 7));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR8,  ( 8));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR9,  ( 9));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR10, (10));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR11, (11));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR12, (12));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR13, (13));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR14, (14));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR15, (15));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR16, (16));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR17, (17));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR18, (18));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR19, (19));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR20, (20));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR21, (21));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR22, (22));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR23, (23));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR24, (24));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR25, (25));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR26, (26));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR27, (27));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR28, (28));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR29, (29));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR30, (30));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR31, (31));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR32, (32));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR33, (33));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR34, (34));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR35, (35));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR36, (36));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR37, (37));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR38, (38));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR39, (39));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR40, (40));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR41, (41));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR42, (42));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR43, (43));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR44, (44));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR45, (45));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR46, (46));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR47, (47));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR48, (48));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR49, (49));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR50, (50));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR51, (51));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR52, (52));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR53, (53));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR54, (54));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR55, (55));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR56, (56));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR57, (57));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR58, (58));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR59, (59));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR60, (60));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR61, (61));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR62, (62));
+CONSTANT_REGISTER_DECLARATION(VectorSRegister, VSR63, (63));
+
+#ifndef DONT_USE_REGISTER_DEFINES
+#define vsnoregi ((VectorSRegister)(vsnoreg_VectorSRegisterEnumValue))
+#define VSR0    ((VectorSRegister)(   VSR0_VectorSRegisterEnumValue))
+#define VSR1    ((VectorSRegister)(   VSR1_VectorSRegisterEnumValue))
+#define VSR2    ((VectorSRegister)(   VSR2_VectorSRegisterEnumValue))
+#define VSR3    ((VectorSRegister)(   VSR3_VectorSRegisterEnumValue))
+#define VSR4    ((VectorSRegister)(   VSR4_VectorSRegisterEnumValue))
+#define VSR5    ((VectorSRegister)(   VSR5_VectorSRegisterEnumValue))
+#define VSR6    ((VectorSRegister)(   VSR6_VectorSRegisterEnumValue))
+#define VSR7    ((VectorSRegister)(   VSR7_VectorSRegisterEnumValue))
+#define VSR8    ((VectorSRegister)(   VSR8_VectorSRegisterEnumValue))
+#define VSR9    ((VectorSRegister)(   VSR9_VectorSRegisterEnumValue))
+#define VSR10   ((VectorSRegister)(  VSR10_VectorSRegisterEnumValue))
+#define VSR11   ((VectorSRegister)(  VSR11_VectorSRegisterEnumValue))
+#define VSR12   ((VectorSRegister)(  VSR12_VectorSRegisterEnumValue))
+#define VSR13   ((VectorSRegister)(  VSR13_VectorSRegisterEnumValue))
+#define VSR14   ((VectorSRegister)(  VSR14_VectorSRegisterEnumValue))
+#define VSR15   ((VectorSRegister)(  VSR15_VectorSRegisterEnumValue))
+#define VSR16   ((VectorSRegister)(  VSR16_VectorSRegisterEnumValue))
+#define VSR17   ((VectorSRegister)(  VSR17_VectorSRegisterEnumValue))
+#define VSR18   ((VectorSRegister)(  VSR18_VectorSRegisterEnumValue))
+#define VSR19   ((VectorSRegister)(  VSR19_VectorSRegisterEnumValue))
+#define VSR20   ((VectorSRegister)(  VSR20_VectorSRegisterEnumValue))
+#define VSR21   ((VectorSRegister)(  VSR21_VectorSRegisterEnumValue))
+#define VSR22   ((VectorSRegister)(  VSR22_VectorSRegisterEnumValue))
+#define VSR23   ((VectorSRegister)(  VSR23_VectorSRegisterEnumValue))
+#define VSR24   ((VectorSRegister)(  VSR24_VectorSRegisterEnumValue))
+#define VSR25   ((VectorSRegister)(  VSR25_VectorSRegisterEnumValue))
+#define VSR26   ((VectorSRegister)(  VSR26_VectorSRegisterEnumValue))
+#define VSR27   ((VectorSRegister)(  VSR27_VectorSRegisterEnumValue))
+#define VSR28   ((VectorSRegister)(  VSR28_VectorSRegisterEnumValue))
+#define VSR29   ((VectorSRegister)(  VSR29_VectorSRegisterEnumValue))
+#define VSR30   ((VectorSRegister)(  VSR30_VectorSRegisterEnumValue))
+#define VSR31   ((VectorSRegister)(  VSR31_VectorSRegisterEnumValue))
+#define VSR32   ((VectorSRegister)(  VSR32_VectorSRegisterEnumValue))
+#define VSR33   ((VectorSRegister)(  VSR33_VectorSRegisterEnumValue))
+#define VSR34   ((VectorSRegister)(  VSR34_VectorSRegisterEnumValue))
+#define VSR35   ((VectorSRegister)(  VSR35_VectorSRegisterEnumValue))
+#define VSR36   ((VectorSRegister)(  VSR36_VectorSRegisterEnumValue))
+#define VSR37   ((VectorSRegister)(  VSR37_VectorSRegisterEnumValue))
+#define VSR38   ((VectorSRegister)(  VSR38_VectorSRegisterEnumValue))
+#define VSR39   ((VectorSRegister)(  VSR39_VectorSRegisterEnumValue))
+#define VSR40   ((VectorSRegister)(  VSR40_VectorSRegisterEnumValue))
+#define VSR41   ((VectorSRegister)(  VSR41_VectorSRegisterEnumValue))
+#define VSR42   ((VectorSRegister)(  VSR42_VectorSRegisterEnumValue))
+#define VSR43   ((VectorSRegister)(  VSR43_VectorSRegisterEnumValue))
+#define VSR44   ((VectorSRegister)(  VSR44_VectorSRegisterEnumValue))
+#define VSR45   ((VectorSRegister)(  VSR45_VectorSRegisterEnumValue))
+#define VSR46   ((VectorSRegister)(  VSR46_VectorSRegisterEnumValue))
+#define VSR47   ((VectorSRegister)(  VSR47_VectorSRegisterEnumValue))
+#define VSR48   ((VectorSRegister)(  VSR48_VectorSRegisterEnumValue))
+#define VSR49   ((VectorSRegister)(  VSR49_VectorSRegisterEnumValue))
+#define VSR50   ((VectorSRegister)(  VSR50_VectorSRegisterEnumValue))
+#define VSR51   ((VectorSRegister)(  VSR51_VectorSRegisterEnumValue))
+#define VSR52   ((VectorSRegister)(  VSR52_VectorSRegisterEnumValue))
+#define VSR53   ((VectorSRegister)(  VSR53_VectorSRegisterEnumValue))
+#define VSR54   ((VectorSRegister)(  VSR54_VectorSRegisterEnumValue))
+#define VSR55   ((VectorSRegister)(  VSR55_VectorSRegisterEnumValue))
+#define VSR56   ((VectorSRegister)(  VSR56_VectorSRegisterEnumValue))
+#define VSR57   ((VectorSRegister)(  VSR57_VectorSRegisterEnumValue))
+#define VSR58   ((VectorSRegister)(  VSR58_VectorSRegisterEnumValue))
+#define VSR59   ((VectorSRegister)(  VSR59_VectorSRegisterEnumValue))
+#define VSR60   ((VectorSRegister)(  VSR60_VectorSRegisterEnumValue))
+#define VSR61   ((VectorSRegister)(  VSR61_VectorSRegisterEnumValue))
+#define VSR62   ((VectorSRegister)(  VSR62_VectorSRegisterEnumValue))
+#define VSR63   ((VectorSRegister)(  VSR63_VectorSRegisterEnumValue))
+#endif // DONT_USE_REGISTER_DEFINES
+
 // Maximum number of incoming arguments that can be passed in i registers.
 const int PPC_ARGS_IN_REGS_NUM = 8;
 
@@ -510,7 +678,7 @@ class ConcreteRegisterImpl : public AbstractRegisterImpl {
       * 2                                          // register halves
       + ConditionRegisterImpl::number_of_registers // condition code registers
       + SpecialRegisterImpl::number_of_registers   // special registers
-      + VectorRegisterImpl::number_of_registers    // vector registers
+      + VectorRegisterImpl::number_of_registers    // VSX registers
   };
 
   static const int max_gpr;

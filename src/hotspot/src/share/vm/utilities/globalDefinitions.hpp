@@ -211,15 +211,20 @@ const int NANOUNITS     = 1000000000;   // nano units per base unit
 const jlong NANOSECS_PER_SEC      = CONST64(1000000000);
 const jint  NANOSECS_PER_MILLISEC = 1000000;
 
+// Proper units routines try to maintain at least three significant digits.
+// In worst case, it would print five significant digits with lower prefix.
+// G is close to MAX_SIZE on 32-bit platforms, so its product can easily overflow,
+// and therefore we need to be careful.
+
 inline const char* proper_unit_for_byte_size(size_t s) {
 #ifdef _LP64
-  if (s >= 10*G) {
+  if (s >= 100*G) {
     return "G";
   }
 #endif
-  if (s >= 10*M) {
+  if (s >= 100*M) {
     return "M";
-  } else if (s >= 10*K) {
+  } else if (s >= 100*K) {
     return "K";
   } else {
     return "B";
@@ -229,13 +234,13 @@ inline const char* proper_unit_for_byte_size(size_t s) {
 template <class T>
 inline T byte_size_in_proper_unit(T s) {
 #ifdef _LP64
-  if (s >= 10*G) {
+  if (s >= 100*G) {
     return (T)(s/G);
   }
 #endif
-  if (s >= 10*M) {
+  if (s >= 100*M) {
     return (T)(s/M);
-  } else if (s >= 10*K) {
+  } else if (s >= 100*K) {
     return (T)(s/K);
   } else {
     return s;
@@ -327,7 +332,7 @@ inline size_t pointer_delta(const MetaWord* left, const MetaWord* right) {
 // so far from the middle of the road that it is likely to be problematic in
 // many C++ compilers.
 //
-#define CAST_TO_FN_PTR(func_type, value) ((func_type)(castable_address(value)))
+#define CAST_TO_FN_PTR(func_type, value) (reinterpret_cast<func_type>(value))
 #define CAST_FROM_FN_PTR(new_type, func_ptr) ((new_type)((address_word)(func_ptr)))
 
 // Unsigned byte types for os and stream.hpp
@@ -1486,6 +1491,7 @@ static inline void* dereference_vptr(const void* addr) {
 class GlobalDefinitions {
 public:
   static void test_globals();
+  static void test_proper_unit();
 };
 
 #endif // PRODUCT
