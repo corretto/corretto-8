@@ -106,15 +106,13 @@ publishing {
         jdk(MavenPublication) {
             groupId = 'corretto-artifacts'
             artifactId = "j2sdk.win.unsigned.${arch_alias}.zip"
-            version = "${project.version.full}"
-
+            version = "${project.version.full}.${build_version}"
             artifact packageJdk
         }
         jre(MavenPublication) {
             groupId = 'corretto-artifacts'
             artifactId = "j2re.win.unsigned.${arch_alias}.zip"
-            version = "${project.version.full}"
-
+            version = "${project.version.full}.${build_version}"
             artifact packageJre
         }
     }
