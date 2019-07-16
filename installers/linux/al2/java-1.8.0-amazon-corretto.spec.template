@@ -78,7 +78,7 @@ BuildRequires: automake
 BuildRequires: alsa-lib-devel
 BuildRequires: binutils
 BuildRequires: cups-devel
-BuildRequires: fontconfig
+BuildRequires: fontconfig-devel
 BuildRequires: freetype-devel
 BuildRequires: giflib-devel
 BuildRequires: gcc-c++
