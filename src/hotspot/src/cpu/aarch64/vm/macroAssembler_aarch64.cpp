@@ -2221,8 +2221,8 @@ static bool different(Register a, RegisterOrConstant b, Register c) {
     return a != b.as_register() && a != c && b.as_register() != c;
 }
 
-#define ATOMIC_OP(LDXR, OP, IOP, AOP, STXR, sz)                         \
-void MacroAssembler::atomic_##OP(Register prev, RegisterOrConstant incr, Register addr) { \
+#define ATOMIC_OP(NAME, LDXR, OP, IOP, AOP, STXR, sz)                   \
+void MacroAssembler::atomic_##NAME(Register prev, RegisterOrConstant incr, Register addr) { \
   if (UseLSE) {                                                         \
     prev = prev->is_valid() ? prev : zr;                                \
     if (incr.is_register()) {                                           \
@@ -2250,16 +2250,18 @@ void MacroAssembler::atomic_##OP(Register prev, RegisterOrConstant incr, Registe
   }                                                                     \
 }
 
-ATOMIC_OP(ldxr, add, sub, ldadd, stxr, Assembler::xword)
-ATOMIC_OP(ldxrw, addw, subw, ldadd, stxrw, Assembler::word)
+ATOMIC_OP(add, ldxr, add, sub, ldadd, stxr, Assembler::xword)
+ATOMIC_OP(addw, ldxrw, addw, subw, ldadd, stxrw, Assembler::word)
+ATOMIC_OP(addal, ldaxr, add, sub, ldaddal, stlxr, Assembler::xword)
+ATOMIC_OP(addalw, ldaxrw, addw, subw, ldaddal, stlxrw, Assembler::word)
 
 #undef ATOMIC_OP
 
-#define ATOMIC_XCHG(OP, LDXR, STXR, sz)                                 \
+#define ATOMIC_XCHG(OP, AOP, LDXR, STXR, sz)                            \
 void MacroAssembler::atomic_##OP(Register prev, Register newv, Register addr) {	\
   if (UseLSE) {                                                         \
     prev = prev->is_valid() ? prev : zr;                                \
-    swp(sz, newv, prev, addr);                                          \
+    AOP(sz, newv, prev, addr);                                          \
     return;                                                             \
   }                                                                     \
   Register result = rscratch2;						\
@@ -2277,8 +2279,10 @@ void MacroAssembler::atomic_##OP(Register prev, Register newv, Register addr) {	
     mov(prev, result);							\
 }
 
-ATOMIC_XCHG(xchg, ldxr, stxr, Assembler::xword)
-ATOMIC_XCHG(xchgw, ldxrw, stxrw, Assembler::word)
+ATOMIC_XCHG(xchg, swp, ldxr, stxr, Assembler::xword)
+ATOMIC_XCHG(xchgw, swp, ldxrw, stxrw, Assembler::word)
+ATOMIC_XCHG(xchgal, swpal, ldaxr, stlxr, Assembler::xword)
+ATOMIC_XCHG(xchgalw, swpal, ldaxrw, stlxrw, Assembler::word)
 
 #undef ATOMIC_XCHG
 
