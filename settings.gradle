@@ -14,8 +14,7 @@ if (Os.isFamily(Os.FAMILY_MAC)) {
                     ':installers:linux:universal:deb',
                     ':installers:linux:universal:test']
 } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    subProjects += [':installers:windows:internal',
-                    ':installers:windows:images']
+    subProjects += [':installers:windows:zip']
 }
 
 subProjects += [':javafx']

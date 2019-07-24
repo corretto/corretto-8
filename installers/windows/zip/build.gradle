@@ -23,6 +23,23 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
+ext {
+    arch = System.getenv('PROCESSOR_ARCHITECTURE')
+
+    switch(arch) {
+        case 'x86':
+            arch_alias = 'x86'
+            folder_alias = 'x86'
+            break
+        case 'AMD64':
+            arch_alias = 'x64'
+            folder_alias = 'x86_64'
+            break
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
 task copySource(type: Copy) {
     dependsOn project.configurations.compile
     from tarTree(project.configurations.compile.singleFile)
@@ -45,8 +62,6 @@ task configureBuild(type: Exec) {
     dependsOn importAmazonCacerts
     workingDir "$buildRoot/src"
 
-    ext.freetype_path = project.getProperty('freetype_path')
-
     commandLine 'bash', 'configure',
             "--with-update-version=${project.version.update}",
             "--with-build-number=b${project.version.build}",
@@ -54,12 +69,13 @@ task configureBuild(type: Exec) {
             '--with-milestone=fcs',
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
-            "--with-freetype=$freetype_path",
             "--with-cacerts-file=$buildRoot/src/jdk/src/share/lib/security/cacerts",
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
             '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
-            project.hasProperty('vcruntime_path') ? "--with-msvcr-dll=$vcruntime_path" : ""
+            "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr100.dll",
+            "--with-freetype=${project.getProperty('freetype_dir')}"
 }
 
 task executeBuild(type: Exec) {
@@ -69,4 +85,38 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'clean', 'images'
 }
 
-build.dependsOn executeBuild
+task copyImage(type: Copy) {
+    dependsOn executeBuild
+
+    from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
+    into "$buildRoot/build"
+}
+
+task packageJdk(type: Zip) {
+    dependsOn copyImage
+    archiveName  = "unsigned-jdk-image.${arch_alias}.zip"
+
+    from "$buildRoot/build/j2sdk-image"
+    from(buildRoot) {
+        include 'ASSEMBLY_EXCEPTION'
+        include 'LICENSE'
+        include 'THIRD_PARTY_README'
+    }
+}
+
+task packageJre(type: Zip) {
+    dependsOn copyImage
+    archiveName = "unsigned-jre-image.${arch_alias}.zip"
+
+    from "$buildRoot/build/j2re-image"
+    from(buildRoot) {
+        include 'ASSEMBLY_EXCEPTION'
+        include 'LICENSE'
+        include 'THIRD_PARTY_README'
+    }
+}
+
+artifacts {
+    archives packageJdk
+    archives packageJre
+}
