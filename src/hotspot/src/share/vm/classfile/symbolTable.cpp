@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -249,7 +249,7 @@ Symbol* SymbolTable::lookup(const char* name, int len, TRAPS) {
   MutexLocker ml(SymbolTable_lock, THREAD);
 
   // Otherwise, add to symbol to table
-  return the_table()->basic_add(index, (u1*)name, len, hashValue, true, CHECK_NULL);
+  return the_table()->basic_add(index, (u1*)name, len, hashValue, true, THREAD);
 }
 
 Symbol* SymbolTable::lookup(const Symbol* sym, int begin, int end, TRAPS) {
@@ -288,7 +288,7 @@ Symbol* SymbolTable::lookup(const Symbol* sym, int begin, int end, TRAPS) {
   // Grab SymbolTable_lock first.
   MutexLocker ml(SymbolTable_lock, THREAD);
 
-  return the_table()->basic_add(index, (u1*)buffer, len, hashValue, true, CHECK_NULL);
+  return the_table()->basic_add(index, (u1*)buffer, len, hashValue, true, THREAD);
 }
 
 Symbol* SymbolTable::lookup_only(const char* name, int len,
