@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1045,7 +1045,7 @@ Handle SharedRuntime::find_callee_info(JavaThread* thread, Bytecodes::Code& bc, 
   // last java frame on stack (which includes native call frames)
   vframeStream vfst(thread, true);  // Do not skip and javaCalls
 
-  return find_callee_info_helper(thread, vfst, bc, callinfo, CHECK_(Handle()));
+  return find_callee_info_helper(thread, vfst, bc, callinfo, THREAD);
 }
 
 
