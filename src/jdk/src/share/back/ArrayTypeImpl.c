@@ -112,7 +112,7 @@ writeNewObjectArray(JNIEnv *env, PacketOutputStream *out,
     WITH_LOCAL_REFS(env, 1) {
 
         jarray array;
-        jclass componentClass = NULL;
+        jclass componentClass = 0;
         jdwpError serror;
 
         serror = getComponentClass(env, arrayClass,

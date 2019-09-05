@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -37,8 +37,11 @@ class CppInterpreter: public AbstractInterpreter {
   friend class Interpreter; // contains()
   friend class InterpreterGenerator; // result handlers
   friend class CppInterpreterGenerator; // result handlers
+ public:
+
 
  protected:
+
   // tosca result -> stack result
   static address    _tosca_to_stack[number_of_result_handlers];  // converts tosca to C++ interpreter stack result
   // stack result -> stack result
@@ -57,6 +60,9 @@ class CppInterpreter: public AbstractInterpreter {
   // This is a moderately dubious interface for the c++ interpreter. Only
   // frame code and debug.cpp should be using it.
   static bool       contains(address pc);
+
+ public:
+
 
   // No displatch table to switch so no need for these to do anything special
   static void notice_safepoints() {}
@@ -77,9 +83,6 @@ class CppInterpreter: public AbstractInterpreter {
 
 #ifdef TARGET_ARCH_x86
 # include "cppInterpreter_x86.hpp"
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "cppInterpreter_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "cppInterpreter_sparc.hpp"
