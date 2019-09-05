@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -2211,7 +2211,7 @@ Java_sun_awt_X11_XlibWrapper_copyLongArray(JNIEnv *env,
 JNIEXPORT jint JNICALL
 Java_sun_awt_X11_XlibWrapper_XSynchronize(JNIEnv *env, jclass clazz, jlong display, jboolean onoff)
 {
-  return (jint)(intptr_t) XSynchronize((Display*)jlong_to_ptr(display), (onoff == JNI_TRUE ? True : False));
+    return (jint) XSynchronize((Display*)jlong_to_ptr(display), (onoff == JNI_TRUE ? True : False));
 }
 
 JNIEXPORT jboolean JNICALL

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -156,20 +156,16 @@ putRGBADither(rgbquad_t value, void *ptr, ImageFormat * format,
             PUT(byte_t, ptr, value & 0xff);
             value >>= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 3:
             PUT(byte_t, ptr, value & 0xff);
             value >>= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 2:
             PUT(byte_t, ptr, value & 0xff);
             value >>= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 1:
             PUT(byte_t, ptr, value & 0xff);
-            break;
         }
         break;
     case BYTE_ORDER_MSBFIRST:
@@ -177,18 +173,14 @@ putRGBADither(rgbquad_t value, void *ptr, ImageFormat * format,
         case 4:
             PUT(byte_t, ptr, (value >> 24) & 0xff);
             INCP(byte_t, ptr);
-            // Falls through.
         case 3:
             PUT(byte_t, ptr, (value >> 16) & 0xff);
             INCP(byte_t, ptr);
-            // Falls through.
         case 2:
             PUT(byte_t, ptr, (value >> 8) & 0xff);
             INCP(byte_t, ptr);
-            // Falls through.
         case 1:
             PUT(byte_t, ptr, value & 0xff);
-            break;
         }
         break;
     case BYTE_ORDER_NATIVE:
@@ -232,20 +224,16 @@ getRGBA(void *ptr, ImageFormat * format)
             value |= GET(byte_t, ptr);
             value <<= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 3:
             value |= GET(byte_t, ptr);
             value <<= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 2:
             value |= GET(byte_t, ptr);
             value <<= 8;
             INCP(byte_t, ptr);
-            // Falls through.
         case 1:
             value |= GET(byte_t, ptr);
-            break;
         }
         break;
     case BYTE_ORDER_MSBFIRST:
@@ -253,18 +241,14 @@ getRGBA(void *ptr, ImageFormat * format)
         case 4:
             value |= (GET(byte_t, ptr) << 24);
             INCP(byte_t, ptr);
-            // Falls through.
         case 3:
             value |= (GET(byte_t, ptr) << 16);
             INCP(byte_t, ptr);
-            // Falls through.
         case 2:
             value |= (GET(byte_t, ptr) << 8);
             INCP(byte_t, ptr);
-            // Falls through.
         case 1:
             value |= GET(byte_t, ptr);
-            break;
         }
         break;
     case BYTE_ORDER_NATIVE:

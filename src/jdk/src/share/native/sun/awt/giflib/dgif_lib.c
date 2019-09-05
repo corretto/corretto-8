@@ -60,7 +60,7 @@ static /**inline**/ int InternalRead(GifFileType *gif, GifByteType *buf, int len
     //fprintf(stderr, "### Read: %d\n", len);
     return
     (((GifFilePrivateType*)gif->Private)->Read ?
-     (size_t)((GifFilePrivateType*)gif->Private)->Read(gif,buf,len) :
+     ((GifFilePrivateType*)gif->Private)->Read(gif,buf,len) :
      fread(buf,1,len,((GifFilePrivateType*)gif->Private)->File));
 }
 
@@ -415,7 +415,7 @@ DGifGetImageHeader(GifFileType *GifFile)
     }
     /* Does this image have local color map? */
     if (Buf[0] & 0x80) {
-        int i;
+        unsigned int i;
 
         GifFile->Image.ColorMap = GifMakeMapObject(1 << BitsPerPixel, NULL);
         if (GifFile->Image.ColorMap == NULL) {

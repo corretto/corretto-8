@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -211,8 +211,7 @@ JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_bindx
   (JNIEnv *env, jclass klass, jint fd, jobjectArray addrs, jint port,
    jint addrsLength, jboolean add, jboolean preferIPv6) {
     SOCKADDR *sap, *tmpSap;
-    int i;
-    socklen_t sa_len = sizeof(SOCKADDR);
+    int i, sa_len = sizeof(SOCKADDR);
     jobject ia;
 
     if (addrsLength < 1)
@@ -263,7 +262,7 @@ JNIEXPORT jint JNICALL
 Java_sun_nio_ch_sctp_SctpNet_connect0
   (JNIEnv *env, jclass clazz, int fd, jobject iao, jint port) {
     SOCKADDR sa;
-    socklen_t sa_len = SOCKADDR_LEN;
+    int sa_len = SOCKADDR_LEN;
     int rv;
 
     if (NET_InetAddressToSockaddr(env, iao, port, (struct sockaddr *) &sa,
@@ -502,7 +501,7 @@ JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_setIntOption0
     int result;
     struct linger linger;
     void *parg;
-    socklen_t arglen;
+    int arglen;
 
     if (mapSocketOption(opt, &klevel, &kopt) < 0) {
         JNU_ThrowByNameWithLastError(env, JNU_JAVANETPKG "SocketException",
@@ -542,7 +541,7 @@ JNIEXPORT int JNICALL Java_sun_nio_ch_sctp_SctpNet_getIntOption0
     int result;
     struct linger linger;
     void *arg;
-    socklen_t arglen;
+    int arglen;
 
     memset((char *) &linger, 0, sizeof(linger));
     if (mapSocketOption(opt, &klevel, &kopt) < 0) {
@@ -579,7 +578,7 @@ JNIEXPORT int JNICALL Java_sun_nio_ch_sctp_SctpNet_getIntOption0
 JNIEXPORT jobject JNICALL Java_sun_nio_ch_sctp_SctpNet_getPrimAddrOption0
   (JNIEnv *env, jclass klass, jint fd, jint assocId) {
     struct sctp_setprim prim;
-    socklen_t prim_len = sizeof(prim);
+    unsigned int prim_len = sizeof(prim);
     struct sockaddr* sap = (struct sockaddr*)&prim.ssp_addr;
 
     prim.ssp_assoc_id = assocId;
@@ -602,7 +601,7 @@ JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_setPrimAddrOption0
   (JNIEnv *env, jclass klass, jint fd, jint assocId, jobject iaObj, jint port) {
     struct sctp_setprim prim;
     struct sockaddr* sap = (struct sockaddr*)&prim.ssp_addr;
-    socklen_t sap_len = sizeof(sap);
+    int sap_len = sizeof(sap);
 
     if (NET_InetAddressToSockaddr(env, iaObj, port, sap,
                                   &sap_len, JNI_TRUE) != 0) {
@@ -627,7 +626,7 @@ JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_setPeerPrimAddrOption0
    jobject iaObj, jint port, jboolean preferIPv6) {
     struct sctp_setpeerprim prim;
     struct sockaddr* sap = (struct sockaddr*)&prim.sspp_addr;
-    socklen_t sap_len = sizeof(sap);
+    int sap_len = sizeof(sap);
 
     if (NET_InetAddressToSockaddr(env, iaObj, port, sap,
                                   &sap_len, preferIPv6) != 0) {
@@ -651,7 +650,7 @@ JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_setPeerPrimAddrOption0
 JNIEXPORT void JNICALL Java_sun_nio_ch_sctp_SctpNet_getInitMsgOption0
   (JNIEnv *env, jclass klass, jint fd, jintArray retVal) {
     struct sctp_initmsg sctp_initmsg;
-    socklen_t sim_len = sizeof(sctp_initmsg);
+    unsigned int sim_len = sizeof(sctp_initmsg);
     int vals[2];
 
     if (getsockopt(fd, IPPROTO_SCTP, SCTP_INITMSG, &sctp_initmsg,

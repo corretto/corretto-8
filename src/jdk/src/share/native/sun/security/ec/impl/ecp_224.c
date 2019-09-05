@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * This library is free software; you can redistribute it and/or
@@ -81,25 +81,18 @@ ec_GFp_nistp224_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                 switch (a_used) {
                 case 14:
                         a6b = MP_DIGIT(a, 13);
-                        // Falls through.
                 case 13:
                         a6a = MP_DIGIT(a, 12);
-                        // Falls through.
                 case 12:
                         a5b = MP_DIGIT(a, 11);
-                        // Falls through.
                 case 11:
                         a5a = MP_DIGIT(a, 10);
-                        // Falls through.
                 case 10:
                         a4b = MP_DIGIT(a, 9);
-                        // Falls through.
                 case 9:
                         a4a = MP_DIGIT(a, 8);
-                        // Falls through.
                 case 8:
                         a3b = MP_DIGIT(a, 7);
-                        break;
                 }
                 r3a = MP_DIGIT(a, 6);
                 r2b= MP_DIGIT(a, 5);
@@ -210,7 +203,6 @@ ec_GFp_nistp224_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                         a6 = MP_DIGIT(a, 6);
                         a6b = a6 >> 32;
                         a6a_a5b = a6 << 32;
-                        // Falls through.
                 case 6:
                         a5 = MP_DIGIT(a, 5);
                         a5b = a5 >> 32;
@@ -218,17 +210,14 @@ ec_GFp_nistp224_mod(const mp_int *a, mp_int *r, const GFMethod *meth)
                         a5b = a5b << 32;
                         a5a_a4b = a5 << 32;
                         a5a = a5 & 0xffffffff;
-                        // Falls through.
                 case 5:
                         a4 = MP_DIGIT(a, 4);
                         a5a_a4b |= a4 >> 32;
                         a4a_a3b = a4 << 32;
-                        // Falls through.
                 case 4:
                         a3b = MP_DIGIT(a, 3) >> 32;
                         a4a_a3b |= a3b;
                         a3b = a3b << 32;
-                        break;
                 }
 
                 r3 = MP_DIGIT(a, 3) & 0xffffffff;

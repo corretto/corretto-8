@@ -47,12 +47,8 @@ U_NAMESPACE_BEGIN
 
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(LigatureSubstitutionProcessor)
 
-LigatureSubstitutionProcessor::LigatureSubstitutionProcessor(const LEReferenceTo<MorphSubtableHeader> &morphSubtableHeader, LEErrorCode &success)
-    : StateTableProcessor(morphSubtableHeader, success),
-      ligatureActionTableOffset(0),
-      componentTableOffset(0),
-      ligatureTableOffset(0),
-      ligatureSubstitutionHeader(morphSubtableHeader, success)
+  LigatureSubstitutionProcessor::LigatureSubstitutionProcessor(const LEReferenceTo<MorphSubtableHeader> &morphSubtableHeader, LEErrorCode &success)
+: StateTableProcessor(morphSubtableHeader, success), ligatureSubstitutionHeader(morphSubtableHeader, success)
 {
     if(LE_FAILURE(success)) return;
     ligatureActionTableOffset = SWAPW(ligatureSubstitutionHeader->ligatureActionTableOffset);
@@ -133,7 +129,7 @@ ByteOffset LigatureSubstitutionProcessor::processStateEntry(LEGlyphStorage &glyp
                   LE_DEBUG_BAD_FONT("off end of ligature substitution header");
                   return newState; // get out! bad font
               }
-              if(componentGlyph >= (le_uint32)glyphStorage.getGlyphCount()) {
+              if(componentGlyph >= glyphStorage.getGlyphCount()) {
                 LE_DEBUG_BAD_FONT("preposterous componentGlyph");
                 currGlyph++;
                 return newState; // get out! bad font
