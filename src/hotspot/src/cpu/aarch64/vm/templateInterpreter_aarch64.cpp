@@ -285,8 +285,8 @@ address TemplateInterpreterGenerator::generate_result_handler_for(
         BasicType type) {
     address entry = __ pc();
   switch (type) {
-  case T_BOOLEAN: __ c2bool(r0);          break;
-  case T_CHAR   : __ uxth(r0, r0);        break;
+  case T_BOOLEAN: __ uxtb(r0, r0);        break;
+  case T_CHAR   : __ uxth(r0, r0);       break;
   case T_BYTE   : __ sxtb(r0, r0);        break;
   case T_SHORT  : __ sxth(r0, r0);        break;
   case T_INT    : __ uxtw(r0, r0);        break;  // FIXME: We almost certainly don't need this
@@ -1863,7 +1863,6 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
   __ restore_locals();
   __ restore_constant_pool_cache();
   __ get_method(rmethod);
-  __ get_dispatch();
 
   // The method data pointer was incremented already during
   // call profiling. We have to restore the mdp for the current bcp.
@@ -1880,8 +1879,8 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
     Label L_done;
 
     __ ldrb(rscratch1, Address(rbcp, 0));
-    __ cmpw(rscratch1, Bytecodes::_invokestatic);
-    __ br(Assembler::NE, L_done);
+    __ cmpw(r1, Bytecodes::_invokestatic);
+    __ br(Assembler::EQ, L_done);
 
     // The member name argument must be restored if _invokestatic is re-executed after a PopFrame call.
     // Detect such a case in the InterpreterRuntime function and return the member name argument, or NULL.
@@ -1917,6 +1916,7 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
   // remove the activation (without doing throws on illegalMonitorExceptions)
   __ remove_activation(vtos, false, true, false);
   // restore exception
+  // restore exception
   __ get_vm_result(r0, rthread);
 
   // In between activations - previous activation type unknown yet
@@ -1925,8 +1925,9 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
   //
   // r0: exception
   // lr: return address/pc that threw exception
-  // esp: expression stack of caller
+  // rsp: expression stack of caller
   // rfp: fp of caller
+  // FIXME: There's no point saving LR here because VM calls don't trash it
   __ stp(r0, lr, Address(__ pre(sp, -2 * wordSize)));  // save exception & return address
   __ super_call_VM_leaf(CAST_FROM_FN_PTR(address,
                           SharedRuntime::exception_handler_for_return_address),
