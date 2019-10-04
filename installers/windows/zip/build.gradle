@@ -97,11 +97,6 @@ task packageJdk(type: Zip) {
     archiveName  = "unsigned-jdk-image.${arch_alias}.zip"
 
     from "$buildRoot/build/j2sdk-image"
-    from(buildRoot) {
-        include 'ASSEMBLY_EXCEPTION'
-        include 'LICENSE'
-        include 'THIRD_PARTY_README'
-    }
 }
 
 task packageJre(type: Zip) {
@@ -109,11 +104,6 @@ task packageJre(type: Zip) {
     archiveName = "unsigned-jre-image.${arch_alias}.zip"
 
     from "$buildRoot/build/j2re-image"
-    from(buildRoot) {
-        include 'ASSEMBLY_EXCEPTION'
-        include 'LICENSE'
-        include 'THIRD_PARTY_README'
-    }
 }
 
 artifacts {
