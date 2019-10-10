@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,7 +29,10 @@
 #include "sunfontids.h"
 #include "sun_font_FreetypeFontScaler.h"
 
-#include<stdlib.h>
+#include <stdlib.h>
+#if !defined(_WIN32) && !defined(__APPLE_)
+#include <dlfcn.h>
+#endif
 #include <math.h>
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -38,6 +41,7 @@
 #include FT_SIZES_H
 #include FT_OUTLINE_H
 #include FT_SYNTHESIS_H
+#include FT_MODULE_H
 
 #include "fontscaler.h"
 
@@ -150,7 +154,31 @@ static unsigned long ReadTTFontFileFunc(FT_Stream stream,
     jobject bBuffer;
     int bread = 0;
 
-    if (numBytes == 0) return 0;
+    /* A call with numBytes == 0 is a seek. It should return 0 if the
+     * seek position is within the file and non-zero otherwise.
+     * For all other cases, ie numBytes !=0, return the number of bytes
+     * actually read. This applies to truncated reads and also failed reads.
+     */
+
+    if (numBytes == 0) {
+        if (offset >= scalerInfo->fileSize) {
+            return -1;
+        } else {
+            return 0;
+       }
+    }
+
+    if (offset + numBytes < offset) {
+        return 0; // ft should not do this, but just in case.
+    }
+
+    if (offset >= scalerInfo->fileSize) {
+        return 0;
+    }
+
+    if (offset + numBytes > scalerInfo->fileSize) {
+        numBytes = scalerInfo->fileSize - offset;
+    }
 
     /* Large reads will bypass the cache and data copying */
     if (numBytes > FILEDATACACHESIZE) {
@@ -160,7 +188,11 @@ static unsigned long ReadTTFontFileFunc(FT_Stream stream,
                                           scalerInfo->font2D,
                                           sunFontIDs.ttReadBlockMID,
                                           bBuffer, offset, numBytes);
-            return bread;
+            if (bread < 0) {
+                return 0;
+            } else {
+               return bread;
+            }
         } else {
             /* We probably hit bug bug 4845371. For reasons that
              * are currently unclear, the call stacks after the initial
@@ -175,9 +207,18 @@ static unsigned long ReadTTFontFileFunc(FT_Stream stream,
             (*env)->CallObjectMethod(env, scalerInfo->font2D,
                                      sunFontIDs.ttReadBytesMID,
                                      offset, numBytes);
-            (*env)->GetByteArrayRegion(env, byteArray,
-                                       0, numBytes, (jbyte*)destBuffer);
-            return numBytes;
+            /* If there's an OutofMemoryError then byteArray will be null */
+            if (byteArray == NULL) {
+                return 0;
+            } else {
+                jsize len = (*env)->GetArrayLength(env, byteArray);
+                if (len < numBytes) {
+                    numBytes = len; // don't get more bytes than there are ..
+                }
+                (*env)->GetByteArrayRegion(env, byteArray,
+                                           0, numBytes, (jbyte*)destBuffer);
+                return numBytes;
+            }
         }
     } /* Do we have a cache hit? */
       else if (scalerInfo->fontDataOffset <= offset &&
@@ -199,9 +240,60 @@ static unsigned long ReadTTFontFileFunc(FT_Stream stream,
                                       sunFontIDs.ttReadBlockMID,
                                       bBuffer, offset,
                                       scalerInfo->fontDataLength);
+        if (bread <= 0) {
+            return 0;
+        } else if (bread < numBytes) {
+           numBytes = bread;
+        }
         memcpy(destBuffer, scalerInfo->fontData, numBytes);
         return numBytes;
     }
+}
+
+typedef FT_Error (*FT_Prop_Set_Func)(FT_Library library,
+                                     const FT_String*  module_name,
+                                     const FT_String*  property_name,
+                                     const void*       value );
+
+/**
+ * Prefer the older v35 freetype byte code interpreter.
+ */
+static void setInterpreterVersion(FT_Library library) {
+
+    char* props = getenv("FREETYPE_PROPERTIES");
+    int version = 35;
+    const char* module = "truetype";
+    const char* property = "interpreter-version";
+
+    /* If some one is setting this, don't override it */
+    if (props != NULL && strstr(property, props)) {
+        return;
+    }
+    /*
+     * FT_Property_Set was introduced in 2.4.11.
+     * Some older supported Linux OSes may not include it so look
+     * this up dynamically.
+     * And if its not available it doesn't matter, since the reason
+     * we need it dates from 2.7.
+     * On Windows & Mac the library is always bundled so it is safe
+     * to use directly in those cases.
+     */
+#if defined(_WIN32) || defined(__APPLE__)
+    FT_Property_Set(library, module, property, (void*)(&version));
+#else
+    void *lib = dlopen("libfreetype.so", RTLD_LOCAL|RTLD_LAZY);
+    if (lib == NULL) {
+        lib = dlopen("libfreetype.so.6", RTLD_LOCAL|RTLD_LAZY);
+        if (lib == NULL) {
+            return;
+        }
+    }
+    FT_Prop_Set_Func func = (FT_Prop_Set_Func)dlsym(lib, "FT_Property_Set");
+    if (func != NULL) {
+        func(library, module, property, (void*)(&version));
+    }
+    dlclose(lib);
+#endif
 }
 
 /*
@@ -243,6 +335,7 @@ Java_sun_font_FreetypeFontScaler_initNativeScaler(
         free(scalerInfo);
         return 0;
     }
+    setInterpreterVersion(scalerInfo->library);
 
 #define TYPE1_FROM_JAVA        2
 
@@ -402,10 +495,18 @@ static int setupFTContext(JNIEnv *env,
     return errCode;
 }
 
-/* ftsynth.c uses (0x10000, 0x06000, 0x0, 0x10000) matrix to get oblique
-   outline.  Therefore x coordinate will change by 0x06000*y.
-   Note that y coordinate does not change. */
-#define OBLIQUE_MODIFIER(y)  (context->doItalize ? ((y)*6/16) : 0)
+/* ftsynth.c uses (0x10000, 0x0366A, 0x0, 0x10000) matrix to get oblique
+   outline.  Therefore x coordinate will change by 0x0366A*y.
+   Note that y coordinate does not change. These values are based on
+   libfreetype version 2.9.1. */
+#define OBLIQUE_MODIFIER(y)  (context->doItalize ? ((y)*0x366A/0x10000) : 0)
+
+/* FT_GlyphSlot_Embolden (ftsynth.c) uses FT_MulFix(units_per_EM, y_scale) / 24
+ * strength value when glyph format is FT_GLYPH_FORMAT_OUTLINE. This value has
+ * been taken from libfreetype version 2.6 and remain valid at least up to
+ * 2.9.1. */
+#define BOLD_MODIFIER(units_per_EM, y_scale) \
+    (context->doBold ? FT_MulFix(units_per_EM, y_scale) / 24 : 0)
 
 /*
  * Class:     sun_font_FreetypeFontScaler
@@ -484,7 +585,9 @@ Java_sun_font_FreetypeFontScaler_getFontMetricsNative(
     /* max advance */
     mx = (jfloat) FT26Dot6ToFloat(
                      scalerInfo->face->size->metrics.max_advance +
-                     OBLIQUE_MODIFIER(scalerInfo->face->size->metrics.height));
+                     OBLIQUE_MODIFIER(scalerInfo->face->size->metrics.height) +
+                     BOLD_MODIFIER(scalerInfo->face->units_per_EM,
+                             scalerInfo->face->size->metrics.y_scale));
     my = 0;
 
     metrics = (*env)->NewObject(env,
@@ -519,16 +622,17 @@ Java_sun_font_FreetypeFontScaler_getGlyphAdvanceNative(
       to avoid unnecesary work with bitmaps. */
 
     GlyphInfo *info;
-    jfloat advance;
+    jfloat advance = 0.0f;
     jlong image;
 
     image = Java_sun_font_FreetypeFontScaler_getGlyphImageNative(
                  env, scaler, font2D, pScalerContext, pScaler, glyphCode);
     info = (GlyphInfo*) jlong_to_ptr(image);
 
-    advance = info->advanceX;
-
-    free(info);
+    if (info != NULL) {
+        advance = info->advanceX;
+        free(info);
+    }
 
     return advance;
 }
@@ -666,6 +770,13 @@ static void CopyFTSubpixelVToSubpixel(const void* srcImage, int srcRowBytes,
 }
 
 
+/* JDK does not use glyph images for fonts with a
+ * pixel size > 100 (see THRESHOLD in OutlineTextRenderer.java)
+ * so if the glyph bitmap image dimension is > 1024 pixels,
+ * something is up.
+ */
+#define MAX_GLYPH_DIM 1024
+
 /*
  * Class:     sun_font_FreetypeFontScaler
  * Method:    getGlyphImageNative
@@ -680,7 +791,7 @@ Java_sun_font_FreetypeFontScaler_getGlyphImageNative(
     UInt16 width, height;
     GlyphInfo *glyphInfo;
     int glyph_index;
-    int renderFlags = FT_LOAD_RENDER, target;
+    int renderFlags = FT_LOAD_DEFAULT, target;
     FT_GlyphSlot ftglyph;
 
     FTScalerContext* context =
@@ -742,11 +853,28 @@ Java_sun_font_FreetypeFontScaler_getGlyphImageNative(
     /* generate bitmap if it is not done yet
      e.g. if algorithmic styling is performed and style was added to outline */
     if (ftglyph->format == FT_GLYPH_FORMAT_OUTLINE) {
-        FT_Render_Glyph(ftglyph, FT_LOAD_TARGET_MODE(target));
+        FT_BBox bbox;
+        int w, h;
+        FT_Outline_Get_CBox(&(ftglyph->outline), &bbox);
+        w = (int)((bbox.xMax>>6)-(bbox.xMin>>6));
+        h = (int)((bbox.yMax>>6)-(bbox.yMin>>6));
+        if (w > MAX_GLYPH_DIM || h > MAX_GLYPH_DIM) {
+            glyphInfo = getNullGlyphImage();
+            return ptr_to_jlong(glyphInfo);
+        }
+        error = FT_Render_Glyph(ftglyph, FT_LOAD_TARGET_MODE(target));
+        if (error != 0) {
+            return ptr_to_jlong(getNullGlyphImage());
+        }
     }
 
     width  = (UInt16) ftglyph->bitmap.width;
     height = (UInt16) ftglyph->bitmap.rows;
+    if (width > MAX_GLYPH_DIM || height > MAX_GLYPH_DIM) {
+        glyphInfo = getNullGlyphImage();
+        return ptr_to_jlong(glyphInfo);
+    }
+
 
     imageSize = width*height;
     glyphInfo = (GlyphInfo*) malloc(sizeof(GlyphInfo) + imageSize);
