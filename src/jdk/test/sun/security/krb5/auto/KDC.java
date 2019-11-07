@@ -40,6 +40,7 @@ import sun.net.spi.nameservice.NameServiceDescriptor;
 import sun.security.krb5.*;
 import sun.security.krb5.internal.*;
 import sun.security.krb5.internal.ccache.CredentialsCache;
+import sun.security.krb5.internal.crypto.EType;
 import sun.security.krb5.internal.crypto.KeyUsage;
 import sun.security.krb5.internal.ktab.KeyTab;
 import sun.security.util.DerInputStream;
@@ -223,7 +224,8 @@ public class KDC {
      * A standalone KDC server.
      */
     public static void main(String[] args) throws Exception {
-        KDC kdc = create("RABBIT.HOLE", "kdc.rabbit.hole", 0, false);
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : 0;
+        KDC kdc = create("RABBIT.HOLE", "kdc.rabbit.hole", port, false);
         kdc.addPrincipal("dummy", "bogus".toCharArray());
         kdc.addPrincipal("foo", "bar".toCharArray());
         kdc.addPrincipalRandKey("krbtgt/RABBIT.HOLE");
@@ -908,6 +910,14 @@ public class KDC {
 
             eTypes = KDCReqBodyDotEType(body);
             int eType = eTypes[0];
+
+            // Maybe server does not support aes256, but a kinit does
+            if (!EType.isSupported(eType)) {
+                if (eTypes.length < 2) {
+                    throw new KrbException(Krb5.KDC_ERR_ETYPE_NOSUPP);
+                }
+                eType = eTypes[1];
+            }
 
             EncryptionKey ckey = keyForUser(body.cname, eType, false);
             EncryptionKey skey = keyForUser(service, eType, true);

@@ -250,7 +250,11 @@ public class HostAddresses implements Cloneable {
          */
 
     public void writeAddrs(CCacheOutputStream cos) throws IOException {
-        cos.write32(addresses.length);
+        if (addresses == null || addresses.length == 0) {
+	    cos.write32(0);
+	    return;
+	}
+	cos.write32(addresses.length);
         for (int i = 0; i < addresses.length; i++) {
             cos.write16(addresses[i].addrType);
             cos.write32(addresses[i].address.length);
