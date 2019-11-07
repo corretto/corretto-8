@@ -308,12 +308,8 @@ public class KerberosTicket implements Destroyable, Refreshable,
         } else
            this.flags = new boolean[NUM_FLAGS];
 
-        if (this.flags[RENEWABLE_TICKET_FLAG]) {
-           if (renewTill == null)
-                throw new IllegalArgumentException("The renewable period "
-                       + "end time cannot be null for renewable tickets.");
-
-           this.renewTill = new Date(renewTill.getTime());
+        if (this.flags[RENEWABLE_TICKET_FLAG] && renewTill != null) {   
+	   this.renewTill = new Date(renewTill.getTime());
         }
 
         if (authTime != null) {
@@ -553,7 +549,12 @@ public class KerberosTicket implements Destroyable, Refreshable,
         if (!isRenewable())
             throw new RefreshFailedException("This ticket is not renewable");
 
-        if (System.currentTimeMillis() > getRenewTill().getTime())
+	if (getRenewTill() == null) {
+	    // Renewable ticket without renew-till. Illegal and ignored.
+	    return;
+	}
+	
+	if (System.currentTimeMillis() > getRenewTill().getTime())
             throw new RefreshFailedException("This ticket is past "
                                              + "its last renewal time.");
         Throwable e = null;
