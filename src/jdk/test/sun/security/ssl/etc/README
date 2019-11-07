@@ -21,19 +21,23 @@ keystore entries
 
 Alias name: dummy
 -----------------
-Creation date: May 16, 2016
+Creation date: Nov 7, 2019
 Entry type: PrivateKeyEntry
 Certificate chain length: 1
 Certificate[1]:
 Owner: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
 Issuer: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
-Serial number: 57399b87
-Valid from: Mon May 16 10:06:38 UTC 2016 until: Sat May 16 10:06:38 UTC 2026
+Serial number: 125bbb66
+Valid from: Thu Nov 07 23:22:52 UTC 2019 until: Tue Nov 06 23:22:52 UTC 2029
+Certificate fingerprints:
+	 MD5:  61:F5:9E:A1:DC:2E:55:88:C2:C7:CA:8D:8C:D7:11:8C
+	 SHA1: 64:3F:86:53:04:85:11:9E:33:77:1B:E4:61:6C:53:81:B9:4C:D9:CA
+	 SHA256: B6:6E:F4:84:00:BB:41:3F:EA:50:AC:D6:A1:4E:B8:FD:32:10:4F:B9:20:76:8F:B6:71:59:01:66:63:AC:19:5A
 Signature algorithm name: SHA256withRSA
-Version: 1
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
 
-This can be generated using hacked (update the keytool source code so that
-it can be used for version 1 X.509 certificate) keytool command:
+This can be generated using keytool command:
 % keytool -genkeypair -alias dummy -keyalg RSA -keysize 2048 \
   -sigalg SHA256withRSA \
   -dname "CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US" \
@@ -42,41 +46,49 @@ it can be used for version 1 X.509 certificate) keytool command:
 
 Alias name: dummyecdsa
 ----------------------
-Creation date: May 16, 2016
+Creation date: Nov 7, 2019
 Entry type: PrivateKeyEntry
 Certificate chain length: 1
 Certificate[1]:
 Owner: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
 Issuer: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
-Serial number: 57399c1d
-Valid from: Mon May 16 10:09:01 UTC 2016 until: Sat May 16 10:09:01 UTC 2026
+Serial number: 6fc0ebfa
+Valid from: Thu Nov 07 23:23:00 UTC 2019 until: Tue Nov 06 23:23:00 UTC 2029
+Certificate fingerprints:
+	 MD5:  CE:62:14:46:FF:0A:73:36:B4:F2:A6:77:9F:D1:3E:07
+	 SHA1: 19:1A:71:F5:96:37:4F:70:8F:DE:F1:58:56:49:94:72:CF:F0:AD:C5
+	 SHA256: 58:68:2B:00:26:17:CB:61:0F:1C:85:B0:C7:9D:D2:DC:6B:53:F1:57:39:9D:A0:AA:93:26:09:0D:04:95:0D:B2
 Signature algorithm name: SHA256withECDSA
-Version: 1
+Subject Public Key Algorithm: 256-bit EC key
+Version: 3
 
-This can be generated using hacked (update the keytool source code so that
-it can be used for version 1 X.509 certificate) keytool command:
-% keytool -genkeypair -alias dummy -keyalg EC -keysize 256 \
+This can be generated using keytool command:
+% keytool -genkeypair -alias dummyecdsa -keyalg EC -keysize 256 \
   -sigalg SHA256withECDSA \
   -dname "CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US" \
   -validity 3652 -keypass passphrase -keystore keystore -storepass passphrase
 
+
 Alias name: dummydsa
 --------------------
-Creation date: Mar 11, 2007
+Creation date: Nov 7, 2019
 Entry type: PrivateKeyEntry
 Certificate chain length: 1
 Certificate[1]:
 Owner: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
 Issuer: CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US
-Serial number: 45f3a314
-Valid from: Sun Mar 11 06:35:00 UTC 2007 until: Wed Mar 08 06:35:00 UTC 2017
+Serial number: 3fbf2327
+Valid from: Thu Nov 07 23:23:06 UTC 2019 until: Tue Nov 06 23:23:06 UTC 2029
 Certificate fingerprints:
+	 MD5:  20:01:BA:DA:23:ED:87:C5:D2:A4:2A:26:5D:26:EB:F0
+	 SHA1: DE:B1:85:FE:F1:50:AE:11:B7:72:E0:DF:5B:DC:07:B3:52:F5:A2:53
+	 SHA256: 23:F8:07:1D:82:C1:A0:D5:88:05:9C:72:A0:FA:7D:C6:2A:F7:39:5A:69:36:A0:86:BE:AE:F1:87:7B:AA:62:58
 Signature algorithm name: SHA1withDSA
-Version: 1
+Subject Public Key Algorithm: 1024-bit DSA key
+Version: 3
 
-This can be generated using hacked (update the keytool source code so that
-it can be used for version 1 X.509 certificate) keytool command:
-% keytool -genkeypair -alias dummy -keyalg DSA -keysize 1024 \
+This can be generated using keytool command:
+% keytool -genkeypair -alias dummydsa -keyalg DSA -keysize 1024 \
   -sigalg SHA1withDSA \
   -dname "CN=dummy.example.com, OU=Dummy, O=Dummy, L=Cupertino, ST=CA, C=US" \
   -validity 3652 -keypass passphrase -keystore keystore -storepass passphrase
