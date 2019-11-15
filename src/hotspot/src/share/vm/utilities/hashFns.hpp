@@ -33,7 +33,7 @@ template<typename K> struct HashFns {
 
   static unsigned primitive_hash(const K& k) {
     unsigned hash = (unsigned)((uintptr_t)k);
-    return hash ^ (hash > 3); // just in case we're dealing with aligned ptrs
+    return hash ^ (hash >> 3); // just in case we're dealing with aligned ptrs
   }
 
   static bool primitive_equals(const K& k0, const K& k1) {

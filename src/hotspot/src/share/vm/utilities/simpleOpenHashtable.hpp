@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -71,7 +71,7 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
     private:
       K   _key;
       V   _value;
-    public: 
+    public:
       Entry()   { set_empty(); }
       ~Entry()  { destroy_entry(); }
 
@@ -99,7 +99,7 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
 
   // Returns a referrence of entry where the key resides or would reside
   Entry* find_entry(K const& key) const {
-    size_t slot_index = ((uintx)Hash(key)) & _size_mask;
+    size_t slot_index = ((uintx)HASH(key)) & _size_mask;
     size_t initial_index = slot_index;
 
     do {
@@ -109,11 +109,51 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
       slot_index = (slot_index + 1) & _size_mask;
     } while (slot_index != initial_index);
 
-    assert(_table[slot_index].is_empty() || 
+    assert(_table[slot_index].is_empty() ||
             _table[slot_index].key_equals(key), "Illegal entry: table full");
 
     return &_table[slot_index];
   }
+
+  void compact_at(size_t delete_index) {
+    Entry * entry;
+    size_t slot_index = delete_index;
+
+    while (true) {
+      slot_index = (slot_index + 1) & _size_mask;
+
+      if (_table[slot_index].is_empty()) {
+        return;
+      }
+
+      size_t found_hash = ((uintx)HASH(_table[slot_index].key())) & _size_mask;
+
+      if ((slot_index < found_hash && (found_hash <= delete_index || delete_index <= slot_index)) // Collision that rolled past end of HT.
+          || (found_hash <= delete_index && delete_index <= slot_index)) { // Basic contiguous collision.
+        entry = &_table[delete_index];
+        *entry = _table[slot_index];
+
+        _table[slot_index].destroy_entry();
+        _table[slot_index].set_empty();
+        delete_index = slot_index;
+      }
+    }
+  }
+
+#ifndef PRODUCT
+  // the distant between initial slot index and real index
+  size_t find_cost(K const& key) const {
+    size_t slot_index = ((uintx)HASH(key)) & _size_mask;
+    size_t slot_real = find_entry(key) - _table;
+
+    if (slot_real >= slot_index) {
+      return slot_real - slot_index;
+    }
+    else {
+      return capacity() - slot_index + slot_real;
+    }
+  }
+#endif
 
   bool put_entry(K const& key, V const& value) {
     // Check table status, make sure there's at least one empty entry
@@ -135,11 +175,10 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
       is_updated = true;
     }
     entry->set_value(value);
-
     return is_updated;
   }
 
-  // Constuct a new table and resize 
+  // Construct a new table and resize
   void resize() {
     // No more resize if reaching maximum table size
     if (capacity() == MAX_CAPACITY) {
@@ -155,7 +194,7 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
       Entry* old_entry = &old_table[i];
       if (!old_entry->is_empty()) {
         (void)put_entry(old_entry->key(), old_entry->value());
-      } 
+      }
       old_entry->destroy_entry();
     }
     deallocate_table(old_table);
@@ -192,15 +231,15 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
 
   static size_t round_up_to_next_pow_2(size_t target) {
     size_t result = 1;
-    while(result < target) { 
-      result <<= 1; 
+    while(result < target) {
+      result <<= 1;
     }
     return result;
   }
 
  public:
   SimpleOpenHashtable(size_t initial_size = INITIAL_CAPACITY,
-                      float load_factor = DEFAULT_LOAD_FACTOR) { 
+                      float load_factor = DEFAULT_LOAD_FACTOR) {
     guarantee(initial_size <= MAX_CAPACITY, "Invalid table size");
     guarantee(load_factor > 0 && load_factor < 1.0f, "Invalid load factor");
     _load_factor = load_factor;
@@ -209,8 +248,8 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
 
   ~SimpleOpenHashtable() { destroy(capacity(), _table); }
 
-  size_t entry_count()          { return _entry_count; }
-  size_t capacity()             { return _size_mask + 1; }
+  size_t entry_count() const    { return _entry_count; }
+  size_t capacity() const       { return _size_mask + 1; }
 
   static size_t entry_size()    { return sizeof(Entry); }
 
@@ -222,8 +261,8 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
   bool contains(K const& key) const {
     return !find_entry(key)->is_empty();
   }
- 
-  // Inserts or replace entry in the table. Return 
+
+  // Inserts or replace entry in the table. Return
   // true if it's a replacement, and false otherwise.
   bool put(K const& key, V const& value) {
     return put_entry(key, value);
@@ -236,8 +275,10 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
     if (entry->is_empty()) {
       return false;
     }
+
     entry->destroy_entry();
     entry->set_empty();
+    compact_at(entry - &_table[0]);
     _entry_count--;
     return true;
   }
@@ -250,8 +291,8 @@ class SimpleOpenHashtable : public CHeapObj<MEM_TYPE> {
     for (size_t i = 0; i <= _size_mask; i++) {
       Entry* entry = &_table[i];
       if (!entry->is_empty()) {
-        bool cont = iter->do_entry(entry->_key(), entry->_value());
-        if (!cont) { 
+        bool cont = iter->do_entry(entry->key(), entry->value());
+        if (!cont) {
           return;
         }
       }
