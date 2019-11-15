@@ -5102,6 +5102,7 @@ void TestNewSize_test();
 void TestKlass_test();
 void Test_linked_list();
 void TestResourcehash_test();
+void TestSimpleHashtable_test();
 void TestChunkedList_test();
 #if INCLUDE_ALL_GCS
 void TestOldFreeSpaceCalculation_test();
@@ -5135,6 +5136,7 @@ void execute_internal_vm_tests() {
     run_unit_test(TestNewSize_test());
     run_unit_test(TestKlass_test());
     run_unit_test(TestResourcehash_test());
+    run_unit_test(TestSimpleHashtable_test());
     run_unit_test(Test_linked_list());
     run_unit_test(TestChunkedList_test());
     run_unit_test(ObjectMonitor::sanity_checks());
