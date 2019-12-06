@@ -51,8 +51,13 @@
 #include "runtime/thread.hpp"
 #include "runtime/vmThread.hpp"
 #include "utilities/copy.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/events.hpp"
 
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__G1__begin, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__G1__end, *uintptr_t, *uintptr_t);
+ #endif /* !USDT2 */ 
 class HeapRegion;
 
 void G1MarkSweep::invoke_at_safepoint(ReferenceProcessor* rp,
@@ -86,6 +91,9 @@ void G1MarkSweep::invoke_at_safepoint(ReferenceProcessor* rp,
   // The marking doesn't preserve the marks of biased objects.
   BiasedLocking::preserve_marks();
 
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__G1__begin, &sh, sh->gc_cause());
+#endif /* !USDT2 */
   mark_sweep_phase1(marked_for_unloading, clear_all_softrefs);
 
   mark_sweep_phase2();
@@ -101,6 +109,9 @@ void G1MarkSweep::invoke_at_safepoint(ReferenceProcessor* rp,
   BiasedLocking::restore_marks();
   GenMarkSweep::deallocate_stacks();
 
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__G1__end, &sh, sh->gc_cause());
+#endif /* !USDT2 */
   // "free at last gc" is calculated from these.
   // CHF: cheating for now!!!
   //  Universe::set_heap_capacity_at_last_gc(Universe::heap()->capacity());

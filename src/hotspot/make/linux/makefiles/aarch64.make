@@ -22,16 +22,18 @@
 #  
 #
 
-# The copied fdlibm routines in sharedRuntimeTrig.o must not be optimized
-OPT_CFLAGS/sharedRuntimeTrig.o = $(OPT_CFLAGS/NOOPT)
-# The copied fdlibm routines in sharedRuntimeTrans.o must not be optimized
-OPT_CFLAGS/sharedRuntimeTrans.o = $(OPT_CFLAGS/NOOPT)
+# If FDLIBM_CFLAGS is non-empty it holds CFLAGS needed to be passed to
+# the compiler so as to be able to produce optimized objects
+# without losing precision.
+ifneq ($(FDLIBM_CFLAGS),)
+  OPT_CFLAGS/sharedRuntimeTrig.o = $(OPT_CFLAGS/SPEED) $(FDLIBM_CFLAGS)
+  OPT_CFLAGS/sharedRuntimeTrans.o = $(OPT_CFLAGS/SPEED) $(FDLIBM_CFLAGS)
+else
+  OPT_CFLAGS/sharedRuntimeTrig.o = $(OPT_CFLAGS/NOOPT)
+  OPT_CFLAGS/sharedRuntimeTrans.o = $(OPT_CFLAGS/NOOPT)
+endif
 # Must also specify if CPU is little endian
 CFLAGS += -DVM_LITTLE_ENDIAN
-
-ifeq ($(BUILTIN_SIM), true)
-CFLAGS  += -DBUILTIN_SIM -DALLOW_OPERATOR_NEW_USAGE
-endif
 
 # CFLAGS += -D_LP64=1
 

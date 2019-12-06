@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * Copyright 2009 Red Hat, Inc.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -36,4 +36,11 @@
 # include "os_bsd.inline.hpp"
 #endif
 
-// This file is intentionally empty
+
+void VM_Version::initialize() {
+  // This machine does not allow unaligned memory accesses
+  if (! FLAG_IS_DEFAULT(UseUnalignedAccesses)) {
+    warning("Unaligned memory access is not available on this CPU");
+    FLAG_SET_DEFAULT(UseUnalignedAccesses, false);
+  }
+}

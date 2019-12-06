@@ -63,6 +63,12 @@
 #include "runtime/vmThread.hpp"
 #include "services/memoryService.hpp"
 #include "services/runtimeService.hpp"
+#include "utilities/dtrace.hpp"
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__begin, bool, bool, size_t, bool);
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__end, bool, bool, size_t, bool);
+#endif /* !USDT2 */
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
@@ -1674,7 +1680,13 @@ void ConcurrentMarkSweepGeneration::collect(bool   full,
                                             size_t size,
                                             bool   tlab)
 {
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__begin, full, clear_all_soft_refs, size, tlab);
+#endif /* !USDT2 */
   collector()->collect(full, clear_all_soft_refs, size, tlab);
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__end, full, clear_all_soft_refs, size, tlab);
+#endif /* !USDT2 */
 }
 
 void CMSCollector::collect(bool   full,

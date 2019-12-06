@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -99,19 +99,17 @@ class TemplateTable: AllStatic {
   static bool            _is_initialized;        // true if TemplateTable has been initialized
   static Template        _template_table     [Bytecodes::number_of_codes];
   static Template        _template_table_wide[Bytecodes::number_of_codes];
-  static Template*       _desc;                  // the current template to be generated
 
- public:
+  static Template*       _desc;                  // the current template to be generated
   static Bytecodes::Code bytecode()              { return _desc->bytecode(); }
 
- private:
   static BarrierSet*     _bs;                    // Cache the barrier set.
-
  public:
   //%note templates_1
   static InterpreterMacroAssembler* _masm;       // the assembler used when generating templates
 
  private:
+
   // special registers
   static inline Address at_bcp(int offset);
 
