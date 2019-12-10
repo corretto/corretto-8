@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,8 +36,8 @@ public class GenericTestCaseForOtherCPU extends
     public GenericTestCaseForOtherCPU(String optionName) {
         // Execute the test case on any CPU except SPARC and X86
         super(optionName, new NotPredicate(new OrPredicate(Platform::isSparc,
-                new OrPredicate(Platform::isPPC,
                 new OrPredicate(Platform::isAArch64,
+                new OrPredicate(Platform::isPPC,
                 new OrPredicate(Platform::isX64, Platform::isX86))))));
     }
 

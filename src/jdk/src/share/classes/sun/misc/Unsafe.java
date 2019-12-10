@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -558,6 +558,76 @@ public final class Unsafe {
      */
     public void copyMemory(long srcAddress, long destAddress, long bytes) {
         copyMemory(null, srcAddress, null, destAddress, bytes);
+    }
+
+    private boolean isPrimitiveArray(Class<?> c) {
+        Class<?> componentType = c.getComponentType();
+        return componentType != null && componentType.isPrimitive();
+    }
+
+    private native void copySwapMemory0(Object srcBase, long srcOffset,
+                                        Object destBase, long destOffset,
+                                        long bytes, long elemSize);
+
+    /**
+     * Copies all elements from one block of memory to another block,
+     * *unconditionally* byte swapping the elements on the fly.
+     *
+     * <p>This method determines each block's base address by means of two parameters,
+     * and so it provides (in effect) a <em>double-register</em> addressing mode,
+     * as discussed in {@link #getInt(Object,long)}.  When the object reference is null,
+     * the offset supplies an absolute base address.
+     */
+    public void copySwapMemory(Object srcBase, long srcOffset,
+                               Object destBase, long destOffset,
+                               long bytes, long elemSize) {
+        if (bytes < 0) {
+            throw new IllegalArgumentException();
+        }
+        if (elemSize != 2 && elemSize != 4 && elemSize != 8) {
+            throw new IllegalArgumentException();
+        }
+        if (bytes % elemSize != 0) {
+            throw new IllegalArgumentException();
+        }
+        if ((srcBase == null && srcOffset == 0) ||
+            (destBase == null && destOffset == 0)) {
+            throw new NullPointerException();
+        }
+
+        // Must be off-heap, or primitive heap arrays
+        if (srcBase != null && (srcOffset < 0 || !isPrimitiveArray(srcBase.getClass()))) {
+            throw new IllegalArgumentException();
+        }
+        if (destBase != null && (destOffset < 0 || !isPrimitiveArray(destBase.getClass()))) {
+            throw new IllegalArgumentException();
+        }
+
+        // Sanity check size and offsets on 32-bit platforms. Most
+        // significant 32 bits must be zero.
+        if (ADDRESS_SIZE == 4 &&
+            (bytes >>> 32 != 0 || srcOffset >>> 32 != 0 || destOffset >>> 32 != 0)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (bytes == 0) {
+            return;
+        }
+
+        copySwapMemory0(srcBase, srcOffset, destBase, destOffset, bytes, elemSize);
+    }
+
+   /**
+     * Copies all elements from one block of memory to another block, byte swapping the
+     * elements on the fly.
+     *
+     * This provides a <em>single-register</em> addressing mode, as
+     * discussed in {@link #getInt(Object,long)}.
+     *
+     * Equivalent to {@code copySwapMemory(null, srcAddress, null, destAddress, bytes, elemSize)}.
+     */
+    public void copySwapMemory(long srcAddress, long destAddress, long bytes, long elemSize) {
+        copySwapMemory(null, srcAddress, null, destAddress, bytes, elemSize);
     }
 
     /**
@@ -1141,5 +1211,28 @@ public final class Unsafe {
     private static void throwIllegalAccessError() {
        throw new IllegalAccessError();
     }
+
+    /**
+     * @return Returns true if the native byte ordering of this
+     * platform is big-endian, false if it is little-endian.
+     */
+    public final boolean isBigEndian() { return BE; }
+
+    /**
+     * @return Returns true if this platform is capable of performing
+     * accesses at addresses which are not aligned for the type of the
+     * primitive type being accessed, false otherwise.
+     */
+    public final boolean unalignedAccess() { return unalignedAccess; }
+
+    // JVM interface methods
+    private native boolean unalignedAccess0();
+    private native boolean isBigEndian0();
+
+    // BE is true iff the native endianness of this platform is big.
+    private static final boolean BE = theUnsafe.isBigEndian0();
+
+    // unalignedAccess is true iff this platform can perform unaligned accesses.
+    private static final boolean unalignedAccess = theUnsafe.unalignedAccess0();
 
 }

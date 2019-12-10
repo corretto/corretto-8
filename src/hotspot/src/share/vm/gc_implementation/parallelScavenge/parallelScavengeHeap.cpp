@@ -43,7 +43,13 @@
 #include "runtime/java.hpp"
 #include "runtime/vmThread.hpp"
 #include "services/memTracker.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/vmError.hpp"
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__parscavenge__heap__begin, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__parscavenge__heap__end, *uintptr_t, *uintptr_t);
+#endif /* !USDT2 */
 
 PSYoungGen*  ParallelScavengeHeap::_young_gen = NULL;
 PSOldGen*    ParallelScavengeHeap::_old_gen = NULL;
@@ -535,7 +541,13 @@ void ParallelScavengeHeap::collect(GCCause::Cause cause) {
   }
 
   VM_ParallelGCSystemGC op(gc_count, full_gc_count, cause);
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__parscavenge__heap__begin, &op, cause);
+#endif /* !USDT2 */
   VMThread::execute(&op);
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__parscavenge__heap__end, &op, cause);
+#endif /* !USDT2 */
 }
 
 void ParallelScavengeHeap::oop_iterate(ExtendedOopClosure* cl) {

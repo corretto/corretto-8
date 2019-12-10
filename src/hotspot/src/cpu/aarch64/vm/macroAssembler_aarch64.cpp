@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) 2013, Red Hat Inc.
  * Copyright (c) 1997, 2012, Oracle and/or its affiliates.
  * All rights reserved.
@@ -912,17 +913,6 @@ RegisterOrConstant MacroAssembler::delayed_value_impl(intptr_t* delayed_value_ad
   return RegisterOrConstant(tmp);
 }
 
-
-void MacroAssembler:: notify(int type) {
-  if (type == bytecode_start) {
-    // set_last_Java_frame(esp, rfp, (address)NULL);
-    Assembler:: notify(type);
-    // reset_last_Java_frame(true);
-  }
-  else
-    Assembler:: notify(type);
-}
-
 // Look up the method for a megamorphic invokeinterface call.
 // The target method is determined by <intf_klass, itable_index>.
 // The receiver klass is in recv_klass.
@@ -1339,22 +1329,12 @@ Address MacroAssembler::argument_address(RegisterOrConstant arg_slot,
 void MacroAssembler::call_VM_leaf_base(address entry_point,
                                        int number_of_arguments,
 				       Label *retaddr) {
-  call_VM_leaf_base1(entry_point, number_of_arguments, 0, ret_type_integral, retaddr);
-}
-
-void MacroAssembler::call_VM_leaf_base1(address entry_point,
-					int number_of_gp_arguments,
-					int number_of_fp_arguments,
-					ret_type type,
-					Label *retaddr) {
-  Label E, L;
-
   stp(rscratch1, rmethod, Address(pre(sp, -2 * wordSize)));
 
   // We add 1 to number_of_arguments because the thread in arg0 is
   // not counted
   mov(rscratch1, entry_point);
-  blrt(rscratch1, number_of_gp_arguments + 1, number_of_fp_arguments, type);
+  blr(rscratch1);
   if (retaddr)
     bind(*retaddr);
 
@@ -2013,9 +1993,16 @@ void MacroAssembler::stop(const char* msg) {
   mov(c_rarg1, (address)ip);
   mov(c_rarg2, sp);
   mov(c_rarg3, CAST_FROM_FN_PTR(address, MacroAssembler::debug64));
-  // call(c_rarg3);
-  blrt(c_rarg3, 3, 0, 1);
+  blr(c_rarg3);
   hlt(0);
+}
+
+void MacroAssembler::warn(const char* msg) {
+  pusha();
+  mov(c_rarg0, (address)msg);
+  mov(lr, CAST_FROM_FN_PTR(address, warning));
+  blr(lr);
+  popa();
 }
 
 // If a constant does not fit in an immediate field, generate some
@@ -2233,16 +2220,16 @@ void MacroAssembler::atomic_##NAME(Register prev, RegisterOrConstant incr, Regis
     }                                                                   \
     return;                                                             \
   }                                                                     \
-  Register result = rscratch2;						\
-  if (prev->is_valid())							\
-    result = different(prev, incr, addr) ? prev : rscratch2;		\
-									\
-  Label retry_load;							\
+  Register result = rscratch2;                                          \
+  if (prev->is_valid())                                                 \
+    result = different(prev, incr, addr) ? prev : rscratch2;            \
+                                                                        \
+  Label retry_load;                                                     \
   if ((VM_Version::cpu_cpuFeatures() & VM_Version::CPU_STXR_PREFETCH))         \
     prfm(Address(addr), PSTL1STRM);                                     \
-  bind(retry_load);							\
-  LDXR(result, addr);							\
-  OP(rscratch1, result, incr);						\
+  bind(retry_load);                                                     \
+  LDXR(result, addr);                                                   \
+  OP(rscratch1, result, incr);                                          \
   STXR(rscratch2, rscratch1, addr);                                     \
   cbnzw(rscratch2, retry_load);                                         \
   if (prev->is_valid() && prev != result) {                             \
@@ -2258,25 +2245,25 @@ ATOMIC_OP(addalw, ldaxrw, addw, subw, ldaddal, stlxrw, Assembler::word)
 #undef ATOMIC_OP
 
 #define ATOMIC_XCHG(OP, AOP, LDXR, STXR, sz)                            \
-void MacroAssembler::atomic_##OP(Register prev, Register newv, Register addr) {	\
+void MacroAssembler::atomic_##OP(Register prev, Register newv, Register addr) { \
   if (UseLSE) {                                                         \
     prev = prev->is_valid() ? prev : zr;                                \
     AOP(sz, newv, prev, addr);                                          \
     return;                                                             \
   }                                                                     \
-  Register result = rscratch2;						\
-  if (prev->is_valid())							\
-    result = different(prev, newv, addr) ? prev : rscratch2;		\
-									\
-  Label retry_load;							\
+  Register result = rscratch2;                                          \
+  if (prev->is_valid())                                                 \
+    result = different(prev, newv, addr) ? prev : rscratch2;            \
+                                                                        \
+  Label retry_load;                                                     \
   if ((VM_Version::cpu_cpuFeatures() & VM_Version::CPU_STXR_PREFETCH))         \
     prfm(Address(addr), PSTL1STRM);                                     \
-  bind(retry_load);							\
-  LDXR(result, addr);							\
-  STXR(rscratch1, newv, addr);						\
-  cbnzw(rscratch1, retry_load);						\
-  if (prev->is_valid() && prev != result)				\
-    mov(prev, result);							\
+  bind(retry_load);                                                     \
+  LDXR(result, addr);                                                   \
+  STXR(rscratch1, newv, addr);                                          \
+  cbnzw(rscratch1, retry_load);                                         \
+  if (prev->is_valid() && prev != result)                               \
+    mov(prev, result);                                                  \
 }
 
 ATOMIC_XCHG(xchg, swp, ldxr, stxr, Assembler::xword)
@@ -2370,50 +2357,6 @@ void MacroAssembler::debug64(char* msg, int64_t pc, int64_t regs[])
     assert(false, err_msg("DEBUG MESSAGE: %s", msg));
   }
 }
-
-#ifdef BUILTIN_SIM
-// routine to generate an x86 prolog for a stub function which
-// bootstraps into the generated ARM code which directly follows the
-// stub
-//
-// the argument encodes the number of general and fp registers
-// passed by the caller and the callng convention (currently just
-// the number of general registers and assumes C argument passing)
-
-extern "C" {
-int aarch64_stub_prolog_size();
-void aarch64_stub_prolog();
-void aarch64_prolog();
-}
-
-void MacroAssembler::c_stub_prolog(int gp_arg_count, int fp_arg_count, int ret_type,
-				   address *prolog_ptr)
-{
-  int calltype = (((ret_type & 0x3) << 8) |
-		  ((fp_arg_count & 0xf) << 4) |
-		  (gp_arg_count & 0xf));
-
-  // the addresses for the x86 to ARM entry code we need to use
-  address start = pc();
-  // printf("start = %lx\n", start);
-  int byteCount =  aarch64_stub_prolog_size();
-  // printf("byteCount = %x\n", byteCount);
-  int instructionCount = (byteCount + 3)/ 4;
-  // printf("instructionCount = %x\n", instructionCount);
-  for (int i = 0; i < instructionCount; i++) {
-    nop();
-  }
-
-  memcpy(start, (void*)aarch64_stub_prolog, byteCount);
-
-  // write the address of the setup routine and the call format at the
-  // end of into the copied code
-  u_int64_t *patch_end = (u_int64_t *)(start + byteCount);
-  if (prolog_ptr)
-    patch_end[-2] = (u_int64_t)prolog_ptr;
-  patch_end[-1] = calltype;
-}
-#endif
 
 void MacroAssembler::push_call_clobbered_registers() {
   push(RegSet::range(r0, r18) - RegSet::of(rscratch1, rscratch2), sp);
@@ -3545,6 +3488,12 @@ void MacroAssembler::store_heap_oop_null(Address dst) {
 }
 
 #if INCLUDE_ALL_GCS
+/*
+ * g1_write_barrier_pre -- G1GC pre-write barrier for store of new_val at
+ * store_addr.
+ *
+ * Allocates rscratch1
+ */
 void MacroAssembler::g1_write_barrier_pre(Register obj,
                                           Register pre_val,
                                           Register thread,
@@ -3562,10 +3511,8 @@ void MacroAssembler::g1_write_barrier_pre(Register obj,
   Label done;
   Label runtime;
 
-  assert(pre_val != noreg, "check this code");
-
-  if (obj != noreg)
-    assert_different_registers(obj, pre_val, tmp);
+  assert_different_registers(obj, pre_val, tmp, rscratch1);
+  assert(pre_val != noreg &&  tmp != noreg, "expecting a register");
 
   Address in_progress(thread, in_bytes(JavaThread::satb_mark_queue_offset() +
                                        PtrQueue::byte_offset_of_active()));
@@ -3639,6 +3586,12 @@ void MacroAssembler::g1_write_barrier_pre(Register obj,
   bind(done);
 }
 
+/*
+ * g1_write_barrier_post -- G1GC post-write barrier for store of new_val at
+ * store_addr
+ *
+ * Allocates rscratch1
+ */
 void MacroAssembler::g1_write_barrier_post(Register store_addr,
                                            Register new_val,
                                            Register thread,
@@ -3647,6 +3600,10 @@ void MacroAssembler::g1_write_barrier_post(Register store_addr,
 #ifdef _LP64
   assert(thread == rthread, "must be");
 #endif // _LP64
+  assert_different_registers(store_addr, new_val, thread, tmp, tmp2,
+                             rscratch1);
+  assert(store_addr != noreg && new_val != noreg && tmp != noreg
+         && tmp2 != noreg, "expecting a register");
 
   Address queue_index(thread, in_bytes(JavaThread::dirty_card_queue_offset() +
                                        PtrQueue::byte_offset_of_index()));
@@ -4870,7 +4827,6 @@ void MacroAssembler::encode_iso_array(Register src, Register dst,
 
       mov(result, len);	// Save initial len
 
-#ifndef BUILTIN_SIM
       subs(len, len, 32);
       br(LT, LOOP_8);
 
@@ -4909,9 +4865,7 @@ void MacroAssembler::encode_iso_array(Register src, Register dst,
     BIND(LOOP_1);
       adds(len, len, 8);
       br(LE, DONE);
-#else
-      cbz(len, DONE);
-#endif
+
     BIND(NEXT_1);
       ldrh(tmp1, Address(post(src, 2)));
       tst(tmp1, 0xff00);

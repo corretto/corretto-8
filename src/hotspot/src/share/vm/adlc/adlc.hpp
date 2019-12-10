@@ -85,6 +85,19 @@ typedef unsigned int uintptr_t;
 #undef max
 #define max(a, b)   (((a)>(b)) ? (a) : (b))
 
+#if !defined(__clang_major__) && (__GNUC__ >= 7)
+#define PRAGMA_DIAG_PUSH             _Pragma("GCC diagnostic push")
+#define PRAGMA_DIAG_POP              _Pragma("GCC diagnostic pop")
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED _Pragma("GCC diagnostic ignored \"-Wformat-overflow\"")
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL PRAGMA_FORMAT_OVERFLOW_IGNORED
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED_INTERNAL PRAGMA_FORMAT_OVERFLOW_IGNORED
+#else
+#define PRAGMA_DIAG_PUSH
+#define PRAGMA_DIAG_POP
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED_INTERNAL
+#endif
+
 // ADLC components
 #include "arena.hpp"
 #include "opto/adlcVMDeps.hpp"

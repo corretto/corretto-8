@@ -45,10 +45,6 @@
 #include "opto/runtime.hpp"
 #endif
 
-#ifdef BUILTIN_SIM
-#include "../../../../../../simulator/simulator.hpp"
-#endif
-
 // Declaration and definition of StubGenerator (no .hpp file).
 // For a more detailed description of the stub routine structure
 // see the comment in stubRoutines.hpp
@@ -216,16 +212,8 @@ class StubGenerator: public StubCodeGenerator {
 
     // stub code
 
-    // we need a C prolog to bootstrap the x86 caller into the sim
-    __ c_stub_prolog(8, 0, MacroAssembler::ret_type_void);
-
     address aarch64_entry = __ pc();
 
-#ifdef BUILTIN_SIM
-    // Save sender's SP for stack traces.
-    __ mov(rscratch1, sp);
-    __ str(rscratch1, Address(__ pre(sp, -2 * wordSize)));
-#endif
     // set up frame and move sp to end of save area
     __ enter();
     __ sub(sp, rfp, -sp_after_call_off * wordSize);
@@ -296,8 +284,6 @@ class StubGenerator: public StubCodeGenerator {
     __ mov(r13, sp);
     __ blr(c_rarg4);
 
-    // tell the simulator we have returned to the stub
-
     // we do this here because the notify will already have been done
     // if we get to the next instruction via an exception
     //
@@ -307,9 +293,6 @@ class StubGenerator: public StubCodeGenerator {
     // pc against the address saved below. so we may need to allow for
     // this extra instruction in the check.
 
-    if (NotifySimulator) {
-      __ notify(Assembler::method_reentry);
-    }
     // save current address for use by exception handling code
 
     return_address = __ pc();
@@ -372,12 +355,6 @@ class StubGenerator: public StubCodeGenerator {
     __ ldp(c_rarg4, c_rarg5,  entry_point);
     __ ldp(c_rarg6, c_rarg7,  parameter_size);
 
-#ifndef PRODUCT
-    // tell the simulator we are about to end Java execution
-    if (NotifySimulator) {
-      __ notify(Assembler::method_exit);
-    }
-#endif
     // leave frame and return to caller
     __ leave();
     __ ret(lr);
@@ -410,13 +387,6 @@ class StubGenerator: public StubCodeGenerator {
   // rsp.
   //
   // r0: exception oop
-
-  // NOTE: this is used as a target from the signal handler so it
-  // needs an x86 prolog which returns into the current simulator
-  // executing the generated catch_exception code. so the prolog
-  // needs to install rax in a sim register and adjust the sim's
-  // restart pc to enter the generated code at the start position
-  // then return from native to simulated execution.
 
   address generate_catch_exception() {
     StubCodeMark mark(this, "StubRoutines", "catch_exception");
@@ -612,7 +582,7 @@ class StubGenerator: public StubCodeGenerator {
 #endif
     BLOCK_COMMENT("call MacroAssembler::debug");
     __ mov(rscratch1, CAST_FROM_FN_PTR(address, MacroAssembler::debug64));
-    __ blrt(rscratch1, 3, 0, 1);
+    __ blr(rscratch1);
 
     return start;
   }
@@ -802,8 +772,11 @@ class StubGenerator: public StubCodeGenerator {
       stub_name = "foward_copy_longs";
     else
       stub_name = "backward_copy_longs";
-    StubCodeMark mark(this, "StubRoutines", stub_name);
+
     __ align(CodeEntryAlignment);
+
+    StubCodeMark mark(this, "StubRoutines", stub_name);
+
     __ bind(start);
 
     Label unaligned_copy_long;
@@ -1444,12 +1417,6 @@ class StubGenerator: public StubCodeGenerator {
     __ leave();
     __ mov(r0, zr); // return 0
     __ ret(lr);
-#ifdef BUILTIN_SIM
-    {
-      AArch64Simulator *sim = AArch64Simulator::get_current(UseSimulatorCache, DisableBCCheck);
-      sim->notifyCompile(const_cast<char*>(name), start);
-    }
-#endif
     return start;
   }
 
@@ -1506,12 +1473,6 @@ class StubGenerator: public StubCodeGenerator {
     __ leave();
     __ mov(r0, zr); // return 0
     __ ret(lr);
-#ifdef BUILTIN_SIM
-    {
-      AArch64Simulator *sim = AArch64Simulator::get_current(UseSimulatorCache, DisableBCCheck);
-      sim->notifyCompile(const_cast<char*>(name), start);
-    }
-#endif
     return start;
 }
 
@@ -1738,7 +1699,7 @@ class StubGenerator: public StubCodeGenerator {
 
 
   // Helper for generating a dynamic type check.
-  // Smashes rscratch1, rscratch2.
+  // Smashes rscratch1.
   void generate_type_check(Register sub_klass,
                            Register super_check_offset,
                            Register super_klass,
@@ -2168,12 +2129,10 @@ class StubGenerator: public StubCodeGenerator {
     const Register dst_pos    = c_rarg3;  // destination position
     const Register length     = c_rarg4;
 
-    // Registers used as temps
-    const Register dst_klass  = c_rarg5;
+    __ align(CodeEntryAlignment);
 
     StubCodeMark mark(this, "StubRoutines", name);
 
-    __ align(CodeEntryAlignment);
     address start = __ pc();
 
     __ enter(); // required for proper stackwalking of RuntimeStub frame
@@ -2375,7 +2334,8 @@ class StubGenerator: public StubCodeGenerator {
       arraycopy_range_checks(src, src_pos, dst, dst_pos, scratch_length,
                              r18, L_failed);
 
-      __ load_klass(dst_klass, dst); // reload
+      const Register rscratch2_dst_klass = rscratch2;
+      __ load_klass(rscratch2_dst_klass, dst); // reload
 
       // Marshal the base address arguments now, freeing registers.
       __ lea(from, Address(src, src_pos, Address::lsl(LogBytesPerHeapOop)));
@@ -2385,25 +2345,24 @@ class StubGenerator: public StubCodeGenerator {
       __ movw(count, length);           // length (reloaded)
       Register sco_temp = c_rarg3;      // this register is free now
       assert_different_registers(from, to, count, sco_temp,
-                                 dst_klass, scratch_src_klass);
+                                 rscratch2_dst_klass, scratch_src_klass);
       // assert_clean_int(count, sco_temp);
 
       // Generate the type check.
       const int sco_offset = in_bytes(Klass::super_check_offset_offset());
-      __ ldrw(sco_temp, Address(dst_klass, sco_offset));
-
-      // Smashes rscratch1, rscratch2
-      generate_type_check(scratch_src_klass, sco_temp, dst_klass, L_plain_copy);
+      __ ldrw(sco_temp, Address(rscratch2_dst_klass, sco_offset));
+      // assert_clean_int(sco_temp, r18);
+      generate_type_check(scratch_src_klass, sco_temp, rscratch2_dst_klass, L_plain_copy);
 
       // Fetch destination element klass from the ObjArrayKlass header.
       int ek_offset = in_bytes(ObjArrayKlass::element_klass_offset());
-      __ ldr(dst_klass, Address(dst_klass, ek_offset));
-      __ ldrw(sco_temp, Address(dst_klass, sco_offset));
+      __ ldr(rscratch2_dst_klass, Address(rscratch2_dst_klass, ek_offset));
+      __ ldrw(sco_temp, Address(rscratch2_dst_klass, sco_offset));
 
       // the checkcast_copy loop needs two extra arguments:
       assert(c_rarg3 == sco_temp, "#3 already in place");
       // Set up arguments for checkcast_copy_entry.
-      __ mov(c_rarg4, dst_klass);  // dst.klass.element_klass
+      __ mov(c_rarg4, rscratch2_dst_klass);  // dst.klass.element_klass
       __ b(RuntimeAddress(checkcast_copy_entry));
     }
 
@@ -3153,7 +3112,6 @@ class StubGenerator: public StubCodeGenerator {
     return start;
   }
 
-#ifndef BUILTIN_SIM
   // Safefetch stubs.
   void generate_safefetch(const char* name, int size, address* entry,
                           address* fault_pc, address* continuation_pc) {
@@ -3193,7 +3151,6 @@ class StubGenerator: public StubCodeGenerator {
     __ mov(r0, c_rarg1);
     __ ret(lr);
   }
-#endif
 
   /**
    *  Arguments:
@@ -3353,7 +3310,7 @@ class StubGenerator: public StubCodeGenerator {
     __ mov(c_rarg0, rthread);
     BLOCK_COMMENT("call runtime_entry");
     __ mov(rscratch1, runtime_entry);
-    __ blrt(rscratch1, 3 /* number_of_arguments */, 0, 1);
+    __ blr(rscratch1);
 
     // Generate oop map
     OopMap* map = new OopMap(framesize, 0);
@@ -4281,7 +4238,6 @@ class StubGenerator: public StubCodeGenerator {
       StubRoutines::_montgomerySquare = g.generate_multiply();
     }
 
-#ifndef BUILTIN_SIM
     if (UseAESIntrinsics) {
       StubRoutines::_aescrypt_encryptBlock = generate_aescrypt_encryptBlock();
       StubRoutines::_aescrypt_decryptBlock = generate_aescrypt_decryptBlock();
@@ -4305,7 +4261,6 @@ class StubGenerator: public StubCodeGenerator {
     generate_safefetch("SafeFetchN", sizeof(intptr_t), &StubRoutines::_safefetchN_entry,
                                                        &StubRoutines::_safefetchN_fault_pc,
                                                        &StubRoutines::_safefetchN_continuation_pc);
-#endif
   }
 
  public:

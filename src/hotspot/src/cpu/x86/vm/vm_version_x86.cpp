@@ -27,6 +27,7 @@
 #include "asm/macroAssembler.inline.hpp"
 #include "memory/resourceArea.hpp"
 #include "runtime/java.hpp"
+#include "runtime/os.hpp"
 #include "runtime/stubCodeGenerator.hpp"
 #include "vm_version_x86.hpp"
 #ifdef TARGET_OS_FAMILY_linux
@@ -527,7 +528,7 @@ void VM_Version::get_processor_features() {
                (supports_bmi1() ? ", bmi1" : ""),
                (supports_bmi2() ? ", bmi2" : ""),
                (supports_adx() ? ", adx" : ""));
-  _features_str = strdup(buf);
+  _features_str = os::strdup(buf);
 
   // UseSSE is set to the smaller of what hardware supports and what
   // the command line requires.  I.e., you cannot set UseSSE to 2 on
@@ -1055,6 +1056,11 @@ void VM_Version::get_processor_features() {
   if (FLAG_IS_DEFAULT(ContendedPaddingWidth) &&
      (cache_line_size > ContendedPaddingWidth))
      ContendedPaddingWidth = cache_line_size;
+
+  // This machine allows unaligned memory accesses
+  if (FLAG_IS_DEFAULT(UseUnalignedAccesses)) {
+    FLAG_SET_DEFAULT(UseUnalignedAccesses, true);
+  }
 
 #ifndef PRODUCT
   if (PrintMiscellaneous && Verbose) {

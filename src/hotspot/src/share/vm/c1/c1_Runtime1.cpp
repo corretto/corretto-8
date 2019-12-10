@@ -803,10 +803,10 @@ static Klass* resolve_field_return_klass(methodHandle caller, int bci, TRAPS) {
 JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_id ))
   NOT_PRODUCT(_patch_code_slowcase_cnt++;)
 
-  #ifdef AARCH64
-    // AArch64 does not patch C1-generated code.
-    ShouldNotReachHere();
-  #endif
+#ifdef AARCH64
+  // AArch64 does not patch C1-generated code.
+  ShouldNotReachHere();
+#endif
 
   ResourceMark rm(thread);
   RegisterMap reg_map(thread, false);
@@ -1282,7 +1282,6 @@ int Runtime1::access_field_patching(JavaThread* thread) {
 
   return caller_is_deopted();
 JRT_END
-
 #endif
 
 JRT_LEAF(void, Runtime1::trace_block_entry(jint block_id))
