@@ -29,6 +29,7 @@
 #include "compiler/disassembler.hpp"
 #include "memory/resourceArea.hpp"
 #include "runtime/java.hpp"
+#include "runtime/os.hpp"
 #include "runtime/stubCodeGenerator.hpp"
 #include "utilities/defaultStream.hpp"
 #include "vm_version_ppc.hpp"
@@ -128,7 +129,7 @@ void VM_Version::initialize() {
                (has_vshasig() ? " sha"     : "")
                // Make sure number of %s matches num_features!
               );
-  _features_str = strdup(buf);
+  _features_str = os::strdup(buf);
   if (Verbose) {
     print_features();
   }
@@ -241,6 +242,11 @@ void VM_Version::initialize() {
   }
   if (FLAG_IS_DEFAULT(UseMontgomerySquareIntrinsic)) {
     UseMontgomerySquareIntrinsic = true;
+  }
+
+  // This machine allows unaligned memory accesses
+  if (FLAG_IS_DEFAULT(UseUnalignedAccesses)) {
+    FLAG_SET_DEFAULT(UseUnalignedAccesses, true);
   }
 }
 

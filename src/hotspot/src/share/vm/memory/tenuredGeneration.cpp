@@ -32,10 +32,16 @@
 #include "memory/tenuredGeneration.hpp"
 #include "oops/oop.inline.hpp"
 #include "runtime/java.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/macros.hpp"
 #if INCLUDE_ALL_GCS
 #include "gc_implementation/shared/parGCAllocBuffer.hpp"
 #endif
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__tenured__begin, bool, bool, size_t, bool);
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__tenured__end, bool, bool, size_t, bool);
+#endif /* !USDT2 */
 
 TenuredGeneration::TenuredGeneration(ReservedSpace rs,
                                      size_t initial_byte_size, int level,
@@ -154,8 +160,14 @@ void TenuredGeneration::collect(bool   full,
                                 size_t size,
                                 bool   is_tlab) {
   retire_alloc_buffers_before_full_gc();
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__tenured__begin, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
   OneContigSpaceCardGeneration::collect(full, clear_all_soft_refs,
                                         size, is_tlab);
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__tenured__end, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
 }
 
 void TenuredGeneration::compute_new_size() {

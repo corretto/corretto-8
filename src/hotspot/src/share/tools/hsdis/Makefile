@@ -193,8 +193,6 @@ LIBARCH		  = $(LIBARCH64)
 endif   # LIBARCH64/$(ARCH)
 endif   # LP64
 
-__JUNK__ := $(shell echo >&2 "LIBARCH = $(LIBARCH)")
-
 JDKARCH=$(LIBARCH:i386=i586)
 
 ifeq            ($(BINUTILS),)
