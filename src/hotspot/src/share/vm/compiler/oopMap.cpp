@@ -33,9 +33,13 @@
 #include "memory/resourceArea.hpp"
 #include "runtime/frame.inline.hpp"
 #include "runtime/signature.hpp"
+#include "utilities/dtrace.hpp"
 #ifdef COMPILER1
 #include "c1/c1_Defs.hpp"
 #endif
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL1(provider, gc__collection__delete, *uintptr_t);
+#endif /* !USDT2 */
 
 // OopMapStream
 
@@ -663,6 +667,9 @@ void DerivedPointerTable::update_pointers() {
                     " - Derived: " INTPTR_FORMAT "  Base: " INTPTR_FORMAT " (Offset: " INTX_FORMAT ")",
           p2i(derived_loc), p2i((address)*derived_loc), p2i((address)base), offset);
     }
+#ifndef USDT2
+  HS_DTRACE_PROBE1(hotspot, gc__collection__delete, entry);
+#endif /* !USDT2 */
 
     // Delete entry
     delete entry;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -54,6 +54,12 @@
 #include "utilities/copy.hpp"
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/workgroup.hpp"
+#include "utilities/dtrace.hpp"
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__parnew__begin, bool, bool, size_t, bool);
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__parnew__end, bool, bool, size_t, bool);
+#endif /* !USDT2 */
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
@@ -914,6 +920,9 @@ void ParNewGeneration::collect(bool   full,
                                bool   clear_all_soft_refs,
                                size_t size,
                                bool   is_tlab) {
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__parnew__begin, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
   assert(full || size > 0, "otherwise we don't want to collect");
 
   GenCollectedHeap* gch = GenCollectedHeap::heap();
@@ -1063,6 +1072,10 @@ void ParNewGeneration::collect(bool   full,
   if (PrintGC && !PrintGCDetails) {
     gch->print_heap_change(gch_prev_used);
   }
+
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__parnew__end, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
 
   if (PrintGCDetails && ParallelGCVerbose) {
     TASKQUEUE_STATS_ONLY(thread_state_set.print_termination_stats());

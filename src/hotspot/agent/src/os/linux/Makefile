@@ -61,7 +61,7 @@ $(ARCH)/sadis.o:  ../../share/native/sadis.c
         $(JAVAH) -jni -classpath ../../../build/classes -d $(ARCH) \
                 sun.jvm.hotspot.asm.Disassembler
         $(GCC) $(CFLAGS) $< -o $@
- 
+
 $(ARCH)/%.o: %.c
         $(GCC) $(CFLAGS) $< -o $@
 

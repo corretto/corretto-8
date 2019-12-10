@@ -33,6 +33,7 @@
 #include "oops/symbol.hpp"
 #include "runtime/handles.inline.hpp"
 #include "runtime/jniHandles.hpp"
+#include "runtime/os.hpp"
 
 class MethodMatcher : public CHeapObj<mtCompiler> {
  public:
@@ -172,6 +173,7 @@ enum OptionType {
   UintxType,
   BoolType,
   CcstrType,
+  DoubleType,
   UnknownType
 };
 
@@ -197,6 +199,10 @@ template<> OptionType get_type_for<ccstr>() {
   return CcstrType;
 }
 
+template<> OptionType get_type_for<double>() {
+  return DoubleType;
+}
+
 template<typename T>
 static const T copy_value(const T value) {
   return value;
@@ -219,7 +225,7 @@ public:
                            const T value,  MethodMatcher* next) :
     MethodMatcher(class_name, class_mode, method_name, method_mode, signature, next),
                   _type(get_type_for<T>()), _value(copy_value<T>(value)) {
-    _option = strdup(opt);
+    _option = os::strdup_check_oom(opt);
   }
 
   ~TypedMethodOptionMatcher() {
@@ -293,6 +299,15 @@ void TypedMethodOptionMatcher<ccstr>::print() {
   print_base();
   tty->print(" const char* %s", _option);
   tty->print(" = '%s'", _value);
+  tty->cr();
+};
+
+template<>
+void TypedMethodOptionMatcher<double>::print() {
+  ttyLocker ttyl;
+  print_base();
+  tty->print(" double %s", _option);
+  tty->print(" = %f", _value);
   tty->cr();
 };
 
@@ -389,6 +404,7 @@ template bool CompilerOracle::has_option_value<intx>(methodHandle method, const 
 template bool CompilerOracle::has_option_value<uintx>(methodHandle method, const char* option, uintx& value);
 template bool CompilerOracle::has_option_value<bool>(methodHandle method, const char* option, bool& value);
 template bool CompilerOracle::has_option_value<ccstr>(methodHandle method, const char* option, ccstr& value);
+template bool CompilerOracle::has_option_value<double>(methodHandle method, const char* option, double& value);
 
 bool CompilerOracle::should_exclude(methodHandle method, bool& quietly) {
   quietly = true;
@@ -625,6 +641,18 @@ static MethodMatcher* scan_flag_and_value(const char* type, const char* line, in
       } else {
         jio_snprintf(errorbuf, sizeof(errorbuf), "  Value cannot be read for flag %s of type %s", flag, type);
       }
+    } else if (strcmp(type, "double") == 0) {
+      char buffer[2][256];
+      // Decimal separator '.' has been replaced with ' ' or '/' earlier,
+      // so read integer and fraction part of double value separately.
+      if (sscanf(line, "%*[ \t]%255[0-9]%*[ /\t]%255[0-9]%n", buffer[0], buffer[1], &bytes_read) == 2) {
+        char value[512] = "";
+        jio_snprintf(value, sizeof(value), "%s.%s", buffer[0], buffer[1]);
+        total_bytes_read += bytes_read;
+        return add_option_string(c_name, c_match, m_name, m_match, signature, flag, atof(value));
+      } else {
+        jio_snprintf(errorbuf, buf_size, "  Value cannot be read for flag %s of type %s", flag, type);
+      }
     } else {
       jio_snprintf(errorbuf, sizeof(errorbuf), "  Type %s not supported ", type);
     }
@@ -715,11 +743,10 @@ void CompilerOracle::parse_from_line(char* line) {
       // (1) CompileCommand=option,Klass::method,flag
       // (2) CompileCommand=option,Klass::method,type,flag,value
       //
-      // Type (1) is used to support ciMethod::has_option("someflag")
-      // (i.e., to check if a flag "someflag" is enabled for a method).
+      // Type (1) is used to enable a boolean flag for a method.
       //
       // Type (2) is used to support options with a value. Values can have the
-      // the following types: intx, uintx, bool, ccstr, and ccstrlist.
+      // the following types: intx, uintx, bool, ccstr, ccstrlist, and double.
       //
       // For future extensions: extend scan_flag_and_value()
       char option[256]; // stores flag for Type (1) and type of Type (2)
@@ -737,6 +764,7 @@ void CompilerOracle::parse_from_line(char* line) {
             || strcmp(option, "bool") == 0
             || strcmp(option, "ccstr") == 0
             || strcmp(option, "ccstrlist") == 0
+            || strcmp(option, "double") == 0
             ) {
 
           // Type (2) option: parse flag name and value.
