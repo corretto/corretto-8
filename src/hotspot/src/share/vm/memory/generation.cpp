@@ -41,9 +41,15 @@
 #include "oops/oop.inline.hpp"
 #include "runtime/java.hpp"
 #include "utilities/copy.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/events.hpp"
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__begin, bool, bool, size_t, bool);
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__end, bool, bool, size_t, bool);
+#endif /* !USDT2 */
 
 Generation::Generation(ReservedSpace rs, size_t initial_size, int level) :
   _level(level),
@@ -642,7 +648,13 @@ void OneContigSpaceCardGeneration::collect(bool   full,
   SerialOldTracer* gc_tracer = GenMarkSweep::gc_tracer();
   gc_tracer->report_gc_start(gch->gc_cause(), gc_timer->gc_start());
 
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__begin, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
   GenMarkSweep::invoke_at_safepoint(_level, ref_processor(), clear_all_soft_refs);
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__end, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
 
   gc_timer->register_gc_end();
 

@@ -3171,11 +3171,11 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
       if (PrintC1Statistics) {
         __ incrementl(ExternalAddress((address)&Runtime1::_generic_arraycopystub_cnt));
       }
-#endif
+#endif // PRODUCT
       __ call(RuntimeAddress(copyfunc_addr));
     }
     __ addptr(rsp, 6*wordSize);
-#else
+#else // _WIN64
     __ mov(c_rarg4, j_rarg4);
     if (copyfunc_addr == NULL) { // Use C version if stub was not generated
       __ call(RuntimeAddress(C_entry));

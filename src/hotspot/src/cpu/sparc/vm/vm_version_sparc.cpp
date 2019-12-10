@@ -26,6 +26,7 @@
 #include "asm/macroAssembler.inline.hpp"
 #include "memory/resourceArea.hpp"
 #include "runtime/java.hpp"
+#include "runtime/os.hpp"
 #include "runtime/stubCodeGenerator.hpp"
 #include "vm_version_sparc.hpp"
 #ifdef TARGET_OS_FAMILY_linux
@@ -270,7 +271,7 @@ void VM_Version::initialize() {
                (!has_hardware_fsmuld() ? ", no-fsmuld" : ""));
 
   // buf is started with ", " or is empty
-  _features_str = strdup(strlen(buf) > 2 ? buf + 2 : buf);
+  _features_str = os::strdup(strlen(buf) > 2 ? buf + 2 : buf);
 
   // UseVIS is set to the smallest of what hardware supports and what
   // the command line requires.  I.e., you cannot set UseVIS to 3 on
@@ -386,6 +387,13 @@ void VM_Version::initialize() {
     (cache_line_size > ContendedPaddingWidth))
     ContendedPaddingWidth = cache_line_size;
 
+  // This machine does not allow unaligned memory accesses
+  if (UseUnalignedAccesses) {
+    if (!FLAG_IS_DEFAULT(UseUnalignedAccesses))
+      warning("Unaligned memory access is not available on this CPU");
+    FLAG_SET_DEFAULT(UseUnalignedAccesses, false);
+  }
+
 #ifndef PRODUCT
   if (PrintMiscellaneous && Verbose) {
     tty->print_cr("L1 data cache line size: %u", L1_data_cache_line_size());
@@ -489,7 +497,7 @@ unsigned int VM_Version::calc_parallel_worker_threads() {
 int VM_Version::parse_features(const char* implementation) {
   int features = unknown_m;
   // Convert to UPPER case before compare.
-  char* impl = os::strdup(implementation);
+  char* impl = os::strdup_check_oom(implementation);
 
   for (int i = 0; impl[i] != 0; i++)
     impl[i] = (char)toupper((uint)impl[i]);
