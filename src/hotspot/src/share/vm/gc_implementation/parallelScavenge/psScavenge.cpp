@@ -54,9 +54,19 @@
 #include "runtime/vmThread.hpp"
 #include "runtime/vm_operations.hpp"
 #include "services/memoryService.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/stack.inline.hpp"
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSScavenge__begin, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSScavenge__end, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSParallelCompact__begin, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSParallelCompact__end, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSMarkSweep__begin, *uintptr_t, *uintptr_t);
+  HS_DTRACE_PROBE_DECL2(provider, gc__collection__PSMarkSweep__end, *uintptr_t, *uintptr_t);
+#endif /* !USDT2 */
 
 HeapWord*                  PSScavenge::_to_space_top_before_gc = NULL;
 int                        PSScavenge::_consecutive_skipped_scavenges = 0;
@@ -229,7 +239,13 @@ bool PSScavenge::invoke() {
   PSAdaptiveSizePolicy* policy = heap->size_policy();
   IsGCActiveMark mark;
 
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSScavenge__begin, &heap, heap->gc_cause());
+#endif /* !USDT2 */
   const bool scavenge_done = PSScavenge::invoke_no_policy();
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSScavenge__end, &heap, heap->gc_cause());
+#endif /* !USDT2 */
   const bool need_full_gc = !scavenge_done ||
     policy->should_full_GC(heap->old_gen()->free_in_bytes());
   bool full_gc_done = false;
@@ -246,9 +262,21 @@ bool PSScavenge::invoke() {
     const bool clear_all_softrefs = cp->should_clear_all_soft_refs();
 
     if (UseParallelOldGC) {
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSParallelCompact__begin, &heap, heap->gc_cause());
+#endif /* !USDT2 */
       full_gc_done = PSParallelCompact::invoke_no_policy(clear_all_softrefs);
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSParallelCompact__end, &heap, heap->gc_cause());
+#endif /* !USDT2 */
     } else {
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSMarkSweep__begin, &heap, heap->gc_cause());
+#endif /* !USDT2 */
       full_gc_done = PSMarkSweep::invoke_no_policy(clear_all_softrefs);
+#ifndef USDT2
+  HS_DTRACE_PROBE2(hotspot, gc__collection__PSMarkSweep__end, &heap, heap->gc_cause());
+#endif /* !USDT2 */
     }
   }
 

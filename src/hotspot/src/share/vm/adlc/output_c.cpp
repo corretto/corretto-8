@@ -560,6 +560,8 @@ static int pipeline_res_mask_initializer(
   return (ndx);
 }
 
+PRAGMA_DIAG_PUSH
+PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL
 void ArchDesc::build_pipe_classes(FILE *fp_cpp) {
   const char *classname;
   const char *resourcename;
@@ -1016,6 +1018,7 @@ void ArchDesc::build_pipe_classes(FILE *fp_cpp) {
   fprintf(fp_cpp, "}\n");
   fprintf(fp_cpp, "#endif\n");
 }
+PRAGMA_DIAG_POP
 
 // ---------------------------------------------------------------------------
 //------------------------------Utilities to build Instruction Classes--------
