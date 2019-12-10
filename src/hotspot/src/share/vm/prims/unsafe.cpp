@@ -377,6 +377,24 @@ UNSAFE_END
 
 #endif // not SUPPORTS_NATIVE_CX8
 
+UNSAFE_ENTRY(jboolean, Unsafe_isBigEndian0(JNIEnv *env, jobject unsafe))
+  UnsafeWrapper("Unsafe_IsBigEndian0");
+  {
+#ifdef VM_LITTLE_ENDIAN
+    return false;
+#else
+    return true;
+#endif
+  }
+UNSAFE_END
+
+UNSAFE_ENTRY(jint, Unsafe_unalignedAccess0(JNIEnv *env, jobject unsafe))
+  UnsafeWrapper("Unsafe_UnalignedAccess0");
+  {
+    return UseUnalignedAccesses;
+  }
+UNSAFE_END
+
 #define DEFINE_GETSETOOP(jboolean, Boolean) \
  \
 UNSAFE_ENTRY(jboolean, Unsafe_Get##Boolean##140(JNIEnv *env, jobject unsafe, jobject obj, jint offset)) \
@@ -706,6 +724,36 @@ UNSAFE_ENTRY(void, Unsafe_CopyMemory2(JNIEnv *env, jobject unsafe, jobject srcOb
   Copy::conjoint_memory_atomic(src, dst, sz);
 UNSAFE_END
 
+// This function is a leaf since if the source and destination are both in native memory
+// the copy may potentially be very large, and we don't want to disable GC if we can avoid it.
+// If either source or destination (or both) are on the heap, the function will enter VM using
+// JVM_ENTRY_FROM_LEAF
+JVM_LEAF(void, Unsafe_CopySwapMemory0(JNIEnv *env, jobject unsafe, jobject srcObj, jlong srcOffset, jobject dstObj, jlong dstOffset, jlong size, jlong elemSize)) {
+  UnsafeWrapper("Unsafe_CopySwapMemory0");
+
+  size_t sz = (size_t)size;
+  size_t esz = (size_t)elemSize;
+
+  if (srcObj == NULL && dstObj == NULL) {
+    // Both src & dst are in native memory
+    address src = (address)srcOffset;
+    address dst = (address)dstOffset;
+
+    Copy::conjoint_swap(src, dst, sz, esz);
+  } else {
+    // At least one of src/dst are on heap, transition to VM to access raw pointers
+
+    JVM_ENTRY_FROM_LEAF(env, void, Unsafe_CopySwapMemory0) {
+      oop srcp = JNIHandles::resolve(srcObj);
+      oop dstp = JNIHandles::resolve(dstObj);
+
+      address src = (address)index_oop_from_field_offset_long(srcp, srcOffset);
+      address dst = (address)index_oop_from_field_offset_long(dstp, dstOffset);
+
+      Copy::conjoint_swap(src, dst, sz, esz);
+    } JVM_END
+  }
+} JVM_END
 
 ////// Random queries
 
@@ -1674,7 +1722,8 @@ JNINativeMethod prefetch_methods[] = {
 };
 
 JNINativeMethod memcopy_methods_17[] = {
-    {CC "copyMemory",         CC "(" OBJ "J" OBJ "JJ)V",       FN_PTR(Unsafe_CopyMemory2)},
+    {CC "copyMemory",         CC "(" OBJ "J" OBJ "JJ)V",     FN_PTR(Unsafe_CopyMemory2)},
+    {CC "copySwapMemory0",    CC "(" OBJ "J" OBJ "JJJ)V",    FN_PTR(Unsafe_CopySwapMemory0)},
     {CC "setMemory",          CC "(" OBJ "JJB)V",            FN_PTR(Unsafe_SetMemory2)}
 };
 
@@ -1695,6 +1744,9 @@ JNINativeMethod fence_methods[] = {
     {CC "loadFence",          CC "()V",                    FN_PTR(Unsafe_LoadFence)},
     {CC "storeFence",         CC "()V",                    FN_PTR(Unsafe_StoreFence)},
     {CC "fullFence",          CC "()V",                    FN_PTR(Unsafe_FullFence)},
+
+    {CC "isBigEndian0",       CC"()Z",                    FN_PTR(Unsafe_isBigEndian0)},
+    {CC "unalignedAccess0",   CC"()Z",                    FN_PTR(Unsafe_unalignedAccess0)}
 };
 
 #undef CC

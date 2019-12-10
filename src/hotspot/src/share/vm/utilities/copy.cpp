@@ -64,8 +64,8 @@ public:
    * @param elem_size size of the elements to copy-swap
    */
   static void conjoint_swap(address src, address dst, size_t byte_count, size_t elem_size) {
-    assert(src != NULL, "address must not be NULL");
-    assert(dst != NULL, "address must not be NULL");
+    assert(src != NULL, err_msg("address must not be NULL"));
+    assert(dst != NULL, err_msg("address must not be NULL"));
     assert(elem_size == 2 || elem_size == 4 || elem_size == 8,
            err_msg("incorrect element size: " SIZE_FORMAT, elem_size));
     assert(is_size_aligned(byte_count, elem_size),

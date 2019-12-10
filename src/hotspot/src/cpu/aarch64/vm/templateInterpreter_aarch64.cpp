@@ -1,8 +1,6 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2013, Red Hat Inc.
- * Copyright (c) 2003, 2011, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2003, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -53,10 +51,6 @@
 #ifndef PRODUCT
 #include "oops/method.hpp"
 #endif // !PRODUCT
-
-#ifdef BUILTIN_SIM
-#include "../../../../../../simulator/simulator.hpp"
-#endif
 
 #define __ _masm->
 
@@ -206,12 +200,6 @@ address TemplateInterpreterGenerator::generate_return_entry_for(TosState state, 
   __ sub(rscratch1, rscratch2, rscratch1, ext::uxtw, 3);
   __ andr(sp, rscratch1, -16);
 
-#ifndef PRODUCT
-  // tell the simulator that the method has been reentered
-  if (NotifySimulator) {
-    __ notify(Assembler::method_reentry);
-  }
-#endif
   __ get_dispatch();
   __ dispatch_next(state, step);
 
@@ -917,12 +905,6 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
 
   // initialize fixed part of activation frame
   generate_fixed_frame(true);
-#ifndef PRODUCT
-  // tell the simulator that a method has been entered
-  if (NotifySimulator) {
-    __ notify(Assembler::method_entry);
-  }
-#endif
 
   // make sure method is native & not abstract
 #ifdef ASSERT
@@ -1109,11 +1091,8 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
   __ lea(rscratch2, Address(rthread, JavaThread::thread_state_offset()));
   __ stlrw(rscratch1, rscratch2);
 
-  // load call format
-  __ ldrw(rscratch1, Address(rmethod, Method::call_format_offset()));
-
   // Call the native method.
-  __ blrt(r10, rscratch1);
+  __ blr(r10);
   __ maybe_isb();
   __ get_method(rmethod);
   // result potentially in r0 or v0
@@ -1172,7 +1151,7 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
     //
     __ mov(c_rarg0, rthread);
     __ mov(rscratch2, CAST_FROM_FN_PTR(address, JavaThread::check_special_condition_for_native_trans));
-    __ blrt(rscratch2, 1, 0, 0);
+    __ blr(rscratch2);
     __ maybe_isb();
     __ get_method(rmethod);
     __ reinit_heapbase();
@@ -1201,7 +1180,7 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
     __ br(Assembler::NE, no_oop);
     // Unbox oop result, e.g. JNIHandles::resolve result.
     __ pop(ltos);
-    __ cbz(r0, store_result); // Use NULL as-is.
+    __ cbz(r0, store_result);   // Use NULL as-is.
     STATIC_ASSERT(JNIHandles::weak_tag_mask == 1u);
     __ tbz(r0, 0, not_weak);    // Test for jweak tag.
     // Resolve jweak.
@@ -1239,7 +1218,7 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
     __ pusha(); // XXX only save smashed registers
     __ mov(c_rarg0, rthread);
     __ mov(rscratch2, CAST_FROM_FN_PTR(address, SharedRuntime::reguard_yellow_pages));
-    __ blrt(rscratch2, 0, 0, 0);
+    __ blr(rscratch2);
     __ popa(); // XXX only restore smashed registers
     __ bind(no_reguard);
   }
@@ -1395,12 +1374,7 @@ address InterpreterGenerator::generate_normal_entry(bool synchronized) {
 
   // initialize fixed part of activation frame
   generate_fixed_frame(false);
-#ifndef PRODUCT
-  // tell the simulator that a method has been entered
-  if (NotifySimulator) {
-    __ notify(Assembler::method_entry);
-  }
-#endif
+
   // make sure method is not native & not abstract
 #ifdef ASSERT
   __ ldrw(r0, access_flags);
@@ -1755,13 +1729,6 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
   __ reinit_heapbase();  // restore rheapbase as heapbase.
   __ get_dispatch();
 
-#ifndef PRODUCT
-  // tell the simulator that the caller method has been reentered
-  if (NotifySimulator) {
-    __ get_method(rmethod);
-    __ notify(Assembler::method_reentry);
-  }
-#endif
   // Entry point for exceptions thrown within interpreter code
   Interpreter::_throw_exception_entry = __ pc();
   // If we came here via a NullPointerException on the receiver of a
@@ -2092,122 +2059,5 @@ void TemplateInterpreterGenerator::stop_interpreter_at() {
   __ pop(rscratch1);
 }
 
-#ifdef BUILTIN_SIM
-
-#include <sys/mman.h>
-#include <unistd.h>
-
-extern "C" {
-  static int PAGESIZE = getpagesize();
-  int is_mapped_address(u_int64_t address)
-  {
-    address = (address & ~((u_int64_t)PAGESIZE - 1));
-    if (msync((void *)address, PAGESIZE, MS_ASYNC) == 0) {
-      return true;
-    }
-    if (errno != ENOMEM) {
-      return true;
-    }
-    return false;
-  }
-
-  void bccheck1(u_int64_t pc, u_int64_t fp, char *method, int *bcidx, int *framesize, char *decode)
-  {
-    if (method != 0) {
-      method[0] = '\0';
-    }
-    if (bcidx != 0) {
-      *bcidx = -2;
-    }
-    if (decode != 0) {
-      decode[0] = 0;
-    }
-
-    if (framesize != 0) {
-      *framesize = -1;
-    }
-
-    if (Interpreter::contains((address)pc)) {
-      AArch64Simulator *sim = AArch64Simulator::get_current(UseSimulatorCache, DisableBCCheck);
-      Method* meth;
-      address bcp;
-      if (fp) {
-#define FRAME_SLOT_METHOD 3
-#define FRAME_SLOT_BCP 7
-	meth = (Method*)sim->getMemory()->loadU64(fp - (FRAME_SLOT_METHOD << 3));
-	bcp = (address)sim->getMemory()->loadU64(fp - (FRAME_SLOT_BCP << 3));
-#undef FRAME_SLOT_METHOD
-#undef FRAME_SLOT_BCP
-      } else {
-	meth = (Method*)sim->getCPUState().xreg(RMETHOD, 0);
-	bcp = (address)sim->getCPUState().xreg(RBCP, 0);
-      }
-      if (meth->is_native()) {
-	return;
-      }
-      if(method && meth->is_method()) {
-	ResourceMark rm;
-	method[0] = 'I';
-	method[1] = ' ';
-	meth->name_and_sig_as_C_string(method + 2, 398);
-      }
-      if (bcidx) {
-	if (meth->contains(bcp)) {
-	  *bcidx = meth->bci_from(bcp);
-	} else {
-	  *bcidx = -2;
-	}
-      }
-      if (decode) {
-	if (!BytecodeTracer::closure()) {
-	  BytecodeTracer::set_closure(BytecodeTracer::std_closure());
-	}
-	stringStream str(decode, 400);
-	BytecodeTracer::trace(meth, bcp, &str);
-      }
-    } else {
-      if (method) {
-	CodeBlob *cb = CodeCache::find_blob((address)pc);
-	if (cb != NULL) {
-	  if (cb->is_nmethod()) {
-	    ResourceMark rm;
-	    nmethod* nm = (nmethod*)cb;
-	    method[0] = 'C';
-	    method[1] = ' ';
-	    nm->method()->name_and_sig_as_C_string(method + 2, 398);
-	  } else if (cb->is_adapter_blob()) {
-	    strcpy(method, "B adapter blob");
-	  } else if (cb->is_runtime_stub()) {
-	    strcpy(method, "B runtime stub");
-	  } else if (cb->is_exception_stub()) {
-	    strcpy(method, "B exception stub");
-	  } else if (cb->is_deoptimization_stub()) {
-	    strcpy(method, "B deoptimization stub");
-	  } else if (cb->is_safepoint_stub()) {
-	    strcpy(method, "B safepoint stub");
-	  } else if (cb->is_uncommon_trap_stub()) {
-	    strcpy(method, "B uncommon trap stub");
-	  } else if (cb->contains((address)StubRoutines::call_stub())) {
-	    strcpy(method, "B call stub");
-	  } else {
-            strcpy(method, "B unknown blob : ");
-            strcat(method, cb->name());
-          }
-	  if (framesize != NULL) {
-	    *framesize = cb->frame_size();
-	  }
-        }
-      }
-    }
-  }
-
-
-  JNIEXPORT void bccheck(u_int64_t pc, u_int64_t fp, char *method, int *bcidx, int *framesize, char *decode)
-  {
-    bccheck1(pc, fp, method, bcidx, framesize, decode);
-  }
-}
-
-#endif // BUILTIN_SIM
 #endif // !PRODUCT
 #endif // ! CC_INTERP

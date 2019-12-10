@@ -45,9 +45,15 @@
 #include "runtime/prefetch.inline.hpp"
 #include "runtime/thread.inline.hpp"
 #include "utilities/copy.hpp"
+#include "utilities/dtrace.hpp"
 #include "utilities/stack.inline.hpp"
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
+
+#ifndef USDT2
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__defnew__begin, bool, bool, size_t, bool);
+  HS_DTRACE_PROBE_DECL4(provider, gc__collection__defnew__end, bool, bool, size_t, bool);
+#endif /* !USDT2 */
 
 //
 // DefNewGeneration functions.
@@ -561,6 +567,9 @@ void DefNewGeneration::collect(bool   full,
                                bool   clear_all_soft_refs,
                                size_t size,
                                bool   is_tlab) {
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__defnew__begin, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
   assert(full || size > 0, "otherwise we don't want to collect");
 
   GenCollectedHeap* gch = GenCollectedHeap::heap();
@@ -708,6 +717,10 @@ void DefNewGeneration::collect(bool   full,
   // does not guarantee monotonicity.
   jlong now = os::javaTimeNanos() / NANOSECS_PER_MILLISEC;
   update_time_of_last_gc(now);
+
+#ifndef USDT2
+  HS_DTRACE_PROBE4(hotspot, gc__collection__defnew__end, full, clear_all_soft_refs, size, is_tlab);
+#endif  /* !USDT2 */
 
   gch->trace_heap_after_gc(&gc_tracer);
   gc_tracer.report_tenuring_threshold(tenuring_threshold());

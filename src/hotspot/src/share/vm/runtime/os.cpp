@@ -550,6 +550,14 @@ char *os::strdup(const char *str, MEMFLAGS flags) {
 }
 
 
+char* os::strdup_check_oom(const char* str, MEMFLAGS flags) {
+  char* p = os::strdup(str, flags);
+  if (p == NULL) {
+    vm_exit_out_of_memory(strlen(str) + 1, OOM_MALLOC_ERROR, "os::strdup_check_oom");
+  }
+  return p;
+}
+
 
 #define paranoid                 0  /* only set to 1 if you suspect checking code has bug */
 
@@ -1273,7 +1281,7 @@ char** os::split_path(const char* path, int* n) {
 }
 
 void os::set_memory_serialize_page(address page) {
-  int count = log2_intptr(sizeof(class JavaThread)) - log2_int(64);
+  int count = log2_intptr((uintptr_t) sizeof(class JavaThread)) - log2_int(64);
   _mem_serialize_page = (volatile int32_t *)page;
   // We initialize the serialization page shift count here
   // We assume a cache line size of 64 bytes
