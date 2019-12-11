@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) 2013, Red Hat Inc.
  * Copyright (c) 1997, 2012, Oracle and/or its affiliates.
  * All rights reserved.
@@ -682,19 +683,10 @@ address MacroAssembler::trampoline_call(Address entry, CodeBuffer *cbuf) {
 
   unsigned int start_offset = offset();
 #ifdef COMPILER2
-  // We need a trampoline if branches are far.
-  if (far_branches()) {
-    // We don't want to emit a trampoline if C2 is generating dummy
-    // code during its branch shortening phase.
-    CompileTask* task = ciEnv::current()->task();
-    bool in_scratch_emit_size =
-      ((task != NULL) && is_c2_compile(task->comp_level())
-       && Compile::current()->in_scratch_emit_size());
-    if (! in_scratch_emit_size) {
-      address stub = emit_trampoline_stub(start_offset, entry.target());
-      if (stub == NULL) {
-        return NULL; // CodeCache is full
-      }
+  if (far_branches() && !Compile::current()->in_scratch_emit_size()) {
+    address stub = emit_trampoline_stub(start_offset, entry.target());
+    if (stub == NULL) {
+      return NULL; // CodeCache is full
     }
   }
 #endif
@@ -763,15 +755,6 @@ address MacroAssembler::emit_trampoline_stub(int insts_call_instruction_offset,
   ShouldNotReachHere();
   return NULL;
 #endif
-}
-
-void MacroAssembler::c2bool(Register x) {
-  // implements x == 0 ? 0 : 1
-  // note: must only look at least-significant byte of x
-  //       since C-style booleans are stored in one byte
-  //       only! (was bug)
-  tst(x, 0xff);
-  cset(x, Assembler::NE);
 }
 
 address MacroAssembler::ic_call(address entry) {
