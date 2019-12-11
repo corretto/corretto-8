@@ -152,9 +152,25 @@ task generateJdkDeb(type: Deb) {
     requires('libc6', '2.12', GREATER | EQUAL)
 
     provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
+    provides('java-sdk')
+    provides('java5-sdk')
+    provides('java6-sdk')
+    provides('java7-sdk')
+    provides('java7-jdk')
     provides('java8-jdk')
     provides('java-compiler')
+    // TODO: Move this to the jre when splitting the fat deb
+    provides('java-runtime')
+    provides('java5-runtime')
+    provides('java6-runtime')
+    provides('java7-runtime')
     provides('java8-runtime')
+    // TODO: Move this to the headless jre when splitting the fat deb
+    provides('java-runtime-headless')
+    provides('java5-runtime-headless')
+    provides('java6-runtime-headless')
+    provides('java7-runtime-headless')
+    provides('java8-runtime-headless')
 
     from(jdkBinaryDir) {
         into jdkHome
