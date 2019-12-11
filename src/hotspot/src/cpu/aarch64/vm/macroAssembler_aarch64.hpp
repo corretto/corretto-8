@@ -787,10 +787,10 @@ public:
   void store_check_part_1(Register obj);
   void store_check_part_2(Register obj);
 
+  // oop manipulations
   // C 'boolean' to Java boolean: x == 0 ? 0 : 1
   void c2bool(Register x);
 
-  // oop manipulations
   void load_klass(Register dst, Register src);
   void store_klass(Register dst, Register src);
   void cmp_klass(Register oop, Register trial_klass, Register tmp);
