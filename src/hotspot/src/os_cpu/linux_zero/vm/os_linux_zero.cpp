@@ -252,9 +252,6 @@ JVM_handle_linux_signal(int sig,
 
   sprintf(buf, fmt, sig);
   fatal(buf);
-
-  ShouldNotReachHere();
-  return false; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {

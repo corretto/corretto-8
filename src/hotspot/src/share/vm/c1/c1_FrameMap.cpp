@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,9 +28,6 @@
 #include "runtime/sharedRuntime.hpp"
 #ifdef TARGET_ARCH_x86
 # include "vmreg_x86.inline.hpp"
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "vmreg_aarch64.inline.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "vmreg_sparc.inline.hpp"

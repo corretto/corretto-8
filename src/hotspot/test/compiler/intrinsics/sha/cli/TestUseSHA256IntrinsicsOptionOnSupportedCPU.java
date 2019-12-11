@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -35,10 +35,7 @@
  */
 public class TestUseSHA256IntrinsicsOptionOnSupportedCPU {
     public static void main(String args[]) throws Throwable {
-        new SHAOptionsBase(
-                new GenericTestCaseForSupportedSparcCPU(
-                        SHAOptionsBase.USE_SHA256_INTRINSICS_OPTION),
-                new GenericTestCaseForSupportedAArch64CPU(
-                        SHAOptionsBase.USE_SHA256_INTRINSICS_OPTION)).test();
+        new SHAOptionsBase(new GenericTestCaseForSupportedSparcCPU(
+                SHAOptionsBase.USE_SHA256_INTRINSICS_OPTION)).test();
     }
 }

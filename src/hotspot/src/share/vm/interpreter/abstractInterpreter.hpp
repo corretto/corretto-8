@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -34,8 +34,6 @@
 # include INTERP_MASM_MD_HPP
 #elif defined TARGET_ARCH_x86
 # include "interp_masm_x86.hpp"
-#elif defined TARGET_ARCH_MODEL_aarch64
-# include "interp_masm_aarch64.hpp"
 #elif defined TARGET_ARCH_MODEL_sparc
 # include "interp_masm_sparc.hpp"
 #elif defined TARGET_ARCH_MODEL_zero
