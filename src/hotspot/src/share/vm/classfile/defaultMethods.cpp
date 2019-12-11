@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -506,7 +506,7 @@ Symbol* MethodFamily::generate_method_message(Symbol *klass_name, Method* method
   ss.write((const char*)name->bytes(), name->utf8_length());
   ss.write((const char*)signature->bytes(), signature->utf8_length());
   ss.print(" is abstract");
-  return SymbolTable::new_symbol(ss.base(), (int)ss.size(), THREAD);
+  return SymbolTable::new_symbol(ss.base(), (int)ss.size(), CHECK_NULL);
 }
 
 Symbol* MethodFamily::generate_conflicts_message(GrowableArray<Method*>* methods, TRAPS) const {
@@ -521,7 +521,7 @@ Symbol* MethodFamily::generate_conflicts_message(GrowableArray<Method*>* methods
     ss.print(".");
     ss.write((const char*)name->bytes(), name->utf8_length());
   }
-  return SymbolTable::new_symbol(ss.base(), (int)ss.size(), THREAD);
+  return SymbolTable::new_symbol(ss.base(), (int)ss.size(), CHECK_NULL);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -353,7 +353,7 @@ class ConstantPool : public Metadata {
 
   Klass* klass_at(int which, TRAPS) {
     constantPoolHandle h_this(THREAD, this);
-    return klass_at_impl(h_this, which, THREAD);
+    return klass_at_impl(h_this, which, CHECK_NULL);
   }
 
   Symbol* klass_name_at(int which);  // Returns the name, w/o resolving.
