@@ -45,7 +45,7 @@
                           <key>GID</key>
                           <integer>0</integer>
                           <key>PATH</key>
-                          <string>amazon-corretto-8.jdk</string>
+                          <string>amazon-corretto-@major@.jdk</string>
                           <key>PATH_TYPE</key>
                           <integer>1</integer>
                           <key>PERMISSIONS</key>
@@ -148,11 +148,11 @@
         <key>FOLLOW_SYMBOLIC_LINKS</key>
         <false/>
         <key>IDENTIFIER</key>
-        <string>com.amazon.corretto.8</string>
+        <string>com.amazon.corretto.@major@</string>
         <key>LOCATION</key>
         <integer>0</integer>
         <key>NAME</key>
-        <string>amazon-corretto-8.jdk</string>
+        <string>amazon-corretto-@major@.jdk</string>
         <key>OVERWRITE_PERMISSIONS</key>
         <false/>
         <key>PAYLOAD_SIZE</key>
@@ -363,7 +363,7 @@
             <key>LANGUAGE</key>
             <string>English</string>
             <key>VALUE</key>
-            <string>Amazon Corretto 8</string>
+            <string>Amazon Corretto @major@</string>
           </dict>
         </array>
       </dict>

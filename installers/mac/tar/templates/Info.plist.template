@@ -9,11 +9,11 @@
         <key>CFBundleGetInfoString</key>
         <string>Amazon Corretto @full@</string>
         <key>CFBundleIdentifier</key>
-        <string>com.amazon.corretto.8</string>
+        <string>com.amazon.corretto.@major@</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>7.0</string>
         <key>CFBundleName</key>
-        <string>Amazon Corretto 8</string>
+        <string>Amazon Corretto @major@</string>
         <key>CFBundlePackageType</key>
         <string>BNDL</string>
         <key>CFBundleShortVersionString</key>
