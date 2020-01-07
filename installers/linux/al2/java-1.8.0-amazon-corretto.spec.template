@@ -19,7 +19,9 @@
 
 
 %global javaver 1.8.0
+%global java_update @update@
 %global buildver b@build@
+%global corretto_revision @revision@
 %global java_home %{_jvmdir}/%{name}.%{_arch}
 
 # Higher numbers win for the alternatives program.
@@ -59,8 +61,8 @@ Name: java-1.8.0-amazon-corretto
 # Matches the 'full version' from Java's release notes:
 # https://www.oracle.com/technetwork/java/javase/8u181-relnotes-4479407.html
 # Eg: 1.8.0_181-b13
-Version: 1.8.0_@update@.%{buildver}
-Release: @revision@%{?dist}
+Version: 1.8.0_%{java_update}.%{buildver}
+Release: %{corretto_revision}%{?dist}
 Epoch: 1
 Group: Development/Languages
 License: ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.
@@ -134,9 +136,9 @@ Amazon Corretto's packaging of the OpenJDK 8 code.
 bash ./configure \
   --with-zlib=system \
   --with-giflib=system \
-  --with-update-version="@update@" \
+  --with-update-version="%{java_update}" \
   --with-build-number="%{buildver}" \
-  --with-corretto-revision="@revision@" \
+  --with-corretto-revision="%{corretto_revision}" \
   --with-milestone="fcs" \
   --disable-debug-symbols \
   --disable-zip-debug-info \
