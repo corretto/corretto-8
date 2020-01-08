@@ -93,22 +93,10 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
-task importAmazonCacerts(type: Exec) {
-    dependsOn executeBuild
-    workingDir jdkResultingImage
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'bin/keytool', '-importkeystore', '-noprompt',
-                '-srckeystore', "${buildRoot}/amazon-cacerts",
-                '-srcstorepass', keystore_password,
-                '-destkeystore', 'jre/lib/security/cacerts',
-                '-deststorepass', keystore_password
-}
-
 task copyBuildResults() {
     description 'Copy the JDK image and puts the results in build/.'
     dependsOn executeBuild
-    dependsOn importAmazonCacerts
+
     if (arch == 'x86_64') {
         dependsOn createJavafxOverlay
     }
