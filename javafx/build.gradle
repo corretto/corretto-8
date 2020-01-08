@@ -54,9 +54,17 @@ task unpackSource(type: Copy) {
 task patchJfx {
     dependsOn unpackSource
     doLast {
-        if (Os.isFamily(Os.FAMILY_MAC)) {
-            ant.patch(patchfile: "patches/MacOSXMinVersion.patch",
-                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+        fileTree('patches/shared').matching {
+            include '*.patch'
+        }.files.sort().each { f ->
+            ant.patch(patchfile: f, 
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true) 
+        }
+        fileTree("patches/${OS_NAME}").matching {
+            include '*.patch'
+        }.files.sort().each { f ->
+            ant.patch(patchfile: f, 
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true) 
         }
     }
 }
