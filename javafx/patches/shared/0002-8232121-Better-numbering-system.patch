@@ -1,0 +1,26 @@
+From 07649015d9e54ea454061d376aa01e1642ed66d5 Mon Sep 17 00:00:00 2001
+From: David Alvarez <alvdavi@amazon.com>
+Date: Tue, 7 Jan 2020 23:32:35 +0000
+Subject: [PATCH 2/4] 8232121: Better numbering system
+
+---
+ .../native/Source/ThirdParty/libxslt/src/libxslt/numbers.c     | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c b/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
+index 5e15920b..f99692a0 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
++++ b/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
+@@ -382,6 +382,9 @@ xsltNumberFormatTokenize(const xmlChar *format,
+         tokens->tokens[tokens->nTokens].token = val - 1;
+         ix += len;
+         val = xmlStringCurrentChar(NULL, format+ix, &len);
++        } else {
++            tokens->tokens[tokens->nTokens].token = (xmlChar)'0';
++            tokens->tokens[tokens->nTokens].width = 1;
+         }
+     } else if ( (val == (xmlChar)'A') ||
+             (val == (xmlChar)'a') ||
+-- 
+2.17.2
+

@@ -1,0 +1,33 @@
+From 653240f5deee2c13d1c896b175eeb283a9d00e90 Mon Sep 17 00:00:00 2001
+From: David Alvarez <alvdavi@amazon.com>
+Date: Tue, 7 Jan 2020 23:33:22 +0000
+Subject: [PATCH 3/4] 8232128: Better formatting for numbers
+
+---
+ .../native/Source/ThirdParty/libxslt/src/libxslt/numbers.c   | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c b/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
+index f99692a0..55a217b3 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
++++ b/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
+@@ -1277,13 +1277,14 @@ OUTPUT_NUMBER:
+     number = floor((scale * number + 0.5)) / scale;
+     if ((self->grouping != NULL) &&
+         (self->grouping[0] != 0)) {
++        int gchar;
+ 
+     len = xmlStrlen(self->grouping);
+-    pchar = xsltGetUTF8Char(self->grouping, &len);
++    gchar = xsltGetUTF8Char(self->grouping, &len);
+     xsltNumberFormatDecimal(buffer, floor(number), self->zeroDigit[0],
+                 format_info.integer_digits,
+                 format_info.group,
+-                pchar, len);
++                gchar, len);
+     } else
+     xsltNumberFormatDecimal(buffer, floor(number), self->zeroDigit[0],
+                 format_info.integer_digits,
+-- 
+2.17.2
+
