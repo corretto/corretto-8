@@ -173,7 +173,7 @@ endif
 ARCHFLAG = $(ARCHFLAG/$(BUILDARCH))
 ARCHFLAG/i486    = -m32 -march=i586
 ARCHFLAG/amd64   = -m64 $(STACK_ALIGNMENT_OPT)
-ARCHFLAG/aarch64 =
+ARCHFLAG/aarch64 = -march=armv8 -mtune=neoverse-n1
 ARCHFLAG/ia64    =
 ARCHFLAG/sparc   = -m32 -mcpu=v9
 ARCHFLAG/sparcv9 = -m64 -mcpu=v9
