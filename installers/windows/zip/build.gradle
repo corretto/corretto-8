@@ -81,6 +81,7 @@ task configureBuild(type: Exec) {
             '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
             "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
             "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr120.dll",
+            "--with-msvcp-dll=${project.getProperty('msvcp_dir')}/msvcp120.dll",
             "--with-freetype=${project.getProperty('freetype_dir')}",
             "--target=${folder_alias}",
             "--with-target-bits=${target_bits}",
