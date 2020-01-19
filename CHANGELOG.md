@@ -2,7 +2,28 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8\.
 
-## Corretto version: 8\.242\.07\.1<a name="changes-2019-11-20"></a>
+## Corretto version: 8\.242\.08\.1<a name="changes-2019-01-18"></a>
+
+Release Date: Jan 18, 2020
+
+ The following platforms are updated in this release\. 
+
+**Target Platforms**
++  RPM\-based Linux using glibc 2\.12 or later, x86\_64 
++  Debian\-based Linux using glibc 2\.12 or later, x86\_64 
++  RPM\-based Linux using glibc 2\.17 or later, aarch64 
++  Debian\-based Linux using glibc 2\.17 or later, aarch64 
++  Windows 7 or later, x86, x86\_64 
++  macOS 10\.10 and later, x86\_64 
+
+The following issues and enhancements are addressed in 8\.242\.07\.1
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+| Update Corretto to 8\.242\.08\.1\.  |  All  |  Update Corretto to 8\.242\.08\.1\.  |   | 
+| Missing memory barriers for CMS collector | aarch64 | Missing StoreStore barriers in C1 generated code for CMS | [corretto\-8\#201](https://github.com/corretto/corretto-8/issues/201)  |
+
+## Corretto version: 8\.242\.07\.1<a name="changes-2019-01-14"></a>
 
 Release Date: Jan 14, 2020
 
