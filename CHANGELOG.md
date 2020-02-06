@@ -2,6 +2,21 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8\.
 
+## Corretto version: 8\.242\.08\.1-1<a name="changes-2019-02-05"></a>
+
+Release Date: Feb 5, 2020
+
+ The following platform is updated in this release\.
+
+**Target Platforms**
++  macOS 10\.10 and later, x86\_64
+
+The following issues and enhancements are addressed in 8\.242\.08\.1-1
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+| Fixed tgz packaging error in 8\.242\.08\.1  |  macOS  |  A packaging error was found in the macOS tar.gz in 8\.242\.08\.1\. The mac installer (pkg) is not affected\. |   | 
+
 ## Corretto version: 8\.242\.08\.1<a name="changes-2019-01-18"></a>
 
 Release Date: Jan 18, 2020
@@ -16,7 +31,7 @@ Release Date: Jan 18, 2020
 +  Windows 7 or later, x86, x86\_64 
 +  macOS 10\.10 and later, x86\_64 
 
-The following issues and enhancements are addressed in 8\.242\.07\.1
+The following issues and enhancements are addressed in 8\.242\.08\.1
 
 | Issue Name | Platform | Description | Link | 
 | --- | --- | --- | --- | 
