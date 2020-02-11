@@ -124,7 +124,7 @@ AC_DEFUN_ONCE([FLAGS_SETUP_INIT_FLAGS],
     if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
       if test "x$OPENJDK_TARGET_OS" = xsolaris; then
         # Solaris Studio does not have a concept of sysroot. Instead we must
-        # make sure the default include and lib dirs are appended to each 
+        # make sure the default include and lib dirs are appended to each
         # compile and link command line.
         SYSROOT_CFLAGS="-I$SYSROOT/usr/include"
         SYSROOT_LDFLAGS="-L$SYSROOT/usr/lib$OPENJDK_TARGET_CPU_ISADIR \
@@ -177,6 +177,26 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_LIBS],
     fi
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
     PICFLAG=''
+    C_FLAG_REORDER=''
+    CXX_FLAG_REORDER=''
+
+    if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+      # Linking is different on MacOSX
+      SHARED_LIBRARY_FLAGS="-dynamiclib -compatibility_version 1.0.0 -current_version 1.0.0 $PICFLAG"
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker @loader_path/.'
+      SET_SHARED_LIBRARY_ORIGIN="$SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -install_name -Xlinker @rpath/[$]1'
+      SET_SHARED_LIBRARY_MAPFILE=''
+    else
+      # Default works for linux, might work on other platforms as well.
+      SHARED_LIBRARY_FLAGS='-shared'
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker \$$$$ORIGIN[$]1'
+      SET_SHARED_LIBRARY_ORIGIN="-Xlinker -z -Xlinker origin $SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -soname=[$]1'
+      SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=[$]1'
+    fi
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
+    PICFLAG="-fPIC"
     C_FLAG_REORDER=''
     CXX_FLAG_REORDER=''
 
@@ -319,8 +339,14 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_OPTIMIZATION],
     fi
     ASFLAGS_DEBUG_SYMBOLS="-g"
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
-    CFLAGS_DEBUG_SYMBOLS="-g"
-    CXXFLAGS_DEBUG_SYMBOLS="-g"
+    if test "x$OPENJDK_TARGET_CPU_BITS" = "x64" && test "x$DEBUG_LEVEL" = "xfastdebug"; then
+      CFLAGS_DEBUG_SYMBOLS="-g1"
+      CXXFLAGS_DEBUG_SYMBOLS="-g1"
+    else
+      CFLAGS_DEBUG_SYMBOLS="-g"
+      CXXFLAGS_DEBUG_SYMBOLS="-g"
+    fi
+    ASFLAGS_DEBUG_SYMBOLS="-g"
   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     CFLAGS_DEBUG_SYMBOLS="-g -xs"
     CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
@@ -554,7 +580,7 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DcpuIntel -Di586 -D$OPENJDK_TARGET_CPU_LEGACY_LIB"
       CFLAGS_JDK="$CFLAGS_JDK -erroff=E_BAD_PRAGMA_PACK_VALUE"
     fi
-  
+
     CFLAGS_JDK="$CFLAGS_JDK -xc99=%none -xCC -errshort=tags -Xa -v -mt -W0,-noglobal"
     CXXFLAGS_JDK="$CXXFLAGS_JDK -errtags=yes +w -mt -features=no%except -DCC_NOEX -norunpath -xnolib"
   elif test "x$TOOLCHAIN_TYPE" = xxlc; then
@@ -635,14 +661,14 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
   if test "x$OPENJDK_TARGET_CPU" = xppc64le; then
     CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DABI_ELFv2"
   fi
-  
+
   # Setup target OS define. Use OS target name but in upper case.
   OPENJDK_TARGET_OS_UPPERCASE=`$ECHO $OPENJDK_TARGET_OS | $TR 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
   CCXXFLAGS_JDK="$CCXXFLAGS_JDK -D$OPENJDK_TARGET_OS_UPPERCASE"
 
   # Setup target CPU
   CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DARCH='\"$OPENJDK_TARGET_CPU_LEGACY\"' -D$OPENJDK_TARGET_CPU_LEGACY"
-  
+
   # Setup debug/release defines
   if test "x$DEBUG_LEVEL" = xrelease; then
     CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DNDEBUG"
@@ -678,12 +704,28 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
       # FIXME: clean this up, and/or move it elsewhere.
 
       # Setting these parameters makes it an error to link to macosx APIs that are
-      # newer than the given OS version and makes the linked binaries compatible 
+      # newer than the given OS version and makes the linked binaries compatible
       # even if built on a newer version of the OS.
       # The expected format is X.Y.Z
       MACOSX_VERSION_MIN=10.7.0
       AC_SUBST(MACOSX_VERSION_MIN)
-    
+
+      # The macro takes the version with no dots, ex: 1070
+      # Let the flags variables get resolved in make for easier override on make
+      # command line.
+      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+      LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+    elif test "x$TOOLCHAIN_TYPE" = xclang; then
+      # FIXME: This needs to be exported in spec.gmk due to closed legacy code.
+      # FIXME: clean this up, and/or move it elsewhere.
+
+      # Setting these parameters makes it an error to link to macosx APIs that are
+      # newer than the given OS version and makes the linked binaries compatible
+      # even if built on a newer version of the OS.
+      # The expected format is X.Y.Z
+      MACOSX_VERSION_MIN=10.9.0
+      AC_SUBST(MACOSX_VERSION_MIN)
+
       # The macro takes the version with no dots, ex: 1070
       # Let the flags variables get resolved in make for easier override on make
       # command line.
@@ -741,6 +783,23 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     LDFLAGS_JDKEXE="${LDFLAGS_JDK} /STACK:$LDFLAGS_STACK_SIZE"
   else
     if test "x$TOOLCHAIN_TYPE" = xgcc; then
+      # If this is a --hash-style=gnu system, use --hash-style=both, why?
+      # We have previously set HAS_GNU_HASH if this is the case
+      if test -n "$HAS_GNU_HASH"; then
+        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker --hash-style=both "
+      fi
+      if test "x$OPENJDK_TARGET_OS" = xlinux; then
+        # And since we now know that the linker is gnu, then add:
+        #   -z defs, to forbid undefined symbols in object files
+        #   -z noexecstack, to mark stack regions as non-executable
+        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -z -Xlinker defs -Xlinker -z -Xlinker noexecstack"
+        if test "x$DEBUG_LEVEL" = "xrelease"; then
+          # When building release libraries, tell the linker optimize them.
+          # Should this be supplied to the OSS linker as well?
+          LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
+        fi
+      fi
+    elif test "x$TOOLCHAIN_TYPE" = xclang; then
       # If this is a --hash-style=gnu system, use --hash-style=both, why?
       # We have previously set HAS_GNU_HASH if this is the case
       if test -n "$HAS_GNU_HASH"; then
