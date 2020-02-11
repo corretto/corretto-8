@@ -58,6 +58,7 @@ task configureBuild(type: Exec) {
             "--with-update-version=${project.version.update}",
             "--with-build-number=b${project.version.build}",
             "--with-corretto-revision=${project.version.revision}",
+            "--with-toolchain-type=clang",
             '--with-milestone=fcs',
             '--with-x',
             '--disable-debug-symbols',
