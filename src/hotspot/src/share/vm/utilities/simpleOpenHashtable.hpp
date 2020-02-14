@@ -26,6 +26,7 @@
 #define SHARE_VM_UTILITIES_SIMPLEOPENHASHTABLE_HPP
 
 #include "memory/allocation.hpp"
+#include "memory/allocation.inline.hpp"
 #include "utilities/debug.hpp"
 #include "utilities/hashFns.hpp"
 #include "utilities/globalDefinitions.hpp"
