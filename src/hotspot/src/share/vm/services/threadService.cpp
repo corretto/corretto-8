@@ -31,7 +31,6 @@
 #include "oops/oop.inline.hpp"
 #include "runtime/handles.inline.hpp"
 #include "runtime/init.hpp"
-#include "runtime/sharedRuntime.hpp"
 #include "runtime/thread.hpp"
 #include "runtime/vframe.hpp"
 #include "runtime/thread.inline.hpp"
@@ -60,8 +59,6 @@ volatile int ThreadService::_exiting_threads_count = 0;
 volatile int ThreadService::_exiting_daemon_threads_count = 0;
 
 ThreadDumpResult* ThreadService::_threaddump_list = NULL;
-
-ThreadService::TidThreadMap* ThreadService::_tid_thread_map = NULL;
 
 static const int INITIAL_ARRAY_SIZE = 10;
 
@@ -93,8 +90,6 @@ void ThreadService::init() {
   }
 
   _thread_allocated_memory_enabled = true; // Always on, so enable it
-
-  _tid_thread_map = new TidThreadMap();
 }
 
 void ThreadService::reset_peak_thread_count() {
@@ -109,12 +104,6 @@ void ThreadService::add_thread(JavaThread* thread, bool daemon) {
   if (thread->is_hidden_from_external_view() ||
       thread->is_jvmti_agent_thread()) {
     return;
-  }
-
-  // Add thread to thread table
-  jlong tid = SharedRuntime::get_java_tid(thread);
-  if (thread != NULL) {
-    (void)_tid_thread_map->put(tid, thread);
   }
 
   _total_threads_count->inc();
@@ -136,10 +125,6 @@ void ThreadService::remove_thread(JavaThread* thread, bool daemon) {
       thread->is_jvmti_agent_thread()) {
     return;
   }
-
-  // Remove thread from thread table
-  jlong tid = SharedRuntime::get_java_tid(thread);
-  (void)_tid_thread_map->remove(tid);
 
   _live_threads_count->set_value(_live_threads_count->get_value() - 1);
 

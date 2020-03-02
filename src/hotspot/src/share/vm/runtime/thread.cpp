@@ -3898,33 +3898,18 @@ void Threads::create_vm_init_libraries() {
 JavaThread* Threads::find_java_thread_from_java_tid(jlong java_tid) {
   assert(Threads_lock->owned_by_self(), "Must hold Threads_lock");
 
-  // Try fast way first. ThreadService maintains a global database under the
-  // assumption that java tids are globally unique at any given point in time.
-  // I.e., there is a global 1-1 mapping between java tids and active JavaThreads.
-  JavaThread* java_thread = ThreadService::get_java_thread(java_tid);
-  
-  // Return directly if java_thread found in _tid_java_map is valid.
-  // If java_thread not exist in _tid_java_map or not valid, do a sequential search.
-  // The special case is primordial thread (tid=1), which doesn't include an oop,
-  // and thus doesn't exist in tid_thread_map.
-  if (is_valid_java_thread(java_tid, java_thread)) {
-    return java_thread;
-  } else {
-    for (java_thread = Threads::first(); java_thread != NULL; java_thread = java_thread->next()) {
-      if (is_valid_java_thread(java_tid, java_thread)) {
-        return java_thread;
-      }
+  JavaThread* java_thread = NULL;
+  // Sequential search for now.  Need to do better optimization later.
+  for (JavaThread* thread = Threads::first(); thread != NULL; thread = thread->next()) {
+    oop tobj = thread->threadObj();
+    if (!thread->is_exiting() &&
+        tobj != NULL &&
+        java_tid == java_lang_Thread::thread_id(tobj)) {
+      java_thread = thread;
+      break;
     }
   }
-  return NULL;
-}
-
-bool Threads::is_valid_java_thread(jlong java_tid, JavaThread* java_thread) {
-  oop tobj;
-  return (java_thread != NULL &&
-          !java_thread->is_exiting() &&
-          (tobj = java_thread->threadObj()) != NULL &&
-          java_tid == java_lang_Thread::thread_id(tobj));
+  return java_thread;
 }
 
 
