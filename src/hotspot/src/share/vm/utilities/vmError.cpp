@@ -197,8 +197,7 @@ static char* next_OnError_command(char* buf, int buflen, const char** ptr) {
 
 static void print_bug_submit_message(outputStream *out, Thread *thread) {
   if (out == NULL) return;
-  out->print_raw_cr("# If you would like to submit a bug report, please include");
-  out->print_raw_cr("# instructions on how to reproduce the bug and visit:");
+  out->print_raw_cr("# If you would like to submit a bug report, please visit:");
   out->print_raw   ("#   ");
   out->print_raw_cr(Arguments::java_vendor_url_bug());
   // If the crash is in native code, encourage user to submit a bug to the
@@ -451,7 +450,14 @@ void VMError::report(outputStream* st) {
 #else
          const char *file = _filename;
 #endif
-         st->print(" (%s:%d)", file, _lineno);
+         size_t len = strlen(file);
+         size_t buflen = sizeof(buf);
+
+         strncpy(buf, file, buflen);
+         if (len + 10 < buflen) {
+           sprintf(buf + len, ":%d", _lineno);
+         }
+         st->print(" (%s)", buf);
        } else {
          st->print(" (0x%x)", _id);
        }

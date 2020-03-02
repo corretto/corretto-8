@@ -103,8 +103,6 @@
 # include <inttypes.h>
 # include <sys/ioctl.h>
 
-#include <sys/prctl.h>
-
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
 #ifndef _GNU_SOURCE
@@ -2992,8 +2990,10 @@ bool os::Linux::libnuma_init() {
 
       if (numa_available() != -1) {
         set_numa_all_nodes((unsigned long*)libnuma_dlsym(handle, "numa_all_nodes"));
-        set_numa_all_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr"));
-        set_numa_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr"));
+        struct bitmask** numa_all_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr");
+        set_numa_all_nodes_ptr(numa_all_nodes_ptr);
+        struct bitmask** numa_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr");
+        set_numa_nodes_ptr(numa_nodes_ptr == NULL ? numa_all_nodes_ptr : numa_nodes_ptr);
         // Create an index -> node mapping, since nodes are not always consecutive
         _nindex_to_node = new (ResourceObj::C_HEAP, mtInternal) GrowableArray<int>(0, true);
         rebuild_nindex_to_node_map();
@@ -4999,48 +4999,6 @@ const char* os::exception_name(int exception_code, char* buf, size_t size) {
   }
 }
 
-/* Per task speculation control */
-#ifndef PR_GET_SPECULATION_CTRL
-# define PR_GET_SPECULATION_CTRL    52
-#endif
-#ifndef PR_SET_SPECULATION_CTRL
-# define PR_SET_SPECULATION_CTRL    53
-#endif
-/* Speculation control variants */
-#ifndef PR_SPEC_STORE_BYPASS
-# define PR_SPEC_STORE_BYPASS          0
-#endif
-/* Return and control values for PR_SET/GET_SPECULATION_CTRL */
-
-#ifndef PR_SPEC_NOT_AFFECTED
-# define PR_SPEC_NOT_AFFECTED          0
-#endif
-#ifndef PR_SPEC_PRCTL
-# define PR_SPEC_PRCTL                 (1UL << 0)
-#endif
-#ifndef PR_SPEC_ENABLE
-# define PR_SPEC_ENABLE                (1UL << 1)
-#endif
-#ifndef PR_SPEC_DISABLE
-# define PR_SPEC_DISABLE               (1UL << 2)
-#endif
-#ifndef PR_SPEC_FORCE_DISABLE
-# define PR_SPEC_FORCE_DISABLE         (1UL << 3)
-#endif
-#ifndef PR_SPEC_DISABLE_NOEXEC
-# define PR_SPEC_DISABLE_NOEXEC        (1UL << 4)
-#endif
-
-static void set_speculation() __attribute__((constructor));
-static void set_speculation() {
-  if ( prctl(PR_SET_SPECULATION_CTRL,
-             PR_SPEC_STORE_BYPASS,
-             PR_SPEC_DISABLE_NOEXEC, 0, 0) == 0 ) {
-    return;
-  }
-  prctl(PR_SET_SPECULATION_CTRL, PR_SPEC_STORE_BYPASS, PR_SPEC_DISABLE, 0, 0);
-}
-
 // this is called _before_ most of the global arguments have been parsed
 void os::init(void) {
   char dummy;   /* used to get a guess on initial stack address */
@@ -5184,7 +5142,7 @@ jint os::init_2(void)
 
   Linux::capture_initial_stack(JavaThread::stack_size_at_create());
 
-#if defined(IA32) && !defined(ZERO)
+#if defined(IA32)
   workaround_expand_exec_shield_cs_limit();
 #endif
 

@@ -73,10 +73,8 @@ endif
 
 # CFLAGS_WARN holds compiler options to suppress/enable warnings.
 # Compiler warnings are treated as errors
-ifneq ($(COMPILER_WARNINGS_FATAL),false)
-  ifeq ($(shell expr $(COMPILER_REV_NUMERIC) \>= 509), 1)
-    CFLAGS_WARN = +w -errwarn
-  endif
+ifeq ($(shell expr $(COMPILER_REV_NUMERIC) \>= 509), 1)
+  CFLAGS_WARN = +w -errwarn
 endif
 # When using compiler version 5.13 (Solaris Studio 12.4), calls to explicitly 
 # instantiated template functions trigger this warning when +w is active.
