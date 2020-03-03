@@ -191,7 +191,6 @@ public abstract class PKCS11Test {
         String osName = props.getProperty("os.name");
         if (osName.startsWith("Win")) {
             osName = "Windows";
-            NSPR_PREFIX = "lib";
         }
         String osid = osName + "-"
                 + props.getProperty("os.arch") + "-" + props.getProperty("sun.arch.data.model");
@@ -228,9 +227,9 @@ public abstract class PKCS11Test {
 
     static boolean loadNSPR(String libdir) throws Exception {
         // load NSS softoken dependencies in advance to avoid resolver issues
-        safeReload(libdir + System.mapLibraryName(NSPR_PREFIX + "nspr4"));
-        safeReload(libdir + System.mapLibraryName(NSPR_PREFIX + "plc4"));
-        safeReload(libdir + System.mapLibraryName(NSPR_PREFIX + "plds4"));
+        safeReload(libdir + System.mapLibraryName("nspr4"));
+        safeReload(libdir + System.mapLibraryName("plc4"));
+        safeReload(libdir + System.mapLibraryName("plds4"));
         safeReload(libdir + System.mapLibraryName("sqlite3"));
         safeReload(libdir + System.mapLibraryName("nssutil3"));
         return true;
