@@ -153,6 +153,7 @@ task generateJdkDeb(type: Deb) {
 
     provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
     provides('java-sdk')
+    provides('java2-sdk')
     provides('java5-sdk')
     provides('java6-sdk')
     provides('java7-sdk')
@@ -161,12 +162,14 @@ task generateJdkDeb(type: Deb) {
     provides('java-compiler')
     // TODO: Move this to the jre when splitting the fat deb
     provides('java-runtime')
+    provides('java2-runtime')
     provides('java5-runtime')
     provides('java6-runtime')
     provides('java7-runtime')
     provides('java8-runtime')
     // TODO: Move this to the headless jre when splitting the fat deb
     provides('java-runtime-headless')
+    provides('java2-runtime-headless')
     provides('java5-runtime-headless')
     provides('java6-runtime-headless')
     provides('java7-runtime-headless')
