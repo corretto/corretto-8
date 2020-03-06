@@ -24,25 +24,19 @@ dependencies {
 }
 
 ext {
-    input_arch = project.findProperty('arch')
+    arch = System.getenv('PROCESSOR_ARCHITECTURE')
 
-    if (!input_arch) {
-        throw new GradleException("The Windows build must define 'arch'.")
-    }
-
-    switch(input_arch) {
+    switch(arch) {
         case 'x86':
             arch_alias = 'x86'
             folder_alias = 'x86'
-            target_bits = '32'
             break
-        case 'x64':
+        case 'AMD64':
             arch_alias = 'x64'
             folder_alias = 'x86_64'
-            target_bits = '64'
             break
         default:
-            throw new GradleException("${input_arch} is not suported")
+            throw new GradleException("${arch} is not suported")
     }
 }
 
@@ -80,11 +74,8 @@ task configureBuild(type: Exec) {
             '--with-vendor-url=https://aws.amazon.com/corretto/',
             '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
             "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
-            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr120.dll",
-            "--with-freetype=${project.getProperty('freetype_dir')}",
-            "--target=${folder_alias}",
-            "--with-target-bits=${target_bits}",
-            "--with-toolchain-version=2013"
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr100.dll",
+            "--with-freetype=${project.getProperty('freetype_dir')}"
 }
 
 task executeBuild(type: Exec) {
