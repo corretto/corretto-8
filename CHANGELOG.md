@@ -43,6 +43,21 @@ The following CVEs are addressed in 8.252.09.1
 | CVE-2020-2757 | 3.7 | core-libs/java.io:serialization |
 
 
+## Corretto version: 8.242.08.2
+
+Release Date: Mar 10, 2020
+
+ The following platform is updated in this release\.
+
+**Target Platforms**
++  macOS 10\.10 and later, x86\_64
+
+The following issues and enhancements are addressed in 8\.242\.08\.2
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update macOS toolchain to meet Apple's notarization requirement |  macOS  | The minimum SDK requirement for notarization is SDK10\.9\. This change updates macOS toolchain from Macosx SDK10\.8 to SDK10\.10\. | [corretto-8#219](https://github.com/corretto/corretto-8/issues/219)
+
 ## Corretto version: 8.242.08.1-1
 
 Release Date: Feb 5, 2020
