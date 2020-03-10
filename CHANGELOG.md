@@ -2,7 +2,22 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8\.
 
-## Corretto version: 8\.242\.08\.1-1<a name="changes-2019-02-05"></a>
+## Corretto version: 8\.242\.08\.2<a name="changes-2020-03-10"></a>
+
+Release Date: Mar 10, 2020
+
+ The following platform is updated in this release\.
+
+**Target Platforms**
++  macOS 10\.10 and later, x86\_64
+
+The following issues and enhancements are addressed in 8\.242\.08\.2
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update macOS toolchain to meet Apple's notarization requirement |  macOS  | The minimum SDK requirement for notarization is SDK10\.9\. This change updates macOS toolchain from Macosx SDK10\.8 to SDK10\.10\. | [corretto-8#219](https://github.com/corretto/corretto-8/issues/219)
+
+## Corretto version: 8\.242\.08\.1-1<a name="changes-2020-02-05"></a>
 
 Release Date: Feb 5, 2020
 
@@ -17,7 +32,7 @@ The following issues and enhancements are addressed in 8\.242\.08\.1-1
 | --- | --- | --- | --- | 
 | Fixed tgz packaging error in 8\.242\.08\.1  |  macOS  |  A packaging error was found in the macOS tar.gz in 8\.242\.08\.1\. The mac installer (pkg) is not affected\. |   | 
 
-## Corretto version: 8\.242\.08\.1<a name="changes-2019-01-18"></a>
+## Corretto version: 8\.242\.08\.1<a name="changes-2020-01-18"></a>
 
 Release Date: Jan 18, 2020
 
@@ -38,7 +53,7 @@ The following issues and enhancements are addressed in 8\.242\.08\.1
 | Update Corretto to 8\.242\.08\.1\.  |  All  |  Update Corretto to 8\.242\.08\.1\.  |   | 
 | Missing memory barriers for CMS collector | aarch64 | Missing StoreStore barriers in C1 generated code for CMS | [corretto\-8\#201](https://github.com/corretto/corretto-8/issues/201)  |
 
-## Corretto version: 8\.242\.07\.1<a name="changes-2019-01-14"></a>
+## Corretto version: 8\.242\.07\.1<a name="changes-2020-01-14"></a>
 
 Release Date: Jan 14, 2020
 
