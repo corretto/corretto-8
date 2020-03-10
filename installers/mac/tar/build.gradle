@@ -44,20 +44,9 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-task importAmazonCacerts(type: Exec) {
-    dependsOn copySource
-    workingDir buildRoot
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'keytool', '-importkeystore', '-noprompt',
-            '-srckeystore', "amazon-cacerts",
-            '-srcstorepass', keystore_password,
-            '-destkeystore', 'src/jdk/src/share/lib/security/cacerts',
-            '-deststorepass', keystore_password
-}
 
 task configureBuild(type: Exec) {
-    dependsOn importAmazonCacerts
+    dependsOn copySource
     workingDir "$buildRoot/src"
     def commands = ['bash', 'configure',
             "--with-update-version=${project.version.update}",
@@ -68,7 +57,6 @@ task configureBuild(type: Exec) {
             '--with-x',
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
-            "--with-cacerts-file=$buildRoot/src/jdk/src/share/lib/security/cacerts",
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
             "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"]
@@ -86,8 +74,20 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
-task renameBuildArtifacts {
+task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
+    workingDir "${jdkResultingImage}/jdk1.8.0_${project.version.update}.jdk/Contents/Home/"
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'keytool', '-importkeystore', '-noprompt',
+            '-srckeystore', "${buildRoot}/amazon-cacerts",
+            '-srcstorepass', keystore_password,
+            '-destkeystore', 'jre/lib/security/cacerts',
+            '-deststorepass', keystore_password
+}
+
+task renameBuildArtifacts {
+    dependsOn importAmazonCacerts
     doLast {
         file("${jdkResultingImage}/jdk1.8.0_${project.version.update}.jdk").
                 renameTo(file("${jdkResultingImage}/${correttoMacDir}"))
