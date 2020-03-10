@@ -52,20 +52,8 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-task importAmazonCacerts(type: Exec) {
-    dependsOn copySource
-    workingDir buildRoot
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'keytool', '-importkeystore', '-noprompt',
-            '-srckeystore', "amazon-cacerts",
-            '-srcstorepass', keystore_password,
-            '-destkeystore', "src/jdk/src/share/lib/security/cacerts",
-            '-deststorepass', keystore_password
-}
-
 task configureBuild(type: Exec) {
-    dependsOn importAmazonCacerts
+    dependsOn copySource
     workingDir "$buildRoot/src"
 
     commandLine 'bash', 'configure',
@@ -75,7 +63,6 @@ task configureBuild(type: Exec) {
             '--with-milestone=fcs',
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
-            "--with-cacerts-file=$buildRoot/src/jdk/src/share/lib/security/cacerts",
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
             '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
@@ -95,8 +82,28 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'clean', 'images'
 }
 
-task copyImage(type: Copy) {
+task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
+    workingDir "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images/j2sdk-image"
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'keytool', '-importkeystore', '-noprompt',
+            '-srckeystore', "$buildRoot/amazon-cacerts",
+            '-srcstorepass', keystore_password,
+            '-destkeystore', "jre/lib/security/cacerts",
+            '-deststorepass', keystore_password
+}
+
+task copyCacerts(type: Copy) {
+    dependsOn importAmazonCacerts
+    def imageDir = "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
+
+    from file("${imageDir}/j2sdk-image/jre/lib/security/cacerts")
+    into file("${imageDir}/j2re-image/lib/security")
+}
+
+task copyImage(type: Copy) {
+    dependsOn copyCacerts
 
     from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
     into "$buildRoot/build"
