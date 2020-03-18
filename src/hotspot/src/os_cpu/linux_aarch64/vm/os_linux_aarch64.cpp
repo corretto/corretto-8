@@ -72,7 +72,7 @@
 # include <pwd.h>
 # include <poll.h>
 # include <ucontext.h>
-# include <fpu_control.h>
+# include <linux/types.h>  /* provides __u64 */
 
 #define REG_FP 29
 
