@@ -54,7 +54,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <sys/poll.h>
+#include <poll.h>
 
 /*
  * Stack allocated by thread when doing blocking operation
