@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #if defined(__linux__) && !defined(USE_SELECT)
-#include <sys/poll.h>
+#include <poll.h>
 #endif
 #include <netinet/tcp.h>        /* Defines TCP_NODELAY, needed for 2.6 */
 #include <netinet/in.h>
@@ -43,7 +43,6 @@
 #endif
 #ifdef __linux__
 #include <unistd.h>
-#include <sys/sysctl.h>
 #endif
 
 #include "jvm.h"

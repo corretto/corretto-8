@@ -14644,6 +14644,9 @@ $as_echo "$with_jvm_variants" >&6; }
   if test "x$VAR_CPU" = xppc64 -o "x$VAR_CPU" = xppc64le ; then
     INCLUDE_SA=false
   fi
+  if test "x$VOPENJDK_TARGET_LIBC" = xmusl ; then
+    INCLUDE_SA=false
+  fi
 
 
   if test "x$OPENJDK_TARGET_OS" = "xmacosx"; then
@@ -41707,6 +41710,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
 /* end confdefs.h.  */
 int i;
 _ACEOF

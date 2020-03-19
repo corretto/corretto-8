@@ -23,9 +23,7 @@
  * questions.
  */
 
-#define ushort unsigned short
-#define uint   unsigned int
-#define uchar  unsigned char
+#include <sys/types.h>
 
 struct unpacker;
 

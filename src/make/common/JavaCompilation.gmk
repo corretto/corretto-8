@@ -489,7 +489,6 @@ define SetupJavaCompilation
   # Create a sed expression to remove the source roots and to replace / with .
   # and remove .java at the end.
   $1_REWRITE_INTO_CLASSES:=$$(foreach i,$$($1_SRC),-e 's|$$i/||g') -e 's|/|.|g' -e 's|.java$$$$||g'
-
   ifeq ($$($1_DISABLE_SJAVAC)x$$(ENABLE_SJAVAC),xyes)
     ifneq (,$$($1_HEADERS))
       $1_HEADERS_ARG := -h $$($1_HEADERS)

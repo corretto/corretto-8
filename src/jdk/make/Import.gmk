@@ -115,7 +115,7 @@ endef
 # Import hotspot
 #
 HOTSPOT_IMPORT_FILES := $(addprefix $(LIBRARY_PREFIX), jvm.* saproc.* jsig.* sawindbg.* jvm_db.* jvm_dtrace.*) \
-    Xusage.txt sa-jdi.jar
+    Xusage.txt 
 
 ifeq ($(OPENJDK_TARGET_OS), macosx)
     # additional debug file

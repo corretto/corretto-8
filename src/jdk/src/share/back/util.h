@@ -35,15 +35,15 @@
 #ifdef DEBUG
     /* Just to make sure these interfaces are not used here. */
     #undef free
-    #define free(p) Do not use this interface.
+    #define free do_not_use_this_interface_free
     #undef malloc
-    #define malloc(p) Do not use this interface.
+    #define malloc do_not_use_this_interface_malloc
     #undef calloc
-    #define calloc(p) Do not use this interface.
+    #define calloc do_not_use_this_interface_calloc
     #undef realloc
-    #define realloc(p) Do not use this interface.
+    #define realloc do_not_use_this_interface_realloc
     #undef strdup
-    #define strdup(p) Do not use this interface.
+    #define strdup do_not_use_this_interface_strdup
 #endif
 
 #include "log_messages.h"

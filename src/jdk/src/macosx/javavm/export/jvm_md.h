@@ -61,7 +61,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/signal.h>
+#include <signal.h>
 
 /* O Flags */
 
