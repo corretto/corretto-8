@@ -923,6 +923,7 @@ OPENJDK_TARGET_CPU_LEGACY
 REQUIRED_OS_VERSION
 REQUIRED_OS_NAME
 COMPILE_TYPE
+OPENJDK_TARGET_LIBC
 OPENJDK_TARGET_CPU_ENDIAN
 OPENJDK_TARGET_CPU_BITS
 OPENJDK_TARGET_CPU_ARCH
@@ -930,6 +931,7 @@ OPENJDK_TARGET_CPU
 OPENJDK_TARGET_OS_ENV
 OPENJDK_TARGET_OS_API
 OPENJDK_TARGET_OS
+OPENJDK_BUILD_LIBC
 OPENJDK_BUILD_CPU_ENDIAN
 OPENJDK_BUILD_CPU_BITS
 OPENJDK_BUILD_CPU_ARCH
@@ -1019,6 +1021,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -1268,6 +1271,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1520,6 +1524,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1657,7 +1670,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1810,6 +1823,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -13641,6 +13655,18 @@ test -n "$target_alias" &&
       ;;
   esac
 
+  case "$build_os" in
+    *linux*-musl)
+      VAR_LIBC=musl
+      ;;
+    *linux*-gnu)
+      VAR_LIBC=gnu
+      ;;
+    *)
+      VAR_LIBC=default
+      ;;
+  esac
+
 
   # First argument is the cpu name from the trip/quad
   case "$build_cpu" in
@@ -13723,6 +13749,8 @@ test -n "$target_alias" &&
   OPENJDK_BUILD_CPU_ARCH="$VAR_CPU_ARCH"
   OPENJDK_BUILD_CPU_BITS="$VAR_CPU_BITS"
   OPENJDK_BUILD_CPU_ENDIAN="$VAR_CPU_ENDIAN"
+  OPENJDK_BUILD_LIBC="$VAR_LIBC"
+
 
 
 
@@ -13735,6 +13763,13 @@ test -n "$target_alias" &&
 $as_echo_n "checking openjdk-build os-cpu... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU" >&5
 $as_echo "$OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU" >&6; }
+
+  if test "x$OPENJDK_BUILD_OS" = "xlinux"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking openjdk-build C library" >&5
+$as_echo_n "checking openjdk-build C library... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OPENJDK_BUILD_LIBC" >&5
+$as_echo "$OPENJDK_BUILD_LIBC" >&6; }
+  fi
 
   # Convert the autoconf OS/CPU value to our own data, into the VAR_OS/CPU variables.
 
@@ -13776,6 +13811,18 @@ $as_echo "$OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU" >&6; }
       ;;
     *)
       as_fn_error $? "unsupported operating system $host_os" "$LINENO" 5
+      ;;
+  esac
+
+  case "$host_os" in
+    *linux*-musl)
+      VAR_LIBC=musl
+      ;;
+    *linux*-gnu)
+      VAR_LIBC=gnu
+      ;;
+    *)
+      VAR_LIBC=default
       ;;
   esac
 
@@ -13861,6 +13908,8 @@ $as_echo "$OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU" >&6; }
   OPENJDK_TARGET_CPU_ARCH="$VAR_CPU_ARCH"
   OPENJDK_TARGET_CPU_BITS="$VAR_CPU_BITS"
   OPENJDK_TARGET_CPU_ENDIAN="$VAR_CPU_ENDIAN"
+  OPENJDK_TARGET_LIBC="$VAR_LIBC"
+
 
 
 
@@ -13873,6 +13922,13 @@ $as_echo "$OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU" >&6; }
 $as_echo_n "checking openjdk-target os-cpu... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OPENJDK_TARGET_OS-$OPENJDK_TARGET_CPU" >&5
 $as_echo "$OPENJDK_TARGET_OS-$OPENJDK_TARGET_CPU" >&6; }
+
+  if test "x$OPENJDK_TARGET_OS" = "xlinux"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking openjdk-target C library" >&5
+$as_echo_n "checking openjdk-target C library... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OPENJDK_TARGET_LIBC" >&5
+$as_echo "$OPENJDK_TARGET_LIBC" >&6; }
+  fi
 
 
 
@@ -14644,7 +14700,7 @@ $as_echo "$with_jvm_variants" >&6; }
   if test "x$VAR_CPU" = xppc64 -o "x$VAR_CPU" = xppc64le ; then
     INCLUDE_SA=false
   fi
-  if test "x$VOPENJDK_TARGET_LIBC" = xmusl ; then
+  if test "x$OPENJDK_TARGET_LIBC" = xmusl ; then
     INCLUDE_SA=false
   fi
 
@@ -41710,7 +41766,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-
 /* end confdefs.h.  */
 int i;
 _ACEOF
