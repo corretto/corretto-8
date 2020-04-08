@@ -52,12 +52,12 @@ public class VerifyCACerts {
             + File.separator + "security" + File.separator + "cacerts";
 
     // The numbers of certs now.
-    private static final int COUNT = 224;
+    private static final int COUNT = 222;
 
     // SHA-256 of cacerts, can be generated with
     // shasum -a 256 cacerts | sed -e 's/../&:/g' | tr '[:lower:]' '[:upper:]' | cut -c1-95
     private static final String CHECKSUM
-            = "22:AA:EB:89:4E:A4:EA:25:CA:3E:DA:0F:F1:2B:FA:05:4B:68:C5:E1:3A:F9:03:40:BF:EF:F5:13:7C:CE:BC:60";
+            = "9B:2D:55:3B:C2:50:CC:4A:B6:A9:F2:80:01:E5:75:C4:D1:01:62:D0:D9:C0:9B:ED:99:0B:32:CC:53:3E:AA:2F";
 
     // map of cert alias to SHA-256 fingerprint
     @SuppressWarnings("serial")
@@ -274,8 +274,6 @@ public class VerifyCACerts {
                     "9A:6E:C0:12:E1:A7:DA:9D:BE:34:19:4D:47:8A:D7:C0:DB:18:22:FB:07:1D:F1:29:81:49:6E:D1:04:38:41:13");
             put("staatdernederlandenrootca-g3",
                     "3C:4F:B0:B9:5A:B8:B3:00:32:F4:32:B8:6F:53:5F:E1:72:C1:85:D0:FD:39:86:58:37:CF:36:18:7F:A6:F4:28");
-            put("staatdernederlandenrootca-g2",
-                    "66:8C:83:94:7D:A6:3B:72:4B:EC:E1:74:3C:31:A0:E6:AE:D0:DB:8E:C5:B3:1B:E3:77:BB:78:4F:91:B6:71:6F");
             put("entrustrootcertificationauthority",
                     "73:C1:76:43:4F:1B:C6:D5:AD:F4:5B:0E:76:E7:27:28:7C:8D:E5:76:16:C1:E6:E6:14:1A:2B:2C:BC:7D:8E:4C");
             put("identrustpublicsectorrootca1",
@@ -313,9 +311,7 @@ public class VerifyCACerts {
             put("entrustrootcertificationauthority-ec1",
                     "02:ED:0E:B2:8C:14:DA:45:16:5C:56:67:91:70:0D:64:51:D7:FB:56:F0:B2:AB:1D:3B:8E:B0:70:E5:6E:DF:F5");
             put("oistewisekeyglobalrootgbca",
-                    "6B:9C:08:E8:6E:B0:F7:67:CF:AD:65:CD:98:B6:21:49:E5:49:4A:67:F5:84:5E:7B:D1:ED:01:9F:27:B8:6B:D6");
-            put("addtrustexternalroot",
-                    "68:7F:A4:51:38:22:78:FF:F0:C8:B1:1F:8D:43:D5:76:67:1C:6E:B2:BC:EA:B4:13:FB:83:D9:65:D0:6D:2F:F2");
+                    "6B:9C:08:E8:6E:B0:F7:67:CF:AD:65:CD:98:B6:21:49:E5:49:4A:67:F5:84:5E:7B:D1:ED:01:9F:27:B8:6B:D6"); 
             put("digicertglobalrootg3",
                     "31:AD:66:48:F8:10:41:38:C7:38:F3:9E:A4:32:01:33:39:3E:3A:18:CC:02:29:6E:F9:7C:2A:C9:EF:67:31:D0");
             put("swisssigngoldca-g2",
@@ -545,12 +541,13 @@ public class VerifyCACerts {
         md = MessageDigest.getInstance("SHA-256");
 
         byte[] data = Files.readAllBytes(Paths.get(CACERTS));
+        /* Ignoring checksum as the checksum of the cacerts file changes with each build
         String checksum = toHexString(md.digest(data));
         if (!checksum.equals(CHECKSUM)) {
             atLeastOneFailed = true;
             System.err.println("ERROR: wrong checksum\n" + checksum);
             System.err.println("Expected checksum\n" + CHECKSUM);
-        }
+        }*/
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new ByteArrayInputStream(data), "changeit".toCharArray());
