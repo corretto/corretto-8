@@ -176,7 +176,8 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_LIBS],
       SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=[$]1'
     fi
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
-    PICFLAG=''
+    PICFLAG="-fPIC"
+    PIEFLAG="-fPIE"
     C_FLAG_REORDER=''
     CXX_FLAG_REORDER=''
 

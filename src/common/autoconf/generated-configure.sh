@@ -1073,11 +1073,11 @@ with_milestone
 with_update_version
 with_user_release_suffix
 with_build_number
+with_corretto_revision
 with_vendor_name
 with_vendor_url
 with_vendor_bug_url
 with_vendor_vm_bug_url
-with_corretto_revision
 with_copyright_year
 with_boot_jdk
 with_boot_jdk_jvmargs
@@ -1920,6 +1920,8 @@ Optional Packages:
                           Add a custom string to the version string if build
                           number isn't set.[username_builddateb00]
   --with-build-number     Set build number value for build [b00]
+  --with-corretto-revision
+                          Set corretto revision for build [0]
   --with-vendor-name      Set vendor name. Among others, used to set the
                           'java.vendor' and 'java.vm.vendor' system
                           properties. [not specified]
@@ -1930,8 +1932,6 @@ Optional Packages:
   --with-vendor-vm-bug-url
                           Sets the bug URL which will be displayed when the VM
                           crashes [not specified]
-  --with-corretto-revision
-                          Set corretto revision for build [0]
   --with-copyright-year   Set copyright year value for build [current year]
   --with-boot-jdk         path to Boot JDK (used to bootstrap build) [probed]
   --with-boot-jdk-jvmargs specify JVM arguments to be passed to all
@@ -20030,6 +20030,7 @@ fi
 
 
 
+
   # The vendor name, if any
 
 # Check whether --with-vendor-name was given.
@@ -20094,7 +20095,6 @@ fi
   else
     VENDOR_URL_VM_BUG="$with_vendor_vm_bug_url"
   fi
-
 
 
 
@@ -41808,7 +41808,8 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
       SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
     fi
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
-    PICFLAG=''
+    PICFLAG="-fPIC"
+    PIEFLAG="-fPIE"
     C_FLAG_REORDER=''
     CXX_FLAG_REORDER=''
 
