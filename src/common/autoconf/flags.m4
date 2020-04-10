@@ -197,6 +197,7 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_LIBS],
     fi
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
     PICFLAG="-fPIC"
+    PIEFLAG="-fPIE"
     C_FLAG_REORDER=''
     CXX_FLAG_REORDER=''
 
