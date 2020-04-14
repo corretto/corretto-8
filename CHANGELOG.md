@@ -2,6 +2,47 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.252.09.1
+
+Release Date: Apr 14, 2020
+
+ The following platforms are updated in this release. 
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64 
++  Debian-based Linux using glibc 2.12 or later, x86_64 
++  RPM-based Linux using glibc 2.17 or later, aarch64 
++  Debian-based Linux using glibc 2.17 or later, aarch64 
++  Windows 7 or later, x86, x86_64 
++  macOS 10.10 and later, x86_64 
+
+The following issues and enhancements are addressed in 8.252.09.1
+
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+| Update Corretto to 8.252.09.1  |  All  |  Update Corretto 8 patch set to 8.252.09.1. Update the security baseline to OpenJDK 8u252.  |   |
+| Additional provides for debian packages | debian-based Linux | Add old java (headless) runtime provides to the debian package (Java2) | [corretto-8#190](https://github.com/corretto/corretto-8/issues/190) |
+| hsdis library not picked up correctly on expected paths  | Windows  |  Fixes a portability issue in hsdis with the file separator.  |  [JDK-8043264](https://bugs.openjdk.java.net/browse/JDK-8043264)  | 
+| Update build logic to handle certificates post build | All | Ensure Corretto still ships the expected set of ca certificates after [JDK-8193255](https://bugs.openjdk.java.net/browse/JDK-8193255) was backported into upstream |  |
+| Fix CHANGELOG.md for 8.242.07.1 | All | [corretto-8#193](https://github.com/corretto/corretto-8/issues/193) was not fixed in this release |  | 
+
+The following CVEs are addressed in 8.252.09.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-2803 | 8.3 | core-libs/java.nio |
+| CVE-2020-2805 | 8.3 | core-libs/java.io |
+| CVE-2020-2781 | 5.3 | security-libs/java.security |
+| CVE-2020-2830 | 5.3 | core-libs/java.util |
+| CVE-2020-2800 | 4.8 | core-libs/java.net |
+| CVE-2020-2754 | 3.7 | core-libs/javax.script |
+| CVE-2020-2755 | 3.7 | core-libs/javax.script |
+| CVE-2020-2773 | 3.7 | security-libs/javax.xml.crypto |
+| CVE-2020-2756 | 3.7 | core-libs/java.io:serialization |
+| CVE-2020-2757 | 3.7 | core-libs/java.io:serialization |
+
+
 ## Corretto version: 8.242.08.1-1
 
 Release Date: Feb 5, 2020
@@ -57,7 +98,7 @@ The following issues and enhancements are addressed in 8.242.07.1
 
 | Issue Name | Platform | Description | Link | 
 | --- | --- | --- | --- | 
-|  Linux localinstall is not installing deplist  |  rpm based linux  |  Updated deplist for rpm.  |  [corretto-8#193](https://github.com/corretto/corretto-8/issues/193)  | 
+| Additional provides for debian packages | debian-based Linux | Add old java (headless) runtime provides to the debian package (Java5-8) | [corretto-8#190](https://github.com/corretto/corretto-8/issues/190) |
 
 
 
