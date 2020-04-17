@@ -2,6 +2,22 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.252.09.2
+
+Release Date: Apr 17, 2020
+
+ The following platforms are updated in this release. 
+
+**Target Platforms**
++  Windows 7 or later, x86_64 
+
+The following issues are addressed in 8.252.09.2
+
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+| Fix Windows x64 signing error  | Windows x64  | Corretto8 for Windows x64 had a defective sunec.dll | [corretto-8#230](https://github.com/corretto/corretto-8/issues/230)  |
+
 ## Corretto version: 8.252.09.1
 
 Release Date: Apr 14, 2020
