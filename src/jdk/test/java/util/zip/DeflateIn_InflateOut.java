@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,8 +41,6 @@ public class DeflateIn_InflateOut {
     private static InflaterOutputStream ios;
 
     private static void reset() {
-        new Random(new Date().getTime()).nextBytes(data);
-
         bais = new ByteArrayInputStream(data);
         dis = new DeflaterInputStream(bais);
 
@@ -217,6 +215,8 @@ public class DeflateIn_InflateOut {
 
 
     public static void realMain(String[] args) throws Throwable {
+        new Random(new Date().getTime()).nextBytes(data);
+
         ArrayReadWrite();
 
         ArrayReadByteWrite();
