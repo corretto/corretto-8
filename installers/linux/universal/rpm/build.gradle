@@ -18,45 +18,13 @@
  * 2 along with this work; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-import java.nio.file.Paths
-
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    // An utility method to download jar from url.
-    def urlDeps = { urlStr ->
-        def url = new URL(urlStr)
-        def name = Paths.get(url.getPath()).getFileName().toString()
-        File file = new File("$buildDir/download/${name}")
-        file.parentFile.mkdirs()
-        if (!file.exists()) {
-            url.withInputStream { downloadStream ->
-                file.withOutputStream { fileOut ->
-                    fileOut << downloadStream
-                }
-            }
-        }
-        files(file.absolutePath)
-    }
-
-    dependencies {
-        classpath urlDeps('https://github.com/corretto/redline/releases/download/redline-1.2.8/redline-1.2.8.jar')
-        classpath("com.netflix.nebula:gradle-ospackage-plugin:5.2.0") {
-            exclude group: 'org.redline-rpm', module: 'redline'
-        }
-    }
+plugins {
+    id "nebula.ospackage" version "8.2.0"
 }
 
 dependencies {
     compile project(path: ':installers:linux:universal:tar', configuration: 'archives')
 }
-
-apply plugin: "nebula.ospackage"
 
 ext {
     // all linux distros and macos support 'uname -m'
