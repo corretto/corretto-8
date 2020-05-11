@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2016 Red Hat, Inc.
+ * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2007, 2008, 2009, 2010 Red Hat, Inc.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -61,7 +61,6 @@ address os::current_stack_pointer() {
 
 frame os::get_sender_for_C_frame(frame* fr) {
   ShouldNotCallThis();
-  return frame(NULL, NULL); // silence compile warning.
 }
 
 frame os::current_frame() {
@@ -99,19 +98,16 @@ void os::initialize_thread(Thread * thr){
 
 address os::Linux::ucontext_get_pc(ucontext_t* uc) {
   ShouldNotCallThis();
-  return NULL; // silence compile warnings
 }
 
 ExtendedPC os::fetch_frame_from_context(void* ucVoid,
                                         intptr_t** ret_sp,
                                         intptr_t** ret_fp) {
   ShouldNotCallThis();
-  return NULL; // silence compile warnings
 }
 
 frame os::fetch_frame_from_context(void* ucVoid) {
   ShouldNotCallThis();
-  return frame(NULL, NULL); // silence compile warnings
 }
 
 extern "C" JNIEXPORT int
@@ -251,16 +247,14 @@ JVM_handle_linux_signal(int sig,
   }
 #endif // !PRODUCT
 
+  const char *fmt = "caught unhandled signal %d";
   char buf[64];
 
-  sprintf(buf, "caught unhandled signal %d", sig);
-
-// Silence -Wformat-security warning for fatal()
-PRAGMA_DIAG_PUSH
-PRAGMA_FORMAT_NONLITERAL_IGNORED
+  sprintf(buf, fmt, sig);
   fatal(buf);
-PRAGMA_DIAG_POP
-  return true; // silence compiler warnings
+
+  ShouldNotReachHere();
+  return false; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {
@@ -269,7 +263,6 @@ void os::Linux::init_thread_fpu_state(void) {
 
 int os::Linux::get_fpu_control_word() {
   ShouldNotCallThis();
-  return -1; // silence compile warnings
 }
 
 void os::Linux::set_fpu_control_word(int fpu) {
@@ -498,7 +491,6 @@ extern "C" {
     long long unsigned int oldval,
     long long unsigned int newval) {
     ShouldNotCallThis();
-    return 0;
   }
 };
 #endif // !_LP64

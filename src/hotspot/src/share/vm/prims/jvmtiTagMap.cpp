@@ -2806,7 +2806,6 @@ inline bool VM_HeapWalkOperation::iterate_over_type_array(oop o) {
 }
 
 // verify that a static oop field is in range
-#ifdef ASSERT
 static inline bool verify_static_oop(InstanceKlass* ik,
                                      oop mirror, int offset) {
   address obj_p = (address)mirror + offset;
@@ -2820,7 +2819,6 @@ static inline bool verify_static_oop(InstanceKlass* ik,
     return false;
   }
 }
-#endif
 
 // a class references its super class, interfaces, class loader, ...
 // and finally its static fields

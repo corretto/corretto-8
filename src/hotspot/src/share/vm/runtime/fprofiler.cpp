@@ -628,14 +628,8 @@ class vmNode : public ProfilerNode {
   }
 
   vmNode(const char* name, const TickPosition where) : ProfilerNode() {
-    _name = os::strdup(name);
+    _name = name;
     update(where);
-  }
-
-  ~vmNode() {
-    if (_name != NULL) {
-      os::free((void*)_name);
-    }
   }
 
   const char *name()    const { return _name; }
@@ -789,7 +783,7 @@ void ThreadProfiler::vm_update(const char* name, TickPosition where) {
   assert(index >= 0, "Must be positive");
   // Note that we call strdup below since the symbol may be resource allocated
   if (!table[index]) {
-    table[index] = new (this) vmNode(name, where);
+    table[index] = new (this) vmNode(os::strdup(name), where);
   } else {
     ProfilerNode* prev = table[index];
     for(ProfilerNode* node = prev; node; node = node->next()) {
@@ -799,7 +793,7 @@ void ThreadProfiler::vm_update(const char* name, TickPosition where) {
       }
       prev = node;
     }
-    prev->set_next(new (this) vmNode(name, where));
+    prev->set_next(new (this) vmNode(os::strdup(name), where));
   }
 }
 

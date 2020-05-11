@@ -173,7 +173,7 @@ static void do_oop_store(InterpreterMacroAssembler* _masm,
           // G1 barrier needs uncompressed oop for region cross check.
           Register new_val = val;
           if (UseCompressedOops) {
-            new_val = rscratch2;
+            new_val = rscratch1;
             __ mov(new_val, val);
           }
           __ store_heap_oop(Address(r3, 0), val);
@@ -1394,7 +1394,8 @@ void TemplateTable::fop2(Operation op)
   case rem:
     __ fmovs(v1, v0);
     __ pop_f(v0);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::frem));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::frem),
+			 0, 2, MacroAssembler::ret_type_float);
     break;
   default:
     ShouldNotReachHere();
@@ -1426,7 +1427,8 @@ void TemplateTable::dop2(Operation op)
   case rem:
     __ fmovd(v1, v0);
     __ pop_d(v0);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::drem));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::drem),
+			 0, 2, MacroAssembler::ret_type_double);
     break;
   default:
     ShouldNotReachHere();
@@ -1438,7 +1440,7 @@ void TemplateTable::ineg()
 {
   transition(itos, itos);
   __ negw(r0, r0);
-
+ 
 }
 
 void TemplateTable::lneg()
@@ -1567,7 +1569,8 @@ void TemplateTable::convert()
     __ fcvtzsw(r0, v0);
     __ get_fpsr(r1);
     __ cbzw(r1, L_Okay);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::f2i));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::f2i),
+			 0, 1, MacroAssembler::ret_type_integral);
     __ bind(L_Okay);
   }
     break;
@@ -1578,7 +1581,8 @@ void TemplateTable::convert()
     __ fcvtzs(r0, v0);
     __ get_fpsr(r1);
     __ cbzw(r1, L_Okay);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::f2l));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::f2l),
+			 0, 1, MacroAssembler::ret_type_integral);
     __ bind(L_Okay);
   }
     break;
@@ -1592,7 +1596,8 @@ void TemplateTable::convert()
     __ fcvtzdw(r0, v0);
     __ get_fpsr(r1);
     __ cbzw(r1, L_Okay);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::d2i));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::d2i),
+			 0, 1, MacroAssembler::ret_type_integral);
     __ bind(L_Okay);
   }
     break;
@@ -1603,7 +1608,8 @@ void TemplateTable::convert()
     __ fcvtzd(r0, v0);
     __ get_fpsr(r1);
     __ cbzw(r1, L_Okay);
-    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::d2l));
+    __ call_VM_leaf_base1(CAST_FROM_FN_PTR(address, SharedRuntime::d2l),
+			 0, 1, MacroAssembler::ret_type_integral);
     __ bind(L_Okay);
   }
     break;
@@ -1658,7 +1664,7 @@ void TemplateTable::float_cmp(bool is_float, int unordered_result)
     __ br(Assembler::HI, done);
     // install 0 for EQ otherwise ~0
     __ csinv(r0, zr, zr, Assembler::EQ);
-
+    
   }
   __ bind(done);
 }
@@ -1710,7 +1716,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
   }
 
   // Normal (non-jsr) branch handling
-
+  
   // Adjust the bcp by the displacement in r2
   __ add(rbcp, rbcp, r2);
 
@@ -2396,29 +2402,15 @@ void TemplateTable::getfield_or_static(int byte_no, bool is_static)
   const Register obj   = r4;
   const Register off   = r19;
   const Register flags = r0;
-  const Register raw_flags = r6;
   const Register bc    = r4; // uses same reg as obj, so don't mix them
 
   resolve_cache_and_index(byte_no, cache, index, sizeof(u2));
   jvmti_post_field_access(cache, index, is_static, false);
-  load_field_cp_cache_entry(obj, cache, index, off, raw_flags, is_static);
+  load_field_cp_cache_entry(obj, cache, index, off, flags, is_static);
 
   if (!is_static) {
     // obj is on the stack
     pop_and_check_object(obj);
-  }
-
-  // 8179954: We need to make sure that the code generated for
-  // volatile accesses forms a sequentially-consistent set of
-  // operations when combined with STLR and LDAR.  Without a leading
-  // membar it's possible for a simple Dekker test to fail if loads
-  // use LDR;DMB but stores use STLR.  This can happen if C2 compiles
-  // the stores in one method and we interpret the loads in another.
-  if (! UseBarriersForVolatile) {
-    Label notVolatile;
-    __ tbz(raw_flags, ConstantPoolCacheEntry::is_volatile_shift, notVolatile);
-    __ membar(MacroAssembler::AnyAny);
-    __ bind(notVolatile);
   }
 
   const Address field(obj, off);
@@ -2428,8 +2420,7 @@ void TemplateTable::getfield_or_static(int byte_no, bool is_static)
 
   // x86 uses a shift and mask or wings it with a shift plus assert
   // the mask is not needed. aarch64 just uses bitfield extract
-  __ ubfxw(flags, raw_flags, ConstantPoolCacheEntry::tos_state_shift,
-           ConstantPoolCacheEntry::tos_state_bits);
+  __ ubfxw(flags, flags, ConstantPoolCacheEntry::tos_state_shift,  ConstantPoolCacheEntry::tos_state_bits);
 
   assert(btos == 0, "change code, btos != 0");
   __ cbnz(flags, notByte);
@@ -2548,11 +2539,9 @@ void TemplateTable::getfield_or_static(int byte_no, bool is_static)
 #endif
 
   __ bind(Done);
-
-  Label notVolatile;
-  __ tbz(raw_flags, ConstantPoolCacheEntry::is_volatile_shift, notVolatile);
+  // It's really not worth bothering to check whether this field
+  // really is volatile in the slow case.
   __ membar(MacroAssembler::LoadLoad | MacroAssembler::LoadStore);
-  __ bind(notVolatile);
 }
 
 
@@ -2989,19 +2978,6 @@ void TemplateTable::fast_accessfield(TosState state)
   __ null_check(r0);
   const Address field(r0, r1);
 
-  // 8179954: We need to make sure that the code generated for
-  // volatile accesses forms a sequentially-consistent set of
-  // operations when combined with STLR and LDAR.  Without a leading
-  // membar it's possible for a simple Dekker test to fail if loads
-  // use LDR;DMB but stores use STLR.  This can happen if C2 compiles
-  // the stores in one method and we interpret the loads in another.
-  if (! UseBarriersForVolatile) {
-    Label notVolatile;
-    __ tbz(r3, ConstantPoolCacheEntry::is_volatile_shift, notVolatile);
-    __ membar(MacroAssembler::AnyAny);
-    __ bind(notVolatile);
-  }
-
   // access field
   switch (bytecode()) {
   case Bytecodes::_fast_agetfield:
@@ -3050,22 +3026,6 @@ void TemplateTable::fast_xaccess(TosState state)
   __ get_cache_and_index_at_bcp(r2, r3, 2);
   __ ldr(r1, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
 				  ConstantPoolCacheEntry::f2_offset())));
-
-  // 8179954: We need to make sure that the code generated for
-  // volatile accesses forms a sequentially-consistent set of
-  // operations when combined with STLR and LDAR.  Without a leading
-  // membar it's possible for a simple Dekker test to fail if loads
-  // use LDR;DMB but stores use STLR.  This can happen if C2 compiles
-  // the stores in one method and we interpret the loads in another.
-  if (! UseBarriersForVolatile) {
-    Label notVolatile;
-    __ ldrw(r3, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
-                                     ConstantPoolCacheEntry::flags_offset())));
-    __ tbz(r3, ConstantPoolCacheEntry::is_volatile_shift, notVolatile);
-    __ membar(MacroAssembler::AnyAny);
-    __ bind(notVolatile);
-  }
-
   // make sure exception is reported in correct bcp range (getfield is
   // next instruction)
   __ increment(rbcp);

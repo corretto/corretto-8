@@ -83,6 +83,7 @@
 # include "adfiles/ad_ppc_64.hpp"
 #endif
 
+
 // -------------------- Compile::mach_constant_base_node -----------------------
 // Constant table base node singleton.
 MachConstantBaseNode* Compile::mach_constant_base_node() {
@@ -2650,17 +2651,6 @@ void Compile::final_graph_reshaping_impl( Node *n, Final_Reshape_Counts &frc) {
             n->is_Load() && (n->as_Load()->bottom_type()->isa_oopptr() ||
                              LoadNode::is_immutable_value(n->in(MemNode::Address))),
             "raw memory operations should have control edge");
-  }
-  if (n->is_MemBar()) {
-    MemBarNode* mb = n->as_MemBar();
-    if (mb->trailing_store() || mb->trailing_load_store()) {
-      assert(mb->leading_membar()->trailing_membar() == mb, "bad membar pair");
-      Node* mem = mb->in(MemBarNode::Precedent);
-      assert((mb->trailing_store() && mem->is_Store() && mem->as_Store()->is_release()) ||
-             (mb->trailing_load_store() && mem->is_LoadStore()), "missing mem op");
-    } else if (mb->leading()) {
-      assert(mb->trailing_membar()->leading_membar() == mb, "bad membar pair");
-    }
   }
 #endif
   // Count FPU ops and common calls, implements item (3)

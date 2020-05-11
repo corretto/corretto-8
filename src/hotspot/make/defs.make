@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -333,13 +333,6 @@ ifneq ($(OSNAME),windows)
   LIBARCH/ia64    = ia64
   LIBARCH/ppc64   = ppc64
   LIBARCH/zero    = $(ZERO_LIBARCH)
-
-  # Override LIBARCH for ppc64le
-  ifeq ($(ARCH), ppc64)
-    ifeq ($(OPENJDK_TARGET_CPU_ENDIAN), little)
-      LIBARCH = ppc64le
-    endif
-  endif
 
   LP64_ARCH += sparcv9 amd64 ia64 ppc64 aarch64 zero
 endif
