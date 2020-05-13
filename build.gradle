@@ -23,6 +23,8 @@
 // property. For an example of its usage, see ':installers:linux:rpm:buildLogic'
 // where the version numbers are used to populate a templated RPM spec file.
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 allprojects {
     apply plugin: 'base'
 
@@ -62,6 +64,96 @@ allprojects {
                     'wsgen', 'wsimport', 'xjc']
         jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
                     'servertool', 'tnameserv', 'unpack200']
+
+        correttoCommonFlags = [
+                "--with-update-version=${project.version.update}",
+                "--with-build-number=b${project.version.build}",
+                "--with-corretto-revision=${project.version.revision}",
+                '--with-milestone=fcs',
+                '--with-vendor-name=Amazon.com Inc.',
+                '--with-vendor-url=https://aws.amazon.com/corretto/',
+                "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+        ]
+
+        // Valid value: null, release, debug, fastdebug, slowdebug
+        def correttoDebugLevel = "release" // Default: release
+        switch(project.findProperty("corretto.debug_level")) {
+            case null:
+            case "release":
+                correttoCommonFlags += ['--disable-debug-symbols', '--disable-zip-debug-info']
+                break
+            case "fastdebug":
+                correttoDebugLevel = "fastdebug"
+                correttoCommonFlags += ['--with-debug-level=fastdebug']
+                break
+            case "debug":
+            case "slowdebug":
+                correttoDebugLevel = "slowdebug"
+                correttoCommonFlags += ['--with-debug-level=slowdebug', '--disable-zip-debug-info']
+                break
+            default:
+                throw new RuntimeException("Invalid corretto.debug_level")
+        }
+
+        // customized flags. Identify the index of double dashes as the start of a flag
+        String extraConfig = project.findProperty("corretto.extra_config")
+        def lastIndex = -1
+        if (extraConfig != null) {
+            for (int index = extraConfig.indexOf("--"); index >= 0; index = extraConfig.indexOf("--", index + 1)) {
+                if (lastIndex != -1) {
+                    correttoCommonFlags += extraConfig.substring(lastIndex, index).trim()
+                }
+                lastIndex = index
+            }
+            if (lastIndex != -1) {
+                correttoCommonFlags += extraConfig.substring(lastIndex).trim()
+            }
+        }
+
+        // Determine the system architecture
+        def jdkArch = ""
+        def os = ""
+        if (Os.isFamily(Os.FAMILY_MAC)) {
+            os = 'macosx'
+            jdkArch = "x86_64"
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            os = 'linux'
+            jdkArch = ['uname', '-m'].execute().text.trim()
+        } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            os = 'windows'
+            def arch = System.getenv('PROCESSOR_ARCHITECTURE')
+            if (arch == 'AMD64') {
+                jdkArch = "x86_64"
+            } else { //x86
+                jdkArch = arch
+            }
+        } else {
+            throw new GradleException("OS is not supported")
+        }
+
+        // Ext property: correttoArch
+        switch (jdkArch) {
+            case 'x86':
+            case 'aarch64':
+                correttoArch = jdkArch
+                break
+            case 'x86_64':
+                correttoArch = 'x64'
+                break
+            default:
+                throw new GradleException("${jdkArch} is not supported")
+        }
+
+        // Call toString explicitly to avoid lazy evaluation
+        jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
+        // no debug level suffix for release build
+        if (correttoDebugLevel == "release") {
+            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}".toString()
+        } else {
+            correttoJdkArchiveName =
+                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
+        }
+
     }
 }
 
