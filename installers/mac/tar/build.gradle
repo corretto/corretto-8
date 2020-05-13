@@ -28,8 +28,8 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-def jdkResultingImage = "$buildRoot/src/build/macosx-x86_64-normal-server-release/images/j2sdk-bundle"
-def correttoMacDir = 'amazon-corretto-8.jdk'
+def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-bundle"
+def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
 
 /**
  * Create a local copy of the source tree in our
@@ -54,23 +54,13 @@ task configureBuild(type: Exec) {
     dependsOn project.configurations.compile
     dependsOn copySource
     workingDir "$buildRoot/src"
-    def commands = ['bash', 'configure',
-            "--with-update-version=${project.version.update}",
-            "--with-build-number=b${project.version.build}",
-            "--with-corretto-revision=${project.version.revision}",
+    // Platform specific flags
+    def command = ['bash', 'configure',
             "--with-toolchain-type=clang",
-            '--with-milestone=fcs',
-            '--with-x',
-            '--disable-debug-symbols',
-            '--disable-zip-debug-info',
-            '--with-vendor-name=Amazon.com Inc.',
-            '--with-vendor-url=https://aws.amazon.com/corretto/',
-            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"]
-    def extraCmd = System.getenv("EXTRA_CORRETTO_CONFIG_OPTIONS")
-    if (extraCmd != null) {
-        commands += extraCmd.split(" ")
-    }
-    commandLine commands.flatten()
+            '--with-x']
+    // Common flags
+    command += project.correttoCommonFlags
+    commandLine command.flatten()
 }
 
 task executeBuild(type: Exec) {
@@ -82,7 +72,7 @@ task executeBuild(type: Exec) {
 
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
-    workingDir "${jdkResultingImage}/jdk1.8.0_${project.version.update}.jdk/Contents/Home/"
+    workingDir "${jdkResultingImage}/jdk1.${project.version.major}.0_${project.version.update}.jdk/Contents/Home/"
     // Default password for JSSE key store
     def keystore_password = "changeit"
     commandLine 'keytool', '-importkeystore', '-noprompt',
@@ -95,7 +85,7 @@ task importAmazonCacerts(type: Exec) {
 task renameBuildArtifacts {
     dependsOn importAmazonCacerts
     doLast {
-        file("${jdkResultingImage}/jdk1.8.0_${project.version.update}.jdk").
+        file("${jdkResultingImage}/jdk1.${project.version.major}.0_${project.version.update}.jdk").
                 renameTo(file("${jdkResultingImage}/${correttoMacDir}"))
     }
 }
@@ -163,7 +153,7 @@ task prepareArtifacts {
 
 task packaging(type: Exec) {
     dependsOn prepareArtifacts
-    String tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macosx-x64.tar.gz"
+    String tarDir = "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz"
     workingDir buildDir
     commandLine "tar", "czf", tarDir, correttoMacDir
     outputs.file tarDir
