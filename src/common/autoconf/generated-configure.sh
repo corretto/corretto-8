@@ -653,6 +653,8 @@ LIBFFI_CFLAGS
 STATIC_CXX_SETTING
 LIBDL
 LIBM
+USE_ZLIB_CHROMIUM
+USE_ZLIB_CLOUDFLARE
 LIBZIP_CAN_USE_MMAP
 USE_EXTERNAL_LIBZ
 USE_EXTERNAL_LIBPNG
@@ -1117,6 +1119,7 @@ with_giflib
 with_lcms
 with_libpng
 with_zlib
+with_additional_zlib
 with_stdc__lib
 with_msvcr_dll
 with_msvcp_dll
@@ -2001,6 +2004,8 @@ Optional Packages:
                           (system, bundled) [bundled]
   --with-zlib             use zlib from build system or OpenJDK source
                           (system, bundled) [bundled]
+  --with-additional-zlib  bundle additional zlib versions
+                          (cloudflare,chromium,none) [<platform dependent>]
   --with-stdc++lib=<static>,<dynamic>,<default>
                           force linking of the C++ runtime on Linux to either
                           static or dynamic, default is static with dynamic as
@@ -4406,7 +4411,7 @@ VS_SDK_PLATFORM_NAME_2017=
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1586539068
+DATE_WHEN_GENERATED=1593544532
 
 ###############################################################################
 #
@@ -40644,7 +40649,12 @@ $as_echo "$tool_specified" >&6; }
     # When linking, how to specify the to be created dynamically linkable library.
     LD_OUT_OPTION='-o$(SPACE)'
     # When archiving, how to specify the to be create static archive for object files.
-    AR_OUT_OPTION='rcs$(SPACE)'
+    if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+      # For MacOS X, the '-r' is already contained in 'ARFLAGS'
+      AR_OUT_OPTION='-cs$(SPACE)'
+    else
+      AR_OUT_OPTION='rcs$(SPACE)'
+    fi
   fi
 
 
@@ -48728,6 +48738,68 @@ $as_echo "system not found" >&6; }
 
   ###############################################################################
   LIBZIP_CAN_USE_MMAP=true
+
+
+
+  ###############################################################################
+  #
+  # Should we bundle additional zlib versions?
+  #
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking which additional zlib variants to bundle" >&5
+$as_echo_n "checking which additional zlib variants to bundle... " >&6; }
+
+# Check whether --with-additional-zlib was given.
+if test "${with_additional_zlib+set}" = set; then :
+  withval=$with_additional_zlib;
+fi
+
+
+  USE_ZLIB_CLOUDFLARE=false
+  USE_ZLIB_CHROMIUM=false
+
+  # If user didn't specify, include ZLIB_CLOUDFLARE/ZLIB_CHROMIUM on all supported platforms
+  if test "x${with_additional_zlib}" = "x"; then
+    if { test "x$OPENJDK_TARGET_CPU" = "xx86_64" &&
+         { test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xwindows || test "x$OPENJDK_TARGET_OS" = xmacosx; };
+       } ||
+       { test "x$OPENJDK_TARGET_CPU" = "xaarch64" && test "x$OPENJDK_TARGET_OS" = xlinux; }; then
+      with_additional_zlib="cloudflare,chromium"
+    fi
+  fi
+
+  ZLIB_VARIANTS=",$with_additional_zlib,"
+  TEST_ZLIB_VARIANTS=`$ECHO "$ZLIB_VARIANTS" | $SED -e 's/cloudflare,//' -e 's/chromium,//' -e 's/none,//'`
+
+  if test "x$with_additional_zlib" != x && test "x$TEST_ZLIB_VARIANTS" != "x,"; then
+    as_fn_error $? "The available, additional zlib variants are: cloudflare, chromium, none" "$LINENO" 5
+  fi
+
+  ZLIB_VARIANT_CLOUDFLARE=`$ECHO "$ZLIB_VARIANTS" | $SED -e '/,cloudflare,/!s/.*/false/g' -e '/,cloudflare,/s/.*/true/g'`
+  ZLIB_VARIANT_CHROMIUM=`$ECHO "$ZLIB_VARIANTS" | $SED -e '/,chromium,/!s/.*/false/g' -e '/,chromium,/s/.*/true/g'`
+
+  if test "x$ZLIB_VARIANT_CLOUDFLARE" == xtrue; then
+    if { test "x$OPENJDK_TARGET_CPU" = "xx86_64" &&
+         { test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xwindows || test "x$OPENJDK_TARGET_OS" = xmacosx; };
+       } ||
+       { test "x$OPENJDK_TARGET_CPU" = "xaarch64" && test "x$OPENJDK_TARGET_OS" = xlinux; }; then
+      USE_ZLIB_CLOUDFLARE=true
+    else
+      as_fn_error $? "zlib variant 'cloudflare' currently only supported on Linux/MacOSX/Windows/x86_64 & Linux/aarch64" "$LINENO" 5
+    fi
+  fi
+  if test "x$ZLIB_VARIANT_CHROMIUM" == xtrue; then
+    if { test "x$OPENJDK_TARGET_CPU" = "xx86_64" &&
+         { test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xwindows || test "x$OPENJDK_TARGET_OS" = xmacosx; };
+       } ||
+       { test "x$OPENJDK_TARGET_CPU" = "xaarch64" && test "x$OPENJDK_TARGET_OS" = xlinux; }; then
+      USE_ZLIB_CHROMIUM=true
+    else
+      as_fn_error $? "zlib variant 'chromium' currently only supported on Linux/MacOSX/Windows/x86_64 & Linux/aarch64" "$LINENO" 5
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_additional_zlib" >&5
+$as_echo "$with_additional_zlib" >&6; }
+
 
 
 

@@ -94,3 +94,5 @@
       }
       s->status =
   #ifdef GZIP
+
+(8) zconf.h undo (2), not needed any more (required for compatibility with system zlib)

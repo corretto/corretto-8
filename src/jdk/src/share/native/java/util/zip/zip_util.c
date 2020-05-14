@@ -45,6 +45,7 @@
 #include "io_util_md.h"
 #include "zip_util.h"
 #include <zlib.h>
+#include "dispatch.h"
 
 #ifdef _ALLBSD_SOURCE
 #define off64_t off_t
@@ -1391,7 +1392,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
     }
 
     memset(&strm, 0, sizeof(z_stream));
-    if (inflateInit2(&strm, -MAX_WBITS) != Z_OK) {
+    if (inflateInit2_func(&strm, -MAX_WBITS) != Z_OK) {
         *msg = strm.msg;
         return JNI_FALSE;
     }
@@ -1408,7 +1409,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
             if (n == 0) {
                 *msg = "inflateFully: Unexpected end of file";
             }
-            inflateEnd(&strm);
+            inflateEnd_func(&strm);
             return JNI_FALSE;
         }
         pos += n;
@@ -1416,13 +1417,13 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
         strm.next_in = (Bytef *)tmp;
         strm.avail_in = n;
         do {
-            switch (inflate(&strm, Z_PARTIAL_FLUSH)) {
+            switch (inflate_func(&strm, Z_PARTIAL_FLUSH)) {
             case Z_OK:
                 break;
             case Z_STREAM_END:
                 if (count != 0 || strm.total_out != entry->size) {
                     *msg = "inflateFully: Unexpected end of stream";
-                    inflateEnd(&strm);
+                    inflateEnd_func(&strm);
                     return JNI_FALSE;
                 }
                 break;
@@ -1431,7 +1432,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
             }
         } while (strm.avail_in > 0);
     }
-    inflateEnd(&strm);
+    inflateEnd_func(&strm);
     return JNI_TRUE;
 }
 

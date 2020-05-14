@@ -91,6 +91,7 @@ typedef jboolean (JNICALL *ReadEntry_t)(jzfile *zip, jzentry *entry, unsigned ch
 typedef jboolean (JNICALL *ReadMappedEntry_t)(jzfile *zip, jzentry *entry, unsigned char **buf, char *namebuf);
 typedef jzentry* (JNICALL *GetNextEntry_t)(jzfile *zip, jint n);
 typedef jint     (JNICALL *Crc32_t)(jint crc, const jbyte *buf, jint len);
+typedef void (JNICALL *ZipSwitchImplementation_t)(const char *implementatio, const char *feature);
 
 static ZipOpen_t         ZipOpen            = NULL;
 static ZipClose_t        ZipClose           = NULL;
@@ -100,7 +101,7 @@ static ReadMappedEntry_t ReadMappedEntry    = NULL;
 static GetNextEntry_t    GetNextEntry       = NULL;
 static canonicalize_fn_t CanonicalizeEntry  = NULL;
 static Crc32_t           Crc32              = NULL;
-
+static ZipSwitchImplementation_t ZipSwitchImplementation = NULL;
 // Globals
 
 PerfCounter*    ClassLoader::_perf_accumulated_time = NULL;
@@ -823,6 +824,7 @@ void ClassLoader::load_zip_library() {
   ReadMappedEntry = CAST_TO_FN_PTR(ReadMappedEntry_t, os::dll_lookup(handle, "ZIP_ReadMappedEntry"));
   GetNextEntry = CAST_TO_FN_PTR(GetNextEntry_t, os::dll_lookup(handle, "ZIP_GetNextEntry"));
   Crc32        = CAST_TO_FN_PTR(Crc32_t, os::dll_lookup(handle, "ZIP_CRC32"));
+  ZipSwitchImplementation = CAST_TO_FN_PTR(ZipSwitchImplementation_t, os::dll_lookup(handle, "ZIP_SwitchImplementation"));
 
   // ZIP_Close is not exported on Windows in JDK5.0 so don't abort if ZIP_Close is NULL
   if (ZipOpen == NULL || FindEntry == NULL || ReadEntry == NULL ||
@@ -830,6 +832,20 @@ void ClassLoader::load_zip_library() {
     vm_exit_during_initialization("Corrupted ZIP library", path);
   }
 
+  if (ZipSwitchImplementation != NULL) {
+    const char *implementation = Arguments::get_property("com.amazon.corretto.zlib.implementation");
+    if (implementation != NULL) {
+      ZipSwitchImplementation(implementation, "ALL");
+    }
+    const char *inflate = Arguments::get_property("com.amazon.corretto.zlib.implementation.inflate");
+    if (inflate != NULL) {
+      ZipSwitchImplementation(inflate, "INFLATE");
+    }
+    const char *deflate = Arguments::get_property("com.amazon.corretto.zlib.implementation.deflate");
+    if (deflate != NULL) {
+      ZipSwitchImplementation(deflate, "DEFLATE");
+    }
+  }
   // Lookup canonicalize entry in libjava.dll
   void *javalib_handle = os::native_java_library();
   CanonicalizeEntry = CAST_TO_FN_PTR(canonicalize_fn_t, os::dll_lookup(javalib_handle, "Canonicalize"));

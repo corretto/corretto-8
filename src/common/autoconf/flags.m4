@@ -85,7 +85,12 @@ AC_DEFUN_ONCE([FLAGS_SETUP_INIT_FLAGS],
     # When linking, how to specify the to be created dynamically linkable library.
     LD_OUT_OPTION='-o$(SPACE)'
     # When archiving, how to specify the to be create static archive for object files.
-    AR_OUT_OPTION='rcs$(SPACE)'
+    if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+      # For MacOS X, the '-r' is already contained in 'ARFLAGS'
+      AR_OUT_OPTION='-cs$(SPACE)'
+    else
+      AR_OUT_OPTION='rcs$(SPACE)'
+    fi
   fi
   AC_SUBST(CC_OUT_OPTION)
   AC_SUBST(EXE_OUT_OPTION)

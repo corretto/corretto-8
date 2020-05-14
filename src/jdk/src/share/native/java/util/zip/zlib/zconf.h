@@ -418,12 +418,7 @@
 typedef unsigned char  Byte;  /* 8 bits */
 #endif
 typedef unsigned int   uInt;  /* 16 bits or more */
-
-#ifdef _LP64
-typedef unsigned int  uLong;  /* 32 bits or more */
-#else
 typedef unsigned long  uLong; /* 32 bits or more */
-#endif
 
 #ifdef SMALL_MEDIUM
    /* Borland C/C++ and some old MSC versions ignore FAR inside typedef */

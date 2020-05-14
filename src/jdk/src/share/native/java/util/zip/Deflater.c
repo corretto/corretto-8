@@ -33,6 +33,7 @@
 #include "jni.h"
 #include "jni_util.h"
 #include <zlib.h>
+#include "dispatch.h"
 
 #include "java_util_zip_Deflater.h"
 
@@ -77,9 +78,9 @@ Java_java_util_zip_Deflater_init(JNIEnv *env, jclass cls, jint level,
         return jlong_zero;
     } else {
         const char *msg;
-        int ret = deflateInit2(strm, level, Z_DEFLATED,
-                               nowrap ? -MAX_WBITS : MAX_WBITS,
-                               DEF_MEM_LEVEL, strategy);
+        int ret = deflateInit2_func(strm, level, Z_DEFLATED,
+                                    nowrap ? -MAX_WBITS : MAX_WBITS,
+                                    DEF_MEM_LEVEL, strategy);
         switch (ret) {
           case Z_OK:
             return ptr_to_jlong(strm);
@@ -113,7 +114,7 @@ Java_java_util_zip_Deflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
     if (buf == 0) {/* out of memory */
         return;
     }
-    res = deflateSetDictionary((z_stream *)jlong_to_ptr(addr), buf + off, len);
+    res = deflateSetDictionary_func((z_stream *)jlong_to_ptr(addr), buf + off, len);
     (*env)->ReleasePrimitiveArrayCritical(env, b, buf, 0);
     switch (res) {
     case Z_OK:
@@ -161,7 +162,7 @@ Java_java_util_zip_Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
         strm->next_out = (Bytef *) (out_buf + off);
         strm->avail_in = this_len;
         strm->avail_out = len;
-        res = deflateParams(strm, level, strategy);
+        res = deflateParams_func(strm, level, strategy);
         (*env)->ReleasePrimitiveArrayCritical(env, b, out_buf, 0);
         (*env)->ReleasePrimitiveArrayCritical(env, this_buf, in_buf, 0);
         switch (res) {
@@ -198,7 +199,7 @@ Java_java_util_zip_Deflater_deflateBytes(JNIEnv *env, jobject this, jlong addr,
         strm->next_out = (Bytef *) (out_buf + off);
         strm->avail_in = this_len;
         strm->avail_out = len;
-        res = deflate(strm, finish ? Z_FINISH : flush);
+        res = deflate_func(strm, finish ? Z_FINISH : flush);
         (*env)->ReleasePrimitiveArrayCritical(env, b, out_buf, 0);
         (*env)->ReleasePrimitiveArrayCritical(env, this_buf, in_buf, 0);
         switch (res) {
@@ -227,7 +228,7 @@ Java_java_util_zip_Deflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
 JNIEXPORT void JNICALL
 Java_java_util_zip_Deflater_reset(JNIEnv *env, jclass cls, jlong addr)
 {
-    if (deflateReset((z_stream *)jlong_to_ptr(addr)) != Z_OK) {
+    if (deflateReset_func((z_stream *)jlong_to_ptr(addr)) != Z_OK) {
         JNU_ThrowInternalError(env, 0);
     }
 }
@@ -235,7 +236,7 @@ Java_java_util_zip_Deflater_reset(JNIEnv *env, jclass cls, jlong addr)
 JNIEXPORT void JNICALL
 Java_java_util_zip_Deflater_end(JNIEnv *env, jclass cls, jlong addr)
 {
-    if (deflateEnd((z_stream *)jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
+    if (deflateEnd_func((z_stream *)jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
         JNU_ThrowInternalError(env, 0);
     } else {
         free((z_stream *)jlong_to_ptr(addr));

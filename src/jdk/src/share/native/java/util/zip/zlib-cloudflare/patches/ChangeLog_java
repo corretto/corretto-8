@@ -1,0 +1,142 @@
+--- a/src/share/native/java/util/zip/zlib-cloudflare/zconf.h    Fri Jan 03 23:37:58 2020 +0100
++++ b/src/share/native/java/util/zip/zlib-cloudflare/zconf.h    Mon Jan 06 19:40:15 2020 +0100
+@@ -117,6 +117,7 @@
+ #    define uncompress            z_uncompress
+ #  endif
+ #  define zError                z_zError
++#  define z_errmsg              z_z_errmsg
+ #  ifndef Z_SOLO
+ #    define zcalloc               z_zcalloc
+ #    define zcfree                z_zcfree
+@@ -367,8 +368,12 @@
+ #if !defined(__MACTYPES__)
+ typedef uint8_t    Byte;  /* 8 bits */
+ #endif
+-typedef uint32_t   uInt;  /* 32 bits */
+-typedef uint64_t   uLong; /* 64 bits */
++typedef unsigned int   uInt;  /* 16 bits or more */
++typedef unsigned long uLong;  /* 32 bits or more */
+ 
+ #ifdef SMALL_MEDIUM
+    /* Borland C/C++ and some old MSC versions ignore FAR inside typedef */
+
+--- a/src/share/native/java/util/zip/zlib-cloudflare/deflate.c	2020-01-08 11:01:26.919196607 +0100
++++ a/src/share/native/java/util/zip/zlib-cloudflare/deflate.c	2019-11-19 14:59:07.711110053 +0100
+@@ -545,12 +545,12 @@
+  * upper bound of about 14% expansion does not seem onerous for output buffer
+  * allocation.
+  */
+-uint64_t ZEXPORT deflateBound(strm, sourceLen)
++uLong ZEXPORT deflateBound(strm, sourceLen)
+     z_streamp strm;
+-    uint64_t sourceLen;
++    uLong sourceLen;
+ {
+     deflate_state *s;
+-    uint64_t complen, wraplen;
++    uLong complen, wraplen;
+     uint8_t  *str;
+ 
+commit 50dca6d127cd92d20a7cfafebf6cfe9516b0043f
+Author: Mark Adler <madler@alumni.caltech.edu>
+Date:   Fri Dec 30 18:18:48 2016 -0800
+
+    Fix init macros to use z_ prefix when requested.
+
+diff --git a/zlib.h b/zlib.h
+index 6f4a049..d831cd7 100644
+--- a/zlib.h
++++ b/zlib.h
+@@ -1761,19 +1761,35 @@ ZEXTERN int ZEXPORT inflateBackInit_ OF((z_streamp strm, int windowBits,
+                                          unsigned char FAR *window,
+                                          const char *version,
+                                          int stream_size));
+-#define deflateInit(strm, level) \
+-        deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
+-#define inflateInit(strm) \
+-        inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
+-#define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
+-        deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
+-                      (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
+-#define inflateInit2(strm, windowBits) \
+-        inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
+-                      (int)sizeof(z_stream))
+-#define inflateBackInit(strm, windowBits, window) \
+-        inflateBackInit_((strm), (windowBits), (window), \
+-                      ZLIB_VERSION, (int)sizeof(z_stream))
++#ifdef Z_PREFIX_SET
++#  define z_deflateInit(strm, level) \
++          deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define z_inflateInit(strm) \
++          inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define z_deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
++          deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
++                        (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define z_inflateInit2(strm, windowBits) \
++          inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
++                        (int)sizeof(z_stream))
++#  define z_inflateBackInit(strm, windowBits, window) \
++          inflateBackInit_((strm), (windowBits), (window), \
++                           ZLIB_VERSION, (int)sizeof(z_stream))
++#else
++#  define deflateInit(strm, level) \
++          deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define inflateInit(strm) \
++          inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
++          deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
++                        (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
++#  define inflateInit2(strm, windowBits) \
++          inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
++                        (int)sizeof(z_stream))
++#  define inflateBackInit(strm, windowBits, window) \
++          inflateBackInit_((strm), (windowBits), (window), \
++                           ZLIB_VERSION, (int)sizeof(z_stream))
++#endif
+ 
+ #ifndef Z_SOLO
+ 
+
+
+commit 50dca6d127cd92d20a7cfafebf6cfe9516b0043f
+Author: Mark Adler <madler@alumni.caltech.edu>
+Date:   Fri Dec 30 18:18:48 2016 -0800
+
+    Fix init macros to use z_ prefix when requested.
+
+diff --git a/zconf.h b/zconf.h
+index ca12b79..aee94b0 100644
+--- a/zconf.h
++++ b/zconf.h
+@@ -17,7 +17,7 @@
+ #ifdef Z_PREFIX     /* may be set to #if 1 by ./configure */
+ #  define Z_PREFIX_SET
+ 
+-/* all linked symbols */
++/* all linked symbols and init macros */
+ #  define _dist_code            z__dist_code
+ #  define _length_code          z__length_code
+ #  define _tr_align             z__tr_align
+@@ -41,6 +41,8 @@
+ #  define deflateBound          z_deflateBound
+ #  define deflateCopy           z_deflateCopy
+ #  define deflateEnd            z_deflateEnd
++#  define deflateInit           z_deflateInit
++#  define deflateInit2          z_deflateInit2
+ #  define deflateInit2_         z_deflateInit2_
+ #  define deflateInit_          z_deflateInit_
+ #  define deflateParams         z_deflateParams
+@@ -94,10 +96,13 @@
+ #  define inflate               z_inflate
+ #  define inflateBack           z_inflateBack
+ #  define inflateBackEnd        z_inflateBackEnd
++#  define inflateBackInit       z_inflateBackInit
+ #  define inflateBackInit_      z_inflateBackInit_
+ #  define inflateCopy           z_inflateCopy
+ #  define inflateEnd            z_inflateEnd
+ #  define inflateGetHeader      z_inflateGetHeader
++#  define inflateInit           z_inflateInit
++#  define inflateInit2          z_inflateInit2
+ #  define inflateInit2_         z_inflateInit2_
+ #  define inflateInit_          z_inflateInit_
+ #  define inflateMark           z_inflateMark
