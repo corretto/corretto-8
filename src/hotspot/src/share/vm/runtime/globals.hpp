@@ -3998,10 +3998,6 @@ class CommandLineFlags {
           "Allocation less than this value will be allocated "              \
           "using malloc. Larger allocations will use mmap.")                \
                                                                             \
-  product_pd(bool, PreserveFramePointer,                                    \
-             "Use the FP register for holding the frame pointer "           \
-             "and not as a general purpose register.")                      \
-                                                                            \
   product(bool, EnableTracing, false,                                       \
           "Enable event-based tracing"                                      \
           "Deprecated: use FlightRecorder instead")                         \
