@@ -76,12 +76,10 @@
 
 #define REG_FP 29
 
-#define SPELL_REG_SP "sp"
-#define SPELL_REG_FP "x29"
+#define NOINLINE __attribute__ ((noinline))
 
-address os::current_stack_pointer() {
-  register void *esp __asm__ (SPELL_REG_SP);
-  return (address) esp;
+NOINLINE address os::current_stack_pointer() {
+  return (address)__builtin_frame_address(0);
 }
 
 char* os::non_memory_address_word() {
@@ -155,14 +153,8 @@ frame os::get_sender_for_C_frame(frame* fr) {
   return frame(fr->link(), fr->link(), fr->sender_pc());
 }
 
-intptr_t* _get_previous_fp() {
-  register intptr_t **ebp __asm__ (SPELL_REG_FP);
-  return (intptr_t*) *ebp;   // we want what it points to.
-}
-
-
-frame os::current_frame() {
-  intptr_t* fp = _get_previous_fp();
+NOINLINE frame os::current_frame() {
+  intptr_t *fp = *(intptr_t **)__builtin_frame_address(0);
   frame myframe((intptr_t*)os::current_stack_pointer(),
                 (intptr_t*)fp,
                 CAST_FROM_FN_PTR(address, os::current_frame));
@@ -175,11 +167,6 @@ frame os::current_frame() {
 }
 
 // Utility functions
-
-// From IA32 System Programming Guide
-enum {
-  trap_page_fault = 0xE
-};
 
 // An operation in Unsafe has faulted.  We're going to return to the
 // instruction after the faulting load or store.  We also set
@@ -423,7 +410,7 @@ JVM_handle_linux_signal(int sig,
   err.report_and_die();
 
   ShouldNotReachHere();
-  return false; // Mute compiler
+  return true; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {
@@ -606,12 +593,12 @@ extern "C" {
 
   void _Copy_conjoint_jshorts_atomic(jshort* from, jshort* to, size_t count) {
     if (from > to) {
-      jshort *end = from + count;
+      const jshort *end = from + count;
       while (from < end)
         *(to++) = *(from++);
     }
     else if (from < to) {
-      jshort *end = from;
+      const jshort *end = from;
       from += count - 1;
       to   += count - 1;
       while (from >= end)
@@ -620,12 +607,12 @@ extern "C" {
   }
   void _Copy_conjoint_jints_atomic(jint* from, jint* to, size_t count) {
     if (from > to) {
-      jint *end = from + count;
+      const jint *end = from + count;
       while (from < end)
         *(to++) = *(from++);
     }
     else if (from < to) {
-      jint *end = from;
+      const jint *end = from;
       from += count - 1;
       to   += count - 1;
       while (from >= end)
@@ -634,12 +621,12 @@ extern "C" {
   }
   void _Copy_conjoint_jlongs_atomic(jlong* from, jlong* to, size_t count) {
     if (from > to) {
-      jlong *end = from + count;
+      const jlong *end = from + count;
       while (from < end)
         os::atomic_copy64(from++, to++);
     }
     else if (from < to) {
-      jlong *end = from;
+      const jlong *end = from;
       from += count - 1;
       to   += count - 1;
       while (from >= end)

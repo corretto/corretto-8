@@ -281,7 +281,7 @@ public:
   unsigned get(int msb = 31, int lsb = 0) {
     int nbits = msb - lsb + 1;
     unsigned mask = ((1U << nbits) - 1) << lsb;
-    assert_cond(bits & mask == mask);
+    assert_cond((bits & mask) == mask);
     return (insn & mask) >> lsb;
   }
 
