@@ -1309,8 +1309,6 @@ void PhaseCFG::global_code_motion() {
   // ( visited.Clear() called in schedule_late()->Node_Backward_Iterator() )
   schedule_late(visited, stack);
   if (C->failing()) {
-    // schedule_late fails only when graph is incorrect.
-    assert(!VerifyGraphEdges, "verification should have failed");
     return;
   }
 
