@@ -38,14 +38,20 @@ def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
  * and we don't want to tamper with someone
  * else's tree.
  */
-task copySource(type: Copy) {
-    dependsOn project.configurations.compile
-    from tarTree(project.configurations.compile.singleFile)
-    into buildRoot
+task copySource(type: Exec) {
+    if (!file(buildRoot).exists()) {
+        file(buildRoot).mkdirs()
+    }
+    workingDir '/usr/bin'
+    commandLine 'rsync', '-am',
+            '--exclude=pre-build',
+            '--exclude=installers',
+            '--exclude=src/corretto-build',
+            "${project.rootDir}/", buildRoot
 }
 
-
 task configureBuild(type: Exec) {
+    dependsOn project.configurations.compile
     dependsOn copySource
     workingDir "$buildRoot/src"
     // Platform specific flags
