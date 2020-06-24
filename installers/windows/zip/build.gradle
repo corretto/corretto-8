@@ -69,11 +69,26 @@ task copyCacerts(type: Copy) {
     into file("${imageDir}/j2re-image/lib/security")
 }
 
-task copyImage(type: Copy) {
+task copyImage() {
     dependsOn copyCacerts
 
-    from "${executeBuild.workingDir}/build/${project.jdkImageName}/images"
-    into "$buildRoot/build"
+    doLast {
+        // Copy image
+        copy {
+            from "${executeBuild.workingDir}/build/${project.jdkImageName}/images"
+            into "$buildRoot/build"
+        }
+        // Copy version.txt into JDK
+        copy {
+            from "$buildRoot/version.txt"
+            into "$buildRoot/build/j2sdk-image"
+        }
+        // Copy version.txt into JRE
+        copy {
+            from "$buildRoot/version.txt"
+            into "$buildRoot/build/j2re-image"
+        }
+    }
 }
 
 task packageJdk(type: Zip) {
