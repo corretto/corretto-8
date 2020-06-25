@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -458,9 +458,7 @@ JNIEXPORT jlongArray JNICALL Java_sun_jvm_hotspot_debugger_linux_LinuxDebuggerLo
 #endif /* sparc */
 
 #if defined(aarch64)
-
 #define REG_INDEX(reg) sun_jvm_hotspot_debugger_aarch64_AARCH64ThreadContext_##reg
-
   {
     int i;
     for (i = 0; i < 31; i++)
@@ -469,7 +467,6 @@ JNIEXPORT jlongArray JNICALL Java_sun_jvm_hotspot_debugger_linux_LinuxDebuggerLo
     regs[REG_INDEX(PC)] = gregs.pc;
   }
 #endif /* aarch64 */
-
 
   (*env)->ReleaseLongArrayElements(env, array, regs, JNI_COMMIT);
   return array;

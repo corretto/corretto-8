@@ -449,7 +449,7 @@ class CommandLineFlags {
 // notproduct flags are settable / visible only during development and are not declared in the PRODUCT version
 
 // A flag must be declared with one of the following types:
-// bool, intx, uintx, ccstr, double, or uint64_t.
+// bool, intx, uintx, ccstr.
 // The type "ccstr" is an alias for "const char*" and is used
 // only in this file, because the macrology requires single-token type names.
 
@@ -3999,9 +3999,6 @@ class CommandLineFlags {
                                                                             \
   product(bool, UseLockedTracing, false,                                    \
           "Use locked-tracing when doing event-based tracing")              \
-                                                                            \
-  diagnostic(bool, UseUnalignedAccesses, false,                             \
-          "Use unaligned memory accesses in sun.misc.Unsafe")               \
                                                                             \
   product_pd(bool, PreserveFramePointer,                                    \
              "Use the FP register for holding the frame pointer "           \

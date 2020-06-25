@@ -890,7 +890,7 @@ void os::verify_stack_alignment() {
  * updates (JDK-8023956).
  */
 void os::workaround_expand_exec_shield_cs_limit() {
-#if defined(IA32) && !defined(ZERO)
+#if defined(IA32)
   size_t page_size = os::vm_page_size();
 
   /*

@@ -56,7 +56,6 @@
 #include "runtime/mutexLocker.hpp"
 #include "runtime/objectMonitor.hpp"
 #include "runtime/orderAccess.inline.hpp"
-#include "runtime/os.hpp"
 #include "runtime/osThread.hpp"
 #include "runtime/perfMemory.hpp"
 #include "runtime/sharedRuntime.hpp"
@@ -390,10 +389,10 @@ void os::Aix::query_multipage_support() {
   // default should be 4K.
   size_t data_page_size = SIZE_4K;
   {
-    void* p = os::malloc(SIZE_16M, mtInternal);
+    void* p = ::malloc(SIZE_16M);
     guarantee(p != NULL, "malloc failed");
     data_page_size = os::Aix::query_pagesize(p);
-    os::free(p);
+    ::free(p);
   }
 
   // query default shm page size (LDR_CNTRL SHMPSIZE)

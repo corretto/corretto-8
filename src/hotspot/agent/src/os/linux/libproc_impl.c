@@ -159,12 +159,7 @@ lib_info* add_lib_info_fd(struct ps_prochandle* ph, const char* libname, int fd,
       return NULL;
    }
 
-   if (strlen(libname) >= sizeof(newlib->name)) {
-     print_debug("libname %s too long\n", libname);
-     return NULL;
-   }
-   strcpy(newlib->name, libname);
-
+   strncpy(newlib->name, libname, sizeof(newlib->name));
    newlib->base = base;
 
    if (fd == -1) {

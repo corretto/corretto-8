@@ -32,6 +32,7 @@
 #include "utilities/debug.hpp"
 #include "utilities/growableArray.hpp"
 #include "utilities/top.hpp"
+
 #ifdef TARGET_ARCH_x86
 # include "register_x86.hpp"
 # include "vm_version_x86.hpp"
