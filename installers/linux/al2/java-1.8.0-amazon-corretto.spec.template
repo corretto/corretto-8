@@ -142,6 +142,7 @@ bash ./configure \
   --with-milestone="fcs" \
   --disable-debug-symbols \
   --disable-zip-debug-info \
+  --enable-jfr \
   --with-vendor-name="Amazon.com Inc." \
   --with-vendor-url="https://aws.amazon.com/corretto/" \
   --with-vendor-bug-url="https://github.com/corretto/corretto-8/issues/"
