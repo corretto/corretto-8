@@ -2,6 +2,46 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.262.10.1
+
+Release Date: Jul 14, 2020
+
+ The following platforms are updated in this release. 
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64 
++  Debian-based Linux using glibc 2.12 or later, x86_64 
++  RPM-based Linux using glibc 2.17 or later, aarch64 
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Windows 7 or later, x86, x86_64 
++  macOS 10.10 and later, x86_64 
+
+The following issues are addressed in 8.262.10.1
+
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+| Update Corretto to 8.262.10.1  |  All  |  Update Corretto 8 patch set to 8.262.10.1. Update the security baseline to OpenJDK 8u262.  |   |
+| Update aarch64 port to IcedTea 3.14.0 | Linux |  Sync corretto-8 aarch64 port with IcedTea 3.14.0 | [icedtea-3.14.0](http://icedtea.classpath.org/hg/icedtea8/rev/6df7e8199934) |
+| Update Amazon linux cacerts	| All | Updates the set of certificates from Amazon Linux bundled with Corretto | |
+| Remove expired certificates | All | Removed three expired CA certificates present in upstream | |
+| Enable JDK Flight Recorder | All | Enable JDK Flight Recorder feature in Corretto 8 | [JDK-8223147](https://bugs.openjdk.java.net/browse/JDK-8223147) |
+| Backport JDK-8186090 | Linux | 8186090: java.nio.Bits.unaligned() doesn't handle aarch64 | [corretto8#248](https://github.com/corretto/corretto-8/issues/248) |
+
+The following CVEs are addressed in 8.262.10.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-14583 | 8.3 | core-libs/java.io
+| CVE-2020-14664 | 8.3 | javafx/graphics
+| CVE-2020-14593 | 7.4 | client-libs/2d
+| CVE-2020-14621 | 5.3 | xml/jaxp
+| CVE-2020-14556 | 4.8 | core-libs/java.util.concurrent
+| CVE-2020-14577 | 3.7 | security-libs/javax.net.ssl
+| CVE-2020-14578 | 3.7 | security-libs/java.security
+| CVE-2020-14579 | 3.7 | security-libs/java.security
+| CVE-2020-14581 | 3.7 | client-libs/2d
+
 ## Corretto version: 8.252.09.2
 
 Release Date: Apr 17, 2020
@@ -28,7 +68,7 @@ Release Date: Apr 14, 2020
 +  RPM-based Linux using glibc 2.12 or later, x86_64 
 +  Debian-based Linux using glibc 2.12 or later, x86_64 
 +  RPM-based Linux using glibc 2.17 or later, aarch64 
-+  Debian-based Linux using glibc 2.17 or later, aarch64 
++  Debian-based Linux using glibc 2.17 or later, aarch64
 +  Windows 7 or later, x86, x86_64 
 +  macOS 10.10 and later, x86_64 
 
