@@ -22,7 +22,7 @@ The following issues are addressed in 8.262.10.1
 | Issue Name | Platform | Description | Link | 
 | --- | --- | --- | --- | 
 | Update Corretto to 8.262.10.1  |  All  |  Update Corretto 8 patch set to 8.262.10.1. Update the security baseline to OpenJDK 8u262.  |   |
-| Update aarch64 port to IcedTea 3.14.0 | Linux |  Sync corretto-8 aarch64 port with IcedTea 3.14.0 | [icedtea-3.14.0](http://icedtea.classpath.org/hg/icedtea8/rev/6df7e8199934) |
+| Update aarch64 port to IcedTea 3.16.0 | Linux |  Sync corretto-8 aarch64 port with IcedTea 3.16.0 | [icedtea-3.16.0](http://icedtea.classpath.org/hg/icedtea8/rev/c2851d8a1375) |
 | Update Amazon linux cacerts	| All | Updates the set of certificates from Amazon Linux bundled with Corretto | |
 | Remove expired certificates | All | Removed three expired CA certificates present in upstream | |
 | Enable JDK Flight Recorder | All | Enable JDK Flight Recorder feature in Corretto 8 | [JDK-8223147](https://bugs.openjdk.java.net/browse/JDK-8223147) |
