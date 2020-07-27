@@ -2,6 +2,29 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.265.01.1
+
+Release Date: Jul 29, 2020
+
+ The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+The following issues are addressed in 8.265.01.1
+
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.265.01.1  |  All  |  Updates corretto to be based on OpenJDK 8u265b01  |   |
+| 8249677: Regression after JDK-8237117: Better ForkJoinPool behavior  |  All  |  Fixes a regression added to ForkJoinPool in 8.262.10.1.  | [JDK-8249677](https://bugs.openjdk.java.net/browse/JDK-8249677)  |
+| Exclude Alpine patches | Linux | Alpine related patches are built independently | |
+
 ## Corretto version: 8.262.10.2
 
 Release Date: Jul 14, 2020
