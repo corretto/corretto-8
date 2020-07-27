@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 #ifndef USE_SELECT
-#include <poll.h>
+#include <sys/poll.h>
 #endif
 
 

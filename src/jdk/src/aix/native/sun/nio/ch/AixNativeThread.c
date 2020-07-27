@@ -32,7 +32,7 @@
 #include "sun_nio_ch_NativeThread.h"
 
 #include <pthread.h>
-#include <signal.h>
+#include <sys/signal.h>
 
 /* Also defined in src/aix/native/java/net/aix_close.c */
 #define INTERRUPT_SIGNAL (SIGRTMAX - 1)

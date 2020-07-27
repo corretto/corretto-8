@@ -1079,7 +1079,7 @@ HeapWord* GenCollectedHeap::allocate_new_tlab(size_t size) {
 static ScratchBlock *removeSmallestScratch(ScratchBlock **prev_ptr) {
   bool first = true;
   size_t min_size = 0;   // "first" makes this conceptually infinite.
-  ScratchBlock **smallest_ptr = NULL, *smallest;
+  ScratchBlock **smallest_ptr, *smallest;
   ScratchBlock  *cur = *prev_ptr;
   while (cur) {
     assert(*prev_ptr == cur, "just checking");

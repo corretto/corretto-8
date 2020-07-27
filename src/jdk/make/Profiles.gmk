@@ -91,7 +91,7 @@ ALL_JARS := $(FULL_JRE_JARS) \
     $(IMAGES_OUTPUTDIR)/src.zip
 
 ifeq ($(INCLUDE_SA), true)
-#  ALL_JARS += $(IMAGES_OUTPUTDIR)/lib/sa-jdi.jar
+  ALL_JARS += $(IMAGES_OUTPUTDIR)/lib/sa-jdi.jar
 endif
 
 ifeq ($(OPENJDK_TARGET_OS), solaris)

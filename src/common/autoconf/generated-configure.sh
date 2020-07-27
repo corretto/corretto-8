@@ -41799,7 +41799,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-
 /* end confdefs.h.  */
 int i;
 _ACEOF

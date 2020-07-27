@@ -32,7 +32,7 @@
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <poll.h>
+#include <sys/poll.h>
 #include <sys/inotify.h>
 
 #include "sun_nio_fs_LinuxWatchService.h"

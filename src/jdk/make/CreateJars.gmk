@@ -41,7 +41,6 @@ include Profiles.gmk
 # This makefile...so that altering will trigger rebuilding include/exclude-lists => jars
 #
 MAKEFILE = $(JDK_TOPDIR)/make/CreateJars.gmk
-
 #
 # And similarly for the Profiles
 PROFILE_MAKEFILES = $(JDK_TOPDIR)/make/Profiles.gmk $(JDK_TOPDIR)/make/profile-rtjar-includes.txt

@@ -38,7 +38,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include <errno.h>
-#include <poll.h>
+#include <sys/poll.h>
 
 /*
  * Stack allocated by thread when doing blocking operation

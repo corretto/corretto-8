@@ -26,11 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#ifdef INCLUDE_SA_ATTACH
 #include <thread_db.h>
-#else
-#include <dirent.h>
-#endif
 #include "libproc_impl.h"
 
 #define SA_ALTROOT "SA_ALTROOT"
@@ -110,13 +106,11 @@ bool init_libproc(bool debug) {
    // init debug mode
    _libsaproc_debug = debug;
 
-#ifdef INCLUDE_SA_ATTACH
    // initialize the thread_db library
    if (td_init() != TD_OK) {
      print_debug("libthread_db's td_init failed\n");
      return false;
    }
-#endif
 
    return true;
 }
@@ -288,7 +282,6 @@ void delete_thread_info(struct ps_prochandle* ph, thread_info* thr_to_be_removed
     free(current_thr);
 }
 
-#ifdef INCLUDE_SA_ATTACH
 // struct used for client data from thread_db callback
 struct thread_db_client_data {
    struct ps_prochandle* ph;
@@ -320,12 +313,9 @@ static int thread_db_callback(const td_thrhandle_t *th_p, void *data) {
 
   return TD_OK;
 }
-#endif // INCLUDE_SA_ATTACH
 
-// read thread_info using libthread_db or by iterating through the entries
-// in /proc/<pid>/task/
+// read thread_info using libthread_db
 bool read_thread_info(struct ps_prochandle* ph, thread_info_callback cb) {
-#ifdef INCLUDE_SA_ATTACH
   struct thread_db_client_data mydata;
   td_thragent_t* thread_agent = NULL;
   if (td_ta_new(ph, &thread_agent) != TD_OK) {
@@ -346,32 +336,9 @@ bool read_thread_info(struct ps_prochandle* ph, thread_info_callback cb) {
 
   // delete thread agent
   td_ta_delete(thread_agent);
-#else
-  DIR *dir = NULL;
-  struct dirent *ent = NULL;
-  char taskpath[80];
-  pid_t pid = ph->pid;
-
-  // Find the lwpids to attach to by traversing the /proc/<pid>/task/ directory.
-  snprintf(taskpath, sizeof (taskpath), "/proc/%ld/task", (unsigned long)pid);
-  if ((dir = opendir(taskpath)) != NULL) {
-    while ((ent = readdir(dir)) != NULL) {
-      unsigned long lwp;
-
-      if ((lwp = strtoul(ent->d_name, NULL, 10)) != 0) {
-        // Create and add the thread info.
-        (*cb)(ph, 0, lwp);
-      }
-    }
-  } else {
-    print_debug("Could not open /proc/%ld/task.\n", (unsigned long)pid);
-    return false;
-  }
-
-  closedir(dir);
-#endif
   return true;
 }
+
 
 // get number of threads
 int get_num_threads(struct ps_prochandle* ph) {

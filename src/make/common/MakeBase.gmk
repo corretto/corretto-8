@@ -47,7 +47,7 @@ $(subst X,X00,\
 $(subst $(SPACE),\n,$(strip $1)))))\
 $(compress_post)
 
-decompress_paths=$(SED) -f $(SRC_ROOT)/make/common/support/ListPathsSafely-uncompress.sed | $(SED) -e 's|X99|\\n|g' \
+decompress_paths=$(SED) -f $(SRC_ROOT)/make/common/support/ListPathsSafely-uncompress.sed -e 's|X99|\\n|g' \
     -e 's|X98|$(OUTPUT_ROOT)|g' -e 's|X97|$(SRC_ROOT)|g' \
     -e 's|X00|X|g' | tr '\n' '$2'
 

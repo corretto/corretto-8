@@ -37,7 +37,7 @@
 #include <thread.h>
 #else
 #include <pthread.h>
-#include <poll.h>
+#include <sys/poll.h>
 #endif
 
 #include "socket_md.h"

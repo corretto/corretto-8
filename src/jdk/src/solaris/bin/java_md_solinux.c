@@ -291,41 +291,6 @@ RequiresSetenv(int wanted, const char *jvmpath) {
     char *dmllp = NULL;
     char *p; /* a utility pointer */
 
-#ifdef __linux
-#ifndef LIBC
-#error "LIBC not set"
-#endif
-
-    if (strcmp(LIBC, "musl") == 0) {
-      /*
-       * The musl library loader requires LD_LIBRARY_PATH to be set in
-       * order to correctly resolve the dependency libjava.so has on libjvm.so.
-       *
-       * Specifically, it differs from glibc in the sense that even if
-       * libjvm.so has already been loaded it will not be considered a
-       * candidate for resolving the dependency unless the *full* path
-       * of the already loaded library matches the dependency being loaded.
-       *
-       * libjvm.so is being loaded by the launcher using a long path to
-       * dlopen, not just the basename of the library. Typically this
-       * is something like "../lib/server/libjvm.so". However, if/when
-       * libjvm.so later tries to dlopen libjava.so (which it does in
-       * order to get access to a few functions implemented in
-       * libjava.so) the musl loader will, as part of loading
-       * dependent libraries, try to load libjvm.so using only its
-       * basename "libjvm.so". Since this does not match the longer
-       * path path it was first loaded with, the already loaded
-       * library is not considered a candidate, and the loader will
-       * instead look for libjvm.so elsewhere. If it's not in
-       * LD_LIBRARY_PATH the dependency load will fail, and libjava.so
-       * will therefore fail as well.
-       */
-      return JNI_TRUE;
-    }
-#endif
-
-    return JNI_TRUE;
-
 #ifdef AIX
     /* We always have to set the LIBPATH on AIX because ld doesn't support $ORIGIN. */
     return JNI_TRUE;

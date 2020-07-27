@@ -227,6 +227,7 @@ ifeq ($(PROFILE), )
   NOT_JRE_LIB_FILES := \
       tools.jar \
       jconsole.jar \
+      sa-jdi.jar \
       dt.jar \
       orb.idl \
       ir.idl \

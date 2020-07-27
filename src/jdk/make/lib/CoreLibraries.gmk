@@ -352,8 +352,6 @@ endif
 BUILD_LIBJLI_SRC_DIRS := $(JDK_TOPDIR)/src/share/bin $(JDK_TOPDIR)/src/$(OPENJDK_TARGET_OS_API_DIR)/bin
 LIBJLI_CFLAGS := $(CFLAGS_JDKLIB) $(foreach dir, $(BUILD_LIBJLI_SRC_DIRS), -I$(dir))
 
-LIBJLI_CFLAGS += -DLIBC=\"$(OPENJDK_TARGET_LIBC)\"
-
 BUILD_LIBJLI_FILES := \
     java.c \
     splashscreen_stubs.c \
