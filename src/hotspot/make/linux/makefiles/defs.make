@@ -305,9 +305,6 @@ endif
 
 # Serviceability Binaries
 # No SA Support for PPC, IA64, ARM or zero
-# or if thread_db.h missing (musl)
-
-ifneq ($(wildcard /usr/include/thread_db.h),)
 ADD_SA_BINARIES/x86   = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \
                         $(EXPORT_LIB_DIR)/sa-jdi.jar
 ADD_SA_BINARIES/sparc = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \
@@ -324,11 +321,6 @@ ifeq ($(ENABLE_FULL_DEBUG_SYMBOLS),1)
       ADD_SA_BINARIES/sparc += $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.debuginfo
     endif
   endif
-endif
-else
-ADD_SA_BINARIES/x86     =
-ADD_SA_BINARIES/sparc   =
-ADD_SA_BINARIES/aarch64 =
 endif
 ADD_SA_BINARIES/ppc   =
 ADD_SA_BINARIES/ia64  =
