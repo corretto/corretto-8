@@ -59,9 +59,11 @@ SA_PROPERTIES = $(SA_CLASSDIR)/sa.properties
 
 # if $(AGENT_DIR) does not exist, we don't build SA
 # also, we don't build SA on Itanium or zero.
+# check for thread_db.h too (musl does not have it).
 
 all: 
-	if [ -d $(AGENT_DIR) -a "$(SRCARCH)" != "ia64" \
+	if [ -d $(AGENT_DIR) -a -f /usr/include/thread_db.h \
+             -a "$(SRCARCH)" != "ia64" \
              -a "$(SRCARCH)" != "zero" ] ; then \
 	   $(MAKE) -f sa.make $(GENERATED)/sa-jdi.jar; \
 	fi
