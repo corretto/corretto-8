@@ -39,8 +39,8 @@ ext {
 }
 
 def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
-def binaryResultName = "amazon-corretto-${project.version.full}-linux-${arch_alias}"
-def archiveName = "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
+def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
+def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 
 /**
  * Create a local copy of the source tree in our
@@ -74,7 +74,7 @@ task configureBuild(type: Exec) {
 task executeBuild(type: Exec) {
     dependsOn configureBuild
     workingDir "$buildRoot/src"
-    commandLine 'make', 'images'
+    commandLine 'make','images'
     outputs.dir jdkResultingImage
 }
 
