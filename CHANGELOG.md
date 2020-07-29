@@ -2,6 +2,19 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.265.01.2
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++ Linux using musl libc (Alpine linux)
+
+The following issues are addressed in 8.265.01.2
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Include Alpine patches | Linux | Add Alpine related patches | |
+
 ## Corretto version: 8.265.01.1
 
 Release Date: Jul 29, 2020
