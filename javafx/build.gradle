@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    source "openjfx:8u:${openJfxVersion.getProperty('tag')}@tar.gz"
+    source "openjfx:8u-dev:${openJfxVersion.getProperty('tag')}@tar.gz"
 }
 
 task unpackSource(type: Copy) {
