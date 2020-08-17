@@ -106,6 +106,10 @@
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
+#ifndef MUSL
+# include <gnu/libc-version.h>
+#endif
+
 #ifndef _GNU_SOURCE
   #define _GNU_SOURCE
   #include <sched.h>
@@ -582,7 +586,7 @@ void os::Linux::hotspot_sigmask(Thread* thread) {
 // detecting pthread library
 
 void os::Linux::libpthread_init() {
-#if 1
+#ifdef MUSL
   // Hard code Alpine Linux supported musl compatible settings
   os::Linux::set_glibc_version("glibc 2.9");
   os::Linux::set_libpthread_version("NPTL");
@@ -2983,10 +2987,12 @@ extern "C" JNIEXPORT void numa_warn(int number, char *where, ...) { }
 extern "C" JNIEXPORT void numa_error(char *where) { }
 extern "C" JNIEXPORT int fork1() { return fork(); }
 
+#ifdef MUSL
 static void *dlvsym(void *handle, const char *name, const char *ver)
 {
   return dlsym(handle, name);
 }
+#endif
 
 // Handle request to load libnuma symbol version 1.1 (API v1). If it fails
 // load symbol from base version instead.

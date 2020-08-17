@@ -117,6 +117,11 @@ endef
 HOTSPOT_IMPORT_FILES := $(addprefix $(LIBRARY_PREFIX), jvm.* saproc.* jsig.* sawindbg.* jvm_db.* jvm_dtrace.*) \
     Xusage.txt 
 
+ifneq ($(OPENJDK_TARGET_LIBC), musl)
+	HOTSPOT_IMPORT_FILES += sa-jdi.jar
+endif
+
+
 ifeq ($(OPENJDK_TARGET_OS), macosx)
     # additional debug file
     HOTSPOT_IMPORT_FILES += Info.plist

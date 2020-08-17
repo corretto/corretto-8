@@ -234,6 +234,9 @@ JDK_execvpe(int mode, const char *file,
 {
     if (envp == NULL || (char **) envp == environ) {
         execvp(file, (char **) argv);
+#ifdef __GLIBC__
+        return;
+#else
         // ENOEXEC indicates that the file header was not recognized. The musl C
         // library does not implement the fallback to /bin/sh for that case, so fall
         // through to the code below which implements that fallback using
@@ -241,6 +244,7 @@ JDK_execvpe(int mode, const char *file,
         if (errno != ENOEXEC) {
             return;
         }
+#endif
     }
 
     if (*file == '\0') {

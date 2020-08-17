@@ -232,6 +232,10 @@ ifeq ($(PROFILE), )
       ir.idl \
       ct.sym
 
+  ifneq ($(OPENJDK_TARGET_LIBC), musl) 
+    NOT_JRE_LIB_FILES += sa-jdi.jar
+  endif
+
   ifeq ($(OPENJDK_TARGET_OS), windows)
     NOT_JRE_LIB_FILES += jawt.lib jvm.lib
   endif

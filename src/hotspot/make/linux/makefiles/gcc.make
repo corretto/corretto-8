@@ -62,6 +62,9 @@ else
   CC_VER_MINOR := $(shell $(CC) -dumpversion | sed 's/egcs-//' | cut -d'.' -f2)
 endif
 
+ifeq ($(OPENJDK_TARGET_LIBC), musl)
+  SYSDEFS += -DMUSL
+endif
 
 ifeq ($(USE_CLANG), true)
   # Clang has precompiled headers support by default, but the user can switch
