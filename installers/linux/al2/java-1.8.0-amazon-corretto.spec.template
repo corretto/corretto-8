@@ -56,6 +56,12 @@
 %global perform_openjfx_overlay 0
 %endif
 
+# On aarch64 add additional C and CPP flags
+%global platform_flags ""
+%ifarch aarch64
+%global platform_flags --with-extra-cflags="-moutline-atomics" --with-extra-cxxflags="-moutline-atomics"
+%endif
+
 Summary: Amazon Corretto runtime environment
 Name: java-1.8.0-amazon-corretto
 # Matches the 'full version' from Java's release notes:
@@ -145,7 +151,8 @@ bash ./configure \
   --enable-jfr \
   --with-vendor-name="Amazon.com Inc." \
   --with-vendor-url="https://aws.amazon.com/corretto/" \
-  --with-vendor-bug-url="https://github.com/corretto/corretto-8/issues/"
+  --with-vendor-bug-url="https://github.com/corretto/corretto-8/issues/" \
+  %{platform_flags}
 
 make images
 
