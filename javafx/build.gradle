@@ -43,12 +43,23 @@ dependencies {
 }
 
 task unpackSource(type: Copy) {
-    dependsOn configurations.source
-    doFirst {
-        assert openJfxVersion.getProperty('sha256') == sha256(configurations.source.singleFile)
+    if (project.hasProperty("openjfxPath")) {
+        // Get source from local path
+        def openjfx = file("${project.getProperty('openjfxPath')}")
+        doFirst {
+            assert openJfxVersion.getProperty('sha256') == sha256(openjfx)
+        }
+        from tarTree(openjfx)
+        into buildRoot
+    } else {
+        // Get source from HG
+        dependsOn configurations.source
+        doFirst {
+            assert openJfxVersion.getProperty('sha256') == sha256(configurations.source.singleFile)
+        }
+        from tarTree(configurations.source.singleFile)
+        into buildRoot
     }
-    from tarTree(configurations.source.singleFile)
-    into buildRoot
 }
 
 task patchJfx {
@@ -102,3 +113,4 @@ String sha256(File file) {
 artifacts {
     archives packageJfx
 }
+
