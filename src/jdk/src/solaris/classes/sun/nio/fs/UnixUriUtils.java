@@ -83,7 +83,8 @@ class UnixUriUtils {
                 if (b == 0)
                     throw new IllegalArgumentException("Nul character not allowed");
             } else {
-                assert c < 0x80;
+                if (c == 0 || c >= 0x80)
+                    throw new IllegalArgumentException("Bad escape");
                 b = (byte)c;
             }
             result[rlen++] = b;
