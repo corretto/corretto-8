@@ -1116,13 +1116,28 @@ Klass* SystemDictionary::resolve_from_stream(Symbol* class_name,
                                                 verify,
                                                 THREAD);
 
-  const char* pkg = "java/";
-  size_t pkglen = strlen(pkg);
+  bool prohibited = false;
   if (!HAS_PENDING_EXCEPTION &&
       !class_loader.is_null() &&
       parsed_name != NULL &&
-      parsed_name->utf8_length() >= (int)pkglen &&
-      !strncmp((const char*)parsed_name->bytes(), pkg, pkglen)) {
+      parsed_name->utf8_length() >= 5 ) {
+    ResourceMark rm(THREAD);
+    const jbyte* base = parsed_name->base();
+    if ((base[0] | base[1] | base[2] | base[3] | base[4]) & 0x80) {
+      int length;
+      jchar* unicode = parsed_name->as_unicode(length);
+      prohibited = (length >= 5 &&
+                    unicode[0] == 'j' &&
+                    unicode[1] == 'a' &&
+                    unicode[2] == 'v' &&
+                    unicode[3] == 'a' &&
+                    unicode[4] == '/');
+    } else {
+      char* name = parsed_name->as_C_string();
+      prohibited = (strncmp(name, "java", 4) == 0 && name[4] == '/');
+    }
+  }
+  if (prohibited) {
     // It is illegal to define classes in the "java." package from
     // JVM_DefineClass or jni_DefineClass unless you're the bootclassloader
     ResourceMark rm(THREAD);
