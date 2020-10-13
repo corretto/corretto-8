@@ -43,6 +43,13 @@ static jmethodID isaCtrID = 0;
 static const char* nativeSctpLib = "libsctp.so.1";
 static jboolean funcsLoaded = JNI_FALSE;
 
+sctp_getladdrs_func* nio_sctp_getladdrs;
+sctp_freeladdrs_func* nio_sctp_freeladdrs;
+sctp_getpaddrs_func* nio_sctp_getpaddrs;
+sctp_freepaddrs_func* nio_sctp_freepaddrs;
+sctp_bindx_func* nio_sctp_bindx;
+sctp_peeloff_func* nio_sctp_peeloff;
+
 JNIEXPORT jint JNICALL JNI_OnLoad
   (JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_2;

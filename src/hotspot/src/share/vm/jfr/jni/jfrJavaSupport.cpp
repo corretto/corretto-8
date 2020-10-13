@@ -515,10 +515,6 @@ void JfrJavaSupport::throw_class_format_error(const char* message, TRAPS) {
   create_and_throw(vmSymbols::java_lang_ClassFormatError(), message, THREAD);
 }
 
-void JfrJavaSupport::throw_runtime_exception(const char* message, TRAPS) {
-  create_and_throw(vmSymbols::java_lang_RuntimeException(), message, THREAD);
-}
-
 void JfrJavaSupport::abort(jstring errorMsg, Thread* t) {
   DEBUG_ONLY(check_java_thread_in_vm(t));
 
@@ -573,10 +569,6 @@ void JfrJavaSupport::uncaught_exception(jthrowable throwable, Thread* t) {
 JfrJavaSupport::CAUSE JfrJavaSupport::cause() {
   return _cause;
 }
-
-// XXX
-//const char* const JDK_JFR_MODULE_NAME = "jdk.jfr";
-//const char* const JDK_JFR_PACKAGE_NAME = "jdk/jfr";
 
 jlong JfrJavaSupport::jfr_thread_id(jobject target_thread) {
 //  ThreadsListHandle tlh;
