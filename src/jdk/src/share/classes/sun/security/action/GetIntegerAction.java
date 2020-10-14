@@ -25,6 +25,8 @@
 
 package sun.security.action;
 
+import java.security.AccessController;
+
 /**
  * A convenience class for retrieving the integer value of a system property
  * as a privileged action.
@@ -67,7 +69,7 @@ public class GetIntegerAction
         implements java.security.PrivilegedAction<Integer> {
     private String theProp;
     private int defaultVal;
-    private boolean defaultSet = false;
+    private boolean defaultSet;
 
     /**
      * Constructor that takes the name of the system property whose integer
@@ -109,5 +111,51 @@ public class GetIntegerAction
         if ((value == null) && defaultSet)
             return new Integer(defaultVal);
         return value;
+    }
+
+    /**
+     * Convenience method to get a property without going through doPrivileged
+     * if no security manager is present. This is unsafe for inclusion in a
+     * public API but allowable here since this class is now encapsulated.
+     *
+     * Note that this method performs a privileged action using caller-provided
+     * inputs. The caller of this method should take care to ensure that the
+     * inputs are not tainted and the returned property is not made accessible
+     * to untrusted code if it contains sensitive information.
+     *
+     * @param theProp the name of the system property.
+     */
+    public static Integer privilegedGetProperty(String theProp) {
+        if (System.getSecurityManager() == null) {
+            return Integer.getInteger(theProp);
+        } else {
+            return AccessController.doPrivileged(
+                    new GetIntegerAction(theProp));
+        }
+    }
+
+    /**
+     * Convenience method to get a property without going through doPrivileged
+     * if no security manager is present. This is unsafe for inclusion in a
+     * public API but allowable here since this class is now encapsulated.
+     *
+     * Note that this method performs a privileged action using caller-provided
+     * inputs. The caller of this method should take care to ensure that the
+     * inputs are not tainted and the returned property is not made accessible
+     * to untrusted code if it contains sensitive information.
+     *
+     * @param theProp the name of the system property.
+     * @param defaultVal the default value.
+     */
+    public static Integer privilegedGetProperty(String theProp,
+            int defaultVal) {
+        Integer value;
+        if (System.getSecurityManager() == null) {
+            value = Integer.getInteger(theProp);
+        } else {
+            value = AccessController.doPrivileged(
+                    new GetIntegerAction(theProp));
+        }
+        return (value != null) ? value : defaultVal;
     }
 }
