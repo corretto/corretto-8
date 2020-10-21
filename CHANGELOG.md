@@ -2,6 +2,23 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.275.01.2
+
+Release Date: Nov 4, 2020
+
+ The following platforms are updated in this release.
+
+**Target Platforms**
+
++  Alpine-based Linux, x86_64
+
+The following issues are addressed in 8.275.01.2
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Corretto Alpine | Linux | Add changes required to build Corretto for Alpine | |
+
+
 ## Corretto version: 8.275.01.1
 
 Release Date: Nov 4, 2020
