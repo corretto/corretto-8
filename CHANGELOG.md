@@ -2,6 +2,42 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.272.10.1
+
+Release Date: Oct 20, 2020
+
+ The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+The following issues are addressed in 8.272.10.1
+
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.272.10.1  |  All  |  Update Corretto 8 patch set to 8.272.10.1. Update the security baseline to OpenJDK 8u272.  |   |
+| On AL2 AARCH64 builds use -moutline-atomics flags | Amazon Linux 2 aarch64 | Improves performance on aarch64 systems | |
+| Allow passing OpenJFX source location as Gradle property | Linux x86_64 & macOS | Allows building with OpenJFX in a custom location | |
+
+The following CVEs are addressed in 8.272.10.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-14803  | 5.3 | core-libs/java.io
+| CVE-2020-14792  | 4.2 | hotspot/compiler
+| CVE-2020-14782  | 3.7 | security-libs/java.security
+| CVE-2020-14797  | 3.7 | core-libs/java.nio
+| CVE-2020-14781  | 3.7 | core-libs/javax.naming
+| CVE-2020-14779  | 3.7 | core-libs/java.io:serialization
+| CVE-2020-14796  | 3.1 | core-libs/java.io
+| CVE-2020-14798  | 3.1 | core-libs/java.io
+
 ## Corretto version: 8.265.01.1
 
 Release Date: Jul 29, 2020
