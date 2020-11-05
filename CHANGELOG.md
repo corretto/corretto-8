@@ -2,6 +2,30 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.275.01.1
+
+Release Date: Nov 4, 2020
+
+ The following platforms are updated in this release.
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.275.01.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| jdk8u275-b01: Import from upstream  |  all  |  Update Corretto baseline to OpenJDK jdk8u275-b01 | |
+| 8255603: Memory/Performance regression after JDK-8210985| all | Fixes a problem with the initial size of SSLSessionCache being too big | [JDK-8255603](https://bugs.openjdk.java.net/browse/JDK-8255603) |
+
+
 ## Corretto version: 8.272.10.3
 
 Release Date: Oct 21, 2020
