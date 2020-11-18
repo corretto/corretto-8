@@ -33,7 +33,7 @@
 
 #include <unistd.h>
 #include <sys/socket.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <netdb.h>
 
 inline void* os::thread_local_storage_at(int index) {
