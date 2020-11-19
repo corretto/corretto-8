@@ -27,6 +27,10 @@
 #define _JAVASOFT_JVM_H_
 
 #include <sys/stat.h>
+#ifdef MUSL_LIBC
+#include <sys/socket.h>
+#endif
+
 
 #include "jni.h"
 #include "jvm_md.h"

@@ -177,6 +177,9 @@ AC_DEFUN_ONCE([LIB_SETUP_X11],
     HELP_MSG_MISSING_DEPENDENCY([x11])
     AC_MSG_ERROR([Could not find all X11 headers (shape.h Xrender.h XTest.h Intrinsic.h). $HELP_MSG])
   fi
+  if test "x$OPENJDK_TARGET_LIBC" = xmusl; then
+    X_CFLAGS="$X_CFLAGS -DMUSL_LIBC"
+  fi
 
   AC_SUBST(X_CFLAGS)
   AC_SUBST(X_LIBS)
