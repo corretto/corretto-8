@@ -31,18 +31,17 @@
 #include "jlong.h"
 #include "sun_nio_ch_NativeThread.h"
 #include "nio_util.h"
+#include <pthread.h>
 
 #ifdef __linux__
-  #include <pthread.h>
   #include <sys/signal.h>
   /* Also defined in net/linux_close.c */
-  #define INTERRUPT_SIGNAL (__SIGRTMAX - 2)
+  #define INTERRUPT_SIGNAL (SIGRTMAX - 2)
 #elif __solaris__
   #include <thread.h>
   #include <signal.h>
   #define INTERRUPT_SIGNAL (SIGRTMAX - 2)
 #elif _ALLBSD_SOURCE
-  #include <pthread.h>
   #include <signal.h>
   /* Also defined in net/bsd_close.c */
   #define INTERRUPT_SIGNAL SIGIO
