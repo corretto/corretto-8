@@ -61,7 +61,7 @@ class Linux {
   static address   _initial_thread_stack_bottom;
   static uintptr_t _initial_thread_stack_size;
 
-  static const char *_glibc_version;
+  static const char *_libc_version;
   static const char *_libpthread_version;
 
   static bool _is_floating_stack;
@@ -90,7 +90,7 @@ class Linux {
   static int commit_memory_impl(char* addr, size_t bytes,
                                 size_t alignment_hint, bool exec);
 
-  static void set_glibc_version(const char *s)      { _glibc_version = s; }
+  static void set_libc_version(const char *s)      { _libc_version = s; }
   static void set_libpthread_version(const char *s) { _libpthread_version = s; }
 
   static bool supports_variable_stack_size();
@@ -181,7 +181,7 @@ class Linux {
   static bool chained_handler(int sig, siginfo_t* siginfo, void* context);
 
   // GNU libc and libpthread version strings
-  static const char *glibc_version()          { return _glibc_version; }
+  static const char *libc_version()          { return _libc_version; }
   static const char *libpthread_version()     { return _libpthread_version; }
 
   // NPTL or LinuxThreads?
