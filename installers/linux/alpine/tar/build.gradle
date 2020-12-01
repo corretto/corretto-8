@@ -55,11 +55,13 @@ task copySource(type: Copy) {
 task configureBuild(type: Exec) {
     dependsOn copySource
     workingDir "$buildRoot/src"
+
+    def milestone = project.findProperty("corretto.milestone") ?: "fcs"
     commandLine 'bash', 'configure',
             "--with-update-version=${project.version.update}",
             "--with-build-number=b${project.version.build}",
             "--with-corretto-revision=${project.version.revision}",
-            '--with-milestone=fcs',
+            "--with-milestone=${milestone}",
             '--disable-debug-symbols',
             '--disable-zip-debug-info',
             'LIBCXX=-static-libstdc++ -static-libgcc',
