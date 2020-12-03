@@ -73,7 +73,8 @@ allprojects {
                 '--enable-jfr',
                 '--with-vendor-name=Amazon.com Inc.',
                 '--with-vendor-url=https://aws.amazon.com/corretto/',
-                "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+                "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+                "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
         ]
 
         // Valid value: null, release, debug, fastdebug, slowdebug
