@@ -9,16 +9,9 @@ assignees: ''
 
 Thank you for taking the time to help improve OpenJDK and Corretto.
 
-If your request concerns a security vulnerability then please report it by email to aws-security@amazon.com instead of here.
-(You can find more information regarding security issues at https://aws.amazon.com/security/vulnerability-reporting/.)
+If your request concerns a security vulnerability then please report it by email to aws-security@amazon.com instead of here. (You can find more information regarding security issues at https://aws.amazon.com/security/vulnerability-reporting/.)
 
-Otherwise, if your issue concerns OpenJDK 8
-and is not specific to Corretto 8
-we ask that you raise it to the OpenJDK community.
-Depending on your contributor status for OpenJDK,
-please use the [JDK bug system]() or
-the appropriate [mailing list](http://mail.openjdk.java.net/mailman/listinfo)
-for the given problem area or update project [jdk8u-dev](http://mail.openjdk.java.net/mailman/listinfo/jdk8u-dev).
+Otherwise, if your issue concerns OpenJDK 8 and is not specific to Corretto 8 we ask that you raise it to the OpenJDK community. Depending on your contributor status for OpenJDK, please use the [JDK bug system]() or the appropriate [mailing list](http://mail.openjdk.java.net/mailman/listinfo) for the given problem area or update project [jdk8u-dev](http://mail.openjdk.java.net/mailman/listinfo/jdk8u-dev).
 
 If your issue is specific to Corretto 8,
 then you are in the right place.
@@ -42,3 +35,5 @@ If applicable, add screenshots to help explain your problem.
 
 ### Additional context
 Add any other context about the problem here.
+
+For VM crashes, please attach the error report file. By default the file name is `hs_err_pidpid.log`, where pid is the process ID of the process.
