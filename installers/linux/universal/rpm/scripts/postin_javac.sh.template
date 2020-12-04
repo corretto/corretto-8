@@ -1,5 +1,6 @@
 if [ $1 -eq 1 ] ; then
     alternatives --install /usr/bin/javac javac ${RPM_INSTALL_PREFIX}/bin/javac @alternatives_priority@ \
+                 --slave /usr/lib/jvm/java java_sdk ${RPM_INSTALL_PREFIX} \
                  --slave /usr/bin/appletviewer appletviewer ${RPM_INSTALL_PREFIX}/bin/appletviewer \
                  --slave /usr/bin/extcheck extcheck ${RPM_INSTALL_PREFIX}/bin/extcheck \
                  --slave /usr/bin/idlj idlj ${RPM_INSTALL_PREFIX}/bin/idlj \
