@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -573,12 +573,8 @@ public final class ZoneInfoFile {
                     // we can then pass in the dom = -1, dow > 0 into ZoneInfo
                     //
                     // hacking, assume the >=24 is the result of ZRB optimization for
-                    // "last", it works for now. From tzdata2020d this hacking
-                    // will not work for Asia/Gaza and Asia/Hebron which follow
-                    // Palestine DST rules.
-                    if (dom < 0 || dom >= 24 &&
-                                   !(zoneId.equals("Asia/Gaza") ||
-                                     zoneId.equals("Asia/Hebron"))) {
+                    // "last", it works for now.
+                    if (dom < 0 || dom >= 24) {
                         params[1] = -1;
                         params[2] = toCalendarDOW[dow];
                     } else {
@@ -600,9 +596,7 @@ public final class ZoneInfoFile {
                     params[7] = 0;
                 } else {
                     // hacking: see comment above
-                    if (dom < 0 || dom >= 24 &&
-                                   !(zoneId.equals("Asia/Gaza") ||
-                                     zoneId.equals("Asia/Hebron"))) {
+                    if (dom < 0 || dom >= 24) {
                         params[6] = -1;
                         params[7] = toCalendarDOW[dow];
                     } else {
