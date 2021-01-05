@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -773,7 +773,7 @@ class PerfDataManager : AllStatic {
     static PerfStringVariable* create_string_variable(CounterNS ns,
                                                       const char* name,
                                                       const char *s, TRAPS) {
-      return create_string_variable(ns, name, 0, s, THREAD);
+      return create_string_variable(ns, name, 0, s, CHECK_NULL);
     };
 
     static PerfLongVariable* create_long_variable(CounterNS ns,
@@ -784,7 +784,7 @@ class PerfDataManager : AllStatic {
     static PerfLongVariable* create_long_variable(CounterNS ns,
                                                   const char* name,
                                                   PerfData::Units u, TRAPS) {
-      return create_long_variable(ns, name, u, (jlong)0, THREAD);
+      return create_long_variable(ns, name, u, (jlong)0, CHECK_NULL);
     };
 
     static PerfLongVariable* create_long_variable(CounterNS, const char* name,
@@ -805,7 +805,7 @@ class PerfDataManager : AllStatic {
 
     static PerfLongCounter* create_long_counter(CounterNS ns, const char* name,
                                                 PerfData::Units u, TRAPS) {
-      return create_long_counter(ns, name, u, (jlong)0, THREAD);
+      return create_long_counter(ns, name, u, (jlong)0, CHECK_NULL);
     };
 
     static PerfLongCounter* create_long_counter(CounterNS ns, const char* name,
@@ -823,49 +823,49 @@ class PerfDataManager : AllStatic {
 
     static PerfConstant* create_constant(CounterNS ns, const char* name,
                                          PerfData::Units u, jlong val, TRAPS) {
-      return create_long_constant(ns, name, u, val, THREAD);
+      return create_long_constant(ns, name, u, val, CHECK_NULL);
     }
 
     static PerfVariable* create_variable(CounterNS ns, const char* name,
                                          PerfData::Units u, jlong ival, TRAPS) {
-      return create_long_variable(ns, name, u, ival, THREAD);
+      return create_long_variable(ns, name, u, ival, CHECK_NULL);
     }
 
     static PerfVariable* create_variable(CounterNS ns, const char* name,
                                          PerfData::Units u, TRAPS) {
-      return create_long_variable(ns, name, u, (jlong)0, THREAD);
+      return create_long_variable(ns, name, u, (jlong)0, CHECK_NULL);
     }
 
     static PerfVariable* create_variable(CounterNS ns, const char* name,
                                          PerfData::Units u, jlong* sp, TRAPS) {
-      return create_long_variable(ns, name, u, sp, THREAD);
+      return create_long_variable(ns, name, u, sp, CHECK_NULL);
     }
 
     static PerfVariable* create_variable(CounterNS ns, const char* name,
                                          PerfData::Units u,
                                          PerfSampleHelper* sh, TRAPS) {
-      return create_long_variable(ns, name, u, sh, THREAD);
+      return create_long_variable(ns, name, u, sh, CHECK_NULL);
     }
 
     static PerfCounter* create_counter(CounterNS ns, const char* name,
                                        PerfData::Units u, jlong ival, TRAPS) {
-      return create_long_counter(ns, name, u, ival, THREAD);
+      return create_long_counter(ns, name, u, ival, CHECK_NULL);
     }
 
     static PerfCounter* create_counter(CounterNS ns, const char* name,
                                        PerfData::Units u, TRAPS) {
-      return create_long_counter(ns, name, u, (jlong)0, THREAD);
+      return create_long_counter(ns, name, u, (jlong)0, CHECK_NULL);
     }
 
     static PerfCounter* create_counter(CounterNS ns, const char* name,
                                        PerfData::Units u, jlong* sp, TRAPS) {
-      return create_long_counter(ns, name, u, sp, THREAD);
+      return create_long_counter(ns, name, u, sp, CHECK_NULL);
     }
 
     static PerfCounter* create_counter(CounterNS ns, const char* name,
                                        PerfData::Units u,
                                        PerfSampleHelper* sh, TRAPS) {
-      return create_long_counter(ns, name, u, sh, THREAD);
+      return create_long_counter(ns, name, u, sh, CHECK_NULL);
     }
 
     static void destroy();
