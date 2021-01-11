@@ -2,6 +2,32 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.282.08.1
+
+Release Date: Jan 19, 2020
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.282.08.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.282.08.1  |  All  |  Update Corretto 8 patch set to 8.272.10.3. Update the security baseline to OpenJDK 8u282.  | |
+| Update windows build toolchain to VS2013 | Windows | Update the Windows build tool from VS2010 to VS2013 | [corretto-8#278](https://github.com/corretto/corretto-8/pull/278) |
+| Integrate Alpine port | Linux | Alpine port used to be in different branch to avoid build issue on other Linux platforms. This has been addressed. | |
+
+This version addresses a number of vulnerabilities that do not have an associated CVE.
+
 ## Corretto version: 8.275.01.1
 
 Release Date: Nov 4, 2020
