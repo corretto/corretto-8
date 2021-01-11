@@ -542,7 +542,7 @@ JVM_handle_linux_signal(int sig,
   err.report_and_die();
 
   ShouldNotReachHere();
-  return false; // Mute compiler
+  return true; // Mute compiler
 }
 
 void os::Linux::init_thread_fpu_state(void) {
