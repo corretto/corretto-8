@@ -4,7 +4,7 @@ The following sections describe the changes for each release of Amazon Corretto 
 
 ## Corretto version: 8.282.08.1
 
-Release Date: Jan 19, 2020
+Release Date: Jan 19, 2021
 
 The following platforms are updated in this release.
 
