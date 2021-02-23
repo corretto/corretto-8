@@ -95,9 +95,7 @@
 # include <string.h>
 # include <syscall.h>
 # include <sys/sysinfo.h>
-#ifndef MUSL_LIBC
 # include <gnu/libc-version.h>
-#endif
 # include <sys/ipc.h>
 # include <sys/shm.h>
 # include <link.h>
@@ -128,17 +126,6 @@ PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 // for timer info max values which include all bits
 #define ALL_64_BITS CONST64(0xFFFFFFFFFFFFFFFF)
 
-#ifdef MUSL_LIBC
-// dlvsym is not a part of POSIX
-// and musl libc doesn't implement it.
-static void *dlvsym(void *handle,
-                    const char *symbol,
-                    const char *version) {
-   // load the latest version of symbol
-   return dlsym(handle, symbol);
-}
-#endif
-
 #define LARGEPAGES_BIT (1 << 6)
 ////////////////////////////////////////////////////////////////////////////////
 // global variables
@@ -157,7 +144,7 @@ const int os::Linux::_vm_default_page_size = (8 * K);
 bool os::Linux::_is_floating_stack = false;
 bool os::Linux::_is_NPTL = false;
 bool os::Linux::_supports_fast_thread_cpu_time = false;
-const char * os::Linux::_libc_version = NULL;
+const char * os::Linux::_glibc_version = NULL;
 const char * os::Linux::_libpthread_version = NULL;
 pthread_condattr_t os::Linux::_condattr[1];
 
@@ -605,26 +592,17 @@ void os::Linux::libpthread_init() {
 # define _CS_GNU_LIBPTHREAD_VERSION 3
 # endif
 
-#ifdef MUSL_LIBC
-  // confstr() from musl libc returns EINVAL for
-  // _CS_GNU_LIBC_VERSION and _CS_GNU_LIBPTHREAD_VERSION
-  os::Linux::set_libc_version("musl - unknown");
-  os::Linux::set_libpthread_version("musl - unknown");
-  os::Linux::set_is_NPTL();
-  os::Linux::set_is_floating_stack();
-#else
-
   size_t n = confstr(_CS_GNU_LIBC_VERSION, NULL, 0);
   if (n > 0) {
      char *str = (char *)malloc(n, mtInternal);
      confstr(_CS_GNU_LIBC_VERSION, str, n);
-     os::Linux::set_libc_version(str);
+     os::Linux::set_glibc_version(str);
   } else {
      // _CS_GNU_LIBC_VERSION is not supported, try gnu_get_libc_version()
      static char _gnu_libc_version[32];
      jio_snprintf(_gnu_libc_version, sizeof(_gnu_libc_version),
               "glibc %s %s", gnu_get_libc_version(), gnu_get_libc_release());
-     os::Linux::set_libc_version(_gnu_libc_version);
+     os::Linux::set_glibc_version(_gnu_libc_version);
   }
 
   n = confstr(_CS_GNU_LIBPTHREAD_VERSION, NULL, 0);
@@ -637,7 +615,7 @@ void os::Linux::libpthread_init() {
      // So sysconf(_SC_THREAD_THREADS_MAX) will return a positive value.
      // On the other hand, NPTL does not have such a limit, sysconf()
      // will return -1 and errno is not changed. Check if it is really NPTL.
-     if (strcmp(os::Linux::libc_version(), "glibc 2.3.2") == 0 &&
+     if (strcmp(os::Linux::glibc_version(), "glibc 2.3.2") == 0 &&
          strstr(str, "NPTL") &&
          sysconf(_SC_THREAD_THREADS_MAX) > 0) {
        free(str);
@@ -661,7 +639,6 @@ void os::Linux::libpthread_init() {
   if (os::Linux::is_NPTL() || os::Linux::supports_variable_stack_size()) {
      os::Linux::set_is_floating_stack();
   }
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2296,7 +2273,7 @@ void os::Linux::print_distro_info(outputStream* st) {
 void os::Linux::print_libversion_info(outputStream* st) {
   // libc, pthread
   st->print("libc:");
-  st->print("%s ", os::Linux::libc_version());
+  st->print("%s ", os::Linux::glibc_version());
   st->print("%s ", os::Linux::libpthread_version());
   if (os::Linux::is_LinuxThreads()) {
      st->print("(%s stack)", os::Linux::is_floating_stack() ? "floating" : "fixed");
@@ -5217,7 +5194,7 @@ jint os::init_2(void)
   Linux::libpthread_init();
   if (PrintMiscellaneous && (Verbose || WizardMode)) {
      tty->print_cr("[HotSpot is running with %s, %s(%s)]\n",
-          Linux::libc_version(), Linux::libpthread_version(),
+          Linux::glibc_version(), Linux::libpthread_version(),
           Linux::is_floating_stack() ? "floating stack" : "fixed stack");
   }
 

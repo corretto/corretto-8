@@ -449,7 +449,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
                                        [], [$2CXXSTD_CXXFLAG=""])
     $2CXXFLAGS_JDK="${$2CXXFLAGS_JDK} ${$2CXXSTD_CXXFLAG}"
     $2JVM_CFLAGS="${$2JVM_CFLAGS} ${$2CXXSTD_CXXFLAG}"
-
     AC_SUBST($2CXXSTD_CXXFLAG)
   fi
 
@@ -662,10 +661,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
 
   # Setup release name
   CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DRELEASE='\"\$(RELEASE)\"'"
-
-  if test "x$OPENJDK_TARGET_LIBC" = xmusl; then
-    CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMUSL_LIBC"
-  fi
 
 
   # Set some additional per-OS defines.

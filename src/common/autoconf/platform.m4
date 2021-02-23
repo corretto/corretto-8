@@ -149,24 +149,6 @@ AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_OS],
   esac
 ])
 
-# Support macro for PLATFORM_EXTRACT_TARGET_AND_BUILD.
-# Converts autoconf style OS name to OpenJDK style, into
-# VAR_LIBC.
-AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_LIBC],
-[
-  case "$1" in
-    *linux*-musl)
-      VAR_LIBC=musl
-      ;;
-    *linux*-gnu)
-      VAR_LIBC=gnu
-      ;;
-    *)
-      VAR_LIBC=default
-      ;;
-  esac
-])
-
 # Expects $host_os $host_cpu $build_os and $build_cpu
 # and $with_target_bits to have been setup!
 #
@@ -184,10 +166,9 @@ AC_DEFUN([PLATFORM_EXTRACT_TARGET_AND_BUILD],
   AC_SUBST(OPENJDK_TARGET_AUTOCONF_NAME)
   AC_SUBST(OPENJDK_BUILD_AUTOCONF_NAME)
 
-  # Convert the autoconf OS/CPU value to our own data, into the VAR_OS/CPU/LIBC variables.
+  # Convert the autoconf OS/CPU value to our own data, into the VAR_OS/CPU variables.
   PLATFORM_EXTRACT_VARS_FROM_OS($build_os)
   PLATFORM_EXTRACT_VARS_FROM_CPU($build_cpu)
-  PLATFORM_EXTRACT_VARS_FROM_LIBC($build_os)
   # ..and setup our own variables. (Do this explicitely to facilitate searching)
   OPENJDK_BUILD_OS="$VAR_OS"
   OPENJDK_BUILD_OS_API="$VAR_OS_API"
@@ -196,7 +177,6 @@ AC_DEFUN([PLATFORM_EXTRACT_TARGET_AND_BUILD],
   OPENJDK_BUILD_CPU_ARCH="$VAR_CPU_ARCH"
   OPENJDK_BUILD_CPU_BITS="$VAR_CPU_BITS"
   OPENJDK_BUILD_CPU_ENDIAN="$VAR_CPU_ENDIAN"
-  OPENJDK_BUILD_LIBC="$VAR_LIBC"
   AC_SUBST(OPENJDK_BUILD_OS)
   AC_SUBST(OPENJDK_BUILD_OS_API)
   AC_SUBST(OPENJDK_BUILD_OS_ENV)
@@ -204,20 +184,13 @@ AC_DEFUN([PLATFORM_EXTRACT_TARGET_AND_BUILD],
   AC_SUBST(OPENJDK_BUILD_CPU_ARCH)
   AC_SUBST(OPENJDK_BUILD_CPU_BITS)
   AC_SUBST(OPENJDK_BUILD_CPU_ENDIAN)
-  AC_SUBST(OPENJDK_BUILD_LIBC)
 
   AC_MSG_CHECKING([openjdk-build os-cpu])
   AC_MSG_RESULT([$OPENJDK_BUILD_OS-$OPENJDK_BUILD_CPU])
 
-  if test "x$OPENJDK_BUILD_OS" = "xlinux"; then
-    AC_MSG_CHECKING([openjdk-build C library])
-    AC_MSG_RESULT([$OPENJDK_BUILD_LIBC])
-  fi
-
   # Convert the autoconf OS/CPU value to our own data, into the VAR_OS/CPU variables.
   PLATFORM_EXTRACT_VARS_FROM_OS($host_os)
   PLATFORM_EXTRACT_VARS_FROM_CPU($host_cpu)
-  PLATFORM_EXTRACT_VARS_FROM_LIBC($host_os)
   # ... and setup our own variables. (Do this explicitely to facilitate searching)
   OPENJDK_TARGET_OS="$VAR_OS"
   OPENJDK_TARGET_OS_API="$VAR_OS_API"
@@ -226,7 +199,6 @@ AC_DEFUN([PLATFORM_EXTRACT_TARGET_AND_BUILD],
   OPENJDK_TARGET_CPU_ARCH="$VAR_CPU_ARCH"
   OPENJDK_TARGET_CPU_BITS="$VAR_CPU_BITS"
   OPENJDK_TARGET_CPU_ENDIAN="$VAR_CPU_ENDIAN"
-  OPENJDK_TARGET_LIBC="$VAR_LIBC"
   AC_SUBST(OPENJDK_TARGET_OS)
   AC_SUBST(OPENJDK_TARGET_OS_API)
   AC_SUBST(OPENJDK_TARGET_OS_ENV)
@@ -234,15 +206,9 @@ AC_DEFUN([PLATFORM_EXTRACT_TARGET_AND_BUILD],
   AC_SUBST(OPENJDK_TARGET_CPU_ARCH)
   AC_SUBST(OPENJDK_TARGET_CPU_BITS)
   AC_SUBST(OPENJDK_TARGET_CPU_ENDIAN)
-  AC_SUBST(OPENJDK_TARGET_LIBC)
 
   AC_MSG_CHECKING([openjdk-target os-cpu])
   AC_MSG_RESULT([$OPENJDK_TARGET_OS-$OPENJDK_TARGET_CPU])
-
-  if test "x$OPENJDK_TARGET_OS" = "xlinux"; then
-    AC_MSG_CHECKING([openjdk-target C library])
-    AC_MSG_RESULT([$OPENJDK_TARGET_LIBC])
-  fi
 ])
 
 # Check if a reduced build (32-bit on 64-bit platforms) is requested, and modify behaviour
