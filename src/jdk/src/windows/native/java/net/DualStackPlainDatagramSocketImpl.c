@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -137,7 +137,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketBind
   (JNIEnv *env, jclass clazz, jint fd, jobject iaObj, jint port, jboolean exclBind) {
     SOCKETADDRESS sa;
     int rv;
-    socklen_t sa_len = sizeof(sa);
+    int sa_len = sizeof(sa);
 
     if (NET_InetAddressToSockaddr(env, iaObj, port, (struct sockaddr *)&sa,
                                  &sa_len, JNI_TRUE) != 0) {
@@ -162,7 +162,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketConn
   (JNIEnv *env, jclass clazz, jint fd, jobject iaObj, jint port) {
     SOCKETADDRESS sa;
     int rv;
-    socklen_t sa_len = sizeof(sa);
+    int sa_len = sizeof(sa);
     DWORD x1, x2; /* ignored result codes */
     int t = TRUE;
 
@@ -236,7 +236,7 @@ JNIEXPORT jint JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketLoca
 JNIEXPORT jobject JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketLocalAddress
   (JNIEnv *env , jclass clazz, jint fd) {
     SOCKETADDRESS sa;
-    socklen_t len = sizeof(sa);
+    int len = sizeof(sa);
     jobject iaObj;
     int port;
 
@@ -427,7 +427,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketSend
   (JNIEnv *env, jclass clazz, jint fd, jbyteArray data, jint offset, jint length,
      jobject iaObj, jint port, jboolean connected) {
     SOCKETADDRESS sa;
-    socklen_t sa_len = sizeof(sa);
+    int sa_len = sizeof(sa);
     SOCKETADDRESS *sap = &sa;
     char BUF[MAX_BUFFER_LEN];
     char *fullPacket;
@@ -504,7 +504,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketSetI
 JNIEXPORT jint JNICALL Java_java_net_DualStackPlainDatagramSocketImpl_socketGetIntOption
   (JNIEnv *env, jclass clazz, jint fd, jint cmd) {
     int level = 0, opt = 0, result=0;
-    socklen_t result_len = sizeof(result);
+    int result_len = sizeof(result);
 
     if (NET_MapSocketOption(cmd, &level, &opt) < 0) {
         JNU_ThrowByNameWithLastError(env, JNU_JAVANETPKG "SocketException",

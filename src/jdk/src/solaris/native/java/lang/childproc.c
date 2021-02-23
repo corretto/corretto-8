@@ -279,7 +279,7 @@ JDK_execvpe(int mode, const char *file,
             switch (errno) {
             case EACCES:
                 sticky_errno = errno;
-                // Falls through.
+                /* FALLTHRU */
             case ENOENT:
             case ENOTDIR:
 #ifdef ELOOP

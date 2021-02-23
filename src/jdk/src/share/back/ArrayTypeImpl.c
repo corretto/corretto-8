@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2005, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -106,20 +106,21 @@ getComponentClass(JNIEnv *env, jclass arrayClass, char *componentSignature,
 
 static void
 writeNewObjectArray(JNIEnv *env, PacketOutputStream *out,
-                    jclass arrayClass, jint size, char *componentSignature)
+                 jclass arrayClass, jint size, char *componentSignature)
 {
 
     WITH_LOCAL_REFS(env, 1) {
 
         jarray array;
-        jclass componentClass = 0;
+        jclass componentClass;
         jdwpError serror;
 
         serror = getComponentClass(env, arrayClass,
-                                   componentSignature, &componentClass);
+                                       componentSignature, &componentClass);
         if (serror != JDWP_ERROR(NONE)) {
             outStream_setError(out, serror);
         } else {
+
             array = JNI_FUNC_PTR(env,NewObjectArray)(env, size, componentClass, 0);
             if (JNI_FUNC_PTR(env,ExceptionOccurred)(env)) {
                 JNI_FUNC_PTR(env,ExceptionClear)(env);

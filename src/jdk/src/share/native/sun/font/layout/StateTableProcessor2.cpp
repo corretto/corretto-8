@@ -46,10 +46,10 @@ StateTableProcessor2::StateTableProcessor2()
 }
 
 StateTableProcessor2::StateTableProcessor2(const LEReferenceTo<MorphSubtableHeader2> &morphSubtableHeader, LEErrorCode &success)
-  : SubtableProcessor2(morphSubtableHeader, success),
-    dir(0), format(0), nClasses(0), classTableOffset(0), stateArrayOffset(0), entryTableOffset(0),
-    classTable(), stateArray(), stateTableHeader(morphSubtableHeader, success),
-    stHeader(stateTableHeader, success, (const StateTableHeader2*)&stateTableHeader->stHeader)
+  : SubtableProcessor2(morphSubtableHeader, success), stateTableHeader(morphSubtableHeader, success),
+    stHeader(stateTableHeader, success, (const StateTableHeader2*)&stateTableHeader->stHeader),
+    nClasses(0), classTableOffset(0), stateArrayOffset(0), entryTableOffset(0), classTable(), format(0),
+    stateArray()
 {
   if (LE_FAILURE(success)) {
     return;

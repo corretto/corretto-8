@@ -819,7 +819,7 @@ GetJREPath(char *path, jint pathsize, const char * arch, jboolean speculative)
             return JNI_TRUE;
         }
         /* ensure storage for path + /jre + NULL */
-        if ((JLI_StrLen(path) + 4  + 1) > (size_t)pathsize) {
+        if ((JLI_StrLen(path) + 4  + 1) > pathsize) {
             JLI_TraceLauncher("Insufficient space to store JRE path\n");
             return JNI_FALSE;
         }
@@ -1043,7 +1043,7 @@ ContinueInNewThread0(int (JNICALL *continuation)(void *), jlong stack_size, void
     if (pthread_create(&tid, &attr, (void *(*)(void*))continuation, (void*)args) == 0) {
       void * tmp;
       pthread_join(tid, &tmp);
-      rslt = (int)(intptr_t)tmp;
+      rslt = (int)tmp;
     } else {
      /*
       * Continue execution in current thread if for some reason (e.g. out of

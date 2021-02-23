@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -296,11 +296,11 @@ Java_sun_tracing_dtrace_JVM_defineClass0(
         goto free_body;
 
     if (name != NULL) {
-        jsize i;
-        jsize len = (*env)->GetStringUTFLength(env, name);
-        jsize unicode_len = (*env)->GetStringLength(env, name);
-        if ((size_t)len >= sizeof(buf)) {
-	  utfName = malloc((size_t)(len + 1));
+        int i;
+        int len = (*env)->GetStringUTFLength(env, name);
+        int unicode_len = (*env)->GetStringLength(env, name);
+        if (len >= sizeof(buf)) {
+            utfName = malloc(len + 1);
             if (utfName == NULL) {
                 goto free_body;
             }

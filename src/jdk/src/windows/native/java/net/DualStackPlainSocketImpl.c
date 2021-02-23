@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -90,7 +90,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainSocketImpl_bind0
 {
     SOCKETADDRESS sa;
     int rv;
-    socklen_t sa_len = sizeof(sa);
+    int sa_len = sizeof(sa);
 
     if (NET_InetAddressToSockaddr(env, iaObj, port, (struct sockaddr *)&sa,
                                  &sa_len, JNI_TRUE) != 0) {
@@ -112,7 +112,7 @@ JNIEXPORT jint JNICALL Java_java_net_DualStackPlainSocketImpl_connect0
   (JNIEnv *env, jclass clazz, jint fd, jobject iaObj, jint port) {
     SOCKETADDRESS sa;
     int rv;
-    socklen_t sa_len = sizeof(sa);
+    int sa_len = sizeof(sa);
 
     if (NET_InetAddressToSockaddr(env, iaObj, port, (struct sockaddr *)&sa,
                                  &sa_len, JNI_TRUE) != 0) {
@@ -143,7 +143,7 @@ JNIEXPORT jint JNICALL Java_java_net_DualStackPlainSocketImpl_connect0
 JNIEXPORT void JNICALL Java_java_net_DualStackPlainSocketImpl_waitForConnect
   (JNIEnv *env, jclass clazz, jint fd, jint timeout) {
     int rv, retry;
-    socklen_t optlen = sizeof(rv);
+    int optlen = sizeof(rv);
     fd_set wr, ex;
     struct timeval t;
 
@@ -374,7 +374,7 @@ JNIEXPORT void JNICALL Java_java_net_DualStackPlainSocketImpl_setIntOption
     int level = 0, opt = 0;
     struct linger linger = {0, 0};
     char *parg;
-    socklen_t arglen;
+    int arglen;
 
     if (NET_MapSocketOption(cmd, &level, &opt) < 0) {
         JNU_ThrowByNameWithLastError(env,
@@ -415,7 +415,7 @@ JNIEXPORT jint JNICALL Java_java_net_DualStackPlainSocketImpl_getIntOption
     int result=0;
     struct linger linger = {0, 0};
     char *arg;
-    socklen_t arglen;
+    int arglen;
 
     if (NET_MapSocketOption(cmd, &level, &opt) < 0) {
         JNU_ThrowByNameWithLastError(env,

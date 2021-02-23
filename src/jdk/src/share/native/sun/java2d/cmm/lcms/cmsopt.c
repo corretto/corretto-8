@@ -552,10 +552,10 @@ cmsBool  PatchLUT(cmsStage* CLUT, cmsUInt16Number At[], cmsUInt16Number Value[],
                 return FALSE;
             }
 
-    for (i = 0; i < (int) nChannelsOut; i++)
-        Grid->Tab.T[index + i] = Value[i];
+            for (i = 0; i < (int) nChannelsOut; i++)
+                Grid->Tab.T[index + i] = Value[i];
 
-    return TRUE;
+            return TRUE;
 }
 
 // Auxiliary, to see if two values are equal or very different

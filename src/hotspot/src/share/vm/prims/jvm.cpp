@@ -4009,51 +4009,51 @@ JVM_LEAF(jint, JVM_Listen(jint fd, jint count))
 JVM_END
 
 
-JVM_LEAF(jint, JVM_Connect(jint fd, struct sockaddr *him, socklen_t len))
+JVM_LEAF(jint, JVM_Connect(jint fd, struct sockaddr *him, jint len))
   JVMWrapper2("JVM_Connect (0x%x)", fd);
   //%note jvm_r6
-  return os::connect(fd, him, len);
+  return os::connect(fd, him, (socklen_t)len);
 JVM_END
 
 
-JVM_LEAF(jint, JVM_Bind(jint fd, struct sockaddr *him, socklen_t len))
+JVM_LEAF(jint, JVM_Bind(jint fd, struct sockaddr *him, jint len))
   JVMWrapper2("JVM_Bind (0x%x)", fd);
   //%note jvm_r6
-  return os::bind(fd, him, len);
+  return os::bind(fd, him, (socklen_t)len);
 JVM_END
 
 
-JVM_LEAF(jint, JVM_Accept(jint fd, struct sockaddr *him, socklen_t *len))
+JVM_LEAF(jint, JVM_Accept(jint fd, struct sockaddr *him, jint *len))
   JVMWrapper2("JVM_Accept (0x%x)", fd);
   //%note jvm_r6
-  socklen_t socklen = *len;
+  socklen_t socklen = (socklen_t)(*len);
   jint result = os::accept(fd, him, &socklen);
   *len = (jint)socklen;
   return result;
 JVM_END
 
 
-JVM_LEAF(jint, JVM_RecvFrom(jint fd, char *buf, int nBytes, int flags, struct sockaddr *from, socklen_t *fromlen))
+JVM_LEAF(jint, JVM_RecvFrom(jint fd, char *buf, int nBytes, int flags, struct sockaddr *from, int *fromlen))
   JVMWrapper2("JVM_RecvFrom (0x%x)", fd);
   //%note jvm_r6
-  socklen_t socklen = *fromlen;
+  socklen_t socklen = (socklen_t)(*fromlen);
   jint result = os::recvfrom(fd, buf, (size_t)nBytes, (uint)flags, from, &socklen);
   *fromlen = (int)socklen;
   return result;
 JVM_END
 
 
-JVM_LEAF(jint, JVM_GetSockName(jint fd, struct sockaddr *him, socklen_t *len))
+JVM_LEAF(jint, JVM_GetSockName(jint fd, struct sockaddr *him, int *len))
   JVMWrapper2("JVM_GetSockName (0x%x)", fd);
   //%note jvm_r6
-  socklen_t socklen = *len;
+  socklen_t socklen = (socklen_t)(*len);
   jint result = os::get_sock_name(fd, him, &socklen);
-  *len = socklen;
+  *len = (int)socklen;
   return result;
 JVM_END
 
 
-JVM_LEAF(jint, JVM_SendTo(jint fd, char *buf, int len, int flags, struct sockaddr *to, socklen_t tolen))
+JVM_LEAF(jint, JVM_SendTo(jint fd, char *buf, int len, int flags, struct sockaddr *to, int tolen))
   JVMWrapper2("JVM_SendTo (0x%x)", fd);
   //%note jvm_r6
   return os::sendto(fd, buf, (size_t)len, (uint)flags, to, (socklen_t)tolen);
@@ -4067,20 +4067,20 @@ JVM_LEAF(jint, JVM_SocketAvailable(jint fd, jint *pbytes))
 JVM_END
 
 
-JVM_LEAF(jint, JVM_GetSockOpt(jint fd, int level, int optname, char *optval, socklen_t *optlen))
+JVM_LEAF(jint, JVM_GetSockOpt(jint fd, int level, int optname, char *optval, int *optlen))
   JVMWrapper2("JVM_GetSockOpt (0x%x)", fd);
   //%note jvm_r6
-  socklen_t socklen = *optlen;
+  socklen_t socklen = (socklen_t)(*optlen);
   jint result = os::get_sock_opt(fd, level, optname, optval, &socklen);
   *optlen = (int)socklen;
   return result;
 JVM_END
 
 
-JVM_LEAF(jint, JVM_SetSockOpt(jint fd, int level, int optname, const char *optval, socklen_t optlen))
+JVM_LEAF(jint, JVM_SetSockOpt(jint fd, int level, int optname, const char *optval, int optlen))
   JVMWrapper2("JVM_GetSockOpt (0x%x)", fd);
   //%note jvm_r6
-  return os::set_sock_opt(fd, level, optname, optval, optlen);
+  return os::set_sock_opt(fd, level, optname, optval, (socklen_t)optlen);
 JVM_END
 
 
