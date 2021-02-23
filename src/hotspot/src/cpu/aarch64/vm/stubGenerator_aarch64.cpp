@@ -708,9 +708,6 @@ class StubGenerator: public StubCodeGenerator {
           const Register count = end; // 'end' register contains bytes count now
           __ load_byte_map_base(scratch);
           __ add(start, start, scratch);
-          if (UseConcMarkSweepGC) {
-            __ membar(__ StoreStore);
-          }
 	  __ BIND(L_loop);
 	  __ strb(zr, Address(start, count));
           __ subs(count, count, 1);

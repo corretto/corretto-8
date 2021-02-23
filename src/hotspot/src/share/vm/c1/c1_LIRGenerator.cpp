@@ -1607,11 +1607,6 @@ void LIRGenerator::CardTableModRef_post_barrier(LIR_OprDesc* addr, LIR_OprDesc* 
   } else {
     __ unsigned_shift_right(addr, CardTableModRefBS::card_shift, tmp);
   }
-
-  if (UseConcMarkSweepGC && CMSPrecleaningEnabled) {
-    __ membar_storestore();
-  }
-
   if (can_inline_as_constant(card_table_base)) {
     __ move(LIR_OprFact::intConst(0),
               new LIR_Address(tmp, card_table_base->as_jint(), T_BYTE));

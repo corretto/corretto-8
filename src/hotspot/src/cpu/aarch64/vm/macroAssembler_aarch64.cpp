@@ -3192,10 +3192,6 @@ void MacroAssembler::store_check_part_2(Register obj) {
   // don't bother to check, but it could save an instruction.
   intptr_t disp = (intptr_t) ct->byte_map_base;
   load_byte_map_base(rscratch1);
-
-  if (UseConcMarkSweepGC && CMSPrecleaningEnabled) {
-      membar(StoreStore);
-  }
   strb(zr, Address(obj, rscratch1));
 }
 
