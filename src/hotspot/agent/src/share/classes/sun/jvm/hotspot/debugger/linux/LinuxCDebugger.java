@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2003, 2012, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2015, Red Hat Inc.
+ * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,14 +28,14 @@ import java.io.*;
 import java.util.*;
 import sun.jvm.hotspot.debugger.*;
 import sun.jvm.hotspot.debugger.cdbg.*;
-import sun.jvm.hotspot.debugger.x86.*;
+import sun.jvm.hotspot.debugger.aarch64.*;
 import sun.jvm.hotspot.debugger.amd64.*;
 import sun.jvm.hotspot.debugger.sparc.*;
-import sun.jvm.hotspot.debugger.linux.x86.*;
-import sun.jvm.hotspot.debugger.linux.amd64.*;
-import sun.jvm.hotspot.debugger.aarch64.*;
+import sun.jvm.hotspot.debugger.x86.*;
 import sun.jvm.hotspot.debugger.linux.aarch64.*;
+import sun.jvm.hotspot.debugger.linux.amd64.*;
 import sun.jvm.hotspot.debugger.linux.sparc.*;
+import sun.jvm.hotspot.debugger.linux.x86.*;
 import sun.jvm.hotspot.utilities.*;
 
 class LinuxCDebugger implements CDebugger {

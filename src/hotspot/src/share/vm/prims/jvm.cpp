@@ -1171,6 +1171,7 @@ static jclass jvm_define_class_common(JNIEnv *env, const char *name,
   return (jclass) JNIHandles::make_local(env, k->java_mirror());
 }
 
+
 JVM_ENTRY(jclass, JVM_DefineClass(JNIEnv *env, const char *name, jobject loader, const jbyte *buf, jsize len, jobject pd))
   JVMWrapper2("JVM_DefineClass %s", name);
 

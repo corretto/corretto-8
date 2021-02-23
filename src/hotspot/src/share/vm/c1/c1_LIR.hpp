@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -2144,6 +2144,7 @@ class LIR_List: public CompilationResourceObj {
 #ifdef PPC
   void convert(Bytecodes::Code code, LIR_Opr left, LIR_Opr dst, LIR_Opr tmp1, LIR_Opr tmp2) { append(new LIR_OpConvert(code, left, dst, NULL, tmp1, tmp2)); }
 #endif
+
 #if defined (TARGET_ARCH_aarch64)
   void convert(Bytecodes::Code code, LIR_Opr left, LIR_Opr dst,
 	       ConversionStub* stub = NULL, LIR_Opr tmp1 = LIR_OprDesc::illegalOpr()) {

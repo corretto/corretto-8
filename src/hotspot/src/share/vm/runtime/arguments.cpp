@@ -817,7 +817,7 @@ void Arguments::add_string(char*** bldarray, int* count, const char* arg) {
   } else {
     *bldarray = REALLOC_C_HEAP_ARRAY(char*, *bldarray, new_count, mtInternal);
   }
-  (*bldarray)[*count] = os::strdup_check_oom(arg);
+  (*bldarray)[*count] = strdup(arg);
   *count = new_count;
 }
 
@@ -1287,9 +1287,9 @@ void Arguments::set_cms_and_parnew_gc_flags() {
   // upper bound depends on # of threads and NewRatio.
   const uintx parallel_gc_threads =
     (ParallelGCThreads == 0 ? 1 : ParallelGCThreads);
-  const size_t preferred_max_new_size_unaligned =
+  uintx preferred_max_new_size_unaligned = (uintx)
     MIN2(max_heap/(NewRatio+1), ScaleForWordSize(young_gen_per_worker * parallel_gc_threads));
-  uintx preferred_max_new_size = (uintx)
+  size_t preferred_max_new_size =
     align_size_up(preferred_max_new_size_unaligned, os::vm_page_size());
 
   // Unless explicitly requested otherwise, size young gen
@@ -1309,7 +1309,7 @@ void Arguments::set_cms_and_parnew_gc_flags() {
     }
     if (PrintGCDetails && Verbose) {
       // Too early to use gclog_or_tty
-      tty->print_cr("CMS ergo set MaxNewSize: " UINTX_FORMAT, MaxNewSize);
+       tty->print_cr("CMS ergo set MaxNewSize: " UINTX_FORMAT, MaxNewSize); 
     }
 
     // Code along this path potentially sets NewSize and OldSize
@@ -2076,7 +2076,7 @@ void Arguments::process_java_compiler_argument(char* arg) {
 }
 
 void Arguments::process_java_launcher_argument(const char* launcher, void* extra_info) {
-  _sun_java_launcher = os::strdup_check_oom(launcher);
+  _sun_java_launcher = strdup(launcher);
   if (strcmp("gamma", _sun_java_launcher) == 0) {
     _created_by_gamma_launcher = true;
   }
@@ -3221,7 +3221,7 @@ jint Arguments::parse_each_vm_init_arg(const JavaVMInitArgs* args,
       // Redirect GC output to the file. -Xloggc:<filename>
       // ostream_init_log(), when called will use this filename
       // to initialize a fileStream.
-      _gc_log_filename = os::strdup_check_oom(tail);
+      _gc_log_filename = strdup(tail);
      if (!is_filename_valid(_gc_log_filename)) {
        jio_fprintf(defaultStream::output_stream(),
                   "Invalid file name for use with -Xloggc: Filename can only contain the "
@@ -3477,7 +3477,7 @@ void Arguments::fix_appclasspath() {
       src ++;
     }
 
-    char* copy = os::strdup_check_oom(src, mtInternal);
+    char* copy = os::strdup(src, mtInternal);
 
     // trim all trailing empty paths
     for (char* tail = copy + strlen(copy) - 1; tail >= copy && *tail == separator; tail--) {
@@ -3863,7 +3863,7 @@ static char* get_shared_archive_path() {
         jvm_path, os::file_separator());
     }
   } else {
-    shared_archive_path = os::strdup_check_oom(SharedArchiveFile, mtInternal);
+    shared_archive_path = os::strdup(SharedArchiveFile, mtInternal);
   }
   return shared_archive_path;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,11 +27,11 @@
 #ifdef TARGET_ARCH_x86
 # include "jni_x86.h"
 #endif
-#ifdef TARGET_ARCH_aarch64
-# include "jni_aarch64.h"
-#endif
 #ifdef TARGET_ARCH_sparc
 # include "jni_sparc.h"
+#endif
+#ifdef TARGET_ARCH_aarch64
+# include "jni_aarch64.h"
 #endif
 #ifdef TARGET_ARCH_zero
 # include "jni_zero.h"
@@ -42,7 +42,6 @@
 #ifdef TARGET_ARCH_ppc
 # include "jni_ppc.h"
 #endif
-
 
 /*
   The local copies of JNI header files may be refreshed

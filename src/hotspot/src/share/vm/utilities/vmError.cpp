@@ -202,8 +202,7 @@ static char* next_OnError_command(char* buf, int buflen, const char** ptr) {
 
 static void print_bug_submit_message(outputStream *out, Thread *thread) {
   if (out == NULL) return;
-  out->print_raw_cr("# If you would like to submit a bug report, please include");
-  out->print_raw_cr("# instructions on how to reproduce the bug and visit:");
+  out->print_raw_cr("# If you would like to submit a bug report, please visit:");
   out->print_raw   ("#   ");
   out->print_raw_cr(Arguments::java_vendor_url_bug());
   // If the crash is in native code, encourage user to submit a bug to the
