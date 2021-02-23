@@ -876,7 +876,6 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           __ sub(arr_size, arr_size, t1);  // body length
           __ add(t1, t1, obj);       // body start
           __ initialize_body(t1, arr_size, 0, t2);
-          __ membar(Assembler::StoreStore);
           __ verify_oop(obj);
 
           __ ret(lr);
@@ -905,7 +904,6 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           __ sub(arr_size, arr_size, t1);  // body length
           __ add(t1, t1, obj);       // body start
           __ initialize_body(t1, arr_size, 0, t2);
-          __ membar(Assembler::StoreStore);
           __ verify_oop(obj);
 
           __ ret(lr);
