@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -34,9 +34,6 @@
 #include "runtime/stubRoutines.hpp"
 #ifdef TARGET_ARCH_x86
 # include "depChecker_x86.hpp"
-#endif
-#ifdef TARGET_ARCH_aarch64
-# include "depChecker_aarch64.hpp"
 #endif
 #ifdef TARGET_ARCH_sparc
 # include "depChecker_sparc.hpp"

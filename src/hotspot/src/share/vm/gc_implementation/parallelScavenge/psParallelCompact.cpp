@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -913,8 +913,8 @@ void PSParallelCompact::initialize_space_info()
 void PSParallelCompact::initialize_dead_wood_limiter()
 {
   const size_t max = 100;
-  _dwl_mean = double(MIN2((size_t) ParallelOldDeadWoodLimiterMean, max)) / 100.0;
-  _dwl_std_dev = double(MIN2((size_t) ParallelOldDeadWoodLimiterStdDev, max)) / 100.0;
+  _dwl_mean = double(MIN2(ParallelOldDeadWoodLimiterMean, max)) / 100.0;
+  _dwl_std_dev = double(MIN2(ParallelOldDeadWoodLimiterStdDev, max)) / 100.0;
   _dwl_first_term = 1.0 / (sqrt(2.0 * M_PI) * _dwl_std_dev);
   DEBUG_ONLY(_dwl_initialized = true;)
   _dwl_adjustment = normal_distribution(1.0);

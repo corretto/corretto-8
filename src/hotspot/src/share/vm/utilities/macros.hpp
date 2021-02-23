@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -352,14 +352,6 @@
 #else
 #define AMD64_ONLY(code)
 #define NOT_AMD64(code) code
-#endif
-
-#ifdef AARCH64
-#define AARCH64_ONLY(code) code
-#define NOT_AARCH64(code)
-#else
-#define AARCH64_ONLY(code)
-#define NOT_AARCH64(code) code
 #endif
 
 #ifdef SPARC

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,10 +36,6 @@
 
 #include <sys/ptrace.h>
 
-#if defined(aarch64)
-#include "asm/ptrace.h"
-#endif
-
 /************************************************************************************
 
 0. This is very minimal subset of Solaris libproc just enough for current application.
@@ -75,9 +71,6 @@ combination of ptrace and /proc calls.
 #if defined(sparc) || defined(sparcv9) || defined(ppc64)
 #include <asm/ptrace.h>
 #define user_regs_struct  pt_regs
-#endif
-#if defined(aarch64)
-#define user_regs_struct user_pt_regs
 #endif
 
 // This C bool type must be int for compatibility with Linux calls and

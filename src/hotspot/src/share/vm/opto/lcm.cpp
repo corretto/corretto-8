@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,8 +36,6 @@
 # include "adfiles/ad_x86_32.hpp"
 #elif defined TARGET_ARCH_MODEL_x86_64
 # include "adfiles/ad_x86_64.hpp"
-#elif defined TARGET_ARCH_MODEL_aarch64
-# include "adfiles/ad_aarch64.hpp"
 #elif defined TARGET_ARCH_MODEL_sparc
 # include "adfiles/ad_sparc.hpp"
 #elif defined TARGET_ARCH_MODEL_zero

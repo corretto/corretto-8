@@ -173,7 +173,6 @@ endif
 ARCHFLAG = $(ARCHFLAG/$(BUILDARCH))
 ARCHFLAG/i486    = -m32 -march=i586
 ARCHFLAG/amd64   = -m64 $(STACK_ALIGNMENT_OPT)
-ARCHFLAG/aarch64 =
 ARCHFLAG/ia64    =
 ARCHFLAG/sparc   = -m32 -mcpu=v9
 ARCHFLAG/sparcv9 = -m64 -mcpu=v9
@@ -211,9 +210,7 @@ ifeq ($(USE_CLANG), true)
   WARNINGS_ARE_ERRORS += -Wno-logical-op-parentheses -Wno-parentheses-equality -Wno-parentheses
   WARNINGS_ARE_ERRORS += -Wno-switch -Wno-tautological-constant-out-of-range-compare -Wno-tautological-compare
   WARNINGS_ARE_ERRORS += -Wno-delete-non-virtual-dtor -Wno-deprecated -Wno-format -Wno-dynamic-class-memaccess
-  WARNINGS_ARE_ERRORS += -Wno-return-type -Wno-empty-body -Qunused-arguments -Wno-uninitialized
-else
-  WARNINGS_ARE_ERRORS += -Wno-deprecated-declarations
+  WARNINGS_ARE_ERRORS += -Wno-return-type -Wno-empty-body
 endif
 
 WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wunused-value -Wformat=2 -Wreturn-type
@@ -225,6 +222,9 @@ ifeq ($(USE_CLANG),)
     WARNING_FLAGS += -Wconversion
   endif
 endif
+
+# workaround for glibc >= 2.24 JDK-8179887
+WARNING_FLAGS += -Wno-deprecated-declarations
 
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases
@@ -266,9 +266,6 @@ else
   # 6835796. Problem in GCC 4.3.0 with mulnode.o optimized compilation.
   ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 3), 1)
     OPT_CFLAGS/mulnode.o += $(OPT_CFLAGS/NOOPT)
-  endif
-  ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 9), 1)
-    OPT_CFLAGS += -fno-devirtualize
   endif
 endif
 
