@@ -67,7 +67,8 @@ task configureBuild(type: Exec) {
             'LIBCXX=-static-libstdc++ -static-libgcc',
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
-            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+            "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
 }
 
 task executeBuild(type: Exec) {

@@ -152,6 +152,7 @@ bash ./configure \
   --with-vendor-name="Amazon.com Inc." \
   --with-vendor-url="https://aws.amazon.com/corretto/" \
   --with-vendor-bug-url="https://github.com/corretto/corretto-8/issues/" \
+  --with-vendor-vm-bug-url="https://github.com/corretto/corretto-8/issues/" \
   %{platform_flags}
 
 make images
