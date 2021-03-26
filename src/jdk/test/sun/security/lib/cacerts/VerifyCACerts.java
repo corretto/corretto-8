@@ -53,7 +53,7 @@ public class VerifyCACerts {
             + File.separator + "security" + File.separator + "cacerts";
 
     // The numbers of certs now.
-    private static final int COUNT = 224;
+    private static final int COUNT = 222;
 
     // SHA-256 of cacerts, can be generated with
     // shasum -a 256 cacerts | sed -e 's/../&:/g' | tr '[:lower:]' '[:upper:]' | cut -c1-95
@@ -127,10 +127,6 @@ public class VerifyCACerts {
                     "A4:31:0D:50:AF:18:A6:44:71:90:37:2A:86:AF:AF:8B:95:1F:FB:43:1D:83:7F:1E:56:88:B4:59:71:ED:15:57");
             put("thawteprimaryrootcag3 [jdk]",
                     "4B:03:F4:58:07:AD:70:F2:1B:FC:2C:AE:71:C9:FD:E4:60:4C:06:4C:F5:FF:B6:86:BA:E5:DB:AA:D7:FD:D3:4C");
-            put("thawtepremiumserverca [jdk]",
-                    "3F:9F:27:D5:83:20:4B:9E:09:C8:A3:D2:06:6C:4B:57:D3:A2:47:9C:36:93:65:08:80:50:56:98:10:5D:BC:E9");
-            put("verisigntsaca [jdk]",
-                    "CB:6B:05:D9:E8:E5:7C:D8:82:B1:0B:4D:B7:0D:E4:BB:1D:E4:2B:A4:8A:7B:D0:31:8B:63:5B:F6:E7:78:1A:9D");
             put("verisignclass2g2ca [jdk]",
                     "3A:43:E2:20:FE:7F:3E:A9:65:3D:1E:21:74:2E:AC:2B:75:C2:0F:D8:98:03:05:BC:50:2C:AF:8C:2D:9B:41:A1");
             put("verisignclass3ca [jdk]",
@@ -531,10 +527,6 @@ public class VerifyCACerts {
             add("addtrustexternalca [jdk]");
             // Valid until: Sat May 30 10:44:50 GMT 2020
             add("addtrustqualifiedca [jdk]");
-            // Valid until: Fri Jan 01 15:59:59 PST 2021
-            add("verisigntsaca [jdk]");
-            // Valid until: Fri Jan 01 15:59:59 PST 2021
-            add("thawtepremiumserverca [jdk]");
             // Valid until: Wed Mar 17 02:51:37 PDT 2021
             add("luxtrustglobalrootca [jdk]");
             // Valid until: Wed Mar 17 11:33:33 PDT 2021
