@@ -1730,7 +1730,7 @@ HeapWord* G1CollectedHeap::expand_and_allocate(size_t word_size, AllocationConte
 
   verify_region_sets_optional();
 
-  size_t expand_bytes = MAX2(word_size * HeapWordSize, (size_t) MinHeapDeltaBytes);
+  size_t expand_bytes = MAX2(word_size * HeapWordSize, MinHeapDeltaBytes);
   ergo_verbose1(ErgoHeapSizing,
                 "attempt heap expansion",
                 ergo_format_reason("allocation request failed")
@@ -2410,7 +2410,7 @@ void G1CollectedHeap::increment_old_marking_cycles_completed(bool concurrent) {
   // is set) so that if a waiter requests another System.gc() it doesn't
   // incorrectly see that a marking cycle is still in progress.
   if (concurrent) {
-    _cmThread->clear_in_progress();
+    _cmThread->set_idle();
   }
 
   // This notify_all() will ensure that a thread that called

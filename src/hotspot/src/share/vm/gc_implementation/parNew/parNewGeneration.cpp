@@ -54,12 +54,6 @@
 #include "utilities/copy.hpp"
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/workgroup.hpp"
-#include "utilities/dtrace.hpp"
-
-#ifndef USDT2
-  HS_DTRACE_PROBE_DECL4(provider, gc__collection__parnew__begin, bool, bool, size_t, bool);
-  HS_DTRACE_PROBE_DECL4(provider, gc__collection__parnew__end, bool, bool, size_t, bool);
-#endif /* !USDT2 */
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
@@ -200,7 +194,7 @@ bool ParScanThreadState::take_from_overflow_stack() {
   const size_t num_overflow_elems = of_stack->size();
   const size_t space_available = queue->max_elems() - queue->size();
   const size_t num_take_elems = MIN3(space_available / 4,
-                                     (size_t) ParGCDesiredObjsFromOverflowList,
+                                     ParGCDesiredObjsFromOverflowList,
                                      num_overflow_elems);
   // Transfer the most recent num_take_elems from the overflow
   // stack to our work queue.
@@ -920,9 +914,6 @@ void ParNewGeneration::collect(bool   full,
                                bool   clear_all_soft_refs,
                                size_t size,
                                bool   is_tlab) {
-#ifndef USDT2
-  HS_DTRACE_PROBE4(hotspot, gc__collection__parnew__begin, full, clear_all_soft_refs, size, is_tlab);
-#endif  /* !USDT2 */
   assert(full || size > 0, "otherwise we don't want to collect");
 
   GenCollectedHeap* gch = GenCollectedHeap::heap();
@@ -1072,10 +1063,6 @@ void ParNewGeneration::collect(bool   full,
   if (PrintGC && !PrintGCDetails) {
     gch->print_heap_change(gch_prev_used);
   }
-
-#ifndef USDT2
-  HS_DTRACE_PROBE4(hotspot, gc__collection__parnew__end, full, clear_all_soft_refs, size, is_tlab);
-#endif  /* !USDT2 */
 
   if (PrintGCDetails && ParallelGCVerbose) {
     TASKQUEUE_STATS_ONLY(thread_state_set.print_termination_stats());
@@ -1557,22 +1544,25 @@ bool ParNewGeneration::take_from_overflow_list_work(ParScanThreadState* par_scan
      return false;
   }
   assert(prefix != NULL && prefix != BUSY, "Error");
-  size_t i = 1;
   oop cur = prefix;
-  while (i < objsFromOverflow && cur->klass_or_null() != NULL) {
-    i++; cur = cur->list_ptr_from_klass();
+  for (size_t i = 1; i < objsFromOverflow; ++i) {
+    oop next = cur->list_ptr_from_klass();
+    if (next == NULL) break;
+    cur = next;
   }
+  assert(cur != NULL, "Loop postcondition");
 
   // Reattach remaining (suffix) to overflow list
-  if (cur->klass_or_null() == NULL) {
+  oop suffix = cur->list_ptr_from_klass();
+  if (suffix == NULL) {
     // Write back the NULL in lieu of the BUSY we wrote
     // above and it is still the same value.
     if (_overflow_list == BUSY) {
       (void) Atomic::cmpxchg_ptr(NULL, &_overflow_list, BUSY);
     }
   } else {
-    assert(cur->klass_or_null() != (Klass*)(address)BUSY, "Error");
-    oop suffix = cur->list_ptr_from_klass();       // suffix will be put back on global list
+    assert(suffix != BUSY, "Error");
+    // suffix will be put back on global list
     cur->set_klass_to_list_ptr(NULL);     // break off suffix
     // It's possible that the list is still in the empty(busy) state
     // we left it in a short while ago; in that case we may be
@@ -1592,8 +1582,10 @@ bool ParNewGeneration::take_from_overflow_list_work(ParScanThreadState* par_scan
       // Too bad, someone else got in in between; we'll need to do a splice.
       // Find the last item of suffix list
       oop last = suffix;
-      while (last->klass_or_null() != NULL) {
-        last = last->list_ptr_from_klass();
+      while (true) {
+        oop next = last->list_ptr_from_klass();
+        if (next == NULL) break;
+        last = next;
       }
       // Atomically prepend suffix to current overflow list
       observed_overflow_list = _overflow_list;

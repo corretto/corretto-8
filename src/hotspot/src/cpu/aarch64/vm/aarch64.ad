@@ -1824,16 +1824,20 @@ void BoxLockNode::emit(CodeBuffer &cbuf, PhaseRegAlloc *ra_) const {
   int offset = ra_->reg2offset(in_RegMask(0).find_first_elem());
   int reg    = ra_->get_encode(this);
 
-  if (Assembler::operand_valid_for_add_sub_immediate(offset)) {
-    __ add(as_Register(reg), sp, offset);
-  } else {
-    ShouldNotReachHere();
-  }
+  // This add will handle any 24-bit signed offset. 24 bits allows an
+  // 8 megabyte stack frame.
+  __ add(as_Register(reg), sp, offset);
 }
 
 uint BoxLockNode::size(PhaseRegAlloc *ra_) const {
   // BoxLockNode is not a MachNode, so we can't just call MachNode::size(ra_).
-  return 4;
+  int offset = ra_->reg2offset(in_RegMask(0).find_first_elem());
+
+  if (Assembler::operand_valid_for_add_sub_immediate(offset)) {
+    return NativeInstruction::instruction_size;
+  } else {
+    return 2 * NativeInstruction::instruction_size;
+  }
 }
 
 //=============================================================================
@@ -3309,19 +3313,20 @@ encode %{
       __ tbnz(disp_hdr, exact_log2(markOopDesc::monitor_value), object_has_monitor);
     }
 
-    // Set displaced_header to be (markOop of object | UNLOCK_VALUE).
-    __ orr(disp_hdr, disp_hdr, markOopDesc::unlocked_value);
+    // Set tmp to be (markOop of object | UNLOCK_VALUE).
+    __ orr(tmp, disp_hdr, markOopDesc::unlocked_value);
 
     // Load Compare Value application register.
 
     // Initialize the box. (Must happen before we update the object mark!)
-    __ str(disp_hdr, Address(box, BasicLock::displaced_header_offset_in_bytes()));
+    __ str(tmp, Address(box, BasicLock::displaced_header_offset_in_bytes()));
 
-    // Compare object markOop with mark and if equal exchange scratch1
-    // with object markOop.
+    // Compare object markOop with an unlocked value (tmp) and if
+    // equal exchange the stack address of our box with object markOop.
+    // On failure disp_hdr contains the possibly locked markOop.
     if (UseLSE) {
-      __ mov(tmp, disp_hdr);
-      __ casal(Assembler::xword, tmp, box, oop);
+      __ mov(disp_hdr, tmp);
+      __ casal(Assembler::xword, disp_hdr, box, oop);  // Updates disp_hdr
       __ cmp(tmp, disp_hdr);
       __ br(Assembler::EQ, cont);
     } else {
@@ -3329,12 +3334,12 @@ encode %{
       if ((VM_Version::cpu_cpuFeatures() & VM_Version::CPU_STXR_PREFETCH))
         __ prfm(Address(oop), PSTL1STRM);
       __ bind(retry_load);
-      __ ldaxr(tmp, oop);
+      __ ldaxr(disp_hdr, oop);
       __ cmp(tmp, disp_hdr);
       __ br(Assembler::NE, cas_failed);
       // use stlxr to ensure update is immediately visible
-      __ stlxr(tmp, box, oop);
-      __ cbzw(tmp, cont);
+      __ stlxr(disp_hdr, box, oop);
+      __ cbzw(disp_hdr, cont);
       __ b(retry_load);
     }
 
@@ -3350,7 +3355,7 @@ encode %{
     // markOop of object (disp_hdr) with the stack pointer.
     __ mov(rscratch1, sp);
     __ sub(disp_hdr, disp_hdr, rscratch1);
-    __ mov(tmp, (address) (~(os::vm_page_size()-1) | markOopDesc::lock_mask_in_place));
+    __ mov(tmp, (address) (~(os::vm_page_size()-1) | (uintptr_t)markOopDesc::lock_mask_in_place));
     // If condition is true we are cont and hence we can store 0 as the
     // displaced header in the box, which indicates that it is a recursive lock.
     __ ands(tmp/*==0?*/, disp_hdr, tmp);
@@ -3869,7 +3874,8 @@ operand immL_4294967295()
 
 operand immL_bitmask()
 %{
-  predicate(((n->get_long() & 0xc000000000000000l) == 0)
+  predicate((n->get_long() != 0)
+            && ((n->get_long() & 0xc000000000000000l) == 0)
 	    && is_power_of_2(n->get_long() + 1));
   match(ConL);
 
@@ -3880,7 +3886,8 @@ operand immL_bitmask()
 
 operand immI_bitmask()
 %{
-  predicate(((n->get_int() & 0xc0000000) == 0)
+  predicate((n->get_int() != 0)
+            && ((n->get_int() & 0xc0000000) == 0)
 	    && is_power_of_2(n->get_int() + 1));
   match(ConI);
 
@@ -10759,11 +10766,13 @@ instruct ubfmwI(iRegINoSp dst, iRegIorL2I src, immI lshift_count, immI rshift_co
 instruct ubfxwI(iRegINoSp dst, iRegIorL2I src, immI rshift, immI_bitmask mask)
 %{
   match(Set dst (AndI (URShiftI src rshift) mask));
+  // Make sure we are not going to exceed what ubfxw can do.
+  predicate((exact_log2(n->in(2)->get_int() + 1) + (n->in(1)->in(2)->get_int() & 31)) <= (31 + 1));
 
   ins_cost(INSN_COST);
   format %{ "ubfxw $dst, $src, $mask" %}
   ins_encode %{
-    int rshift = $rshift$$constant;
+    int rshift = $rshift$$constant & 31;
     long mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfxw(as_Register($dst$$reg),
@@ -10774,13 +10783,15 @@ instruct ubfxwI(iRegINoSp dst, iRegIorL2I src, immI rshift, immI_bitmask mask)
 instruct ubfxL(iRegLNoSp dst, iRegL src, immI rshift, immL_bitmask mask)
 %{
   match(Set dst (AndL (URShiftL src rshift) mask));
+  // Make sure we are not going to exceed what ubfx can do.
+  predicate((exact_log2_long(n->in(2)->get_long() + 1) + (n->in(1)->in(2)->get_int() & 63)) <= (63 + 1));
 
   ins_cost(INSN_COST);
   format %{ "ubfx $dst, $src, $mask" %}
   ins_encode %{
-    int rshift = $rshift$$constant;
+    int rshift = $rshift$$constant & 63;
     long mask = $mask$$constant;
-    int width = exact_log2(mask+1);
+    int width = exact_log2_long(mask+1);
     __ ubfx(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);
   %}
@@ -10792,11 +10803,13 @@ instruct ubfxL(iRegLNoSp dst, iRegL src, immI rshift, immL_bitmask mask)
 instruct ubfxIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI rshift, immI_bitmask mask)
 %{
   match(Set dst (ConvI2L (AndI (URShiftI src rshift) mask)));
+  // Make sure we are not going to exceed what ubfxw can do.
+  predicate((exact_log2(n->in(1)->in(2)->get_int() + 1) + (n->in(1)->in(1)->in(2)->get_int() & 31)) <= (31 + 1));
 
   ins_cost(INSN_COST * 2);
   format %{ "ubfx $dst, $src, $mask" %}
   ins_encode %{
-    int rshift = $rshift$$constant;
+    int rshift = $rshift$$constant & 31;
     long mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfx(as_Register($dst$$reg),
@@ -12219,7 +12232,7 @@ instruct MoveL2D_reg_reg(vRegD dst, iRegL src) %{
 instruct clearArray_reg_reg(iRegL_R11 cnt, iRegP_R10 base, Universe dummy, rFlagsReg cr)
 %{
   match(Set dummy (ClearArray cnt base));
-  effect(USE_KILL cnt, USE_KILL base);
+  effect(USE_KILL cnt, USE_KILL base, KILL cr);
 
   ins_cost(4 * INSN_COST);
   format %{ "ClearArray $cnt, $base" %}
@@ -12234,7 +12247,7 @@ instruct clearArray_reg_reg(iRegL_R11 cnt, iRegP_R10 base, Universe dummy, rFlag
 instruct clearArray_imm_reg(immL cnt, iRegP_R10 base, iRegL_R11 tmp, Universe dummy, rFlagsReg cr)
 %{
   match(Set dummy (ClearArray cnt base));
-  effect(USE_KILL base, TEMP tmp);
+  effect(USE_KILL base, TEMP tmp, KILL cr);
 
   ins_cost(4 * INSN_COST);
   format %{ "ClearArray $cnt, $base" %}
@@ -12428,7 +12441,7 @@ instruct overflowMulL_reg(rFlagsReg cr, iRegL op1, iRegL op2)
 
   format %{ "mul   rscratch1, $op1, $op2\t#overflow check long\n\t"
             "smulh rscratch2, $op1, $op2\n\t"
-            "cmp   rscratch2, rscratch1, ASR #31\n\t"
+            "cmp   rscratch2, rscratch1, ASR #63\n\t"
             "movw  rscratch1, #0x80000000\n\t"
             "cselw rscratch1, rscratch1, zr, NE\n\t"
             "cmpw  rscratch1, #1" %}
@@ -12436,7 +12449,7 @@ instruct overflowMulL_reg(rFlagsReg cr, iRegL op1, iRegL op2)
   ins_encode %{
     __ mul(rscratch1, $op1$$Register, $op2$$Register);   // Result bits 0..63
     __ smulh(rscratch2, $op1$$Register, $op2$$Register); // Result bits 64..127
-    __ cmp(rscratch2, rscratch1, Assembler::ASR, 31);    // Top is pure sign ext
+    __ cmp(rscratch2, rscratch1, Assembler::ASR, 63);    // Top is pure sign ext
     __ movw(rscratch1, 0x80000000);                    // Develop 0 (EQ),
     __ cselw(rscratch1, rscratch1, zr, Assembler::NE); // or 0x80000000 (NE)
     __ cmpw(rscratch1, 1);                             // 0x80000000 - 1 => VS
@@ -12454,7 +12467,7 @@ instruct overflowMulL_reg_branch(cmpOp cmp, iRegL op1, iRegL op2, label labl, rF
 
   format %{ "mul   rscratch1, $op1, $op2\t#overflow check long\n\t"
             "smulh rscratch2, $op1, $op2\n\t"
-            "cmp   rscratch2, rscratch1, ASR #31\n\t"
+            "cmp   rscratch2, rscratch1, ASR #63\n\t"
             "b$cmp $labl" %}
   ins_cost(4 * INSN_COST); // Branch is rare so treat as INSN_COST
   ins_encode %{
@@ -12462,7 +12475,7 @@ instruct overflowMulL_reg_branch(cmpOp cmp, iRegL op1, iRegL op2, label labl, rF
     Assembler::Condition cond = (Assembler::Condition)$cmp$$cmpcode;
     __ mul(rscratch1, $op1$$Register, $op2$$Register);   // Result bits 0..63
     __ smulh(rscratch2, $op1$$Register, $op2$$Register); // Result bits 64..127
-    __ cmp(rscratch2, rscratch1, Assembler::ASR, 31);    // Top is pure sign ext
+    __ cmp(rscratch2, rscratch1, Assembler::ASR, 63);    // Top is pure sign ext
     __ br(cond == Assembler::VS ? Assembler::NE : Assembler::EQ, *L);
   %}
 

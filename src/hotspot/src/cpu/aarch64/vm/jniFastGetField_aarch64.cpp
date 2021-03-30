@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2004, 2017, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2014, Red Hat Inc. All rights reserved.
+ * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Red Hat Inc.
+ * Copyright (c) 2004, 2010, Oracle and/or its affiliates.
  * All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -73,7 +74,7 @@ address JNI_FastGetField::generate_fast_get_int_field0(BasicType type) {
 
   unsigned long offset;
   __ adrp(rcounter_addr,
-	  SafepointSynchronize::safepoint_counter_addr(), offset);
+          SafepointSynchronize::safepoint_counter_addr(), offset);
   Address safepoint_counter_addr(rcounter_addr, offset);
   __ ldrw(rcounter, safepoint_counter_addr);
   __ andw(rscratch1, rcounter, 1);
@@ -177,4 +178,3 @@ address JNI_FastGetField::generate_fast_get_float_field() {
 address JNI_FastGetField::generate_fast_get_double_field() {
   return generate_fast_get_int_field0(T_DOUBLE);
 }
-

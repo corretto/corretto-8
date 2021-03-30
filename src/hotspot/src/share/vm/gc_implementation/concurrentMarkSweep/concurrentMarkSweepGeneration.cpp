@@ -63,12 +63,6 @@
 #include "runtime/vmThread.hpp"
 #include "services/memoryService.hpp"
 #include "services/runtimeService.hpp"
-#include "utilities/dtrace.hpp"
-
-#ifndef USDT2
-  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__begin, bool, bool, size_t, bool);
-  HS_DTRACE_PROBE_DECL4(provider, gc__collection__contig__end, bool, bool, size_t, bool);
-#endif /* !USDT2 */
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
@@ -967,7 +961,7 @@ void ConcurrentMarkSweepGeneration::compute_new_size_free_list() {
   if (free_percentage < desired_free_percentage) {
     size_t desired_capacity = (size_t)(used() / ((double) 1 - desired_free_percentage));
     assert(desired_capacity >= capacity(), "invalid expansion size");
-    size_t expand_bytes = MAX2(desired_capacity - capacity(), (size_t) MinHeapDeltaBytes);
+    size_t expand_bytes = MAX2(desired_capacity - capacity(), MinHeapDeltaBytes);
     if (PrintGCDetails && Verbose) {
       size_t desired_capacity = (size_t)(used() / ((double) 1 - desired_free_percentage));
       gclog_or_tty->print_cr("\nFrom compute_new_size: ");
@@ -1684,13 +1678,7 @@ void ConcurrentMarkSweepGeneration::collect(bool   full,
                                             size_t size,
                                             bool   tlab)
 {
-#ifndef USDT2
-  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__begin, full, clear_all_soft_refs, size, tlab);
-#endif /* !USDT2 */
   collector()->collect(full, clear_all_soft_refs, size, tlab);
-#ifndef USDT2
-  HS_DTRACE_PROBE4(hotspot, gc__collection__contig__end, full, clear_all_soft_refs, size, tlab);
-#endif /* !USDT2 */
 }
 
 void CMSCollector::collect(bool   full,
@@ -6603,7 +6591,7 @@ void CMSCollector::reset(bool asynch) {
     HeapWord* curAddr = _markBitMap.startWord();
     while (curAddr < _markBitMap.endWord()) {
       size_t remaining  = pointer_delta(_markBitMap.endWord(), curAddr);
-      MemRegion chunk(curAddr, MIN2((size_t) CMSBitMapYieldQuantum, remaining));
+      MemRegion chunk(curAddr, MIN2(CMSBitMapYieldQuantum, remaining));
       _markBitMap.clear_large_range(chunk);
       if (ConcurrentMarkSweepThread::should_yield() &&
           !foregroundGCIsActive() &&
@@ -6901,7 +6889,7 @@ void CMSMarkStack::expand() {
     return;
   }
   // Double capacity if possible
-  size_t new_capacity = MIN2(_capacity*2, (size_t) MarkStackSizeMax);
+  size_t new_capacity = MIN2(_capacity*2, MarkStackSizeMax);
   // Do not give up existing stack until we have managed to
   // get the double capacity that we desired.
   ReservedSpace rs(ReservedSpace::allocation_align_size_up(

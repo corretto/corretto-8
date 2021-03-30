@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -67,7 +67,7 @@ FloatRegister LIR_OprDesc::as_double_reg() const {
 
 #endif
 
-#if defined(ARM) || defined (TARGET_ARCH_aarch64)
+#if defined(ARM) || defined(AARCH64)
 
 FloatRegister LIR_OprDesc::as_float_reg() const {
   return as_FloatRegister(fpu_regnr());
@@ -149,7 +149,7 @@ void LIR_Address::verify0() const {
 #endif
 #ifdef _LP64
   assert(base()->is_cpu_register(), "wrong base operand");
-#ifndef TARGET_ARCH_aarch64
+#ifndef AARCH64
   assert(index()->is_illegal() || index()->is_double_cpu(), "wrong index operand");
 #else
   assert(index()->is_illegal() || index()->is_double_cpu() || index()->is_single_cpu(), "wrong index operand");
@@ -560,7 +560,7 @@ void LIR_OpVisitState::visit(LIR_Op* op) {
       assert(opConvert->_info == NULL, "must be");
       if (opConvert->_opr->is_valid())       do_input(opConvert->_opr);
       if (opConvert->_result->is_valid())    do_output(opConvert->_result);
-#if defined(PPC) || defined(TARGET_ARCH_aarch64)
+#if defined(PPC) || defined(AARCH64)
       if (opConvert->_tmp1->is_valid())      do_temp(opConvert->_tmp1);
       if (opConvert->_tmp2->is_valid())      do_temp(opConvert->_tmp2);
 #endif
@@ -1980,8 +1980,8 @@ void LIR_OpConvert::print_instr(outputStream* out) const {
   print_bytecode(out, bytecode());
   in_opr()->print(out);                  out->print(" ");
   result_opr()->print(out);              out->print(" ");
-#if defined(PPC) || defined(TARGET_ARCH_aarch64)
-  if (tmp1()->is_valid()) {
+#if defined(PPC) || defined(AARCH64)
+  if(tmp1()->is_valid()) {
     tmp1()->print(out); out->print(" ");
     tmp2()->print(out); out->print(" ");
   }

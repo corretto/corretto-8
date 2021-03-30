@@ -224,8 +224,8 @@ void InterpreterMacroAssembler::get_cache_and_index_and_bytecode_at_bcp(Register
   // little-endian machines allow us that.
   // n.b. unlike x86 cache already includes the index offset
   lea(bytecode, Address(cache,
-			 ConstantPoolCache::base_offset()
-			 + ConstantPoolCacheEntry::indices_offset()));
+                         ConstantPoolCache::base_offset()
+                         + ConstantPoolCacheEntry::indices_offset()));
   ldarw(bytecode, bytecode);
   const int shift_count = (1 + byte_no) * BitsPerByte;
   ubfx(bytecode, bytecode, shift_count, BitsPerByte);
@@ -773,7 +773,7 @@ void InterpreterMacroAssembler::unlock_object(Register lock_reg)
 
     // Load the old header from BasicLock structure
     ldr(header_reg, Address(swap_reg,
-			    BasicLock::displaced_header_offset_in_bytes()));
+                            BasicLock::displaced_header_offset_in_bytes()));
 
     // Test for recursion
     cbz(header_reg, done);
@@ -896,7 +896,7 @@ void InterpreterMacroAssembler::increment_mdp_data_at(Register mdp_in,
     ldr(rscratch1, addr);
     subs(rscratch1, rscratch1, (unsigned)DataLayout::counter_increment);
     Label L;
-    br(Assembler::LO, L); 	// skip store if counter overflow
+    br(Assembler::LO, L);       // skip store if counter overflow
     str(rscratch1, addr);
     bind(L);
   } else {
@@ -911,7 +911,7 @@ void InterpreterMacroAssembler::increment_mdp_data_at(Register mdp_in,
     ldr(rscratch1, addr);
     adds(rscratch1, rscratch1, DataLayout::counter_increment);
     Label L;
-    br(Assembler::CS, L); 	// skip store if counter overflow
+    br(Assembler::CS, L);       // skip store if counter overflow
     str(rscratch1, addr);
     bind(L);
   }
@@ -1008,7 +1008,7 @@ void InterpreterMacroAssembler::profile_taken_branch(Register mdp,
     // so we do this
     adds(bumped_count, bumped_count, DataLayout::counter_increment);
     Label L;
-    br(Assembler::CS, L);	// skip store if counter overflow
+    br(Assembler::CS, L);       // skip store if counter overflow
     str(bumped_count, data);
     bind(L);
     // The method data pointer needs to be updated to reflect the new target.
@@ -1036,7 +1036,7 @@ void InterpreterMacroAssembler::profile_not_taken_branch(Register mdp) {
 }
 
 
-void InterpreterMacroAssembler::profile_call(Register mdp) { 
+void InterpreterMacroAssembler::profile_call(Register mdp) {
   if (ProfileInterpreter) {
     Label profile_continue;
 
@@ -1155,14 +1155,14 @@ void InterpreterMacroAssembler::record_klass_in_profile_helper(
       if (start_row == last_row) {
         // The only thing left to do is handle the null case.
         if (is_virtual_call) {
-	  cbz(reg2, found_null);
+          cbz(reg2, found_null);
           // Receiver did not match any saved receiver and there is no empty row for it.
           // Increment total counter to indicate polymorphic case.
           increment_mdp_data_at(mdp, in_bytes(CounterData::count_offset()));
           b(done);
           bind(found_null);
         } else {
-	  cbnz(reg2, done);
+          cbnz(reg2, done);
         }
         break;
       }
@@ -1383,7 +1383,7 @@ void InterpreterMacroAssembler::verify_FPU(int stack_depth, TosState state) { ; 
 #endif // !CC_INTERP
 
 
-void InterpreterMacroAssembler::notify_method_entry() { 
+void InterpreterMacroAssembler::notify_method_entry() {
   // Whenever JVMTI is interp_only_mode, method entry/exit events are sent to
   // track stack depth.  If it is possible to enter interp_only_mode we add
   // the code to check if the event should be sent.
@@ -1452,7 +1452,7 @@ void InterpreterMacroAssembler::notify_method_exit(
 void InterpreterMacroAssembler::increment_mask_and_jump(Address counter_addr,
                                                         int increment, int mask,
                                                         Register scratch, Register scratch2,
-							bool preloaded,
+                                                        bool preloaded,
                                                         Condition cond, Label* where) {
   if (!preloaded) {
     ldrw(scratch, counter_addr);

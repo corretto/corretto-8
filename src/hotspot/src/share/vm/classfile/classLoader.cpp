@@ -382,16 +382,12 @@ void ClassPathZipEntry::contents_do(void f(const char* name, void* context), voi
 }
 
 LazyClassPathEntry::LazyClassPathEntry(const char* path, const struct stat* st, bool throw_exception) : ClassPathEntry() {
-  _path = os::strdup_check_oom(path);
+  _path = strdup(path);
   _st = *st;
   _meta_index = NULL;
   _resolved_entry = NULL;
   _has_error = false;
   _throw_exception = throw_exception;
-}
-
-LazyClassPathEntry::~LazyClassPathEntry() {
-  os::free((void*) _path);
 }
 
 bool LazyClassPathEntry::is_jar_file() {
@@ -600,7 +596,7 @@ void ClassLoader::setup_meta_index(const char* meta_index_path, const char* meta
         default:
         {
           if (!skipCurrentJar && cur_entry != NULL) {
-            char* new_name = os::strdup_check_oom(package_name);
+            char* new_name = strdup(package_name);
             boot_class_path_packages.append(new_name);
           }
         }

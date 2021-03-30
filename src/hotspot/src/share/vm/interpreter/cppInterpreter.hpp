@@ -37,8 +37,11 @@ class CppInterpreter: public AbstractInterpreter {
   friend class Interpreter; // contains()
   friend class InterpreterGenerator; // result handlers
   friend class CppInterpreterGenerator; // result handlers
+ public:
+
 
  protected:
+
   // tosca result -> stack result
   static address    _tosca_to_stack[number_of_result_handlers];  // converts tosca to C++ interpreter stack result
   // stack result -> stack result
@@ -57,6 +60,9 @@ class CppInterpreter: public AbstractInterpreter {
   // This is a moderately dubious interface for the c++ interpreter. Only
   // frame code and debug.cpp should be using it.
   static bool       contains(address pc);
+
+ public:
+
 
   // No displatch table to switch so no need for these to do anything special
   static void notice_safepoints() {}

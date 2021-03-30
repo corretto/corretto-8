@@ -253,7 +253,7 @@ JVM_handle_linux_signal(int sig,
 
     if (StubRoutines::is_safefetch_fault(pc)) {
       uc->uc_mcontext.pc = intptr_t(StubRoutines::continuation_for_safefetch_fault(pc));
-      return true;
+      return 1;
     }
 
 #ifndef AMD64
@@ -282,7 +282,7 @@ JVM_handle_linux_signal(int sig,
             stub = SharedRuntime::continuation_for_implicit_exception(thread, pc, SharedRuntime::STACK_OVERFLOW);
           } else {
             // Thread was in the vm or native code.  Return and try to finish.
-            return true;
+            return 1;
           }
         } else if (thread->in_stack_red_zone(addr)) {
           // Fatal red zone violation.  Disable the guard pages and fall through
@@ -303,7 +303,7 @@ JVM_handle_linux_signal(int sig,
              thread->osthread()->set_expanding_stack();
              if (os::Linux::manually_expand_stack(thread, addr)) {
                thread->osthread()->clear_expanding_stack();
-               return true;
+               return 1;
              }
              thread->osthread()->clear_expanding_stack();
           } else {
@@ -542,7 +542,7 @@ void os::print_context(outputStream *st, void *context) {
   ucontext_t *uc = (ucontext_t*)context;
   st->print_cr("Registers:");
   for (int r = 0; r < 31; r++)
-	  st->print_cr(  "R%d=" INTPTR_FORMAT, r, (int64_t)uc->uc_mcontext.regs[r]);
+          st->print_cr(  "R%d=" INTPTR_FORMAT, r, (int64_t)uc->uc_mcontext.regs[r]);
   st->cr();
 
   intptr_t *sp = (intptr_t *)os::Linux::ucontext_get_sp(uc);
@@ -573,7 +573,7 @@ void os::print_register_info(outputStream *st, void *context) {
   // this is only for the "general purpose" registers
 
   for (int r = 0; r < 31; r++)
-	  st->print_cr(  "R%d=" INTPTR_FORMAT, r, (int64_t)uc->uc_mcontext.regs[r]);
+          st->print_cr(  "R%d=" INTPTR_FORMAT, r, (int64_t)uc->uc_mcontext.regs[r]);
   st->cr();
 }
 

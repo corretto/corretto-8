@@ -2644,6 +2644,9 @@ bool LibraryCallKit::inline_unsafe_access(bool is_native_ptr, bool is_store, Bas
     return false; // off-heap oop accesses are not supported
   }
 
+  // Can base be NULL? Otherwise, always on-heap access.
+  bool can_access_non_heap = TypePtr::NULL_PTR->higher_equal(_gvn.type(heap_base_oop));
+
   const TypePtr *adr_type = _gvn.type(adr)->isa_ptr();
 
   // Try to categorize the address.

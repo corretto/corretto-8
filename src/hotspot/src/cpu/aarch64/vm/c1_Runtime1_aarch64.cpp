@@ -250,9 +250,9 @@ static OopMap* generate_oop_map(StubAssembler* sasm, bool save_fpu_registers) {
     for (int i = 0; i < FrameMap::nof_fpu_regs; i++) {
       FloatRegister r = as_FloatRegister(i);
       {
-	int sp_offset = fpu_reg_save_offsets[i];
-	oop_map->set_callee_saved(VMRegImpl::stack2reg(sp_offset),
-				  r->as_VMReg());
+        int sp_offset = fpu_reg_save_offsets[i];
+        oop_map->set_callee_saved(VMRegImpl::stack2reg(sp_offset),
+                                  r->as_VMReg());
       }
     }
   }
@@ -268,7 +268,7 @@ static OopMap* save_live_registers(StubAssembler* sasm,
   if (save_fpu_registers) {
     for (int i = 30; i >= 0; i -= 2)
       __ stpd(as_FloatRegister(i), as_FloatRegister(i+1),
-	      Address(__ pre(sp, -2 * wordSize)));
+              Address(__ pre(sp, -2 * wordSize)));
   } else {
     __ add(sp, sp, -32 * wordSize);
   }
@@ -280,7 +280,7 @@ static void restore_live_registers(StubAssembler* sasm, bool restore_fpu_registe
   if (restore_fpu_registers) {
     for (int i = 0; i < 32; i += 2)
       __ ldpd(as_FloatRegister(i), as_FloatRegister(i+1),
-	      Address(__ post(sp, 2 * wordSize)));
+              Address(__ post(sp, 2 * wordSize)));
   } else {
     __ add(sp, sp, 32 * wordSize);
   }
@@ -293,7 +293,7 @@ static void restore_live_registers_except_r0(StubAssembler* sasm, bool restore_f
   if (restore_fpu_registers) {
     for (int i = 0; i < 32; i += 2)
       __ ldpd(as_FloatRegister(i), as_FloatRegister(i+1),
-	      Address(__ post(sp, 2 * wordSize)));
+              Address(__ post(sp, 2 * wordSize)));
   } else {
     __ add(sp, sp, 32 * wordSize);
   }
@@ -741,7 +741,7 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           // if we got here then the TLAB allocation failed, so try
           // refilling the TLAB or allocating directly from eden.
           Label retry_tlab, try_eden;
-	  __ tlab_refill(retry_tlab, try_eden, slow_path); // does not destroy r3 (klass), returns r5
+          __ tlab_refill(retry_tlab, try_eden, slow_path); // does not destroy r3 (klass), returns r5
 
           __ bind(retry_tlab);
 
@@ -827,7 +827,7 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           int tag = ((id == new_type_array_id)
                      ? Klass::_lh_array_tag_type_value
                      : Klass::_lh_array_tag_obj_value);
-	  __ mov(rscratch1, tag);
+          __ mov(rscratch1, tag);
           __ cmpw(t0, rscratch1);
           __ br(Assembler::EQ, ok);
           __ stop("assert(is an array klass)");
@@ -844,7 +844,7 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           assert_different_registers(length, klass, obj, arr_size, t1, t2);
 
           // check that array length is small enough for fast path.
-	  __ mov(rscratch1, C1_MacroAssembler::max_array_allocation_length);
+          __ mov(rscratch1, C1_MacroAssembler::max_array_allocation_length);
           __ cmpw(length, rscratch1);
           __ br(Assembler::HI, slow_path);
 
@@ -860,8 +860,8 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           // since size is positive ldrw does right thing on 64bit
           __ ldrw(t1, Address(klass, Klass::layout_helper_offset()));
           __ lslvw(arr_size, length, t1);
-	  __ ubfx(t1, t1, Klass::_lh_header_size_shift,
-		  exact_log2(Klass::_lh_header_size_mask + 1));
+          __ ubfx(t1, t1, Klass::_lh_header_size_shift,
+                  exact_log2(Klass::_lh_header_size_mask + 1));
           __ add(arr_size, arr_size, t1);
           __ add(arr_size, arr_size, MinObjAlignmentInBytesMask); // align up
           __ andr(arr_size, arr_size, ~MinObjAlignmentInBytesMask);
@@ -888,8 +888,8 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
           // since size is postive movw does right thing on 64bit
           __ movw(arr_size, length);
           __ lslvw(arr_size, length, t1);
-	  __ ubfx(t1, t1, Klass::_lh_header_size_shift,
-		  exact_log2(Klass::_lh_header_size_mask + 1));
+          __ ubfx(t1, t1, Klass::_lh_header_size_shift,
+                  exact_log2(Klass::_lh_header_size_mask + 1));
           __ add(arr_size, arr_size, t1);
           __ add(arr_size, arr_size, MinObjAlignmentInBytesMask); // align up
           __ andr(arr_size, arr_size, ~MinObjAlignmentInBytesMask);
@@ -916,7 +916,7 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         __ enter();
         OopMap* map = save_live_registers(sasm);
         int call_offset;
-	if (id == new_type_array_id) {
+        if (id == new_type_array_id) {
           call_offset = __ call_RT(obj, noreg, CAST_FROM_FN_PTR(address, new_type_array), klass, length);
         } else {
           call_offset = __ call_RT(obj, noreg, CAST_FROM_FN_PTR(address, new_object_array), klass, length);
@@ -940,9 +940,9 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         // r19,: rank
         // r2: address of 1st dimension
         OopMap* map = save_live_registers(sasm);
-	__ mov(c_rarg1, r0);
-	__ mov(c_rarg3, r2);
-	__ mov(c_rarg2, r19);
+        __ mov(c_rarg1, r0);
+        __ mov(c_rarg3, r2);
+        __ mov(c_rarg2, r19);
         int call_offset = __ call_RT(r0, noreg, CAST_FROM_FN_PTR(address, new_multi_array), r1, r2, r3);
 
         oop_maps = new OopMapSet();
@@ -1007,7 +1007,7 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         // __ bl(slow_subtype_check);
         // Note that the subclass is pushed first, and is therefore deepest.
         enum layout {
-	  r0_off, r0_off_hi,
+          r0_off, r0_off_hi,
           r2_off, r2_off_hi,
           r4_off, r4_off_hi,
           r5_off, r5_off_hi,
@@ -1018,26 +1018,26 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         };
 
         __ set_info("slow_subtype_check", dont_gc_arguments);
-	__ push(RegSet::of(r0, r2, r4, r5), sp);
+        __ push(RegSet::of(r0, r2, r4, r5), sp);
 
         // This is called by pushing args and not with C abi
         // __ ldr(r4, Address(sp, (klass_off) * VMRegImpl::stack_slot_size)); // subclass
         // __ ldr(r0, Address(sp, (sup_k_off) * VMRegImpl::stack_slot_size)); // superclass
 
-	__ ldp(r4, r0, Address(sp, (sup_k_off) * VMRegImpl::stack_slot_size));
+        __ ldp(r4, r0, Address(sp, (sup_k_off) * VMRegImpl::stack_slot_size));
 
         Label miss;
         __ check_klass_subtype_slow_path(r4, r0, r2, r5, NULL, &miss);
 
         // fallthrough on success:
-	__ mov(rscratch1, 1);
+        __ mov(rscratch1, 1);
         __ str(rscratch1, Address(sp, (result_off) * VMRegImpl::stack_slot_size)); // result
-	__ pop(RegSet::of(r0, r2, r4, r5), sp);
+        __ pop(RegSet::of(r0, r2, r4, r5), sp);
         __ ret(lr);
 
         __ bind(miss);
         __ str(zr, Address(sp, (result_off) * VMRegImpl::stack_slot_size)); // result
-	__ pop(RegSet::of(r0, r2, r4, r5), sp);
+        __ pop(RegSet::of(r0, r2, r4, r5), sp);
         __ ret(lr);
       }
       break;
@@ -1179,9 +1179,9 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
 
         BarrierSet* bs = Universe::heap()->barrier_set();
         if (bs->kind() != BarrierSet::G1SATBCTLogging) {
-	  __ mov(r0, (int)id);
-	  __ call_RT(noreg, noreg, CAST_FROM_FN_PTR(address, unimplemented_entry), r0);
-	  __ should_not_reach_here();
+          __ mov(r0, (int)id);
+          __ call_RT(noreg, noreg, CAST_FROM_FN_PTR(address, unimplemented_entry), r0);
+          __ should_not_reach_here();
           break;
         }
 
@@ -1207,8 +1207,8 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         __ sub(tmp, tmp, wordSize);
         __ str(tmp, queue_index);
         __ ldr(rscratch2, buffer);
-	__ add(tmp, tmp, rscratch2);
-	f.load_argument(0, rscratch2);
+        __ add(tmp, tmp, rscratch2);
+        f.load_argument(0, rscratch2);
         __ str(rscratch2, Address(tmp, 0));
         __ b(done);
 
@@ -1255,13 +1255,13 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         __ load_byte_map_base(byte_map_base);
         __ ldrb(rscratch1, Address(byte_map_base, card_offset));
         __ cmpw(rscratch1, (int)G1SATBCardTableModRefBS::g1_young_card_val());
-	__ br(Assembler::EQ, done);
+        __ br(Assembler::EQ, done);
 
-	assert((int)CardTableModRefBS::dirty_card_val() == 0, "must be 0");
+        assert((int)CardTableModRefBS::dirty_card_val() == 0, "must be 0");
 
         __ membar(Assembler::StoreLoad);
         __ ldrb(rscratch1, Address(byte_map_base, card_offset));
-	__ cbzw(rscratch1, done);
+        __ cbzw(rscratch1, done);
 
         // storing region crossing non-NULL, card is clean.
         // dirty card and log.
@@ -1279,9 +1279,9 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
         // Reuse LR to hold buffer_addr
         const Register buffer_addr = lr;
 
-	__ ldr(buffer_addr, buffer);
-	__ str(card_addr, Address(buffer_addr, rscratch1));
-	__ b(done);
+        __ ldr(buffer_addr, buffer);
+        __ str(card_addr, Address(buffer_addr, rscratch1));
+        __ b(done);
 
         __ bind(runtime);
         __ push_call_clobbered_registers();
@@ -1311,6 +1311,16 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
       }
       break;
 
+    case dtrace_object_alloc_id:
+      { // c_rarg0: object
+        StubFrame f(sasm, "dtrace_object_alloc", dont_gc_arguments);
+        save_live_registers(sasm);
+
+        __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::dtrace_object_alloc), c_rarg0);
+
+        restore_live_registers(sasm);
+      }
+      break;
 
     default:
       { StubFrame f(sasm, "unimplemented entry", dont_gc_arguments);

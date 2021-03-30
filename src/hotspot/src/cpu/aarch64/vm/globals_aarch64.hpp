@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013, Red Hat Inc.
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2011, Oracle and/or its affiliates.
  * All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -77,9 +77,9 @@ define_pd_global(intx, InlineSmallCode,          1000);
 #endif
 
 #define ARCH_FLAGS(develop, product, diagnostic, experimental, notproduct) \
-									\
-  product(bool, NearCpool, true,					\
-         "constant pool is close to instructions")			\
+                                                                        \
+  product(bool, NearCpool, true,                                        \
+         "constant pool is close to instructions")                      \
                                                                         \
   product(bool, UseBarriersForVolatile, false,                          \
           "Use memory barriers to implement volatile accesses")         \
@@ -89,7 +89,7 @@ define_pd_global(intx, InlineSmallCode,          1000);
           "Use CRC32 instructions for CRC32 computation")               \
   product(bool, UseLSE, false,                                          \
           "Use LSE instructions")                                       \
-  product(bool, UseSIMDForMemoryOps, false,                             \
+  product(bool, UseSIMDForMemoryOps, false,                            \
           "Use SIMD instructions in generated memory move code")        \
   product(bool, AvoidUnalignedAccesses, false,                          \
           "Avoid generating unaligned memory accesses")                 \

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -66,9 +66,9 @@ public class IntrinsicPredicates {
                             null));
 
     public static final BooleanSupplier SHA256_INSTRUCTION_AVAILABLE
-            = new OrPredicate(new CPUSpecificPredicate("sparc.*",   new String[] { "sha256" },
+            = new OrPredicate(new CPUSpecificPredicate("aarch64", new String[] { "sha256" },
                                                        null),
-              new OrPredicate(new CPUSpecificPredicate("aarch64",   new String[] { "sha256" },
+              new OrPredicate(new CPUSpecificPredicate("sparc.*",   new String[] { "sha256" },
                                                        null),
               new OrPredicate(new CPUSpecificPredicate("ppc64.*",   new String[] { "sha"    },
                                                        null),
@@ -76,14 +76,15 @@ public class IntrinsicPredicates {
                                                        null))));
 
     public static final BooleanSupplier SHA512_INSTRUCTION_AVAILABLE
-            = new OrPredicate(new CPUSpecificPredicate("sparc.*",   new String[] { "sha512" },
+            = new OrPredicate(
+                    new CPUSpecificPredicate("aarch64", new String[] { "sha512" },
+                                             null),
+                    new OrPredicate(new CPUSpecificPredicate("sparc.*",   new String[] { "sha512" },
+                                                             null),
+                    new OrPredicate(new CPUSpecificPredicate("ppc64.*",   new String[] { "sha"    },
                                                        null),
-              new OrPredicate(new CPUSpecificPredicate("aarch64",   new String[] { "sha512" },
-                                                       null),
-              new OrPredicate(new CPUSpecificPredicate("ppc64.*",   new String[] { "sha"    },
-                                                       null),
-                              new CPUSpecificPredicate("ppc64le.*", new String[] { "sha"    },
-                                                       null))));
+                    new CPUSpecificPredicate("ppc64le.*", new String[] { "sha"    },
+                                             null))));
 
     public static final BooleanSupplier ANY_SHA_INSTRUCTION_AVAILABLE
             = new OrPredicate(IntrinsicPredicates.SHA1_INSTRUCTION_AVAILABLE,

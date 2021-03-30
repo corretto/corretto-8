@@ -138,17 +138,17 @@ u_int64_t replicate(u_int64_t bits, int nbits, int count)
 
 // construct a 32 bit immediate value for a logical immediate operation
 int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
-			    u_int32_t imms, u_int64_t &bimm)
+                            u_int32_t imms, u_int64_t &bimm)
 {
-  int len;		    // ought to be <= 6
-  u_int32_t levels;	    // 6 bits
-  u_int32_t tmask_and;	    // 6 bits
-  u_int32_t wmask_and;	    // 6 bits
-  u_int32_t tmask_or;	    // 6 bits
-  u_int32_t wmask_or;	    // 6 bits
-  u_int64_t imm64;	    // 64 bits
+  int len;                  // ought to be <= 6
+  u_int32_t levels;         // 6 bits
+  u_int32_t tmask_and;      // 6 bits
+  u_int32_t wmask_and;      // 6 bits
+  u_int32_t tmask_or;       // 6 bits
+  u_int32_t wmask_or;       // 6 bits
+  u_int64_t imm64;          // 64 bits
   u_int64_t tmask, wmask;   // 64 bits
-  u_int32_t S, R, diff;	    // 6 bits?
+  u_int32_t S, R, diff;     // 6 bits?
 
   if (immN == 1) {
     len = 6; // looks like 7 given the spec above but this cannot be!
@@ -157,8 +157,8 @@ int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
     u_int32_t val = (~imms & 0x3f);
     for (int i = 5; i > 0; i--) {
       if (val & (1 << i)) {
-	len = i;
-	break;
+        len = i;
+        break;
       }
     }
     if (len < 1) {
@@ -166,12 +166,12 @@ int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
     }
     // for valid inputs leading 1s in immr must be less than leading
     // zeros in imms
-    int len2 = 0;		    // ought to be < len
+    int len2 = 0;                   // ought to be < len
     u_int32_t val2 = (~immr & 0x3f);
     for (int i = 5; i > 0; i--) {
       if (!(val2 & (1 << i))) {
-	len2 = i;
-	break;
+        len2 = i;
+        break;
       }
     }
     if (len2 >= len) {
@@ -187,7 +187,7 @@ int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
 
   S = imms & levels;
   R = immr & levels;
-  
+
  // 6 bit arithmetic!
   diff = S - R;
   tmask_and = (diff | ~levels) & 0x3f;
@@ -204,8 +204,8 @@ int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
     u_int64_t or_bits_top = (0 << nbits) | or_bits_sub;
 
     tmask = ((tmask
-	      & (replicate(and_bits_top, 2 * nbits, 32 / nbits)))
-	     | replicate(or_bits_top, 2 * nbits, 32 / nbits));
+              & (replicate(and_bits_top, 2 * nbits, 32 / nbits)))
+             | replicate(or_bits_top, 2 * nbits, 32 / nbits));
   }
 
   wmask_and = (immr | ~levels) & 0x3f;
@@ -223,8 +223,8 @@ int expandLogicalImmediate(u_int32_t immN, u_int32_t immr,
     u_int64_t or_bits_top = (or_bits_sub << nbits) | 0;
 
     wmask = ((wmask
-	      & (replicate(and_bits_top, 2 * nbits, 32 / nbits)))
-	     | replicate(or_bits_top, 2 * nbits, 32 / nbits));
+              & (replicate(and_bits_top, 2 * nbits, 32 / nbits)))
+             | replicate(or_bits_top, 2 * nbits, 32 / nbits));
   }
 
   if (diff & (1U << 6)) {
@@ -256,7 +256,7 @@ static void initLITables()
   }
   // now sort the inverse table
   qsort(InverseLITable, li_table_entry_count,
-	sizeof(InverseLITable[0]), compare_immediate_pair);
+        sizeof(InverseLITable[0]), compare_immediate_pair);
 }
 
 // public APIs provided for logical immediate lookup and reverse lookup
@@ -275,7 +275,7 @@ u_int32_t encoding_for_logical_immediate(u_int64_t immediate)
 
   result = (struct li_pair *)
     bsearch(&pair, InverseLITable, li_table_entry_count,
-	    sizeof(InverseLITable[0]), compare_immediate_pair);
+            sizeof(InverseLITable[0]), compare_immediate_pair);
 
   if (result) {
     return result->encoding;
@@ -353,4 +353,3 @@ u_int32_t encoding_for_fp_immediate(float immediate)
   res = (s << 7) | (r << 4) | f;
   return res;
 }
-

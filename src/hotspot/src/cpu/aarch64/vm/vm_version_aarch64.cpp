@@ -1,6 +1,6 @@
 /*
+ * Copyright (c) 2013, Red Hat Inc.
  * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2015, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -295,11 +295,6 @@ void VM_Version::get_processor_features() {
     UsePopCountInstruction = true;
   }
 
-  // This machine allows unaligned memory accesses
-  if (FLAG_IS_DEFAULT(UseUnalignedAccesses)) {
-    FLAG_SET_DEFAULT(UseUnalignedAccesses, true);
-  }
-
   if (FLAG_IS_DEFAULT(UseMontgomeryMultiplyIntrinsic)) {
     UseMontgomeryMultiplyIntrinsic = true;
   }
@@ -332,4 +327,11 @@ void VM_Version::initialize() {
                                    g.generate_getPsrInfo());
 
   get_processor_features();
+
+  if (CriticalJNINatives) {
+    if (FLAG_IS_CMDLINE(CriticalJNINatives)) {
+      warning("CriticalJNINatives specified, but not supported in this VM");
+    }
+    FLAG_SET_DEFAULT(CriticalJNINatives, false);
+  }
 }

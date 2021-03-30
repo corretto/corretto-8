@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013, Red Hat Inc.
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2010, Oracle and/or its affiliates.
  * All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
-#define CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
+#ifndef CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP
+#define CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP
 
 // ArrayCopyStub needs access to bailout
 friend class ArrayCopyStub;
@@ -80,4 +80,4 @@ enum { call_stub_size = 12 * NativeInstruction::instruction_size,
        deopt_handler_size = 7 * NativeInstruction::instruction_size };
 
 
-#endif // CPU_AARCH64_VM_C1_LIRASSEMBLER_AARCH64_HPP
+#endif // CPU_X86_VM_C1_LIRASSEMBLER_X86_HPP

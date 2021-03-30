@@ -76,7 +76,7 @@ static inline Address iaddress(Register r) {
 }
 
 static inline Address laddress(Register r, Register scratch,
-			       InterpreterMacroAssembler* _masm) {
+                               InterpreterMacroAssembler* _masm) {
   __ lea(scratch, Address(rlocals, r, Address::lsl(3)));
   return Address(scratch, Interpreter::local_offset_in_bytes(1));
 }
@@ -86,7 +86,7 @@ static inline Address faddress(Register r) {
 }
 
 static inline Address daddress(Register r, Register scratch,
-			       InterpreterMacroAssembler* _masm) {
+                               InterpreterMacroAssembler* _masm) {
   return laddress(r, scratch, _masm);
 }
 
@@ -969,7 +969,7 @@ void TemplateTable::iastore() {
   index_check(r3, r1); // prefer index in r1
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(2)));
   __ strw(r0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_INT)));
+                      arrayOopDesc::base_offset_in_bytes(T_INT)));
 }
 
 void TemplateTable::lastore() {
@@ -982,7 +982,7 @@ void TemplateTable::lastore() {
   index_check(r3, r1); // prefer index in r1
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(3)));
   __ str(r0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_LONG)));
+                      arrayOopDesc::base_offset_in_bytes(T_LONG)));
 }
 
 void TemplateTable::fastore() {
@@ -995,7 +995,7 @@ void TemplateTable::fastore() {
   index_check(r3, r1); // prefer index in r1
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(2)));
   __ strs(v0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_FLOAT)));
+                      arrayOopDesc::base_offset_in_bytes(T_FLOAT)));
 }
 
 void TemplateTable::dastore() {
@@ -1008,7 +1008,7 @@ void TemplateTable::dastore() {
   index_check(r3, r1); // prefer index in r1
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(3)));
   __ strd(v0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_DOUBLE)));
+                      arrayOopDesc::base_offset_in_bytes(T_DOUBLE)));
 }
 
 void TemplateTable::aastore() {
@@ -1032,7 +1032,7 @@ void TemplateTable::aastore() {
   // Move superklass into r0
   __ load_klass(r0, r3);
   __ ldr(r0, Address(r0,
-		     ObjArrayKlass::element_klass_offset()));
+                     ObjArrayKlass::element_klass_offset()));
   // Compress array + index*oopSize + 12 into a single register.  Frees r2.
 
   // Generate subtype check.  Blows r2, r5
@@ -1087,7 +1087,7 @@ void TemplateTable::bastore()
 
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(0)));
   __ strb(r0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_BYTE)));
+                      arrayOopDesc::base_offset_in_bytes(T_BYTE)));
 }
 
 void TemplateTable::castore()
@@ -1101,7 +1101,7 @@ void TemplateTable::castore()
   index_check(r3, r1); // prefer index in r1
   __ lea(rscratch1, Address(r3, r1, Address::uxtw(1)));
   __ strh(r0, Address(rscratch1,
-		      arrayOopDesc::base_offset_in_bytes(T_CHAR)));
+                      arrayOopDesc::base_offset_in_bytes(T_CHAR)));
 }
 
 void TemplateTable::sastore()
@@ -1168,7 +1168,7 @@ void TemplateTable::dup_x1()
   __ ldr(r2, at_tos_p1());  // load a
   __ str(r0, at_tos_p1());  // store b
   __ str(r2, at_tos());  // store a
-  __ push(r0);			// push b
+  __ push(r0);                  // push b
   // stack: ..., b, a, b
 }
 
@@ -1700,7 +1700,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
     // compute return address as bci
     __ ldr(rscratch2, Address(rmethod, Method::const_offset()));
     __ add(rscratch2, rscratch2,
-	   in_bytes(ConstMethod::codes_offset()) - (is_wide ? 5 : 3));
+           in_bytes(ConstMethod::codes_offset()) - (is_wide ? 5 : 3));
     __ sub(r1, rbcp, rscratch2);
     __ push_i(r1);
     // Adjust the bcp by the 16-bit displacement in r2
@@ -1736,7 +1736,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
     __ push(r1);
     __ push(r2);
     __ call_VM(noreg, CAST_FROM_FN_PTR(address,
-	    InterpreterRuntime::build_method_counters), rmethod);
+            InterpreterRuntime::build_method_counters), rmethod);
     __ pop(r2);
     __ pop(r1);
     __ pop(r0);
@@ -1751,7 +1751,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
       if (ProfileInterpreter) {
         // Are we profiling?
         __ ldr(r1, Address(rmethod, in_bytes(Method::method_data_offset())));
-	__ cbz(r1, no_mdo);
+        __ cbz(r1, no_mdo);
         // Increment the MDO backedge counter
         const Address mdo_backedge_counter(r1, in_bytes(MethodData::backedge_counter_offset()) +
                                            in_bytes(InvocationCounter::counter_offset()));
@@ -1777,8 +1777,8 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
 
       if (ProfileInterpreter) {
         // Test to see if we should create a method data oop
-	__ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterProfileLimit));
-	__ ldrw(rscratch1, rscratch1);
+        __ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterProfileLimit));
+        __ ldrw(rscratch1, rscratch1);
         __ cmpw(r0, rscratch1);
         __ br(Assembler::LT, dispatch);
 
@@ -1787,8 +1787,8 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
 
         if (UseOnStackReplacement) {
           // check for overflow against w1 which is the MDO taken count
-	  __ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterBackwardBranchLimit));
-	  __ ldrw(rscratch1, rscratch1);
+          __ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterBackwardBranchLimit));
+          __ ldrw(rscratch1, rscratch1);
           __ cmpw(r1, rscratch1);
           __ br(Assembler::LO, dispatch); // Intel == Assembler::below
 
@@ -1807,8 +1807,8 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
         if (UseOnStackReplacement) {
           // check for overflow against w0, which is the sum of the
           // counters
-	  __ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterBackwardBranchLimit));
-	  __ ldrw(rscratch1, rscratch1);
+          __ lea(rscratch1, ExternalAddress((address) &InvocationCounter::InterpreterBackwardBranchLimit));
+          __ ldrw(rscratch1, rscratch1);
           __ cmpw(r0, rscratch1);
           __ br(Assembler::HS, backedge_counter_overflow); // Intel == Assembler::aboveEqual
         }
@@ -1839,7 +1839,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
       // invocation counter overflow
       __ bind(backedge_counter_overflow);
       __ neg(r2, r2);
-      __ add(r2, r2, rbcp);	// branch bcp
+      __ add(r2, r2, rbcp);     // branch bcp
       // IcoResult frequency_counter_overflow([JavaThread*], address branch_bcp)
       __ call_VM(noreg,
                  CAST_FROM_FN_PTR(address,
@@ -1855,7 +1855,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
       // r0: osr nmethod (osr ok) or NULL (osr not possible)
       // w1: target bytecode
       // r2: scratch
-      __ cbz(r0, dispatch);	// test result -- no osr if null
+      __ cbz(r0, dispatch);     // test result -- no osr if null
       // nmethod may have been invalidated (VM may block upon call_VM return)
       __ ldrw(r2, Address(r0, nmethod::entry_bci_offset()));
       // InvalidOSREntryBci == -2 which overflows cmpw as unsigned
@@ -1877,7 +1877,7 @@ void TemplateTable::branch(bool is_jsr, bool is_wide)
       // remove activation
       // get sender esp
       __ ldr(esp,
-	  Address(rfp, frame::interpreter_frame_sender_sp_offset * wordSize));
+          Address(rfp, frame::interpreter_frame_sender_sp_offset * wordSize));
       // remove frame anchor
       __ leave();
       // Ensure compiled code always sees stack at proper alignment
@@ -2116,8 +2116,8 @@ void TemplateTable::fast_binaryswitch() {
     Label loop;
     __ bind(loop);
     // int h = (i + j) >> 1;
-    __ addw(h, i, j); 				// h = i + j;
-    __ lsrw(h, h, 1);                           	// h = (i + j) >> 1;
+    __ addw(h, i, j);                           // h = i + j;
+    __ lsrw(h, h, 1);                                   // h = (i + j) >> 1;
     // if (key < array[h].fast_match()) {
     //   j = h;
     // } else {
@@ -2294,15 +2294,15 @@ void TemplateTable::load_field_cp_cache_entry(Register obj,
   ByteSize cp_base_offset = ConstantPoolCache::base_offset();
   // Field offset
   __ ldr(off, Address(cache, in_bytes(cp_base_offset +
-					  ConstantPoolCacheEntry::f2_offset())));
+                                          ConstantPoolCacheEntry::f2_offset())));
   // Flags
   __ ldrw(flags, Address(cache, in_bytes(cp_base_offset +
-					   ConstantPoolCacheEntry::flags_offset())));
+                                           ConstantPoolCacheEntry::flags_offset())));
 
   // klass overwrite register
   if (is_static) {
     __ ldr(obj, Address(cache, in_bytes(cp_base_offset +
-					ConstantPoolCacheEntry::f1_offset())));
+                                        ConstantPoolCacheEntry::f1_offset())));
     const int mirror_offset = in_bytes(Klass::java_mirror_offset());
     __ ldr(obj, Address(obj, mirror_offset));
   }
@@ -2593,10 +2593,10 @@ void TemplateTable::jvmti_post_field_mod(Register cache, Register index, bool is
       // could be one or two words depending on its type. As a result,
       // we must find the type to determine where the object is.
       __ ldrw(c_rarg3, Address(c_rarg2,
-			       in_bytes(cp_base_offset +
-					ConstantPoolCacheEntry::flags_offset())));
+                               in_bytes(cp_base_offset +
+                                        ConstantPoolCacheEntry::flags_offset())));
       __ lsr(c_rarg3, c_rarg3,
-	     ConstantPoolCacheEntry::tos_state_shift);
+             ConstantPoolCacheEntry::tos_state_shift);
       ConstantPoolCacheEntry::verify_tos_state_shift();
       Label nope2, done, ok;
       __ ldr(c_rarg1, at_tos_p1());  // initially assume a one word jvalue
@@ -2888,9 +2888,12 @@ void TemplateTable::fast_storefield(TosState state)
   // access constant pool cache
   __ get_cache_and_index_at_bcp(r2, r1, 1);
 
+  // Must prevent reordering of the following cp cache loads with bytecode load
+  __ membar(MacroAssembler::LoadLoad);
+
   // test for volatile with r3
   __ ldrw(r3, Address(r2, in_bytes(base +
-				   ConstantPoolCacheEntry::flags_offset())));
+                                   ConstantPoolCacheEntry::flags_offset())));
 
   // replace index with field offset from cache entry
   __ ldr(r1, Address(r2, in_bytes(base + ConstantPoolCacheEntry::f2_offset())));
@@ -2979,10 +2982,14 @@ void TemplateTable::fast_accessfield(TosState state)
 
   // access constant pool cache
   __ get_cache_and_index_at_bcp(r2, r1, 1);
+
+  // Must prevent reordering of the following cp cache loads with bytecode load
+  __ membar(MacroAssembler::LoadLoad);
+
   __ ldr(r1, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
                                   ConstantPoolCacheEntry::f2_offset())));
   __ ldrw(r3, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
-				   ConstantPoolCacheEntry::flags_offset())));
+                                   ConstantPoolCacheEntry::flags_offset())));
 
   // r0: object
   __ verify_oop(r0);
@@ -3049,7 +3056,7 @@ void TemplateTable::fast_xaccess(TosState state)
   // access constant pool cache
   __ get_cache_and_index_at_bcp(r2, r3, 2);
   __ ldr(r1, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
-				  ConstantPoolCacheEntry::f2_offset())));
+                                  ConstantPoolCacheEntry::f2_offset())));
 
   // 8179954: We need to make sure that the code generated for
   // volatile accesses forms a sequentially-consistent set of
@@ -3088,7 +3095,7 @@ void TemplateTable::fast_xaccess(TosState state)
   {
     Label notVolatile;
     __ ldrw(r3, Address(r2, in_bytes(ConstantPoolCache::base_offset() +
-				     ConstantPoolCacheEntry::flags_offset())));
+                                     ConstantPoolCacheEntry::flags_offset())));
     __ tbz(r3, ConstantPoolCacheEntry::is_volatile_shift, notVolatile);
     __ membar(MacroAssembler::LoadLoad | MacroAssembler::LoadStore);
     __ bind(notVolatile);
@@ -3109,10 +3116,10 @@ void TemplateTable::count_calls(Register method, Register temp)
 
 void TemplateTable::prepare_invoke(int byte_no,
                                    Register method, // linked method (or i-klass)
-				   Register index,  // itable index, MethodType, etc.
-				   Register recv,   // if caller wants to see it
-				   Register flags   // if caller wants to test it
-				   ) {
+                                   Register index,  // itable index, MethodType, etc.
+                                   Register recv,   // if caller wants to see it
+                                   Register flags   // if caller wants to test it
+                                   ) {
   // determine flags
   Bytecodes::Code code = bytecode();
   const bool is_invokeinterface  = code == Bytecodes::_invokeinterface;
@@ -3242,7 +3249,7 @@ void TemplateTable::invokespecial(int byte_no)
   assert(byte_no == f1_byte, "use this argument");
 
   prepare_invoke(byte_no, rmethod, noreg,  // get f1 Method*
-		 r2);  // get receiver also for null check
+                 r2);  // get receiver also for null check
   __ verify_oop(r2);
   __ null_check(r2);
   // do the call
@@ -3273,7 +3280,7 @@ void TemplateTable::invokeinterface(int byte_no) {
   assert(byte_no == f1_byte, "use this argument");
 
   prepare_invoke(byte_no, r0, rmethod,  // get f1 Klass*, f2 Method*
-		 r2, r3); // recv, flags
+                 r2, r3); // recv, flags
 
   // r0: interface klass (from f1)
   // rmethod: method (from f2)
@@ -3472,7 +3479,7 @@ void TemplateTable::_new() {
 
   if (UseTLAB) {
     __ tlab_allocate(r0, r3, 0, noreg, r1,
-		     allow_shared_alloc ? allocate_shared : slow_case);
+                     allow_shared_alloc ? allocate_shared : slow_case);
 
     if (ZeroTLAB) {
       // the fields have been already cleared

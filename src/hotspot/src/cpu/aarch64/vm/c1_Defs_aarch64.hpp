@@ -59,7 +59,7 @@ enum {
 
   pd_nof_cpu_regs_linearscan = 32, // number of registers visible to linear scan
   pd_nof_fpu_regs_linearscan = pd_nof_fpu_regs_frame_map, // number of registers visible to linear scan
-  pd_nof_xmm_regs_linearscan = 0, // like sparc we don't have any of these 
+  pd_nof_xmm_regs_linearscan = 0, // like sparc we don't have any of these
   pd_first_cpu_reg = 0,
   pd_last_cpu_reg = 16,
   pd_first_byte_reg = 0,

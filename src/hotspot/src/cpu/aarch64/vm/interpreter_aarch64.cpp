@@ -276,7 +276,7 @@ address InterpreterGenerator::generate_empty_entry(void) {
   {
     unsigned long offset;
     assert(SafepointSynchronize::_not_synchronized == 0,
-	   "SafepointSynchronize::_not_synchronized");
+           "SafepointSynchronize::_not_synchronized");
     __ adrp(rscratch2, SafepointSynchronize::address_of_state(), offset);
     __ ldrw(rscratch2, Address(rscratch2, offset));
     __ cbnz(rscratch2, slow_path);

@@ -214,7 +214,7 @@ ifeq ($(USE_CLANG), true)
   WARNINGS_ARE_ERRORS += -Wno-logical-op-parentheses -Wno-parentheses-equality -Wno-parentheses
   WARNINGS_ARE_ERRORS += -Wno-switch -Wno-tautological-constant-out-of-range-compare -Wno-tautological-compare
   WARNINGS_ARE_ERRORS += -Wno-delete-non-virtual-dtor -Wno-deprecated -Wno-format -Wno-dynamic-class-memaccess
-  WARNINGS_ARE_ERRORS += -Wno-return-type -Wno-empty-body -Qunused-arguments -Wno-uninitialized
+  WARNINGS_ARE_ERRORS += -Wno-return-type -Wno-empty-body
 endif
 
 WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wunused-value -Wformat=2 -Wreturn-type
@@ -226,6 +226,9 @@ ifeq ($(USE_CLANG),)
     WARNING_FLAGS += -Wconversion
   endif
 endif
+
+# workaround for glibc >= 2.24 JDK-8179887
+WARNING_FLAGS += -Wno-deprecated-declarations
 
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases
@@ -267,9 +270,6 @@ else
   # 6835796. Problem in GCC 4.3.0 with mulnode.o optimized compilation.
   ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 3), 1)
     OPT_CFLAGS/mulnode.o += $(OPT_CFLAGS/NOOPT)
-  endif
-  ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 9), 1)
-    OPT_CFLAGS += -fno-devirtualize
   endif
 endif
 
@@ -345,40 +345,18 @@ endif
 # DEBUG_BINARIES uses full -g debug information for all configs
 ifeq ($(DEBUG_BINARIES), true)
   CFLAGS += -g
-  ASFLAGS += -g
 else
-  # Use the stabs format for debugging information (this is the default
-  # on gcc-2.91). It's good enough, has all the information about line
-  # numbers and local variables, and libjvm.so is only about 16M.
-  # Change this back to "-g" if you want the most expressive format.
-  # (warning: that could easily inflate libjvm.so to 150M!)
-  # Note: The Itanium gcc compiler crashes when using -gstabs.
-  DEBUG_CFLAGS/ia64  = -g
-  DEBUG_CFLAGS/amd64 = -g
-  DEBUG_CFLAGS/aarch64 = -g
-  DEBUG_CFLAGS/ppc64 = -g
-  DEBUG_CFLAGS/zero = -g
   DEBUG_CFLAGS += $(DEBUG_CFLAGS/$(BUILDARCH))
   ifeq ($(DEBUG_CFLAGS/$(BUILDARCH)),)
     DEBUG_CFLAGS += -g
   endif
   
   ifeq ($(ENABLE_FULL_DEBUG_SYMBOLS),1)
-    FASTDEBUG_CFLAGS/ia64  = -g
-    FASTDEBUG_CFLAGS/amd64 = -g
-    FASTDEBUG_CFLAGS/aarch64 = -g
-    FASTDEBUG_CFLAGS/ppc64 = -g
-    FASTDEBUG_CFLAGS/zero = -g
     FASTDEBUG_CFLAGS += $(FASTDEBUG_CFLAGS/$(BUILDARCH))
     ifeq ($(FASTDEBUG_CFLAGS/$(BUILDARCH)),)
       FASTDEBUG_CFLAGS/$(BUILDARCH) = -g
     endif
   
-    OPT_CFLAGS/ia64  = -g
-    OPT_CFLAGS/amd64 = -g
-    OPT_CFLAGS/aarch64 = -g
-    OPT_CFLAGS/ppc64 = -g
-    OPT_CFLAGS/zero = -g
     OPT_CFLAGS += $(OPT_CFLAGS/$(BUILDARCH))
     ifeq ($(OPT_CFLAGS/$(BUILDARCH)),)
       OPT_CFLAGS/$(BUILDARCH) = -g

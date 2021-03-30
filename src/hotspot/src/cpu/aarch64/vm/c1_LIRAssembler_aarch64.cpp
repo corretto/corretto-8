@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013, Red Hat Inc.
- * Copyright (c) 2000, 2019, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
  * All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -190,11 +190,11 @@ Address LIR_Assembler::as_Address(LIR_Address* addr, Register tmp) {
     assert(addr->disp() == 0, "must be");
     switch(opr->type()) {
       case T_INT:
-	return Address(base, index, Address::sxtw(addr->scale()));
+        return Address(base, index, Address::sxtw(addr->scale()));
       case T_LONG:
-	return Address(base, index, Address::lsl(addr->scale()));
+        return Address(base, index, Address::lsl(addr->scale()));
       default:
-	ShouldNotReachHere();
+        ShouldNotReachHere();
       }
   } else  {
     intptr_t addr_offset = intptr_t(addr->disp());
@@ -432,12 +432,9 @@ int LIR_Assembler::emit_unwind_handler() {
   }
 
   if (compilation()->env()->dtrace_method_probes()) {
-    __ call_Unimplemented();
-#if 0
-    __ movptr(Address(rsp, 0), rax);
-    __ mov_metadata(Address(rsp, sizeof(void*)), method()->constant_encoding());
-    __ call(RuntimeAddress(CAST_FROM_FN_PTR(address, SharedRuntime::dtrace_method_exit)));
-#endif
+    __ mov(c_rarg0, rthread);
+    __ mov_metadata(c_rarg1, method()->constant_encoding());
+    __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::dtrace_method_exit), c_rarg0, c_rarg1);
   }
 
   if (method()->is_synchronized() || compilation()->env()->dtrace_method_probes()) {
@@ -626,20 +623,20 @@ void LIR_Assembler::const2reg(LIR_Opr src, LIR_Opr dest, LIR_PatchCode patch_cod
 
     case T_FLOAT: {
       if (__ operand_valid_for_float_immediate(c->as_jfloat())) {
-	__ fmovs(dest->as_float_reg(), (c->as_jfloat()));
+        __ fmovs(dest->as_float_reg(), (c->as_jfloat()));
       } else {
-	__ adr(rscratch1, InternalAddress(float_constant(c->as_jfloat())));
-	__ ldrs(dest->as_float_reg(), Address(rscratch1));
+        __ adr(rscratch1, InternalAddress(float_constant(c->as_jfloat())));
+        __ ldrs(dest->as_float_reg(), Address(rscratch1));
       }
       break;
     }
 
     case T_DOUBLE: {
       if (__ operand_valid_for_float_immediate(c->as_jdouble())) {
-	__ fmovd(dest->as_double_reg(), (c->as_jdouble()));
+        __ fmovd(dest->as_double_reg(), (c->as_jdouble()));
       } else {
-	__ adr(rscratch1, InternalAddress(double_constant(c->as_jdouble())));
-	__ ldrd(dest->as_double_reg(), Address(rscratch1));
+        __ adr(rscratch1, InternalAddress(double_constant(c->as_jdouble())));
+        __ ldrd(dest->as_double_reg(), Address(rscratch1));
       }
       break;
     }
@@ -655,10 +652,10 @@ void LIR_Assembler::const2stack(LIR_Opr src, LIR_Opr dest) {
   case T_OBJECT:
     {
       if (! c->as_jobject())
-	__ str(zr, frame_map()->address_for_slot(dest->single_stack_ix()));
+        __ str(zr, frame_map()->address_for_slot(dest->single_stack_ix()));
       else {
-	const2reg(src, FrameMap::rscratch1_opr, lir_patch_none, NULL);
-	reg2stack(FrameMap::rscratch1_opr, dest, c->type(), false);
+        const2reg(src, FrameMap::rscratch1_opr, lir_patch_none, NULL);
+        reg2stack(FrameMap::rscratch1_opr, dest, c->type(), false);
       }
     }
     break;
@@ -672,10 +669,10 @@ void LIR_Assembler::const2stack(LIR_Opr src, LIR_Opr dest) {
     {
       Register reg = zr;
       if (c->as_jint_bits() == 0)
-	__ strw(zr, frame_map()->address_for_slot(dest->single_stack_ix()));
+        __ strw(zr, frame_map()->address_for_slot(dest->single_stack_ix()));
       else {
-	__ movw(rscratch1, c->as_jint_bits());
-	__ strw(rscratch1, frame_map()->address_for_slot(dest->single_stack_ix()));
+        __ movw(rscratch1, c->as_jint_bits());
+        __ strw(rscratch1, frame_map()->address_for_slot(dest->single_stack_ix()));
       }
     }
     break;
@@ -684,12 +681,12 @@ void LIR_Assembler::const2stack(LIR_Opr src, LIR_Opr dest) {
     {
       Register reg = zr;
       if (c->as_jlong_bits() == 0)
-	__ str(zr, frame_map()->address_for_slot(dest->double_stack_ix(),
-						 lo_word_offset_in_bytes));
+        __ str(zr, frame_map()->address_for_slot(dest->double_stack_ix(),
+                                                 lo_word_offset_in_bytes));
       else {
-	__ mov(rscratch1, (intptr_t)c->as_jlong_bits());
-	__ str(rscratch1, frame_map()->address_for_slot(dest->double_stack_ix(),
-							lo_word_offset_in_bytes));
+        __ mov(rscratch1, (intptr_t)c->as_jlong_bits());
+        __ str(rscratch1, frame_map()->address_for_slot(dest->double_stack_ix(),
+                                                        lo_word_offset_in_bytes));
       }
     }
     break;
@@ -794,7 +791,7 @@ void LIR_Assembler::reg2stack(LIR_Opr src, LIR_Opr dest, BasicType type, bool po
     if (type == T_ARRAY || type == T_OBJECT) {
       __ str(src->as_register(), frame_map()->address_for_slot(dest->single_stack_ix()));
       __ verify_oop(src->as_register());
-    } else if (type == T_METADATA || type == T_DOUBLE) {
+    } else if (type == T_METADATA || type == T_DOUBLE || type == T_ADDRESS) {
       __ str(src->as_register(), frame_map()->address_for_slot(dest->single_stack_ix()));
     } else {
       __ strw(src->as_register(), frame_map()->address_for_slot(dest->single_stack_ix()));
@@ -907,7 +904,7 @@ void LIR_Assembler::stack2reg(LIR_Opr src, LIR_Opr dest, BasicType type) {
     if (type == T_ARRAY || type == T_OBJECT) {
       __ ldr(dest->as_register(), frame_map()->address_for_slot(src->single_stack_ix()));
       __ verify_oop(dest->as_register());
-    } else if (type == T_METADATA) {
+    } else if (type == T_METADATA || type == T_ADDRESS) {
       __ ldr(dest->as_register(), frame_map()->address_for_slot(src->single_stack_ix()));
     } else {
       __ ldrw(dest->as_register(), frame_map()->address_for_slot(src->single_stack_ix()));
@@ -1021,9 +1018,9 @@ void LIR_Assembler::mem2reg(LIR_Opr src, LIR_Opr dest, BasicType type, LIR_Patch
       // address that matches klass_offset_in_bytes() will be loaded
       // as a word, not a long.
       if (UseCompressedClassPointers && addr->disp() == oopDesc::klass_offset_in_bytes()) {
-	__ ldrw(dest->as_register(), as_Address(from_addr));
+        __ ldrw(dest->as_register(), as_Address(from_addr));
       } else {
-	__ ldr(dest->as_register(), as_Address(from_addr));
+        __ ldr(dest->as_register(), as_Address(from_addr));
       }
       break;
     case T_INT:
@@ -1129,8 +1126,8 @@ void LIR_Assembler::emit_opBranch(LIR_OpBranch* op) {
       // another branch here.  Likewise, Assembler::NE does not permit
       // ordered branches.
       if ((is_unordered && op->cond() == lir_cond_equal)
-	  || (!is_unordered && op->cond() == lir_cond_notEqual))
-	__ br(Assembler::VS, *(op->ublock()->label()));
+          || (!is_unordered && op->cond() == lir_cond_notEqual))
+        __ br(Assembler::VS, *(op->ublock()->label()));
       switch(op->cond()) {
       case lir_cond_equal:        acond = Assembler::EQ; break;
       case lir_cond_notEqual:     acond = Assembler::NE; break;
@@ -1166,103 +1163,103 @@ void LIR_Assembler::emit_opConvert(LIR_OpConvert* op) {
   switch (op->bytecode()) {
     case Bytecodes::_i2f:
       {
-	__ scvtfws(dest->as_float_reg(), src->as_register());
-	break;
+        __ scvtfws(dest->as_float_reg(), src->as_register());
+        break;
       }
     case Bytecodes::_i2d:
       {
-	__ scvtfwd(dest->as_double_reg(), src->as_register());
-	break;
+        __ scvtfwd(dest->as_double_reg(), src->as_register());
+        break;
       }
     case Bytecodes::_l2d:
       {
-	__ scvtfd(dest->as_double_reg(), src->as_register_lo());
-	break;
+        __ scvtfd(dest->as_double_reg(), src->as_register_lo());
+        break;
       }
     case Bytecodes::_l2f:
       {
-	__ scvtfs(dest->as_float_reg(), src->as_register_lo());
-	break;
+        __ scvtfs(dest->as_float_reg(), src->as_register_lo());
+        break;
       }
     case Bytecodes::_f2d:
       {
-	__ fcvts(dest->as_double_reg(), src->as_float_reg());
-	break;
+        __ fcvts(dest->as_double_reg(), src->as_float_reg());
+        break;
       }
     case Bytecodes::_d2f:
       {
-	__ fcvtd(dest->as_float_reg(), src->as_double_reg());
-	break;
+        __ fcvtd(dest->as_float_reg(), src->as_double_reg());
+        break;
       }
     case Bytecodes::_i2c:
       {
-	__ ubfx(dest->as_register(), src->as_register(), 0, 16);
-	break;
+        __ ubfx(dest->as_register(), src->as_register(), 0, 16);
+        break;
       }
     case Bytecodes::_i2l:
       {
-	__ sxtw(dest->as_register_lo(), src->as_register());
-	break;
+        __ sxtw(dest->as_register_lo(), src->as_register());
+        break;
       }
     case Bytecodes::_i2s:
       {
-	__ sxth(dest->as_register(), src->as_register());
-	break;
+        __ sxth(dest->as_register(), src->as_register());
+        break;
       }
     case Bytecodes::_i2b:
       {
-	__ sxtb(dest->as_register(), src->as_register());
-	break;
+        __ sxtb(dest->as_register(), src->as_register());
+        break;
       }
     case Bytecodes::_l2i:
       {
-	_masm->block_comment("FIXME: This could be a no-op");
-	__ uxtw(dest->as_register(), src->as_register_lo());
-	break;
+        _masm->block_comment("FIXME: This could be a no-op");
+        __ uxtw(dest->as_register(), src->as_register_lo());
+        break;
       }
     case Bytecodes::_d2l:
       {
-	Register tmp = op->tmp1()->as_register();
-	__ clear_fpsr();
-	__ fcvtzd(dest->as_register_lo(), src->as_double_reg());
-	__ get_fpsr(tmp);
-	__ tst(tmp, 1); // FPSCR.IOC
-	__ br(Assembler::NE, *(op->stub()->entry()));
-	__ bind(*op->stub()->continuation());
-	break;
+        Register tmp = op->tmp1()->as_register();
+        __ clear_fpsr();
+        __ fcvtzd(dest->as_register_lo(), src->as_double_reg());
+        __ get_fpsr(tmp);
+        __ tst(tmp, 1); // FPSCR.IOC
+        __ br(Assembler::NE, *(op->stub()->entry()));
+        __ bind(*op->stub()->continuation());
+        break;
       }
     case Bytecodes::_f2i:
       {
-	Register tmp = op->tmp1()->as_register();
-	__ clear_fpsr();
-	__ fcvtzsw(dest->as_register(), src->as_float_reg());
-	__ get_fpsr(tmp);
-	__ tst(tmp, 1); // FPSCR.IOC
-	__ br(Assembler::NE, *(op->stub()->entry()));
-	__ bind(*op->stub()->continuation());
-	break;
+        Register tmp = op->tmp1()->as_register();
+        __ clear_fpsr();
+        __ fcvtzsw(dest->as_register(), src->as_float_reg());
+        __ get_fpsr(tmp);
+        __ tst(tmp, 1); // FPSCR.IOC
+        __ br(Assembler::NE, *(op->stub()->entry()));
+        __ bind(*op->stub()->continuation());
+        break;
       }
     case Bytecodes::_f2l:
       {
-	Register tmp = op->tmp1()->as_register();
-	__ clear_fpsr();
-	__ fcvtzs(dest->as_register_lo(), src->as_float_reg());
-	__ get_fpsr(tmp);
-	__ tst(tmp, 1); // FPSCR.IOC
-	__ br(Assembler::NE, *(op->stub()->entry()));
-	__ bind(*op->stub()->continuation());
-	break;
+        Register tmp = op->tmp1()->as_register();
+        __ clear_fpsr();
+        __ fcvtzs(dest->as_register_lo(), src->as_float_reg());
+        __ get_fpsr(tmp);
+        __ tst(tmp, 1); // FPSCR.IOC
+        __ br(Assembler::NE, *(op->stub()->entry()));
+        __ bind(*op->stub()->continuation());
+        break;
       }
     case Bytecodes::_d2i:
       {
-	Register tmp = op->tmp1()->as_register();
-	__ clear_fpsr();
-	__ fcvtzdw(dest->as_register(), src->as_double_reg());
-	__ get_fpsr(tmp);
-	__ tst(tmp, 1); // FPSCR.IOC
-	__ br(Assembler::NE, *(op->stub()->entry()));
-	__ bind(*op->stub()->continuation());
-	break;
+        Register tmp = op->tmp1()->as_register();
+        __ clear_fpsr();
+        __ fcvtzdw(dest->as_register(), src->as_double_reg());
+        __ get_fpsr(tmp);
+        __ tst(tmp, 1); // FPSCR.IOC
+        __ br(Assembler::NE, *(op->stub()->entry()));
+        __ bind(*op->stub()->continuation());
+        break;
       }
     default: ShouldNotReachHere();
   }
@@ -1271,7 +1268,7 @@ void LIR_Assembler::emit_opConvert(LIR_OpConvert* op) {
 void LIR_Assembler::emit_alloc_obj(LIR_OpAllocObj* op) {
   if (op->init_check()) {
     __ ldrb(rscratch1, Address(op->klass()->as_register(),
-			       InstanceKlass::init_state_offset()));
+                               InstanceKlass::init_state_offset()));
     __ cmpw(rscratch1, InstanceKlass::fully_initialized);
     add_debug_info_for_null_check_here(op->stub()->info());
     __ br(Assembler::NE, *op->stub()->entry());
@@ -1339,7 +1336,7 @@ void LIR_Assembler::type_profile_helper(Register mdo,
   for (uint i = 0; i < ReceiverTypeData::row_limit(); i++) {
     Label next_test;
     __ lea(rscratch2,
-	   Address(mdo, md->byte_offset_of_slot(data, ReceiverTypeData::receiver_offset(i))));
+           Address(mdo, md->byte_offset_of_slot(data, ReceiverTypeData::receiver_offset(i))));
     Address recv_addr(rscratch2);
     __ ldr(rscratch1, recv_addr);
     __ cbnz(rscratch1, next_test);
@@ -1401,9 +1398,9 @@ void LIR_Assembler::emit_typecheck_helper(LIR_OpTypeCheck *op, Label* success, L
       Register mdo  = klass_RInfo;
       __ mov_metadata(mdo, md->constant_encoding());
       Address data_addr
-	= __ form_address(rscratch2, mdo,
-			  md->byte_offset_of_slot(data, DataLayout::DataLayout::header_offset()),
-			  LogBytesPerWord);
+        = __ form_address(rscratch2, mdo,
+                          md->byte_offset_of_slot(data, DataLayout::DataLayout::header_offset()),
+                          LogBytesPerWord);
       int header_bits = DataLayout::flag_mask_to_header_mask(BitData::null_seen_byte_constant());
       __ ldr(rscratch1, data_addr);
       __ orr(rscratch1, rscratch1, header_bits);
@@ -1449,11 +1446,11 @@ void LIR_Assembler::emit_typecheck_helper(LIR_OpTypeCheck *op, Label* success, L
         __ cmp(klass_RInfo, k_RInfo);
         __ br(Assembler::EQ, *success_target);
 
-	__ stp(klass_RInfo, k_RInfo, Address(__ pre(sp, -2 * wordSize)));
+        __ stp(klass_RInfo, k_RInfo, Address(__ pre(sp, -2 * wordSize)));
         __ far_call(RuntimeAddress(Runtime1::entry_for(Runtime1::slow_subtype_check_id)));
-	__ ldr(klass_RInfo, Address(__ post(sp, 2 * wordSize)));
+        __ ldr(klass_RInfo, Address(__ post(sp, 2 * wordSize)));
         // result is a boolean
-	__ cbzw(klass_RInfo, *failure_target);
+        __ cbzw(klass_RInfo, *failure_target);
         // successful cast, fall through to profile or jump
       }
     } else {
@@ -1481,8 +1478,8 @@ void LIR_Assembler::emit_typecheck_helper(LIR_OpTypeCheck *op, Label* success, L
     __ mov_metadata(mdo, md->constant_encoding());
     Address counter_addr
       = __ form_address(rscratch2, mdo,
-			md->byte_offset_of_slot(data, CounterData::count_offset()),
-			LogBytesPerWord);
+                        md->byte_offset_of_slot(data, CounterData::count_offset()),
+                        LogBytesPerWord);
     __ ldr(rscratch1, counter_addr);
     __ sub(rscratch1, rscratch1, DataLayout::counter_increment);
     __ str(rscratch1, counter_addr);
@@ -1528,9 +1525,9 @@ void LIR_Assembler::emit_opTypeCheck(LIR_OpTypeCheck* op) {
       Register mdo  = klass_RInfo;
       __ mov_metadata(mdo, md->constant_encoding());
       Address data_addr
-	= __ form_address(rscratch2, mdo,
-			  md->byte_offset_of_slot(data, DataLayout::header_offset()),
-			  LogBytesPerInt);
+        = __ form_address(rscratch2, mdo,
+                          md->byte_offset_of_slot(data, DataLayout::header_offset()),
+                          LogBytesPerInt);
       int header_bits = DataLayout::flag_mask_to_header_mask(BitData::null_seen_byte_constant());
       __ ldrw(rscratch1, data_addr);
       __ orrw(rscratch1, rscratch1, header_bits);
@@ -1658,7 +1655,7 @@ void LIR_Assembler::cmove(LIR_Condition condition, LIR_Opr opr1, LIR_Opr opr2, L
   }
 
   assert(result->is_single_cpu() || result->is_double_cpu(),
-	 "expect single register for result");
+         "expect single register for result");
   if (opr1->is_constant() && opr2->is_constant()
       && opr1->type() == T_INT && opr2->type() == T_INT) {
     jint val1 = opr1->as_jint();
@@ -1722,7 +1719,7 @@ void LIR_Assembler::arith_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr
       // cpu register - cpu register
 
       assert(left->type() == T_INT && right->type() == T_INT && dest->type() == T_INT,
-	     "should be");
+             "should be");
       Register rreg = right->as_register();
       switch (code) {
       case lir_add: __ addw (dest->as_register(), lreg, rreg); break;
@@ -1747,39 +1744,39 @@ void LIR_Assembler::arith_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr
       // FIXME.  This is fugly: we really need to factor all this logic.
       switch(right->type()) {
       case T_LONG:
-	c = right->as_constant_ptr()->as_jlong();
-	break;
+        c = right->as_constant_ptr()->as_jlong();
+        break;
       case T_INT:
       case T_ADDRESS:
-	c = right->as_constant_ptr()->as_jint();
-	break;
+        c = right->as_constant_ptr()->as_jint();
+        break;
       default:
-	ShouldNotReachHere();
-	break;
+        ShouldNotReachHere();
+        break;
       }
 
       assert(code == lir_add || code == lir_sub, "mismatched arithmetic op");
       if (c == 0 && dreg == lreg) {
-	COMMENT("effective nop elided");
-	return;
+        COMMENT("effective nop elided");
+        return;
       }
       switch(left->type()) {
       case T_INT:
-	switch (code) {
+        switch (code) {
         case lir_add: __ addw(dreg, lreg, c); break;
         case lir_sub: __ subw(dreg, lreg, c); break;
         default: ShouldNotReachHere();
-	}
-	break;
+        }
+        break;
       case T_OBJECT:
       case T_ADDRESS:
-	switch (code) {
+        switch (code) {
         case lir_add: __ add(dreg, lreg, c); break;
         case lir_sub: __ sub(dreg, lreg, c); break;
         default: ShouldNotReachHere();
-	}
-	break;
-	ShouldNotReachHere();
+        }
+        break;
+        ShouldNotReachHere();
       }
     } else {
       ShouldNotReachHere();
@@ -1798,7 +1795,7 @@ void LIR_Assembler::arith_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr
       case lir_div: __ corrected_idivq(dest->as_register_lo(), lreg_lo, rreg_lo, false, rscratch1); break;
       case lir_rem: __ corrected_idivq(dest->as_register_lo(), lreg_lo, rreg_lo, true, rscratch1); break;
       default:
-	ShouldNotReachHere();
+        ShouldNotReachHere();
       }
 
     } else if (right->is_constant()) {
@@ -1806,8 +1803,8 @@ void LIR_Assembler::arith_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr
       Register dreg = as_reg(dest);
       assert(code == lir_add || code == lir_sub, "mismatched arithmetic op");
       if (c == 0 && dreg == lreg_lo) {
-	COMMENT("effective nop elided");
-	return;
+        COMMENT("effective nop elided");
+        return;
       }
       switch (code) {
         case lir_add: __ add(dreg, lreg_lo, c); break;
@@ -1841,11 +1838,11 @@ void LIR_Assembler::arith_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr
       case lir_div_strictfp: // fall through
       case lir_div: __ fdivd (dest->as_double_reg(), left->as_double_reg(), right->as_double_reg()); break;
       default:
-	ShouldNotReachHere();
+        ShouldNotReachHere();
       }
     } else {
       if (right->is_constant()) {
-	ShouldNotReachHere();
+        ShouldNotReachHere();
       }
       ShouldNotReachHere();
     }
@@ -1869,7 +1866,7 @@ void LIR_Assembler::intrinsic_op(LIR_Code code, LIR_Opr value, LIR_Opr unused, L
 }
 
 void LIR_Assembler::logic_op(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Opr dst) {
-  
+
   assert(left->is_single_cpu() || left->is_double_cpu(), "expect single or double register");
   Register Rleft = left->is_single_cpu() ? left->as_register() :
                                            left->as_register_lo();
@@ -2120,8 +2117,8 @@ void LIR_Assembler::shift_op(LIR_Code code, LIR_Opr left, LIR_Opr count, LIR_Opr
       case lir_shr:  __ asrvw (dreg, lreg, count->as_register()); break;
       case lir_ushr: __ lsrvw (dreg, lreg, count->as_register()); break;
       default:
-	ShouldNotReachHere();
-	break;
+        ShouldNotReachHere();
+        break;
       }
       break;
     case T_LONG:
@@ -2132,8 +2129,8 @@ void LIR_Assembler::shift_op(LIR_Code code, LIR_Opr left, LIR_Opr count, LIR_Opr
       case lir_shr:  __ asrv (dreg, lreg, count->as_register()); break;
       case lir_ushr: __ lsrv (dreg, lreg, count->as_register()); break;
       default:
-	ShouldNotReachHere();
-	break;
+        ShouldNotReachHere();
+        break;
       }
       break;
     default:
@@ -2155,8 +2152,8 @@ void LIR_Assembler::shift_op(LIR_Code code, LIR_Opr left, jint count, LIR_Opr de
       case lir_shr:  __ asrw (dreg, lreg, count); break;
       case lir_ushr: __ lsrw (dreg, lreg, count); break;
       default:
-	ShouldNotReachHere();
-	break;
+        ShouldNotReachHere();
+        break;
       }
       break;
     case T_LONG:
@@ -2167,8 +2164,8 @@ void LIR_Assembler::shift_op(LIR_Code code, LIR_Opr left, jint count, LIR_Opr de
       case lir_shr:  __ asr (dreg, lreg, count); break;
       case lir_ushr: __ lsr (dreg, lreg, count); break;
       default:
-	ShouldNotReachHere();
-	break;
+        ShouldNotReachHere();
+        break;
       }
       break;
     default:
@@ -2376,10 +2373,10 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
       // safely do the copy.
       Label cont, slow;
 
-#define PUSH(r1, r2)					\
+#define PUSH(r1, r2)                                    \
       stp(r1, r2, __ pre(sp, -2 * wordSize));
 
-#define POP(r1, r2)					\
+#define POP(r1, r2)                                     \
       ldp(r1, r2, __ post(sp, 2 * wordSize));
 
       __ PUSH(src, dst);
@@ -2416,23 +2413,23 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
           int lh_offset = in_bytes(Klass::layout_helper_offset());
           Address klass_lh_addr(tmp, lh_offset);
           jint objArray_lh = Klass::array_layout_helper(T_OBJECT);
-	  __ ldrw(rscratch1, klass_lh_addr);
-	  __ mov(rscratch2, objArray_lh);
+          __ ldrw(rscratch1, klass_lh_addr);
+          __ mov(rscratch2, objArray_lh);
           __ eorw(rscratch1, rscratch1, rscratch2);
           __ cbnzw(rscratch1, *stub->entry());
         }
 
        // Spill because stubs can use any register they like and it's
        // easier to restore just those that we care about.
-	__ stp(dst,     dst_pos, Address(sp, 0*BytesPerWord));
-	__ stp(length,  src_pos, Address(sp, 2*BytesPerWord));
-	__ str(src,              Address(sp, 4*BytesPerWord));
+        __ stp(dst,     dst_pos, Address(sp, 0*BytesPerWord));
+        __ stp(length,  src_pos, Address(sp, 2*BytesPerWord));
+        __ str(src,              Address(sp, 4*BytesPerWord));
 
         __ lea(c_rarg0, Address(src, src_pos, Address::uxtw(scale)));
-	__ add(c_rarg0, c_rarg0, arrayOopDesc::base_offset_in_bytes(basic_type));
+        __ add(c_rarg0, c_rarg0, arrayOopDesc::base_offset_in_bytes(basic_type));
         assert_different_registers(c_rarg0, dst, dst_pos, length);
         __ lea(c_rarg1, Address(dst, dst_pos, Address::uxtw(scale)));
-	__ add(c_rarg1, c_rarg1, arrayOopDesc::base_offset_in_bytes(basic_type));
+        __ add(c_rarg1, c_rarg1, arrayOopDesc::base_offset_in_bytes(basic_type));
         assert_different_registers(c_rarg1, dst, length);
         __ uxtw(c_rarg2, length);
         assert_different_registers(c_rarg2, dst);
@@ -2458,19 +2455,19 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
           __ incrementw(ExternalAddress((address)&Runtime1::_arraycopy_checkcast_attempt_cnt));
         }
 #endif
-	assert_different_registers(dst, dst_pos, length, src_pos, src, r0, rscratch1);
+        assert_different_registers(dst, dst_pos, length, src_pos, src, r0, rscratch1);
 
         // Restore previously spilled arguments
-	__ ldp(dst,     dst_pos, Address(sp, 0*BytesPerWord));
-	__ ldp(length,  src_pos, Address(sp, 2*BytesPerWord));
-	__ ldr(src,              Address(sp, 4*BytesPerWord));
+        __ ldp(dst,     dst_pos, Address(sp, 0*BytesPerWord));
+        __ ldp(length,  src_pos, Address(sp, 2*BytesPerWord));
+        __ ldr(src,              Address(sp, 4*BytesPerWord));
 
         // return value is -1^K where K is partial copied count
         __ eonw(rscratch1, r0, zr);
         // adjust length down and src/end pos up by partial copied count
-	__ subw(length, length, rscratch1);
-	__ addw(src_pos, src_pos, rscratch1);
-	__ addw(dst_pos, dst_pos, rscratch1);
+        __ subw(length, length, rscratch1);
+        __ addw(src_pos, src_pos, rscratch1);
+        __ addw(dst_pos, dst_pos, rscratch1);
       }
 
       __ b(*stub->entry());
@@ -2500,28 +2497,28 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
     if (basic_type != T_OBJECT) {
 
       if (UseCompressedClassPointers) {
-	__ ldrw(rscratch1, dst_klass_addr);
-	__ cmpw(tmp, rscratch1);
+        __ ldrw(rscratch1, dst_klass_addr);
+        __ cmpw(tmp, rscratch1);
       } else {
-	__ ldr(rscratch1, dst_klass_addr);
-	__ cmp(tmp, rscratch1);
+        __ ldr(rscratch1, dst_klass_addr);
+        __ cmp(tmp, rscratch1);
       }
       __ br(Assembler::NE, halt);
       if (UseCompressedClassPointers) {
-	__ ldrw(rscratch1, src_klass_addr);
-	__ cmpw(tmp, rscratch1);
+        __ ldrw(rscratch1, src_klass_addr);
+        __ cmpw(tmp, rscratch1);
       } else {
-	__ ldr(rscratch1, src_klass_addr);
-	__ cmp(tmp, rscratch1);
+        __ ldr(rscratch1, src_klass_addr);
+        __ cmp(tmp, rscratch1);
       }
       __ br(Assembler::EQ, known_ok);
     } else {
       if (UseCompressedClassPointers) {
-	__ ldrw(rscratch1, dst_klass_addr);
-	__ cmpw(tmp, rscratch1);
+        __ ldrw(rscratch1, dst_klass_addr);
+        __ cmpw(tmp, rscratch1);
       } else {
-	__ ldr(rscratch1, dst_klass_addr);
-	__ cmp(tmp, rscratch1);
+        __ ldr(rscratch1, dst_klass_addr);
+        __ cmp(tmp, rscratch1);
       }
       __ br(Assembler::EQ, known_ok);
       __ cmp(src, dst);
@@ -2647,11 +2644,11 @@ void LIR_Assembler::emit_profile_call(LIR_OpProfileCall* op) {
         ciKlass* receiver = vc_data->receiver(i);
         if (receiver == NULL) {
           Address recv_addr(mdo, md->byte_offset_of_slot(data, VirtualCallData::receiver_offset(i)));
-	  __ mov_metadata(rscratch1, known_klass->constant_encoding());
-	  __ lea(rscratch2, recv_addr);
+          __ mov_metadata(rscratch1, known_klass->constant_encoding());
+          __ lea(rscratch2, recv_addr);
           __ str(rscratch1, Address(rscratch2));
           Address data_addr(mdo, md->byte_offset_of_slot(data, VirtualCallData::receiver_count_offset(i)));
-	  __ addptr(data_addr, DataLayout::counter_increment);
+          __ addptr(data_addr, DataLayout::counter_increment);
           return;
         }
       }
@@ -2907,7 +2904,7 @@ void LIR_Assembler::rt_call(LIR_Opr result, address dest, const LIR_OprList* arg
 void LIR_Assembler::volatile_move_op(LIR_Opr src, LIR_Opr dest, BasicType type, CodeEmitInfo* info) {
   if (dest->is_address() || src->is_address()) {
     move_op(src, dest, type, lir_patch_none, info,
-	    /*pop_fpu_stack*/false, /*unaligned*/false, /*wide*/false);
+            /*pop_fpu_stack*/false, /*unaligned*/false, /*wide*/false);
   } else {
     ShouldNotReachHere();
   }
@@ -3018,47 +3015,47 @@ void LIR_Assembler::peephole(LIR_List *lir) {
       start_insn = i;
       switch (op->code()) {
       case lir_cmp:
-	LIR_Opr opr1 = op->as_Op2()->in_opr1();
-	LIR_Opr opr2 = op->as_Op2()->in_opr2();
-	if (opr1->is_cpu_register() && opr1->is_single_cpu()
-	    && opr2->is_constant()
-	    && opr2->type() == T_INT) {
-	  reg_opr = opr1;
-	  reg = opr1->as_register();
-	  first_key = opr2->as_constant_ptr()->as_jint();
-	  next_key = first_key + 1;
-	  state = cmp_s;
-	  goto next_state;
-	}
-	break;
+        LIR_Opr opr1 = op->as_Op2()->in_opr1();
+        LIR_Opr opr2 = op->as_Op2()->in_opr2();
+        if (opr1->is_cpu_register() && opr1->is_single_cpu()
+            && opr2->is_constant()
+            && opr2->type() == T_INT) {
+          reg_opr = opr1;
+          reg = opr1->as_register();
+          first_key = opr2->as_constant_ptr()->as_jint();
+          next_key = first_key + 1;
+          state = cmp_s;
+          goto next_state;
+        }
+        break;
       }
       break;
     case cmp_s:
       switch (op->code()) {
       case lir_branch:
-	if (op->as_OpBranch()->cond() == lir_cond_equal) {
-	  state = beq_s;
-	  last_insn = i;
-	  goto next_state;
-	}
+        if (op->as_OpBranch()->cond() == lir_cond_equal) {
+          state = beq_s;
+          last_insn = i;
+          goto next_state;
+        }
       }
       state = start_s;
       break;
     case beq_s:
       switch (op->code()) {
       case lir_cmp: {
-	LIR_Opr opr1 = op->as_Op2()->in_opr1();
-	LIR_Opr opr2 = op->as_Op2()->in_opr2();
-	if (opr1->is_cpu_register() && opr1->is_single_cpu()
-	    && opr1->as_register() == reg
-	    && opr2->is_constant()
-	    && opr2->type() == T_INT
-	    && opr2->as_constant_ptr()->as_jint() == next_key) {
-	  last_key = next_key;
-	  next_key++;
-	  state = cmp_s;
-	  goto next_state;
-	}
+        LIR_Opr opr1 = op->as_Op2()->in_opr1();
+        LIR_Opr opr2 = op->as_Op2()->in_opr2();
+        if (opr1->is_cpu_register() && opr1->is_single_cpu()
+            && opr1->as_register() == reg
+            && opr2->is_constant()
+            && opr2->type() == T_INT
+            && opr2->as_constant_ptr()->as_jint() == next_key) {
+          last_key = next_key;
+          next_key++;
+          state = cmp_s;
+          goto next_state;
+        }
       }
       }
       last_key = next_key;
@@ -3069,44 +3066,44 @@ void LIR_Assembler::peephole(LIR_List *lir) {
     }
     if (state == start_s) {
       if (first_key < last_key - 5L && reg != noreg) {
-	{
-	  // printf("found run register %d starting at insn %d low value %d high value %d\n",
-	  //        reg->encoding(),
-	  //        start_insn, first_key, last_key);
-	  //   for (int i = 0; i < inst->length(); i++) {
-	  //     inst->at(i)->print();
-	  //     tty->print("\n");
-	  //   }
-	  //   tty->print("\n");
-	}
+        {
+          // printf("found run register %d starting at insn %d low value %d high value %d\n",
+          //        reg->encoding(),
+          //        start_insn, first_key, last_key);
+          //   for (int i = 0; i < inst->length(); i++) {
+          //     inst->at(i)->print();
+          //     tty->print("\n");
+          //   }
+          //   tty->print("\n");
+        }
 
-	struct tableswitch *sw = &switches[tableswitch_count];
-	sw->_insn_index = start_insn, sw->_first_key = first_key,
-	  sw->_last_key = last_key, sw->_reg = reg;
-	inst->insert_before(last_insn + 1, new LIR_OpLabel(&sw->_after));
-	{
-	  // Insert the new table of branches
-	  int offset = last_insn;
-	  for (int n = first_key; n < last_key; n++) {
-	    inst->insert_before
-	      (last_insn + 1,
-	       new LIR_OpBranch(lir_cond_always, T_ILLEGAL,
-				inst->at(offset)->as_OpBranch()->label()));
-	    offset -= 2, i++;
-	  }
-	}
-	// Delete all the old compare-and-branch instructions
-	for (int n = first_key; n < last_key; n++) {
-	  inst->remove_at(start_insn);
-	  inst->remove_at(start_insn);
-	}
-	// Insert the tableswitch instruction
-	inst->insert_before(start_insn,
-			    new LIR_Op2(lir_cmp, lir_cond_always,
-					LIR_OprFact::intConst(tableswitch_count),
-					reg_opr));
-	inst->insert_before(start_insn + 1, new LIR_OpLabel(&sw->_branches));
-	tableswitch_count++;
+        struct tableswitch *sw = &switches[tableswitch_count];
+        sw->_insn_index = start_insn, sw->_first_key = first_key,
+          sw->_last_key = last_key, sw->_reg = reg;
+        inst->insert_before(last_insn + 1, new LIR_OpLabel(&sw->_after));
+        {
+          // Insert the new table of branches
+          int offset = last_insn;
+          for (int n = first_key; n < last_key; n++) {
+            inst->insert_before
+              (last_insn + 1,
+               new LIR_OpBranch(lir_cond_always, T_ILLEGAL,
+                                inst->at(offset)->as_OpBranch()->label()));
+            offset -= 2, i++;
+          }
+        }
+        // Delete all the old compare-and-branch instructions
+        for (int n = first_key; n < last_key; n++) {
+          inst->remove_at(start_insn);
+          inst->remove_at(start_insn);
+        }
+        // Insert the tableswitch instruction
+        inst->insert_before(start_insn,
+                            new LIR_Op2(lir_cmp, lir_cond_always,
+                                        LIR_OprFact::intConst(tableswitch_count),
+                                        reg_opr));
+        inst->insert_before(start_insn + 1, new LIR_OpLabel(&sw->_branches));
+        tableswitch_count++;
       }
       reg = noreg;
       last_key = -2147483648;
@@ -3118,7 +3115,7 @@ void LIR_Assembler::peephole(LIR_List *lir) {
 }
 
 void LIR_Assembler::atomic_op(LIR_Code code, LIR_Opr src, LIR_Opr data, LIR_Opr dest, LIR_Opr tmp_op) {
-  Address addr = as_Address(src->as_address_ptr(), noreg);
+  Address addr = as_Address(src->as_address_ptr());
   BasicType type = src->type();
   bool is_oop = type == T_OBJECT || type == T_ARRAY;
 

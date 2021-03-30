@@ -58,34 +58,34 @@ void ConversionStub::emit_code(LIR_Assembler* ce) {
   for (int i = 30; i >= 0; i -= 2) // caller-saved fp registers
     if (i < 8 || i > 15)
       __ stpd(as_FloatRegister(i), as_FloatRegister(i+1),
-	      Address(__ pre(sp, -2 * wordSize)));
+              Address(__ pre(sp, -2 * wordSize)));
 
   switch(bytecode()) {
   case Bytecodes::_f2i:
     {
       if (v0 != input()->as_float_reg())
-	__ fmovs(v0, input()->as_float_reg());
+        __ fmovs(v0, input()->as_float_reg());
       __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::f2i));
     }
     break;
   case Bytecodes::_d2i:
     {
       if (v0 != input()->as_double_reg())
-	__ fmovd(v0, input()->as_double_reg());
+        __ fmovd(v0, input()->as_double_reg());
       __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::d2i));
     }
     break;
   case Bytecodes::_f2l:
     {
       if (v0 != input()->as_float_reg())
-	__ fmovs(v0, input()->as_float_reg());
+        __ fmovs(v0, input()->as_float_reg());
       __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::f2l));
     }
     break;
   case Bytecodes::_d2l:
     {
       if (v0 != input()->as_double_reg())
-	__ fmovd(v0, input()->as_double_reg());
+        __ fmovd(v0, input()->as_double_reg());
       __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::d2l));
     }
     break;
@@ -98,7 +98,7 @@ void ConversionStub::emit_code(LIR_Assembler* ce) {
   for (int i = 0; i < 32; i += 2)
     if (i < 8 || i > 15)
       __ ldpd(as_FloatRegister(i), as_FloatRegister(i+1),
-	      Address(__ post(sp, 2 * wordSize)));
+              Address(__ post(sp, 2 * wordSize)));
   __ pop(RegSet::range(r0, r29), sp);
 
   __ ldr(as_reg(result()), Address(rfp, -wordSize));
@@ -399,7 +399,7 @@ void ArrayCopyStub::emit_code(LIR_Assembler* ce) {
     return; // CodeCache is full
   }
   Address resolve(SharedRuntime::get_resolve_static_call_stub(),
-		  relocInfo::static_call_type);
+                  relocInfo::static_call_type);
   address call = __ trampoline_call(resolve);
   if (call == NULL) {
     ce->bailout("trampoline stub overflow");

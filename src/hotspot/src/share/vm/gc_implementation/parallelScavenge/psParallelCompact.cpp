@@ -56,7 +56,6 @@
 #include "services/management.hpp"
 #include "services/memoryService.hpp"
 #include "services/memTracker.hpp"
-#include "utilities/dtrace.hpp"
 #include "utilities/events.hpp"
 #include "utilities/stack.inline.hpp"
 #if INCLUDE_JFR
@@ -66,12 +65,6 @@
 #include <math.h>
 
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
-
-#ifndef USDT2
-  HS_DTRACE_PROBE_DECL2(provider, gc__collection__ParallelCompact__clear, *uintptr_t, *uintptr_t);
-  HS_DTRACE_PROBE_DECL2(provider, gc__collection__parallel__collect, *uintptr_t, *uintptr_t);
-  HS_DTRACE_PROBE_DECL4(provider, gc__collection__move, *uintptr_t, *uintptr_t, *uintptr_t, *uintptr_t);
-#endif /* !USDT2 */
 
 // All sizes are in HeapWords.
 const size_t ParallelCompactData::Log2RegionSize  = 16; // 64K words
@@ -463,9 +456,6 @@ bool ParallelCompactData::initialize_block_data()
 
 void ParallelCompactData::clear()
 {
-#ifndef USDT2
-  HS_DTRACE_PROBE2(hotspot, gc__collection__ParallelCompact__clear, &_region_data, _region_data->data_location());
-#endif /* !USDT2 */
   memset(_region_data, 0, _region_vspace->committed_size());
   memset(_block_data, 0, _block_vspace->committed_size());
 }
@@ -923,8 +913,8 @@ void PSParallelCompact::initialize_space_info()
 void PSParallelCompact::initialize_dead_wood_limiter()
 {
   const size_t max = 100;
-  _dwl_mean = double(MIN2((size_t) ParallelOldDeadWoodLimiterMean, max)) / 100.0;
-  _dwl_std_dev = double(MIN2((size_t) ParallelOldDeadWoodLimiterStdDev, max)) / 100.0;
+  _dwl_mean = double(MIN2(ParallelOldDeadWoodLimiterMean, max)) / 100.0;
+  _dwl_std_dev = double(MIN2(ParallelOldDeadWoodLimiterStdDev, max)) / 100.0;
   _dwl_first_term = 1.0 / (sqrt(2.0 * M_PI) * _dwl_std_dev);
   DEBUG_ONLY(_dwl_initialized = true;)
   _dwl_adjustment = normal_distribution(1.0);
@@ -1991,9 +1981,6 @@ void PSParallelCompact::invoke(bool maximum_heap_compaction) {
          "should be in vm thread");
 
   ParallelScavengeHeap* heap = gc_heap();
-#ifndef USDT2
-  HS_DTRACE_PROBE2(hotspot, gc__collection__parallel__collect, heap, heap->gc_cause());
-#endif /* !USDT2 */
   GCCause::Cause gc_cause = heap->gc_cause();
   assert(!heap->is_gc_active(), "not reentrant");
 
@@ -3279,9 +3266,6 @@ PSParallelCompact::move_and_update(ParCompactionManager* cm, SpaceId space_id) {
   // past the end of the partial object entering the region (if any).
   HeapWord* const dest_addr = sd.partial_obj_end(dp_region);
   HeapWord* const new_top = _space_info[space_id].new_top();
-#ifndef USDT2
-  HS_DTRACE_PROBE4(hotspot, gc__collection__move, &beg_addr, &end_addr, &dest_addr, &new_top);
-#endif /* !USDT2 */
   assert(new_top >= dest_addr, "bad new_top value");
   const size_t words = pointer_delta(new_top, dest_addr);
 

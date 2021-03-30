@@ -71,9 +71,20 @@ bool frame::safe_for_sender(JavaThread *thread) {
     return false;
   }
 
-  // unextended sp must be within the stack and above or equal sp
-  bool unextended_sp_safe = (unextended_sp < thread->stack_base()) &&
-                            (unextended_sp >= sp);
+  // When we are running interpreted code the machine stack pointer, SP, is
+  // set low enough so that the Java expression stack can grow and shrink
+  // without ever exceeding the machine stack bounds.  So, ESP >= SP.
+
+  // When we call out of an interpreted method, SP is incremented so that
+  // the space between SP and ESP is removed.  The SP saved in the callee's
+  // frame is the SP *before* this increment.  So, when we walk a stack of
+  // interpreter frames the sender's SP saved in a frame might be less than
+  // the SP at the point of call.
+
+  // So unextended sp must be within the stack but we need not to check
+  // that unextended sp >= sp
+
+  bool unextended_sp_safe = (unextended_sp < thread->stack_base());
 
   if (!unextended_sp_safe) {
     return false;
@@ -722,11 +733,11 @@ intptr_t* frame::real_fp() const {
 
 #undef DESCRIBE_FP_OFFSET
 
-#define DESCRIBE_FP_OFFSET(name)					\
-  {									\
-    unsigned long *p = (unsigned long *)fp;				\
+#define DESCRIBE_FP_OFFSET(name)                                        \
+  {                                                                     \
+    unsigned long *p = (unsigned long *)fp;                             \
     printf("0x%016lx 0x%016lx %s\n", (unsigned long)(p + frame::name##_offset), \
-	   p[frame::name##_offset], #name);				\
+           p[frame::name##_offset], #name);                             \
   }
 
 static __thread unsigned long nextfp;
@@ -796,11 +807,11 @@ void internal_pf(unsigned long sp, unsigned long fp, unsigned long pc, unsigned 
     CodeBlob *cb = CodeCache::find_blob((address)pc);
     if (cb != NULL) {
       if (cb->is_nmethod()) {
-	ResourceMark rm;
-	nmethod* nm = (nmethod*)cb;
-	printf("nmethod %s\n", nm->method()->name_and_sig_as_C_string());
+        ResourceMark rm;
+        nmethod* nm = (nmethod*)cb;
+        printf("nmethod %s\n", nm->method()->name_and_sig_as_C_string());
       } else if (cb->name()) {
-	printf("CodeBlob %s\n", cb->name());
+        printf("CodeBlob %s\n", cb->name());
       }
     }
   }
@@ -818,7 +829,7 @@ extern "C" void npf() {
 }
 
 extern "C" void pf(unsigned long sp, unsigned long fp, unsigned long pc,
-		   unsigned long bcx, unsigned long thread) {
+                   unsigned long bcx, unsigned long thread) {
   if (!reg_map) {
     reg_map = NEW_C_HEAP_OBJ(RegisterMap, mtNone);
     ::new (reg_map) RegisterMap((JavaThread*)thread, false);

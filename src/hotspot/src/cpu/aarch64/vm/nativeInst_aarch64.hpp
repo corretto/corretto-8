@@ -165,7 +165,7 @@ class NativeCall: public NativeInstruction {
   static void insert(address code_pos, address entry);
 
   static void replace_mt_safe(address instr_addr, address code_buffer);
-  
+
   // Similar to replace_mt_safe, but just changes the destination.  The
   // important thing is that free-running threads are able to execute
   // this call instruction at all times.  If the call is an immediate BL

@@ -270,8 +270,8 @@ juint StubRoutines::aarch64::_crc_table[]
     // Constants for Neon CRC232 implementation
     // k3 = 0x78ED02D5 = x^288 mod poly - bit reversed
     // k4 = 0xED627DAE = x^256 mod poly - bit reversed
-    0x78ED02D5UL, 0xED627DAEUL,		// k4:k3
-    0xED78D502UL, 0x62EDAE7DUL,		// byte swap
-    0x02D578EDUL, 0x7DAEED62UL,		// word swap
-    0xD502ED78UL, 0xAE7D62EDUL,		// byte swap of word swap
+    0x78ED02D5UL, 0xED627DAEUL,         // k4:k3
+    0xED78D502UL, 0x62EDAE7DUL,         // byte swap
+    0x02D578EDUL, 0x7DAEED62UL,         // word swap
+    0xD502ED78UL, 0xAE7D62EDUL,         // byte swap of word swap
 };

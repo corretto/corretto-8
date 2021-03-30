@@ -211,7 +211,6 @@ void Runtime1::generate_blob_for(BufferBlob* buffer_blob, StubID id) {
     // All other stubs should have oopmaps
     default:
       assert(oop_maps != NULL, "must have an oopmap");
-      break;
   }
 #endif
 
@@ -219,7 +218,6 @@ void Runtime1::generate_blob_for(BufferBlob* buffer_blob, StubID id) {
   sasm->align(BytesPerWord);
   // make sure all code is in code buffer
   sasm->flush();
-
   // create blob - distinguish a few special cases
   CodeBlob* blob = RuntimeStub::new_runtime_stub(name_for(id),
                                                  &code,
@@ -1136,7 +1134,6 @@ JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_i
               (stub_id == Runtime1::load_klass_patching_id) ?
                                    relocInfo::metadata_type :
                                    relocInfo::oop_type;
-
             // update relocInfo to metadata
             nmethod* nm = CodeCache::find_nmethod(instr_pc);
             assert(nm != NULL, "invalid nmethod_pc");

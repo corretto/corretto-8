@@ -43,11 +43,11 @@ void Relocation::pd_set_data_value(address x, intptr_t o, bool verify_only) {
     {
       oop_Relocation *reloc = (oop_Relocation *)this;
       if (NativeInstruction::is_ldr_literal_at(addr())) {
-	address constptr = (address)code()->oop_addr_at(reloc->oop_index());
-	bytes = MacroAssembler::pd_patch_instruction_size(addr(), constptr);
-	assert(*(address*)constptr == x, "error in oop relocation");
+        address constptr = (address)code()->oop_addr_at(reloc->oop_index());
+        bytes = MacroAssembler::pd_patch_instruction_size(addr(), constptr);
+        assert(*(address*)constptr == x, "error in oop relocation");
       } else{
-	bytes = MacroAssembler::patch_oop(addr(), x);
+        bytes = MacroAssembler::patch_oop(addr(), x);
       }
     }
     break;

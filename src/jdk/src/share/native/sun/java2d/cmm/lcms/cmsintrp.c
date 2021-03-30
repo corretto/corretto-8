@@ -1041,6 +1041,7 @@ void Eval4Inputs(CMSREGISTER const cmsUInt16Number Input[],
     }
 
 
+
     for (i=0; i < p16 -> nOutputs; i++) {
         Output[i] = LinearInterp(rk, Tmp1[i], Tmp2[i]);
     }

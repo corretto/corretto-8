@@ -90,6 +90,7 @@
 // | signature_handler     (present only if native)       |
 // |------------------------------------------------------|
 
+
 class CheckedExceptionElement;
 class LocalVariableTableElement;
 class AdapterHandlerEntry;

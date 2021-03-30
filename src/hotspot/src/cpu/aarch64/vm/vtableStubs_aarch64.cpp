@@ -94,6 +94,7 @@ VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
 
   __ lookup_virtual_method(r16, vtable_index, rmethod);
 
+#ifndef PRODUCT
   if (DebugVtables) {
     Label L;
     __ cbz(rmethod, L);
@@ -102,6 +103,8 @@ VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
     __ stop("Vtable entry is NULL");
     __ bind(L);
   }
+#endif // PRODUCT
+
   // r0: receiver klass
   // rmethod: Method*
   // r2: receiver
@@ -130,6 +133,11 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
   // returned by pd_code_size_limit!
   const int code_length = VtableStub::pd_code_size_limit(false);
   VtableStub* s = new(code_length) VtableStub(false, itable_index);
+  // Can be NULL if there is no free space in the code cache.
+  if (s == NULL) {
+    return NULL;
+  }
+
   ResourceMark rm;
   CodeBuffer cb(s->entry_point(), code_length);
   MacroAssembler* masm = new MacroAssembler(&cb);
@@ -139,7 +147,7 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
     __ lea(r10, ExternalAddress((address) SharedRuntime::nof_megamorphic_calls_addr()));
     __ incrementw(Address(r10));
   }
-#endif
+#endif // PRODUCT
 
   // Entry arguments:
   //  rscratch2: CompiledICHolder
@@ -182,7 +190,7 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
   // method (rmethod): Method*
   // j_rarg0: receiver
 
-#ifdef ASSERT
+#ifndef PRODUCT
   if (DebugVtables) {
     Label L2;
     __ cbz(rmethod, L2);
@@ -191,7 +199,7 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
     __ stop("compiler entrypoint is null");
     __ bind(L2);
   }
-#endif // ASSERT
+#endif // PRODUCT
 
   // rmethod: Method*
   // j_rarg0: receiver
@@ -218,14 +226,10 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
 
 
 int VtableStub::pd_code_size_limit(bool is_vtable_stub) {
-  int size = DebugVtables ? 216 : 0;
-  if (CountCompiledCalls)
-    size += 6 * 4;
-  // FIXME: vtable stubs only need 36 bytes
-  if (is_vtable_stub)
-    size += 52;
-  else
-    size += 176;
+  if (TraceJumps || DebugVtables || CountCompiledCalls || VerifyOops) {
+    return 1000;
+  }
+  int size = is_vtable_stub ? 60 : 192; // Plain + safety
   return size;
 
   // In order to tune these parameters, run the JVM with VM options
@@ -238,50 +242,50 @@ int VtableStub::pd_code_size_limit(bool is_vtable_stub) {
   // The JVM98 app. _202_jess has a megamorphic interface call.
   // The itable code looks like this:
 
-  //    ldr	xmethod, [xscratch2,#CompiledICHolder::holder_klass_offset]
-  //    ldr	x0, [xscratch2]
-  //    ldr	w10, [x1,#oopDesc::klass_offset_in_bytes]
-  //    mov	xheapbase, #0x3c000000            	//   #narrow_klass_base
-  //    movk	xheapbase, #0x3f7, lsl #32
-  //    add	x10, xheapbase, x10
-  //    mov	xheapbase, #0xe7ff0000            	//   #heapbase
-  //    movk	xheapbase, #0x3f7, lsl #32
-  //    ldr	w11, [x10,#vtable_length_offset]
-  //    add	x11, x10, x11, uxtx #3
-  //    add	x11, x11, #itableMethodEntry::method_offset_in_bytes
-  //    ldr	x10, [x11]
-  //    cmp	xmethod, x10
+  //    ldr     xmethod, [xscratch2,#CompiledICHolder::holder_klass_offset]
+  //    ldr     x0, [xscratch2]
+  //    ldr     w10, [x1,#oopDesc::klass_offset_in_bytes]
+  //    mov     xheapbase, #0x3c000000                  //   #narrow_klass_base
+  //    movk    xheapbase, #0x3f7, lsl #32
+  //    add     x10, xheapbase, x10
+  //    mov     xheapbase, #0xe7ff0000                  //   #heapbase
+  //    movk    xheapbase, #0x3f7, lsl #32
+  //    ldr     w11, [x10,#vtable_length_offset]
+  //    add     x11, x10, x11, uxtx #3
+  //    add     x11, x11, #itableMethodEntry::method_offset_in_bytes
+  //    ldr     x10, [x11]
+  //    cmp     xmethod, x10
   //    b.eq    success
   // search:
-  //    cbz	x10, no_such_interface
-  //    add	x11, x11, #0x10
-  //    ldr	x10, [x11]
-  //    cmp	xmethod, x10
-  //    b.ne	search
+  //    cbz     x10, no_such_interface
+  //    add     x11, x11, #0x10
+  //    ldr     x10, [x11]
+  //    cmp     xmethod, x10
+  //    b.ne    search
   // success:
-  //    ldr	w10, [x1,#oopDesc::klass_offset_in_bytes]
-  //    mov	xheapbase, #0x3c000000            	//   #narrow_klass_base
-  //    movk	xheapbase, #0x3f7, lsl #32
-  //    add	x10, xheapbase, x10
-  //    mov	xheapbase, #0xe7ff0000            	//   #heapbase
-  //    movk	xheapbase, #0x3f7, lsl #32
-  //    ldr	w11, [x10,#vtable_length_offset]
-  //    add	x11, x10, x11, uxtx #3
-  //    add	x11, x11, #itableMethodEntry::method_offset_in_bytes
-  //    add	x10, x10, #itentry_off
-  //    ldr	xmethod, [x11]
-  //    cmp	x0, xmethod
-  //    b.eq	found_method
+  //    ldr     w10, [x1,#oopDesc::klass_offset_in_bytes]
+  //    mov     xheapbase, #0x3c000000                  //   #narrow_klass_base
+  //    movk    xheapbase, #0x3f7, lsl #32
+  //    add     x10, xheapbase, x10
+  //    mov     xheapbase, #0xe7ff0000                  //   #heapbase
+  //    movk    xheapbase, #0x3f7, lsl #32
+  //    ldr     w11, [x10,#vtable_length_offset]
+  //    add     x11, x10, x11, uxtx #3
+  //    add     x11, x11, #itableMethodEntry::method_offset_in_bytes
+  //    add     x10, x10, #itentry_off
+  //    ldr     xmethod, [x11]
+  //    cmp     x0, xmethod
+  //    b.eq    found_method
   // search2:
-  //    cbz	xmethod, 0x000003ffa872e6cc
-  //    add	x11, x11, #0x10
-  //    ldr	xmethod, [x11]
-  //    cmp	x0, xmethod
-  //    b.ne	search2
-  //    ldr	w11, [x11,#itableOffsetEntry::offset_offset_in_bytes]
-  //    ldr	xmethod, [x10,w11,uxtw]
-  //    ldr	xscratch1, [xmethod,#Method::from_compiled_offset]
-  //    br	xscratch1
+  //    cbz     xmethod, 0x000003ffa872e6cc
+  //    add     x11, x11, #0x10
+  //    ldr     xmethod, [x11]
+  //    cmp     x0, xmethod
+  //    b.ne    search2
+  //    ldr     w11, [x11,#itableOffsetEntry::offset_offset_in_bytes]
+  //    ldr     xmethod, [x10,w11,uxtw]
+  //    ldr     xscratch1, [xmethod,#Method::from_compiled_offset]
+  //    br      xscratch1
   // no_such_interface:
   //    b      throw_ICCE_entry
 

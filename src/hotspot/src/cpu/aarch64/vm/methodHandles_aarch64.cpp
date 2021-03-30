@@ -310,7 +310,7 @@ void MethodHandles::generate_method_handle_dispatch(MacroAssembler* _masm,
         __ verify_klass_ptr(temp2_defc);
         __ check_klass_subtype(temp1_recv_klass, temp2_defc, temp3, L_ok);
         // If we get here, the type check failed!
-	__ hlt(0);
+        __ hlt(0);
         // __ STOP("receiver class disagrees with MemberName.clazz");
         __ bind(L_ok);
       }

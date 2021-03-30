@@ -105,8 +105,6 @@
 # include <inttypes.h>
 # include <sys/ioctl.h>
 
-#include <sys/prctl.h>
-
 PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 
 #ifndef _GNU_SOURCE
@@ -1444,7 +1442,7 @@ void os::Linux::clock_init() {
 #ifndef SYS_clock_getres
 
 #if defined(IA32) || defined(AMD64) || defined(AARCH64)
-#define SYS_clock_getres IA32_ONLY(266) AMD64_ONLY(229) AARCH64_ONLY(114)
+#define SYS_clock_getres IA32_ONLY(266)  AMD64_ONLY(229) AARCH64_ONLY(114)
 #define sys_clock_getres(x,y)  ::syscall(SYS_clock_getres, x, y)
 #else
 #warning "SYS_clock_getres not defined for this platform, disabling fast_thread_cpu_time"
@@ -1973,11 +1971,7 @@ void * os::dll_load(const char *filename, char *ebuf, int ebuflen)
   } arch_t;
 
   #ifndef EM_486
-  #define EM_486     6        // Intel 80486
-  #endif
-
-  #ifndef EM_AARCH64
-  #define EM_AARCH64 183
+  #define EM_486          6               /* Intel 80486 */
   #endif
   #ifndef EM_AARCH64
   #define EM_AARCH64    183               /* ARM AARCH64 */
@@ -2039,7 +2033,7 @@ void * os::dll_load(const char *filename, char *ebuf, int ebuflen)
     static  Elf32_Half running_arch_code=EM_AARCH64;
   #else
     #error Method os::dll_load requires that one of following is defined:\
-      IA32, AMD64, IA64, __sparc, __powerpc__, ARM, S390, ALPHA, MIPS, MIPSEL, PARISC, M68K, AARCH64
+         IA32, AMD64, IA64, __sparc, __powerpc__, ARM, S390, ALPHA, MIPS, MIPSEL, PARISC, M68K, AARCH64
   #endif
 
   // Identify compatability class for VM's architecture and library's architecture
@@ -2973,6 +2967,7 @@ char *os::scan_pages(char *start, char* end, page_info* page_expected, page_info
   return end;
 }
 
+
 int os::Linux::sched_getcpu_syscall(void) {
   unsigned int cpu = 0;
   int retval = -1;
@@ -2989,7 +2984,7 @@ int os::Linux::sched_getcpu_syscall(void) {
   retval = vgetcpu(&cpu, NULL, NULL);
 #elif defined(IA32) || defined(AARCH64)
 # ifndef SYS_getcpu
-#  define SYS_getcpu AARCH64_ONLY(168) NOT_AARCH64(318)
+#  define SYS_getcpu AARCH64_ONLY(168) IA32_ONLY(318)
 # endif
   retval = syscall(SYS_getcpu, &cpu, NULL, NULL);
 #endif
@@ -3053,8 +3048,10 @@ bool os::Linux::libnuma_init() {
 
       if (numa_available() != -1) {
         set_numa_all_nodes((unsigned long*)libnuma_dlsym(handle, "numa_all_nodes"));
-        set_numa_all_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr"));
-        set_numa_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr"));
+        struct bitmask** numa_all_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr");
+        set_numa_all_nodes_ptr(numa_all_nodes_ptr);
+        struct bitmask** numa_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr");
+        set_numa_nodes_ptr(numa_nodes_ptr == NULL ? numa_all_nodes_ptr : numa_nodes_ptr);
         // Create an index -> node mapping, since nodes are not always consecutive
         _nindex_to_node = new (ResourceObj::C_HEAP, mtInternal) GrowableArray<int>(0, true);
         rebuild_nindex_to_node_map();
@@ -3545,7 +3542,7 @@ size_t os::Linux::find_large_page_size() {
 
 #ifndef ZERO
   large_page_size = IA32_ONLY(4 * M) AMD64_ONLY(2 * M) IA64_ONLY(256 * M) SPARC_ONLY(4 * M)
-    ARM_ONLY(2 * M) PPC_ONLY(4 * M) AARCH64_ONLY(2 * M);
+                     ARM_ONLY(2 * M) PPC_ONLY(4 * M) AARCH64_ONLY(2 * M);
 #endif // ZERO
 
   FILE *fp = fopen("/proc/meminfo", "r");
@@ -4613,7 +4610,7 @@ JVM_handle_linux_signal(int signo, siginfo_t* siginfo,
 void signalHandler(int sig, siginfo_t* info, void* uc) {
   assert(info != NULL && uc != NULL, "it must be old kernel");
   int orig_errno = errno;  // Preserve errno value over signal handler.
-  (void)JVM_handle_linux_signal(sig, info, uc, true);
+  JVM_handle_linux_signal(sig, info, uc, true);
   errno = orig_errno;
 }
 
@@ -5067,48 +5064,6 @@ const char* os::exception_name(int exception_code, char* buf, size_t size) {
   }
 }
 
-/* Per task speculation control */
-#ifndef PR_GET_SPECULATION_CTRL
-# define PR_GET_SPECULATION_CTRL    52
-#endif
-#ifndef PR_SET_SPECULATION_CTRL
-# define PR_SET_SPECULATION_CTRL    53
-#endif
-/* Speculation control variants */
-#ifndef PR_SPEC_STORE_BYPASS
-# define PR_SPEC_STORE_BYPASS          0
-#endif
-/* Return and control values for PR_SET/GET_SPECULATION_CTRL */
-
-#ifndef PR_SPEC_NOT_AFFECTED
-# define PR_SPEC_NOT_AFFECTED          0
-#endif
-#ifndef PR_SPEC_PRCTL
-# define PR_SPEC_PRCTL                 (1UL << 0)
-#endif
-#ifndef PR_SPEC_ENABLE
-# define PR_SPEC_ENABLE                (1UL << 1)
-#endif
-#ifndef PR_SPEC_DISABLE
-# define PR_SPEC_DISABLE               (1UL << 2)
-#endif
-#ifndef PR_SPEC_FORCE_DISABLE
-# define PR_SPEC_FORCE_DISABLE         (1UL << 3)
-#endif
-#ifndef PR_SPEC_DISABLE_NOEXEC
-# define PR_SPEC_DISABLE_NOEXEC        (1UL << 4)
-#endif
-
-static void set_speculation() __attribute__((constructor));
-static void set_speculation() {
-  if ( prctl(PR_SET_SPECULATION_CTRL,
-             PR_SPEC_STORE_BYPASS,
-             PR_SPEC_DISABLE_NOEXEC, 0, 0) == 0 ) {
-    return;
-  }
-  prctl(PR_SET_SPECULATION_CTRL, PR_SPEC_STORE_BYPASS, PR_SPEC_DISABLE, 0, 0);
-}
-
 // this is called _before_ most of the global arguments have been parsed
 void os::init(void) {
   char dummy;   /* used to get a guess on initial stack address */
@@ -5252,7 +5207,7 @@ jint os::init_2(void)
 
   Linux::capture_initial_stack(JavaThread::stack_size_at_create());
 
-#if defined(IA32) && !defined(ZERO)
+#if defined(IA32)
   workaround_expand_exec_shield_cs_limit();
 #endif
 
@@ -5640,50 +5595,19 @@ bool os::dir_is_empty(const char* path) {
 // O_DELETE is used only in j2se/src/share/native/java/util/zip/ZipFile.c
 
 int os::open(const char *path, int oflag, int mode) {
+
   if (strlen(path) > MAX_PATH - 1) {
     errno = ENAMETOOLONG;
     return -1;
   }
-
+  int fd;
   int o_delete = (oflag & O_DELETE);
   oflag = oflag & ~O_DELETE;
 
-  /*
-   * All file descriptors that are opened in the Java process and not
-   * specifically destined for a subprocess should have the close-on-exec
-   * flag set.  If we don't set it, then careless 3rd party native code
-   * might fork and exec without closing all appropriate file descriptors
-   * (e.g. as we do in closeDescriptors in UNIXProcess.c), and this in
-   * turn might:
-   *
-   * - cause end-of-file to fail to be detected on some file
-   *   descriptors, resulting in mysterious hangs, or
-   *
-   * - might cause an fopen in the subprocess to fail on a system
-   *   suffering from bug 1085341.
-   *
-   * (Yes, the default setting of the close-on-exec flag is a Unix
-   * design flaw)
-   *
-   * See:
-   * 1085341: 32-bit stdio routines should support file descriptors >255
-   * 4843136: (process) pipe file descriptor from Runtime.exec not being closed
-   * 6339493: (process) Runtime.exec does not close all file descriptors on Solaris 9
-   */
-
-  // Modern Linux kernels (after 2.6.23 2007) support O_CLOEXEC with open().
-  // O_CLOEXEC is preferable to using FD_CLOEXEC on an open file descriptor
-  // because it saves a system call and removes a small window where the flag
-  // is unset.  On ancient Linux kernels the O_CLOEXEC flag will be ignored
-  // and we fall back to using FD_CLOEXEC (see below).
-#ifdef O_CLOEXEC
-  oflag |= O_CLOEXEC;
-#endif
-
-  int fd = ::open64(path, oflag, mode);
+  fd = ::open64(path, oflag, mode);
   if (fd == -1) return -1;
 
-  // If the open succeeded, the file might still be a directory
+  //If the open succeeded, the file might still be a directory
   {
     struct stat64 buf64;
     int ret = ::fstat64(fd, &buf64);
@@ -5701,19 +5625,34 @@ int os::open(const char *path, int oflag, int mode) {
     }
   }
 
+    /*
+     * All file descriptors that are opened in the JVM and not
+     * specifically destined for a subprocess should have the
+     * close-on-exec flag set.  If we don't set it, then careless 3rd
+     * party native code might fork and exec without closing all
+     * appropriate file descriptors (e.g. as we do in closeDescriptors in
+     * UNIXProcess.c), and this in turn might:
+     *
+     * - cause end-of-file to fail to be detected on some file
+     *   descriptors, resulting in mysterious hangs, or
+     *
+     * - might cause an fopen in the subprocess to fail on a system
+     *   suffering from bug 1085341.
+     *
+     * (Yes, the default setting of the close-on-exec flag is a Unix
+     * design flaw)
+     *
+     * See:
+     * 1085341: 32-bit stdio routines should support file descriptors >255
+     * 4843136: (process) pipe file descriptor from Runtime.exec not being closed
+     * 6339493: (process) Runtime.exec does not close all file descriptors on Solaris 9
+     */
 #ifdef FD_CLOEXEC
-  // Validate that the use of the O_CLOEXEC flag on open above worked.
-  // With recent kernels, we will perform this check exactly once.
-  static sig_atomic_t O_CLOEXEC_is_known_to_work = 0;
-  if (!O_CLOEXEC_is_known_to_work) {
-    int flags = ::fcntl(fd, F_GETFD);
-    if (flags != -1) {
-      if ((flags & FD_CLOEXEC) != 0)
-        O_CLOEXEC_is_known_to_work = 1;
-      else
-	::fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+    {
+        int flags = ::fcntl(fd, F_GETFD);
+        if (flags != -1)
+            ::fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
     }
-  }
 #endif
 
   if (o_delete != 0) {
@@ -5890,7 +5829,6 @@ jlong os::thread_cpu_time(Thread *thread, bool user_sys_cpu_time) {
 PRAGMA_DIAG_PUSH
 PRAGMA_FORMAT_NONLITERAL_IGNORED
 static jlong slow_thread_cpu_time(Thread *thread, bool user_sys_cpu_time) {
-  static bool proc_task_unchecked = true;
   pid_t  tid = thread->osthread()->thread_id();
   char *s;
   char stat[2048];
@@ -5903,24 +5841,7 @@ static jlong slow_thread_cpu_time(Thread *thread, bool user_sys_cpu_time) {
   long ldummy;
   FILE *fp;
 
-  snprintf(proc_name, 64, "/proc/%d/stat", tid);
-
-  // The /proc/<tid>/stat aggregates per-process usage on
-  // new Linux kernels 2.6+ where NPTL is supported.
-  // The /proc/self/task/<tid>/stat still has the per-thread usage.
-  // See bug 6328462.
-  // There possibly can be cases where there is no directory
-  // /proc/self/task, so we check its availability.
-  if (proc_task_unchecked && os::Linux::is_NPTL()) {
-    // This is executed only once
-    proc_task_unchecked = false;
-    fp = fopen("/proc/self/task", "r");
-    if (fp != NULL) {
-      snprintf(proc_name, 64, "/proc/self/task/%d/stat", tid);
-      fclose(fp);
-    }
-  }
-
+  snprintf(proc_name, 64, "/proc/self/task/%d/stat", tid);
   fp = fopen(proc_name, "r");
   if ( fp == NULL ) return -1;
   statlen = fread(stat, 1, 2047, fp);

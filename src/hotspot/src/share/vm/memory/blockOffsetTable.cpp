@@ -57,7 +57,7 @@ BlockOffsetSharedArray::BlockOffsetSharedArray(MemRegion reserved,
     gclog_or_tty->print_cr("BlockOffsetSharedArray::BlockOffsetSharedArray: ");
     gclog_or_tty->print_cr("  "
                   "  rs.base(): " INTPTR_FORMAT
-                  "  rs.size(): " SIZE_FORMAT
+                  "  rs.size(): " INTPTR_FORMAT
                   "  rs end(): " INTPTR_FORMAT,
                   p2i(rs.base()), rs.size(), p2i(rs.base() + rs.size()));
     gclog_or_tty->print_cr("  "

@@ -100,9 +100,9 @@ class MacroAssembler: public Assembler {
   MacroAssembler(CodeBuffer* code) : Assembler(code) {
     use_XOR_for_compressed_class_base
       = (operand_valid_for_logical_immediate(false /*is32*/,
-					     (uint64_t)Universe::narrow_klass_base())
-	 && ((uint64_t)Universe::narrow_klass_base()
-	     > (1u << log2_intptr(CompressedClassSpaceSize))));
+                                             (uint64_t)Universe::narrow_klass_base())
+         && ((uint64_t)Universe::narrow_klass_base()
+             > (1u << log2_intptr(CompressedClassSpaceSize))));
   }
 
   // Biased locking support
@@ -553,9 +553,9 @@ public:
 
   // idiv variant which deals with MINLONG as dividend and -1 as divisor
   int corrected_idivl(Register result, Register ra, Register rb,
-		      bool want_remainder, Register tmp = rscratch1);
+                      bool want_remainder, Register tmp = rscratch1);
   int corrected_idivq(Register result, Register ra, Register rb,
-		      bool want_remainder, Register tmp = rscratch1);
+                      bool want_remainder, Register tmp = rscratch1);
 
   // Support for NULL-checks
   //
@@ -572,7 +572,7 @@ public:
     unsigned insn = *(unsigned*)insn_addr;
     return target_addr_for_insn(insn_addr, insn);
   }
-  
+
   // Required platform-specific helpers for Label::patch_instructions.
   // They _shadow_ the declarations in AbstractAssembler, which are undefined.
   static int pd_patch_instruction_size(address branch, address target);
@@ -742,17 +742,17 @@ public:
   void set_last_Java_frame(Register last_java_sp,
                            Register last_java_fp,
                            address last_java_pc,
-			   Register scratch);
+                           Register scratch);
 
   void set_last_Java_frame(Register last_java_sp,
                            Register last_java_fp,
                            Label &last_java_pc,
-			   Register scratch);
+                           Register scratch);
 
   void set_last_Java_frame(Register last_java_sp,
                            Register last_java_fp,
                            Register last_java_pc,
-			   Register scratch);
+                           Register scratch);
 
   void reset_last_Java_frame(Register thread);
 
@@ -971,10 +971,10 @@ public:
   void cmpptr(Register src1, Address src2);
 
   void cmpxchgptr(Register oldv, Register newv, Register addr, Register tmp,
-		  Label &suceed, Label *fail);
+                  Label &suceed, Label *fail);
 
   void cmpxchgw(Register oldv, Register newv, Register addr, Register tmp,
-		  Label &suceed, Label *fail);
+                  Label &suceed, Label *fail);
 
   void atomic_add(Register prev, RegisterOrConstant incr, Register addr);
   void atomic_addw(Register prev, RegisterOrConstant incr, Register addr);
@@ -1051,9 +1051,9 @@ public:
   void popa();
 
   void repne_scan(Register addr, Register value, Register count,
-		  Register scratch);
+                  Register scratch);
   void repne_scanw(Register addr, Register value, Register count,
-		   Register scratch);
+                   Register scratch);
 
   typedef void (MacroAssembler::* add_sub_imm_insn)(Register Rd, Register Rn, unsigned imm);
   typedef void (MacroAssembler::* add_sub_reg_insn)(Register Rd, Register Rn, Register Rm, enum shift_kind kind, unsigned shift);
@@ -1061,52 +1061,52 @@ public:
   // If a constant does not fit in an immediate field, generate some
   // number of MOV instructions and then perform the operation
   void wrap_add_sub_imm_insn(Register Rd, Register Rn, unsigned imm,
-			     add_sub_imm_insn insn1,
-			     add_sub_reg_insn insn2);
+                             add_sub_imm_insn insn1,
+                             add_sub_reg_insn insn2);
   // Seperate vsn which sets the flags
   void wrap_adds_subs_imm_insn(Register Rd, Register Rn, unsigned imm,
-			     add_sub_imm_insn insn1,
-			     add_sub_reg_insn insn2);
+                             add_sub_imm_insn insn1,
+                             add_sub_reg_insn insn2);
 
-#define WRAP(INSN)							\
-  void INSN(Register Rd, Register Rn, unsigned imm) {			\
+#define WRAP(INSN)                                                      \
+  void INSN(Register Rd, Register Rn, unsigned imm) {                   \
     wrap_add_sub_imm_insn(Rd, Rn, imm, &Assembler::INSN, &Assembler::INSN); \
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm,			\
-	     enum shift_kind kind, unsigned shift = 0) {		\
-    Assembler::INSN(Rd, Rn, Rm, kind, shift);				\
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm) {			\
-    Assembler::INSN(Rd, Rn, Rm);					\
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm,			\
-           ext::operation option, int amount = 0) {			\
-    Assembler::INSN(Rd, Rn, Rm, option, amount);			\
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm,                      \
+             enum shift_kind kind, unsigned shift = 0) {                \
+    Assembler::INSN(Rd, Rn, Rm, kind, shift);                           \
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm) {                    \
+    Assembler::INSN(Rd, Rn, Rm);                                        \
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm,                      \
+           ext::operation option, int amount = 0) {                     \
+    Assembler::INSN(Rd, Rn, Rm, option, amount);                        \
   }
 
   WRAP(add) WRAP(addw) WRAP(sub) WRAP(subw)
 
 #undef WRAP
-#define WRAP(INSN)							\
-  void INSN(Register Rd, Register Rn, unsigned imm) {			\
+#define WRAP(INSN)                                                      \
+  void INSN(Register Rd, Register Rn, unsigned imm) {                   \
     wrap_adds_subs_imm_insn(Rd, Rn, imm, &Assembler::INSN, &Assembler::INSN); \
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm,			\
-	     enum shift_kind kind, unsigned shift = 0) {		\
-    Assembler::INSN(Rd, Rn, Rm, kind, shift);				\
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm) {			\
-    Assembler::INSN(Rd, Rn, Rm);					\
-  }									\
-									\
-  void INSN(Register Rd, Register Rn, Register Rm,			\
-           ext::operation option, int amount = 0) {			\
-    Assembler::INSN(Rd, Rn, Rm, option, amount);			\
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm,                      \
+             enum shift_kind kind, unsigned shift = 0) {                \
+    Assembler::INSN(Rd, Rn, Rm, kind, shift);                           \
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm) {                    \
+    Assembler::INSN(Rd, Rn, Rm);                                        \
+  }                                                                     \
+                                                                        \
+  void INSN(Register Rd, Register Rn, Register Rm,                      \
+           ext::operation option, int amount = 0) {                     \
+    Assembler::INSN(Rd, Rn, Rm, option, amount);                        \
   }
 
   WRAP(adds) WRAP(addsw) WRAP(subs) WRAP(subsw)
@@ -1119,13 +1119,13 @@ public:
   void adrp(Register reg1, const Address &dest, unsigned long &byte_offset);
 
   void tableswitch(Register index, jint lowbound, jint highbound,
-		   Label &jumptable, Label &jumptable_end, int stride = 1) {
+                   Label &jumptable, Label &jumptable_end, int stride = 1) {
     adr(rscratch1, jumptable);
     subsw(rscratch2, index, lowbound);
     subsw(zr, rscratch2, highbound - lowbound);
     br(Assembler::HS, jumptable_end);
     add(rscratch1, rscratch1, rscratch2,
-	ext::sxtw, exact_log2(stride * Assembler::instruction_size));
+        ext::sxtw, exact_log2(stride * Assembler::instruction_size));
     br(rscratch1);
   }
 
@@ -1174,11 +1174,11 @@ public:
         bool upper = false);
 
   void string_compare(Register str1, Register str2,
-		      Register cnt1, Register cnt2, Register result,
-		      Register tmp1);
+                      Register cnt1, Register cnt2, Register result,
+                      Register tmp1);
   void string_equals(Register str1, Register str2,
-		     Register cnt, Register result,
-		     Register tmp1);
+                     Register cnt, Register result,
+                     Register tmp1);
   void char_arrays_equals(Register ary1, Register ary2,
                           Register result, Register tmp1);
   void fill_words(Register base, Register cnt, Register value);

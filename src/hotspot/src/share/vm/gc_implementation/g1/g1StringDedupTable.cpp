@@ -120,7 +120,7 @@ public:
 };
 
 G1StringDedupEntryCache::G1StringDedupEntryCache(size_t max_size) :
-  _nlists(MAX2((size_t) ParallelGCThreads, (size_t)1)),
+  _nlists(MAX2(ParallelGCThreads, (size_t)1)),
   _max_list_length(0),
   _cached(PaddedArray<G1StringDedupEntryList, mtGC>::create_unfreeable((uint)_nlists)),
   _overflowed(PaddedArray<G1StringDedupEntryList, mtGC>::create_unfreeable((uint)_nlists)) {
@@ -597,7 +597,7 @@ void G1StringDedupTable::print_statistics(outputStream* st) {
     "   [Table]\n"
     "      [Memory Usage: " G1_STRDEDUP_BYTES_FORMAT_NS "]\n"
     "      [Size: " SIZE_FORMAT ", Min: " SIZE_FORMAT ", Max: " SIZE_FORMAT "]\n"
-    "      [Entries: " UINTX_FORMAT ", Load: " G1_STRDEDUP_PERCENT_FORMAT_NS ", Cached: " SIZE_FORMAT ", Added: " UINTX_FORMAT ", Removed: " UINTX_FORMAT "]\n"
+    "      [Entries: " UINTX_FORMAT ", Load: " G1_STRDEDUP_PERCENT_FORMAT_NS ", Cached: " UINTX_FORMAT ", Added: " UINTX_FORMAT ", Removed: " UINTX_FORMAT "]\n"
     "      [Resize Count: " UINTX_FORMAT ", Shrink Threshold: " UINTX_FORMAT "(" G1_STRDEDUP_PERCENT_FORMAT_NS "), Grow Threshold: " UINTX_FORMAT "(" G1_STRDEDUP_PERCENT_FORMAT_NS ")]\n"
     "      [Rehash Count: " UINTX_FORMAT ", Rehash Threshold: " UINTX_FORMAT ", Hash Seed: " UINT64_FORMAT "]\n"
     "      [Age Threshold: " UINTX_FORMAT "]",

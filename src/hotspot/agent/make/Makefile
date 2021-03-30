@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -38,77 +38,65 @@ else
 SA_BUILD_VERSION=$(HOTSPOT_RELEASE_VERSION)-$(HOTSPOT_BUILD_VERSION)
 endif
 
-# Generated using the build-pkglist script
 PKGLIST = \
-com.sun.java.swing.action \
-com.sun.java.swing.ui \
 sun.jvm.hotspot \
 sun.jvm.hotspot.asm \
 sun.jvm.hotspot.asm.sparc \
 sun.jvm.hotspot.c1 \
 sun.jvm.hotspot.ci \
-sun.jvm.hotspot.classfile \
 sun.jvm.hotspot.code \
 sun.jvm.hotspot.compiler \
 sun.jvm.hotspot.debugger \
-sun.jvm.hotspot.debugger.aarch64 \
 sun.jvm.hotspot.debugger.amd64 \
 sun.jvm.hotspot.debugger.bsd \
 sun.jvm.hotspot.debugger.bsd.amd64 \
 sun.jvm.hotspot.debugger.bsd.x86 \
 sun.jvm.hotspot.debugger.cdbg \
 sun.jvm.hotspot.debugger.cdbg.basic \
+sun.jvm.hotspot.debugger.cdbg.basic.amd64 \
+sun.jvm.hotspot.debugger.cdbg.basic.x86 \
 sun.jvm.hotspot.debugger.dummy \
-sun.jvm.hotspot.debugger.ia64 \
 sun.jvm.hotspot.debugger.linux \
-sun.jvm.hotspot.debugger.linux.aarch64 \
 sun.jvm.hotspot.debugger.linux.amd64 \
-sun.jvm.hotspot.debugger.linux.ia64 \
-sun.jvm.hotspot.debugger.linux.sparc \
+sun.jvm.hotspot.debugger.linux.aarch64 \
 sun.jvm.hotspot.debugger.linux.x86 \
 sun.jvm.hotspot.debugger.posix \
 sun.jvm.hotspot.debugger.posix.elf \
 sun.jvm.hotspot.debugger.proc \
-sun.jvm.hotspot.debugger.proc.aarch64 \
 sun.jvm.hotspot.debugger.proc.amd64 \
+sun.jvm.hotspot.debugger.proc.aarch64 \
 sun.jvm.hotspot.debugger.proc.sparc \
 sun.jvm.hotspot.debugger.proc.x86 \
 sun.jvm.hotspot.debugger.remote \
-sun.jvm.hotspot.debugger.remote.aarch64 \
 sun.jvm.hotspot.debugger.remote.amd64 \
 sun.jvm.hotspot.debugger.remote.sparc \
 sun.jvm.hotspot.debugger.remote.x86 \
 sun.jvm.hotspot.debugger.sparc \
-sun.jvm.hotspot.debugger.win32\
 sun.jvm.hotspot.debugger.win32.coff \
 sun.jvm.hotspot.debugger.windbg \
 sun.jvm.hotspot.debugger.windbg.amd64 \
-sun.jvm.hotspot.debugger.windbg.ia64 \
 sun.jvm.hotspot.debugger.windbg.x86 \
-sun.jvm.hotspot.debugger.windows \
-sun.jvm.hotspot.debugger.windows.amd64 \
-sun.jvm.hotspot.debugger.windows.x86 \
 sun.jvm.hotspot.debugger.x86 \
 sun.jvm.hotspot.gc_implementation \
 sun.jvm.hotspot.gc_implementation.g1 \
 sun.jvm.hotspot.gc_implementation.parallelScavenge \
 sun.jvm.hotspot.gc_implementation.shared \
-sun.jvm.hotspot.gc_interface\
+sun.jvm.hotspot.gc_interface \
 sun.jvm.hotspot.interpreter \
 sun.jvm.hotspot.jdi \
 sun.jvm.hotspot.memory \
-sun.jvm.hotspot.oops \
 sun.jvm.hotspot.opto \
+sun.jvm.hotspot.oops \
 sun.jvm.hotspot.prims \
 sun.jvm.hotspot.runtime \
-sun.jvm.hotspot.runtime.aarch64 \
 sun.jvm.hotspot.runtime.amd64 \
+sun.jvm.hotspot.runtime.aarch64 \
 sun.jvm.hotspot.runtime.bsd \
 sun.jvm.hotspot.runtime.bsd_amd64 \
 sun.jvm.hotspot.runtime.bsd_x86 \
 sun.jvm.hotspot.runtime.linux \
-sun.jvm.hotspot.runtime.linux_aarch64 \
 sun.jvm.hotspot.runtime.linux_amd64 \
+sun.jvm.hotspot.runtime.linux_aarch64 \
 sun.jvm.hotspot.runtime.linux_sparc \
 sun.jvm.hotspot.runtime.linux_x86 \
 sun.jvm.hotspot.runtime.posix \
@@ -133,62 +121,52 @@ sun.jvm.hotspot.ui.tree \
 sun.jvm.hotspot.ui.treetable \
 sun.jvm.hotspot.utilities \
 sun.jvm.hotspot.utilities.memo \
-sun.jvm.hotspot.utilities.soql
+sun.jvm.hotspot.utilities.soql \
+com.sun.java.swing.action \
+com.sun.java.swing.ui
 #END PKGLIST
 
 # Generated using the build-filelist script
 FILELIST = \
-com/sun/java/swing/action/*.java \
-com/sun/java/swing/ui/*.java \
 sun/jvm/hotspot/*.java \
 sun/jvm/hotspot/asm/*.java \
 sun/jvm/hotspot/asm/sparc/*.java \
 sun/jvm/hotspot/c1/*.java \
 sun/jvm/hotspot/ci/*.java \
-sun/jvm/hotspot/classfile/*.java \
 sun/jvm/hotspot/code/*.java \
 sun/jvm/hotspot/compiler/*.java \
 sun/jvm/hotspot/debugger/*.java \
-sun/jvm/hotspot/debugger/aarch64/*.java \
 sun/jvm/hotspot/debugger/amd64/*.java \
-sun/jvm/hotspot/debugger/bsd/amd64/*.java \
 sun/jvm/hotspot/debugger/bsd/*.java \
+sun/jvm/hotspot/debugger/bsd/amd64/*.java \
 sun/jvm/hotspot/debugger/bsd/x86/*.java \
 sun/jvm/hotspot/debugger/cdbg/*.java \
 sun/jvm/hotspot/debugger/cdbg/basic/*.java \
+sun/jvm/hotspot/debugger/cdbg/basic/amd64/*.java \
+sun/jvm/hotspot/debugger/cdbg/basic/x86/*.java \
 sun/jvm/hotspot/debugger/dummy/*.java \
-sun/jvm/hotspot/debugger/ia64/*.java \
-sun/jvm/hotspot/debugger/linux/aarch64/*.java \
-sun/jvm/hotspot/debugger/linux/amd64/*.java \
-sun/jvm/hotspot/debugger/linux/ia64/*.java \
 sun/jvm/hotspot/debugger/linux/*.java \
-sun/jvm/hotspot/debugger/linux/sparc/*.java \
 sun/jvm/hotspot/debugger/linux/x86/*.java \
+sun/jvm/hotspot/debugger/linux/aarch64/*.java \
 sun/jvm/hotspot/debugger/posix/*.java \
 sun/jvm/hotspot/debugger/posix/elf/*.java \
 sun/jvm/hotspot/debugger/proc/*.java \
-sun/jvm/hotspot/debugger/proc/aarch64/*.java \
 sun/jvm/hotspot/debugger/proc/amd64/*.java \
 sun/jvm/hotspot/debugger/proc/sparc/*.java \
 sun/jvm/hotspot/debugger/proc/x86/*.java \
+sun/jvm/hotspot/debugger/proc/aarch64/*.java \
 sun/jvm/hotspot/debugger/remote/*.java \
-sun/jvm/hotspot/debugger/remote/aarch64/*.java \
 sun/jvm/hotspot/debugger/remote/amd64/*.java \
 sun/jvm/hotspot/debugger/remote/sparc/*.java \
 sun/jvm/hotspot/debugger/remote/x86/*.java \
 sun/jvm/hotspot/debugger/sparc/*.java \
 sun/jvm/hotspot/debugger/win32/coff/*.java \
 sun/jvm/hotspot/debugger/windbg/*.java \
-sun/jvm/hotspot/debugger/windbg/amd64/*.java \
-sun/jvm/hotspot/debugger/windbg/ia64/*.java \
 sun/jvm/hotspot/debugger/windbg/x86/*.java \
-sun/jvm/hotspot/debugger/windows/amd64/*.java \
-sun/jvm/hotspot/debugger/windows/x86/*.java \
 sun/jvm/hotspot/debugger/x86/*.java \
 sun/jvm/hotspot/gc_implementation/g1/*.java \
 sun/jvm/hotspot/gc_implementation/parallelScavenge/*.java \
 sun/jvm/hotspot/gc_implementation/shared/*.java \
-sun/jvm/hotspot/gc_interface/*.java \
 sun/jvm/hotspot/interpreter/*.java \
 sun/jvm/hotspot/jdi/*.java \
 sun/jvm/hotspot/memory/*.java \
@@ -196,16 +174,17 @@ sun/jvm/hotspot/oops/*.java \
 sun/jvm/hotspot/opto/*.java \
 sun/jvm/hotspot/prims/*.java \
 sun/jvm/hotspot/runtime/*.java \
-sun/jvm/hotspot/runtime/aarch64/*.java \
 sun/jvm/hotspot/runtime/amd64/*.java \
+sun/jvm/hotspot/runtime/aarch64/*.java \
 sun/jvm/hotspot/runtime/bsd/*.java \
 sun/jvm/hotspot/runtime/bsd_amd64/*.java \
 sun/jvm/hotspot/runtime/bsd_x86/*.java \
 sun/jvm/hotspot/runtime/linux/*.java \
-sun/jvm/hotspot/runtime/linux_aarch64/*.java \
 sun/jvm/hotspot/runtime/linux_amd64/*.java \
+sun/jvm/hotspot/runtime/linux_aarch64/*.java \
 sun/jvm/hotspot/runtime/linux_sparc/*.java \
 sun/jvm/hotspot/runtime/linux_x86/*.java \
+sun/jvm/hotspot/runtime/posix/*.java \
 sun/jvm/hotspot/runtime/solaris_amd64/*.java \
 sun/jvm/hotspot/runtime/solaris_sparc/*.java \
 sun/jvm/hotspot/runtime/solaris_x86/*.java \
@@ -226,7 +205,9 @@ sun/jvm/hotspot/ui/tree/*.java \
 sun/jvm/hotspot/ui/treetable/*.java \
 sun/jvm/hotspot/utilities/*.java \
 sun/jvm/hotspot/utilities/memo/*.java \
-sun/jvm/hotspot/utilities/soql/*.java
+sun/jvm/hotspot/utilities/soql/*.java \
+com/sun/java/swing/action/*.java \
+com/sun/java/swing/ui/*.java
 #END FILELIST
 
 ifneq "x$(ALT_BOOTDIR)" "x"

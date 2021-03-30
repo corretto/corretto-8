@@ -38,8 +38,8 @@
 #include "runtime/stubRoutines.hpp"
 
 void C1_MacroAssembler::float_cmp(bool is_float, int unordered_result,
-				  FloatRegister f0, FloatRegister f1,
-				  Register result)
+                                  FloatRegister f0, FloatRegister f1,
+                                  Register result)
 {
   Label done;
   if (is_float) {
@@ -337,7 +337,7 @@ void C1_MacroAssembler::initialize_object(Register obj, Register klass, Register
     sub(index, index, 1);
     for (int i = -unroll; i < 0; i++) {
       if (-i == remainder)
-	bind(entry_point);
+        bind(entry_point);
       str(zr, Address(rscratch1, i * wordSize));
     }
     if (remainder == 0)
