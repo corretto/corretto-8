@@ -51,6 +51,38 @@ static const Register roffset       = r5;
 static const Register rcounter_addr = r6;
 static const Register result        = r7;
 
+// On macos/aarch64 we need to ensure WXExec mode when running generated
+// FastGetXXXField, as these functions can be called from WXWrite context
+// (8262896).  So each FastGetXXXField is wrapped into a C++ statically
+// compiled template function that optionally switches to WXExec if necessary.
+
+#ifdef __APPLE__
+
+static address generated_fast_get_field[T_LONG + 1 - T_BOOLEAN];
+
+template<int BType, typename JniType>
+JniType static_fast_get_field_wrapper(JNIEnv *env, jobject obj, jfieldID fieldID) {
+  JavaThread* thread = JavaThread::thread_from_jni_environment(env);
+  thread->enable_wx_from_write(WXExec);
+  address get_field_addr = generated_fast_get_field[BType - T_BOOLEAN];
+  return ((JniType(*)(JNIEnv *env, jobject obj, jfieldID fieldID))get_field_addr)(env, obj, fieldID);
+}
+
+template<int BType, typename JniType>
+address JNI_FastGetField::generate_fast_get_int_field1() {
+  generated_fast_get_field[BType - T_BOOLEAN] = generate_fast_get_int_field0((BasicType)BType);
+  return (address)static_fast_get_field_wrapper<BType, JniType>;
+}
+
+#else // __APPLE__
+
+template<int BType, typename JniType>
+address JNI_FastGetField::generate_fast_get_int_field1() {
+  return generate_fast_get_int_field0((BasicType)BType);
+}
+
+#endif // __APPLE__
+
 address JNI_FastGetField::generate_fast_get_int_field0(BasicType type) {
   const char *name;
   switch (type) {
@@ -148,33 +180,33 @@ address JNI_FastGetField::generate_fast_get_int_field0(BasicType type) {
 }
 
 address JNI_FastGetField::generate_fast_get_boolean_field() {
-  return generate_fast_get_int_field0(T_BOOLEAN);
+  return generate_fast_get_int_field1<T_BOOLEAN, jboolean>();
 }
 
 address JNI_FastGetField::generate_fast_get_byte_field() {
-  return generate_fast_get_int_field0(T_BYTE);
+  return generate_fast_get_int_field1<T_BYTE, jbyte>();
 }
 
 address JNI_FastGetField::generate_fast_get_char_field() {
-  return generate_fast_get_int_field0(T_CHAR);
+  return generate_fast_get_int_field1<T_CHAR, jchar>();
 }
 
 address JNI_FastGetField::generate_fast_get_short_field() {
-  return generate_fast_get_int_field0(T_SHORT);
+  return generate_fast_get_int_field1<T_SHORT, jshort>();
 }
 
 address JNI_FastGetField::generate_fast_get_int_field() {
-  return generate_fast_get_int_field0(T_INT);
+  return generate_fast_get_int_field1<T_INT, jint>();
 }
 
 address JNI_FastGetField::generate_fast_get_long_field() {
-  return generate_fast_get_int_field0(T_LONG);
+  return generate_fast_get_int_field1<T_LONG, jlong>();
 }
 
 address JNI_FastGetField::generate_fast_get_float_field() {
-  return generate_fast_get_int_field0(T_FLOAT);
+  return generate_fast_get_int_field1<T_FLOAT, jfloat>();
 }
 
 address JNI_FastGetField::generate_fast_get_double_field() {
-  return generate_fast_get_int_field0(T_DOUBLE);
+  return generate_fast_get_int_field1<T_DOUBLE, jdouble>();
 }
