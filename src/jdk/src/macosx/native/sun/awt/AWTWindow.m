@@ -1037,7 +1037,8 @@ JNF_COCOA_ENTER(env);
                     screenContentRect.origin.y - frame.origin.y,
                     screenContentRect.size.width,
                     screenContentRect.size.height);
-                nsWindow.contentView.frame = contentFrame;
+                NSView* view = nsWindow.contentView;
+                view.frame = contentFrame;
                 resized = YES;
             }
         }
