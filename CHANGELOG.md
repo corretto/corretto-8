@@ -34,7 +34,7 @@ The following CVEs are addressed in 8.292.10.1
 | CVE | CVSS | Component |
 | --- | --- | --- |
 | CVE-2021-2161  | 5.9 | core-libs/java.io
-| CVE-2020-14792  | 5.3 | security-libs/java.security
+| CVE-2021-2163  | 5.3 | security-libs/java.security
 
 ## Corretto version: 8.282.08.1
 
