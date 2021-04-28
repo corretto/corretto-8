@@ -703,8 +703,8 @@ jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, \
 #
 # Example:
 #   jdk.tls.disabledAlgorithms=MD5, SSLv3, DSA, RSA keySize < 2048
-jdk.tls.disabledAlgorithms=SSLv3, TLSv1, TLSv1.1, RC4, DES, MD5withRSA, \
-    DH keySize < 1024, EC keySize < 224, anon, NULL, \
+jdk.tls.disabledAlgorithms=SSLv3, RC4, DES, MD5withRSA, DH keySize < 1024, \
+    EC keySize < 224, anon, NULL, \
     include jdk.disabled.namedCurves
 
 # Legacy algorithms for Secure Socket Layer/Transport Layer Security (SSL/TLS)
@@ -1195,3 +1195,26 @@ jdk.security.caDistrustPolicies=SYMANTEC_TLS
 # System value prevails. The default value of the property is "false".
 #
 #jdk.security.allowNonCaAnchor=true
+
+#
+# JNDI Object Factories Filter
+#
+# This filter is used by the JNDI runtime to control the set of object factory classes
+# which will be allowed to instantiate objects from object references returned by
+# naming/directory systems. The factory class named by the reference instance will be
+# matched against this filter. The filter property supports pattern-based filter syntax
+# with the same format as jdk.serialFilter.
+#
+# Each pattern is matched against the factory class name to allow or disallow it's
+# instantiation. The access to a factory class is allowed unless the filter returns
+# REJECTED.
+#
+# Note: This property is currently used by the JDK Reference implementation.
+# It is not guaranteed to be examined and used by other implementations.
+#
+# If the system property jdk.jndi.object.factoriesFilter is also specified, it supersedes
+# the security property value defined here. The default value of the property is "*".
+#
+# The default pattern value allows any object factory class specified by the reference
+# instance to recreate the referenced object.
+#jdk.jndi.object.factoriesFilter=*

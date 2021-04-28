@@ -2,6 +2,40 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.292.10.1
+
+Release Date: Apr 20, 2021
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.292.10.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.292.10.1  |  All  |  Update Corretto 8 patch set to 8.292.10.1. Update the security baseline to OpenJDK 8u292.  | |
+| Remove expired certificates | All | Removed expired certificates thawtepremiumserverca and verisigntsaca | |
+| Update Aarch64 port | Linux aarch64 | Replace the IcedTea based aarch64 port with the one in OpenJDK8u | |
+| Enable TLS 1.0 and 1.1 | All | Re-enable TLS 1.0 and 1.1 which have been disabled in upstream 8u292 | |
+| 8033289: clang: clean up unused function warning | All | Fixes a warning that appears building with clang (macOS) | [JDK-8033289](https://bugs.openjdk.java.net/browse/JDK-8033289) |
+| 8265238: [macos] build failure in OpenJDK8u after JDK-8211301 in older xcode  | macOS | Fixes an error when using Xcode 6.3 |[JDK-8265238](https://bugs.openjdk.java.net/browse/JDK-8265238) |
+
+The following CVEs are addressed in 8.292.10.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2021-2161  | 5.9 | core-libs/java.io
+| CVE-2021-2163  | 5.3 | security-libs/java.security
+
 ## Corretto version: 8.282.08.1
 
 Release Date: Jan 19, 2021
