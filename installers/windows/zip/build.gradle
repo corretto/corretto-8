@@ -35,10 +35,8 @@ task configureBuild(type: Exec) {
     // Platform specific flags
     def command = ['bash', 'configure',
             "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
-            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr120.dll",
-            "--with-msvcp-dll=${project.getProperty('msvcp_dir')}/msvcp120.dll",
-            "--with-freetype=${project.getProperty('freetype_dir')}",
-            "--with-toolchain-version=2013"]
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr100.dll",
+            "--with-freetype=${project.getProperty('freetype_dir')}"]
     // Common flags
     command += project.correttoCommonFlags
     commandLine command.flatten()
