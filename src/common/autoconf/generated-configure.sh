@@ -3944,7 +3944,7 @@ pkgadd_help() {
 
 
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -4416,7 +4416,7 @@ VS_SDK_PLATFORM_NAME_2017=
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1613496357
+DATE_WHEN_GENERATED=1621590864
 
 ###############################################################################
 #
@@ -25454,8 +25454,28 @@ fi
   # Use indirect variable referencing
   toolchain_var_name=VALID_TOOLCHAINS_$OPENJDK_BUILD_OS
   VALID_TOOLCHAINS=${!toolchain_var_name}
-  # First toolchain type in the list is the default
-  DEFAULT_TOOLCHAIN=${VALID_TOOLCHAINS%% *}
+
+  if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+    # On Mac OS X, default toolchain to clang after Xcode 5
+    XCODE_VERSION_OUTPUT=`xcodebuild -version 2>&1 | $HEAD -n 1`
+    $ECHO "$XCODE_VERSION_OUTPUT" | $GREP "Xcode " > /dev/null
+    if test $? -ne 0; then
+      as_fn_error $? "Failed to determine Xcode version." "$LINENO" 5
+    fi
+    XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
+        $SED -e 's/^Xcode \([1-9][0-9.]*\)/\1/' | \
+        $CUT -f 1 -d .`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Xcode major version: $XCODE_MAJOR_VERSION" >&5
+$as_echo "$as_me: Xcode major version: $XCODE_MAJOR_VERSION" >&6;}
+    if test $XCODE_MAJOR_VERSION -ge 5; then
+        DEFAULT_TOOLCHAIN="clang"
+    else
+        DEFAULT_TOOLCHAIN="gcc"
+    fi
+  else
+    # First toolchain type in the list is the default
+    DEFAULT_TOOLCHAIN=${VALID_TOOLCHAINS%% *}
+  fi
 
   if test "x$with_toolchain_type" = xlist; then
     # List all toolchains
@@ -41394,6 +41414,26 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
       SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
       SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
     fi
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
+    PICFLAG=''
+    C_FLAG_REORDER=''
+    CXX_FLAG_REORDER=''
+
+    if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+      # Linking is different on MacOSX
+      SHARED_LIBRARY_FLAGS="-dynamiclib -compatibility_version 1.0.0 -current_version 1.0.0 $PICFLAG"
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker @loader_path/.'
+      SET_SHARED_LIBRARY_ORIGIN="$SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -install_name -Xlinker @rpath/$1'
+      SET_SHARED_LIBRARY_MAPFILE=''
+    else
+      # Default works for linux, might work on other platforms as well.
+      SHARED_LIBRARY_FLAGS='-shared'
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker \$$$$ORIGIN$1'
+      SET_SHARED_LIBRARY_ORIGIN="-Xlinker -z -Xlinker origin $SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
+      SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
+    fi
   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     PICFLAG="-KPIC"
     PIEFLAG=""
@@ -41458,6 +41498,8 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
   # Generate make dependency files
   if test "x$TOOLCHAIN_TYPE" = xgcc; then
     C_FLAG_DEPS="-MMD -MF"
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
+    C_FLAG_DEPS="-MMD -MF"
   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     C_FLAG_DEPS="-xMMD -xMF"
   elif test "x$TOOLCHAIN_TYPE" = xxlc; then
@@ -41482,6 +41524,9 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
       CXXFLAGS_DEBUG_SYMBOLS="-g"
     fi
     ASFLAGS_DEBUG_SYMBOLS="-g"
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
+    CFLAGS_DEBUG_SYMBOLS="-g"
+    CXXFLAGS_DEBUG_SYMBOLS="-g"
   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     CFLAGS_DEBUG_SYMBOLS="-g -xs"
     CXXFLAGS_DEBUG_SYMBOLS="-g0 -xs"
@@ -41525,6 +41570,20 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
     # The remaining toolchains share opt flags between CC and CXX;
     # setup for C and duplicate afterwards.
     if test "x$TOOLCHAIN_TYPE" = xgcc; then
+      if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+        # On MacOSX we optimize for size, something
+        # we should do for all platforms?
+        C_O_FLAG_HIGHEST="-Os"
+        C_O_FLAG_HI="-Os"
+        C_O_FLAG_NORM="-Os"
+        C_O_FLAG_NONE=""
+      else
+        C_O_FLAG_HIGHEST="-O3"
+        C_O_FLAG_HI="-O3"
+        C_O_FLAG_NORM="-O2"
+        C_O_FLAG_NONE="-O0"
+      fi
+    elif test "x$TOOLCHAIN_TYPE" = xclang; then
       if test "x$OPENJDK_TARGET_OS" = xmacosx; then
         # On MacOSX we optimize for size, something
         # we should do for all platforms?
@@ -42569,8 +42628,8 @@ $as_echo_n "checking if we should generate debug symbols... " >&6; }
     # Default is on if objcopy is found
     if test "x$OBJCOPY" != x; then
       ENABLE_DEBUG_SYMBOLS=true
-    # MacOS X and Windows don't use objcopy but default is on for those OSes
-    elif test "x$OPENJDK_TARGET_OS" = xmacosx || test "x$OPENJDK_TARGET_OS" = xwindows; then
+    # AIX, MacOS X and Windows don't use objcopy but default is on for those OSes
+    elif test "x$OPENJDK_TARGET_OS" = xaix || test "x$OPENJDK_TARGET_OS" = xmacosx || test "x$OPENJDK_TARGET_OS" = xwindows; then
       ENABLE_DEBUG_SYMBOLS=true
     else
       ENABLE_DEBUG_SYMBOLS=false
@@ -42616,11 +42675,6 @@ $as_echo_n "checking what type of native debug symbols to use (this will overrid
 # Check whether --with-native-debug-symbols was given.
 if test "${with_native_debug_symbols+set}" = set; then :
   withval=$with_native_debug_symbols;
-        if test "x$OPENJDK_TARGET_OS" = xaix; then
-          if test "x$with_native_debug_symbols" = xexternal || test "x$with_native_debug_symbols" = xzipped; then
-            as_fn_error $? "AIX only supports the parameters 'none' and 'internal' for --with-native-debug-symbols" "$LINENO" 5
-          fi
-        fi
 
 else
 
