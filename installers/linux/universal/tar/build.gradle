@@ -26,8 +26,25 @@ dependencies {
     javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
+ext {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
 
-def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-image"
+    switch (arch) {
+        case 'aarch64':
+            arch_alias = arch
+            break;
+        case 'x86_64':
+            arch_alias = 'x64'
+            break;
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
+def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
+def binaryResultName = "amazon-corretto-${project.version.full}-linux-${arch_alias}"
+def archiveName = "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
 
 /**
  * Create a local copy of the source tree in our
@@ -63,12 +80,17 @@ task configureBuild(type: Exec) {
     dependsOn project.configurations.compile
     dependsOn copySource
     workingDir "$buildRoot/src"
-    // Platform specific flags
-    def command = ['bash', 'configure',
-            'LIBCXX=-static-libstdc++ -static-libgcc']
-    // Common flags
-    command += project.correttoCommonFlags
-    commandLine command.flatten()
+    commandLine 'bash', 'configure',
+            "--with-update-version=${project.version.update}",
+            "--with-build-number=b${project.version.build}",
+            "--with-corretto-revision=${project.version.revision}",
+            '--with-milestone=fcs',
+            '--disable-debug-symbols',
+            '--disable-zip-debug-info',
+            'LIBCXX=-static-libstdc++ -static-libgcc',
+            '--with-vendor-name=Amazon.com Inc.',
+            '--with-vendor-url=https://aws.amazon.com/corretto/',
+            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
 }
 
 task executeBuild(type: Exec) {
@@ -94,12 +116,12 @@ task copyBuildResults() {
     description 'Copy the JDK image and puts the results in build/.'
     dependsOn executeBuild
     dependsOn importAmazonCacerts
-    if (project.correttoArch == 'x64') {
+    if (arch == 'x86_64') {
         dependsOn createJavafxOverlay
     }
 
     doLast {
-        def destination = "${buildDir}/${project.correttoJdkArchiveName}"
+        def destination = "${buildDir}/${binaryResultName}"
         copy {
             from(buildRoot) {
                 include 'ASSEMBLY_EXCEPTION'
@@ -114,7 +136,7 @@ task copyBuildResults() {
             commandLine 'cp', '-Rf', '--parents', 'bin', 'include', 'jre', 'lib', 'man/man1', 'src.zip', destination
         }
 
-        if (project.correttoArch == 'x64') {
+        if (arch == 'x86_64') {
             exec {
                 workingDir createJavafxOverlay.destinationDir
                 commandLine 'cp', '-Rf', '--parents', 'bin', 'jre', 'lib', 'man/man1', 'javafx-src.zip', destination
@@ -128,7 +150,7 @@ task packageBuildResults(type: Exec) {
     dependsOn copyBuildResults
     outputs.dir distributionDir
     workingDir buildDir
-    commandLine 'tar', 'cfz', "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz", project.correttoJdkArchiveName
+    commandLine 'tar', 'cfz', "${distributionDir}/${archiveName}", binaryResultName
 }
 
 artifacts {
