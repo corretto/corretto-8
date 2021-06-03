@@ -230,7 +230,7 @@ NET_SockaddrToInetAddress(JNIEnv *env, struct sockaddr *him, int *port) {
             iaObj = (*env)->NewObject(env, ia6_class, ia6_ctrID);
             CHECK_NULL_RETURN(iaObj, NULL);
             ret = setInet6Address_ipaddress(env, iaObj, (char *)&(him6->sin6_addr));
-            CHECK_0_RETURN(ret, NULL);
+            CHECK_NULL_RETURN(ret, NULL);
             setInetAddress_family(env, iaObj, IPv6);
             JNU_CHECK_EXCEPTION_RETURN(env, NULL);
             scope = getScopeID(him);

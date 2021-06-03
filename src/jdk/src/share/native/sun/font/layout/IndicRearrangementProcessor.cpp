@@ -100,7 +100,7 @@ void IndicRearrangementProcessor::endStateTable()
 void IndicRearrangementProcessor::doRearrangementAction(LEGlyphStorage &glyphStorage, IndicRearrangementVerb verb, LEErrorCode &success) const
 {
     LEGlyphID a, b, c, d;
-    le_uint32 ia, ib, ic, id, ix, x;
+    le_int32 ia, ib, ic, id, ix, x;
 
     if (LE_FAILURE(success)) return;
 

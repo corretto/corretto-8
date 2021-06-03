@@ -54,9 +54,6 @@
  * @author Karl Scheibelhofer <Karl.Scheibelhofer@iaik.at>
  */
 
-#ifndef P11_MD_H
-#define P11_MD_H
-
 /* defines for UNIX platforms *************************************************/
 
 #define CK_PTR *
@@ -86,5 +83,3 @@ struct ModuleData {
 
 };
 typedef struct ModuleData ModuleData;
-
-#endif // P11_MD_H

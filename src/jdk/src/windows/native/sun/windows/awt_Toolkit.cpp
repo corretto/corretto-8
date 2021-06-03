@@ -982,12 +982,12 @@ LRESULT CALLBACK AwtToolkit::WndProc(HWND hWnd, UINT message,
 
           env->CallStaticVoidMethod(systemColorClass, mid);
 
-          // Falls through.
+          /* FALL THROUGH - NO BREAK */
       }
 
       case WM_SETTINGCHANGE: {
           AwtWin32GraphicsDevice::ResetAllMonitorInfo();
-          // Falls through.
+          /* FALL THROUGH - NO BREAK */
       }
 // Remove this define when we move to newer (XP) version of SDK.
 #define WM_THEMECHANGED                 0x031A
