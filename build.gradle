@@ -70,7 +70,6 @@ allprojects {
                 "--with-build-number=b${project.version.build}",
                 "--with-corretto-revision=${project.version.revision}",
                 '--with-milestone=fcs',
-                '--enable-jfr',
                 '--with-vendor-name=Amazon.com Inc.',
                 '--with-vendor-url=https://aws.amazon.com/corretto/',
                 "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
