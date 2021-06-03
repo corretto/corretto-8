@@ -77,15 +77,6 @@ allprojects {
                 "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
                 "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
         ]
-        is_x86 = false
-        if (project.hasProperty("x86")) {
-            is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
-        }
-        if (is_x86) {
-            correttoCommonFlags += ["--with-target-bits=32"]
-        } else {
-            correttoCommonFlags += ["--with-target-bits=64"]
-        }
 
         // Valid value: null, release, debug, fastdebug, slowdebug
         def correttoDebugLevel = "release" // Default: release
