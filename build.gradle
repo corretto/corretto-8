@@ -65,12 +65,11 @@ allprojects {
         jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
                     'servertool', 'tnameserv', 'unpack200']
 
-        def milestone = project.findProperty("corretto.milestone") ?: "fcs"
         correttoCommonFlags = [
                 "--with-update-version=${project.version.update}",
                 "--with-build-number=b${project.version.build}",
                 "--with-corretto-revision=${project.version.revision}",
-                "--with-milestone=${milestone}",
+                '--with-milestone=fcs',
                 '--enable-jfr',
                 '--with-vendor-name=Amazon.com Inc.',
                 '--with-vendor-url=https://aws.amazon.com/corretto/',
