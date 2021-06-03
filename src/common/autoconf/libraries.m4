@@ -1151,12 +1151,8 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
   fi
 
   # TODO better (platform agnostic) test
-  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x ; then 
-    if test "x$TOOLCHAIN_TYPE" = xgcc; then
-      LIBCXX="-lstdc++"
-    elif test "x$TOOLCHAIN_TYPE" = xclang; then
-      LIBCXX="-std=libc++"
-    fi
+  if test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$LIBCXX" = x && test "x$TOOLCHAIN_TYPE" = xgcc; then
+    LIBCXX="-lstdc++"
   fi
 
   AC_SUBST(LIBCXX)
