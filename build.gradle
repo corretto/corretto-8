@@ -172,7 +172,6 @@ project(':openjdksrc') {
                     'README.md',
                     'THIRD_PARTY_README',
                     'ASSEMBLY_EXCEPTION',
-                    'commitId.txt',
                     'version.txt',
                     'amazon-cacerts'
         }

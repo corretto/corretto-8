@@ -80,16 +80,12 @@ task copyImage() {
         }
         // Copy version.txt into JDK
         copy {
-            from "$buildRoot"
-            include "commitId.txt"
-            include "version.txt"
+            from "$buildRoot/version.txt"
             into "$buildRoot/build/j2sdk-image"
         }
         // Copy version.txt into JRE
         copy {
-            from "$buildRoot"
-            include "commitId.txt"
-            include "version.txt"
+            from "$buildRoot/version.txt"
             into "$buildRoot/build/j2re-image"
         }
     }
