@@ -160,6 +160,8 @@ task packaging(type: Exec) {
     outputs.file tarDir
 }
 
+build.dependsOn packaging
+
 artifacts {
     archives file: packaging.outputs.getFiles().getSingleFile(), builtBy: packaging
 }

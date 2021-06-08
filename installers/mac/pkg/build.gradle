@@ -84,6 +84,8 @@ task generateInstaller {
     }
 }
 
+build.dependsOn generateInstaller
+
 artifacts {
     archives file: generateInstaller.outputs.getFiles().getSingleFile(), builtBy: generateInstaller
 }
