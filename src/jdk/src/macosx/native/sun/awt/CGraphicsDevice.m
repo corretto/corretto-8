@@ -231,6 +231,18 @@ JNF_COCOA_EXIT(env);
 
 /*
  * Class:     sun_awt_CGraphicsDevice
+ * Method:    nativeResetDisplayMode
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL
+Java_sun_awt_CGraphicsDevice_nativeResetDisplayMode
+(JNIEnv *env, jclass class)
+{
+    CGRestorePermanentDisplayConfiguration();
+}
+
+/*
+ * Class:     sun_awt_CGraphicsDevice
  * Method:    nativeSetDisplayMode
  * Signature: (IIIII)V
  */
