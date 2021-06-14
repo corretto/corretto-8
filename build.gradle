@@ -107,6 +107,14 @@ allprojects {
                 throw new RuntimeException("Invalid corretto.debug_level")
         }
 
+        def freetypeIncludePath = project.findProperty("corretto.freetype_include")
+        def freetypeLibPath = project.findProperty("corretto.freetype_lib")
+
+        // If freetype location is specified, pass to configure
+        if (freetypeIncludePath && freetypeLibPath) {
+            correttoCommonFlags += ["--with-freetype-include=${freetypeIncludePath}", "--with-freetype-lib=${freetypeLibPath}"]
+        }
+
         // customized flags. Identify the index of double dashes as the start of a flag
         String extraConfig = project.findProperty("corretto.extra_config")
         def lastIndex = -1
