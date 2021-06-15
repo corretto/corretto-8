@@ -156,7 +156,13 @@ task prepareArtifacts {
             exec {
                 workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
                 commandLine "chmod", "755", "./jre/lib/libfreetype.dylib.6"
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
                 commandLine "install_name_tool", "-change", "${freetypeLibPath}/libfreetype.6.dylib", "@rpath/libfreetype.dylib.6", "./jre/lib/libfontmanager.dylib"
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
                 commandLine "install_name_tool", "-id", "@rpath/libfreetype.dylib.6", "./jre/lib/libfreetype.dylib.6"
             }
         }
