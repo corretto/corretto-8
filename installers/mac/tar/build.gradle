@@ -134,7 +134,6 @@ task prepareArtifacts {
                 include 'ASSEMBLY_EXCEPTION'
                 include 'LICENSE'
                 include 'THIRD_PARTY_README'
-                include 'commitId.txt'
                 include 'version.txt'
                 into "Contents/Home"
             }
