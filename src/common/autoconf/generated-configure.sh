@@ -4991,7 +4991,7 @@ VS_SDK_PLATFORM_NAME_2017=
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1623266407
+DATE_WHEN_GENERATED=1622754322
 
 ###############################################################################
 #
@@ -27009,17 +27009,11 @@ fi
     XCODE_VERSION_OUTPUT=`xcodebuild -version 2>&1 | $HEAD -n 1`
     $ECHO "$XCODE_VERSION_OUTPUT" | $GREP "Xcode " > /dev/null
     if test $? -ne 0; then
-      # xcodebuild is not available if command line tools are installed;
-      # fall back to testing the command line tools version with pkgutil
-      XCODE_VERSION_OUTPUT=`pkgutil --pkg-info=com.apple.pkg.CLTools_Executables 2>&1 | $GREP "version: "`
-      XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
-          $SED -e 's/^version: \([1-9][0-9.]*\).*/\1/' | \
-          $CUT -f 1 -d .`
-    else
-      XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
-          $SED -e 's/^Xcode \([1-9][0-9.]*\)/\1/' | \
-          $CUT -f 1 -d .`
+      as_fn_error $? "Failed to determine Xcode version." "$LINENO" 5
     fi
+    XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
+        $SED -e 's/^Xcode \([1-9][0-9.]*\)/\1/' | \
+        $CUT -f 1 -d .`
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Xcode major version: $XCODE_MAJOR_VERSION" >&5
 printf "%s\n" "$as_me: Xcode major version: $XCODE_MAJOR_VERSION" >&6;}
     if test $XCODE_MAJOR_VERSION -ge 5; then
@@ -28505,7 +28499,9 @@ fi
     fi
 
     # Fail-fast: verify we're building on a supported Xcode version
-    if test "${XCODE_MAJOR_VERSION}" != "6" -a "${XCODE_MAJOR_VERSION}" != "9" -a "${XCODE_MAJOR_VERSION}" != "10" -a "${XCODE_MAJOR_VERSION}" != "11" -a "${XCODE_MAJOR_VERSION}" != "12" ; then
+    XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
+    XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
+    if test "${XC_VERSION_PARTS[0]}" != "6" -a "${XC_VERSION_PARTS[0]}" != "9" -a "${XC_VERSION_PARTS[0]}" != "10" -a "${XC_VERSION_PARTS[0]}" != "11" -a "${XC_VERSION_PARTS[0]}" != "12" ; then
       as_fn_error $? "Xcode 6, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select." "$LINENO" 5
     fi
 
@@ -28529,14 +28525,8 @@ printf %s "checking Determining Xcode SDK path... " >&6; }
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SDKPATH" >&5
 printf "%s\n" "$SDKPATH" >&6; }
     else
-      SDKPATH=`xcrun --show-sdk-path`
-      if  test -n "$SDKPATH"; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SDKPATH" >&5
-printf "%s\n" "$SDKPATH" >&6; }
-      else
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: (none, will use system headers and frameworks)" >&5
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: (none, will use system headers and frameworks)" >&5
 printf "%s\n" "(none, will use system headers and frameworks)" >&6; }
-      fi
     fi
 
 

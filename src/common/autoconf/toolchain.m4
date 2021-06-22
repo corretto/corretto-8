@@ -155,17 +155,11 @@ AC_DEFUN_ONCE([TOOLCHAIN_DETERMINE_TOOLCHAIN_TYPE],
     XCODE_VERSION_OUTPUT=`xcodebuild -version 2>&1 | $HEAD -n 1`
     $ECHO "$XCODE_VERSION_OUTPUT" | $GREP "Xcode " > /dev/null
     if test $? -ne 0; then
-      # xcodebuild is not available if command line tools are installed;
-      # fall back to testing the command line tools version with pkgutil
-      XCODE_VERSION_OUTPUT=`pkgutil --pkg-info=com.apple.pkg.CLTools_Executables 2>&1 | $GREP "version: "`
-      XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
-          $SED -e 's/^version: \(@<:@1-9@:>@@<:@0-9.@:>@*\).*/\1/' | \
-          $CUT -f 1 -d .`
-    else
-      XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
-          $SED -e 's/^Xcode \(@<:@1-9@:>@@<:@0-9.@:>@*\)/\1/' | \
-          $CUT -f 1 -d .`
+      AC_MSG_ERROR([Failed to determine Xcode version.])
     fi
+    XCODE_MAJOR_VERSION=`$ECHO $XCODE_VERSION_OUTPUT | \
+        $SED -e 's/^Xcode \(@<:@1-9@:>@@<:@0-9.@:>@*\)/\1/' | \
+        $CUT -f 1 -d .`
     AC_MSG_NOTICE([Xcode major version: $XCODE_MAJOR_VERSION])
     if test $XCODE_MAJOR_VERSION -ge 5; then
         DEFAULT_TOOLCHAIN="clang"
@@ -294,7 +288,9 @@ AC_DEFUN_ONCE([TOOLCHAIN_PRE_DETECTION],
     fi
 
     # Fail-fast: verify we're building on a supported Xcode version
-    if test "${XCODE_MAJOR_VERSION}" != "6" -a "${XCODE_MAJOR_VERSION}" != "9" -a "${XCODE_MAJOR_VERSION}" != "10" -a "${XCODE_MAJOR_VERSION}" != "11" -a "${XCODE_MAJOR_VERSION}" != "12" ; then
+    XCODE_VERSION=`$XCODEBUILD -version | grep '^Xcode ' | sed 's/Xcode //'`
+    XC_VERSION_PARTS=( ${XCODE_VERSION//./ } )
+    if test "${XC_VERSION_PARTS[[0]]}" != "6" -a "${XC_VERSION_PARTS[[0]]}" != "9" -a "${XC_VERSION_PARTS[[0]]}" != "10" -a "${XC_VERSION_PARTS[[0]]}" != "11" -a "${XC_VERSION_PARTS[[0]]}" != "12" ; then
       AC_MSG_ERROR([Xcode 6, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
     fi
 
@@ -315,12 +311,7 @@ AC_DEFUN_ONCE([TOOLCHAIN_PRE_DETECTION],
     if test -n "$SDKPATH"; then
       AC_MSG_RESULT([$SDKPATH])
     else
-      SDKPATH=`xcrun --show-sdk-path`
-      if  test -n "$SDKPATH"; then
-        AC_MSG_RESULT([$SDKPATH])
-      else
-        AC_MSG_RESULT([(none, will use system headers and frameworks)])
-      fi
+      AC_MSG_RESULT([(none, will use system headers and frameworks)])
     fi
     AC_SUBST(SDKPATH)
 
