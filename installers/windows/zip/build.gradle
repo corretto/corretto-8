@@ -23,6 +23,23 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
+ext {
+    arch = System.getenv('PROCESSOR_ARCHITECTURE')
+
+    switch(arch) {
+        case 'x86':
+            arch_alias = 'x86'
+            folder_alias = 'x86'
+            break
+        case 'AMD64':
+            arch_alias = 'x64'
+            folder_alias = 'x86_64'
+            break
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
 task copySource(type: Copy) {
     dependsOn project.configurations.compile
     from tarTree(project.configurations.compile.singleFile)
@@ -32,14 +49,20 @@ task copySource(type: Copy) {
 task configureBuild(type: Exec) {
     dependsOn copySource
     workingDir "$buildRoot/src"
-    // Platform specific flags
-    def command = ['bash', 'configure',
+
+    commandLine 'bash', 'configure',
+            "--with-update-version=${project.version.update}",
+            "--with-build-number=b${project.version.build}",
+            "--with-corretto-revision=${project.version.revision}",
+            '--with-milestone=fcs',
+            '--disable-debug-symbols',
+            '--disable-zip-debug-info',
+            '--with-vendor-name=Amazon.com Inc.',
+            '--with-vendor-url=https://aws.amazon.com/corretto/',
+            '--with-vendor-bug-url=https://github.com/corretto/corretto-8/issues/',
             "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
             "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/msvcr100.dll",
-            "--with-freetype=${project.getProperty('freetype_dir')}"]
-    // Common flags
-    command += project.correttoCommonFlags
-    commandLine command.flatten()
+            "--with-freetype=${project.getProperty('freetype_dir')}"
 }
 
 task executeBuild(type: Exec) {
@@ -51,7 +74,7 @@ task executeBuild(type: Exec) {
 
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
-    workingDir "${executeBuild.workingDir}/build/${project.jdkImageName}/images/j2sdk-image"
+    workingDir "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images/j2sdk-image"
     // Default password for JSSE key store
     def keystore_password = "changeit"
     commandLine 'keytool', '-importkeystore', '-noprompt',
@@ -63,7 +86,7 @@ task importAmazonCacerts(type: Exec) {
 
 task copyCacerts(type: Copy) {
     dependsOn importAmazonCacerts
-    def imageDir = "${executeBuild.workingDir}/build/${project.jdkImageName}/images"
+    def imageDir = "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
 
     from file("${imageDir}/j2sdk-image/jre/lib/security/cacerts")
     into file("${imageDir}/j2re-image/lib/security")
@@ -72,20 +95,20 @@ task copyCacerts(type: Copy) {
 task copyImage(type: Copy) {
     dependsOn copyCacerts
 
-    from "${executeBuild.workingDir}/build/${project.jdkImageName}/images"
+    from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
     into "$buildRoot/build"
 }
 
 task packageJdk(type: Zip) {
     dependsOn copyImage
-    archiveName  = "unsigned-jdk-image.${project.correttoArch}.zip"
+    archiveName  = "unsigned-jdk-image.${arch_alias}.zip"
 
     from "$buildRoot/build/j2sdk-image"
 }
 
 task packageJre(type: Zip) {
     dependsOn copyImage
-    archiveName = "unsigned-jre-image.${project.correttoArch}.zip"
+    archiveName = "unsigned-jre-image.${arch_alias}.zip"
 
     from "$buildRoot/build/j2re-image"
 }

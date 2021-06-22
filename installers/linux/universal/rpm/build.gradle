@@ -27,22 +27,27 @@ dependencies {
 }
 
 ext {
-    // project.correttoArch has been verified in the root project
-    // No need to set default
-    switch (project.correttoArch) {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
+
+    switch (arch) {
         case 'aarch64':
             arch_redline = 'AARCH64'
-            break
-        case 'x64':
-            arch_redline = 'x86_64'
-            break
+            arch_alias = arch
+            break;
+        case 'x86_64':
+            arch_redline = arch
+            arch_alias = 'x64'
+            break;
+        default:
+            throw new GradleException("${arch} is not suported")
     }
 }
 
 def jvmDir = '/usr/lib/jvm'
 def jdkInstallationDirName = "java-1.${project.version.major}.0-amazon-corretto"
 def jdkHome = "${jvmDir}/${jdkInstallationDirName}"
-def jdkBinaryDir = "${buildRoot}/${project.correttoJdkArchiveName}"
+def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-${arch_alias}"
 def jdkPackageName = "java-1.${project.version.major}.0-amazon-corretto-devel"
 
 
