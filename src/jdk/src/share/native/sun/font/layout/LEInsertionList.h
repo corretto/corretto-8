@@ -101,7 +101,7 @@ public:
     /**
      * The destructor.
      */
-    virtual ~LEInsertionList();
+    ~LEInsertionList();
 
     /**
      * Add an entry to the insertion list.

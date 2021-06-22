@@ -227,9 +227,6 @@ ifeq ($(USE_CLANG),)
   endif
 endif
 
-# workaround for glibc >= 2.24 JDK-8179887
-WARNING_FLAGS += -Wno-deprecated-declarations
-
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases
 CFLAGS_WARN/BYFILE = $(CFLAGS_WARN/$@)$(CFLAGS_WARN/DEFAULT$(CFLAGS_WARN/$@)) 

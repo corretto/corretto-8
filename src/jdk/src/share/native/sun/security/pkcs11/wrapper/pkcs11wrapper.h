@@ -478,6 +478,6 @@ void p11free(void *p, char *file, int line);
 #define calloc(c, s)    (p11calloc((c), (s), THIS_FILE, __LINE__))
 #define free(c)         (p11free((c), THIS_FILE, __LINE__))
 
-#endif // P11_MEMORYDEBUG
+#endif
 
 #endif /* _PKCS11WRAPPER_H */

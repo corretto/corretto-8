@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -60,12 +60,12 @@ typedef char* (*SplashGetScaledImageName_t)(const char* fileName,
 #define INVOKE(name,def) _INVOKE(name,def,return)
 #define INVOKEV(name) _INVOKE(name, ,;)
 
-void    DoSplashLoadMemory(void* pdata, int size) {
-    INVOKEV(SplashLoadMemory)(pdata, size);
+int     DoSplashLoadMemory(void* pdata, int size) {
+    INVOKE(SplashLoadMemory, NULL)(pdata, size);
 }
 
-void    DoSplashLoadFile(const char* filename) {
-    INVOKEV(SplashLoadFile)(filename);
+int     DoSplashLoadFile(const char* filename) {
+    INVOKE(SplashLoadFile, NULL)(filename);
 }
 
 void    DoSplashInit(void) {
@@ -84,7 +84,7 @@ void    DoSplashSetScaleFactor(float scaleFactor) {
     INVOKEV(SplashSetScaleFactor)(scaleFactor);
 }
 
-char*   DoSplashGetScaledImageName(const char* fileName, const char* jarName,
-                                   float* scaleFactor) {
+char*    DoSplashGetScaledImageName(const char* fileName, const char* jarName,
+                                    float* scaleFactor) {
     INVOKE(SplashGetScaledImageName, NULL)(fileName, jarName, scaleFactor);
 }

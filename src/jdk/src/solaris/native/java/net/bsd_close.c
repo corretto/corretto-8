@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -380,7 +380,7 @@ int NET_ReadV(int s, const struct iovec * vector, int count) {
 }
 
 int NET_RecvFrom(int s, void *buf, int len, unsigned int flags,
-		 struct sockaddr *from, socklen_t *fromlen) {
+       struct sockaddr *from, int *fromlen) {
     /* casting int *fromlen -> socklen_t* Both are ints */
     BLOCKING_IO_RETURN_INT( s, recvfrom(s, buf, len, flags, from, (socklen_t *)fromlen) );
 }
@@ -394,15 +394,15 @@ int NET_WriteV(int s, const struct iovec * vector, int count) {
 }
 
 int NET_SendTo(int s, const void *msg, int len,  unsigned  int
-       flags, const struct sockaddr *to, socklen_t tolen) {
+       flags, const struct sockaddr *to, int tolen) {
     BLOCKING_IO_RETURN_INT( s, sendto(s, msg, len, flags, to, tolen) );
 }
 
-int NET_Accept(int s, struct sockaddr *addr, socklen_t *addrlen) {
+int NET_Accept(int s, struct sockaddr *addr, int *addrlen) {
     socklen_t len = *addrlen;
     int error = accept(s, addr, &len);
     if (error != -1)
-        *addrlen = len;
+        *addrlen = (int)len;
     BLOCKING_IO_RETURN_INT( s, error );
 }
 

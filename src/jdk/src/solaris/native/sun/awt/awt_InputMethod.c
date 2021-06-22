@@ -533,7 +533,7 @@ awt_x11inputmethod_lookupString(XKeyPressedEvent *event, KeySym *keysymp)
             }
         }
         composing = False;
-        // Falls through.
+        /*FALLTHRU*/
     case XLookupChars:
     /*
      printf("lookupString: status=XLookupChars, type=%d, state=%x, keycode=%x, keysym=%x\n",
@@ -1239,9 +1239,6 @@ StatusDrawCallback(XIC ic, XPointer client_data,
           }
           else{
               char *mbstr = wcstombsdmp(text->string.wide_char, text->length);
-              if (mbstr == NULL) {
-                  goto finally;
-              }
               strcpy(statusWindow->status, mbstr);
           }
           statusWindow->on = True;
