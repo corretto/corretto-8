@@ -149,17 +149,6 @@ task prepareArtifacts {
             workingDir "${buildDir}/${correttoMacDir}/Contents"
             commandLine "ln", "-sf", "../Home/jre/lib/jli/libjli.dylib", "MacOS/libjli.dylib"
         }
-
-        // Fix freetype linking and permissions
-        def freetypeLibPath = project.findProperty("corretto.freetype_lib")
-        if (freetypeLibPath) {
-            exec {
-                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
-                commandLine "chmod", "755", "./jre/lib/libfreetype.dylib.6"
-                commandLine "install_name_tool", "-change", "${freetypeLibPath}/libfreetype.6.dylib", "@rpath/libfreetype.dylib.6", "./jre/lib/libfontmanager.dylib"
-                commandLine "install_name_tool", "-id", "@rpath/libfreetype.dylib.6", "./jre/lib/libfreetype.dylib.6"
-            }
-        }
     }
 }
 
