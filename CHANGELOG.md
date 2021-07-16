@@ -2,6 +2,39 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.302.08.1
+
+Release Date: Jul 20, 2021
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.302.08.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.302.08.1  |  All  |  Update Corretto 8 patch set to 8.302.08.1. Update the security baseline to OpenJDK 8u302.  | |
+| Remove root certificates with 1024 bit keys | All | Removed all root certificates with 1024 bit keys.  | [JDK-8243559](https://bugs.openjdk.java.net/browse/JDK-8243559) |
+| Enable building with XCode 12 | macOS | Enable builds with the most recent versions of macOS / XCode | [JDK-8267545](https://bugs.openjdk.java.net/browse/JDK-8267545) |
+| Corretto8 JRE MSI | Windows | Provide JRE MSI installer on both x86 and x86_64 | [corretto-8#108](https://github.com/corretto/corretto-8/pull/108) |
+
+The following CVEs are addressed in 8.302.08.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2021-2388  | 7.5 | hotspot/compiler
+| CVE-2021-2369  | 4.3 | security-libs/java.security
+| CVE-2021-2341  | 3.1 | core-libs/java.net
+
 ## Corretto version: 8.292.10.1
 
 Release Date: Apr 20, 2021
