@@ -134,7 +134,12 @@ allprojects {
         def os = ""
         if (Os.isFamily(Os.FAMILY_MAC)) {
             os = 'macosx'
-            jdkArch = "x86_64"
+            nativeArch = ['uname', '-m'].execute().text.trim()
+            if (nativeArch == "arm64") {
+                jdkArch = "aarch64"
+            } else {
+                jdkArch = "x86_64"
+            }
         } else if (Os.isFamily(Os.FAMILY_UNIX)) {
             os = 'linux'
             jdkArch = ['uname', '-m'].execute().text.trim()
