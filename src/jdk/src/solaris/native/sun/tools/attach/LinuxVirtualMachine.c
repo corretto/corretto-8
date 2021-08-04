@@ -195,6 +195,9 @@ JNIEXPORT void JNICALL Java_sun_tools_attach_LinuxVirtualMachine_connect
 JNIEXPORT jboolean JNICALL Java_sun_tools_attach_LinuxVirtualMachine_isLinuxThreads
   (JNIEnv *env, jclass cls)
 {
+# ifdef MUSL_LIBC
+   return JNI_FALSE;
+# else
 # ifndef _CS_GNU_LIBPTHREAD_VERSION
 # define _CS_GNU_LIBPTHREAD_VERSION 3
 # endif
@@ -222,6 +225,7 @@ JNIEXPORT jboolean JNICALL Java_sun_tools_attach_LinuxVirtualMachine_isLinuxThre
     res = (jboolean)(strstr(s, "NPTL") == NULL);
     free(s);
     return res;
+# endif
 }
 
 /*
