@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2013, Red Hat Inc.
- * Copyright (c) 1997, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2013, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -39,6 +39,10 @@
 
 #ifndef HWCAP_AES
 #define HWCAP_AES   (1<<3)
+#endif
+
+#ifndef HWCAP_PMULL
+#define HWCAP_PMULL (1<<4)
 #endif
 
 #ifndef HWCAP_SHA1
@@ -237,7 +241,11 @@ void VM_Version::get_processor_features() {
     }
   }
 
-  if (UseGHASHIntrinsics) {
+  if (auxv & HWCAP_PMULL) {
+    if (FLAG_IS_DEFAULT(UseGHASHIntrinsics)) {
+      FLAG_SET_DEFAULT(UseGHASHIntrinsics, true);
+    }
+  } else if (UseGHASHIntrinsics) {
     warning("GHASH intrinsics are not available on this CPU");
     FLAG_SET_DEFAULT(UseGHASHIntrinsics, false);
   }
