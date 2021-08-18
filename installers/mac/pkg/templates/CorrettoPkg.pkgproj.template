@@ -557,7 +557,7 @@
         </dict>
       </array>
       <key>NAME</key>
-      <string>amazon-corretto-@full@-macosx-x64</string>
+      <string>amazon-corretto-@full@-macosx-@arch@</string>
       <key>PAYLOAD_ONLY</key>
       <false/>
       <key>REFERENCE_FOLDER_PATH</key>

@@ -48,9 +48,7 @@ task inflatePkgTemplate {
         copy {
             from('templates/CorrettoPkg.pkgproj.template') {
                 rename { file -> file.replace('.template', '') }
-                project.version.each {
-                    prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
-                }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ["full": project.version["full"], "major": project.version["major"], "arch": correttoArch])
             }
             into buildRoot
         }
