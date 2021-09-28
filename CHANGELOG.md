@@ -2,6 +2,48 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.312.07.1
+
+Release Date: October 19, 2021
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.312.07.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.312.07 | All | Update Corretto 8 patch set to 8.312.07. Update the security baseline to OpenJDK8u312. ||
+| Fix issue with jcmd and other tools on Alpine Linux | Alpine Linux | Commands such as jcmd failed when the java process id was 1 in Alpine Docker images. | [#321](https://github.com/corretto/corretto-8/pull/321) |
+| Update version strings to recommended formats | macOS | Fix incorrect reporting of version numbers in Corretto 8 .pkg metadata | [#329](https://github.com/corretto/corretto-8/pull/329) |
+| Fix for Font rendering corruption | macOS | Fix for font rendering corruption issue reported in [#333](https://github.com/corretto/corretto-8/issues/333) | [#335](https://github.com/corretto/corretto-8/pull/335) |
+| Enable building with XCode 13 | macOS | Enable builds with the most recent versions of macOS / XCode | [#334](https://github.com/corretto/corretto-8/pull/334) |
+
+The following CVEs are addressed in 8.312.07.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2021-35567 | 6.8 | security-libs/java.security |
+| CVE-2021-35550 | 5.9 | security-libs/javax.net.ssl |
+| CVE-2021-35586 | 5.3 | client-libs/javax.imageio |
+| CVE-2021-35564 | 5.3 | security-libs/java.security |
+| CVE-2021-35561 | 5.3 | core-libs/java.util |
+| CVE-2021-35565 | 5.3 | core-libs/java.net |
+| CVE-2021-35559 | 5.3 | client-libs/javax.swing |
+| CVE-2021-35578 | 5.3 | security-libs/javax.net.ssl |
+| CVE-2021-35556 | 5.3 | client-libs/javax.swing |
+| CVE-2021-35603 | 3.7 | security-libs/javax.net.ssl |
+| CVE-2021-35588 | 3.1 | hotspot/runtime |
+
 ## Corretto version: 8.302.08.1
 
 Release Date: Jul 20, 2021
