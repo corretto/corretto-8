@@ -294,8 +294,8 @@ AC_DEFUN_ONCE([TOOLCHAIN_PRE_DETECTION],
     fi
 
     # Fail-fast: verify we're building on a supported Xcode version
-    if test "${XCODE_MAJOR_VERSION}" != "6" -a "${XCODE_MAJOR_VERSION}" != "9" -a "${XCODE_MAJOR_VERSION}" != "10" -a "${XCODE_MAJOR_VERSION}" != "11" -a "${XCODE_MAJOR_VERSION}" != "12" ; then
-      AC_MSG_ERROR([Xcode 6, 9-12 is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
+    if test "${XCODE_MAJOR_VERSION}" != "6" -o "${XCODE_MAJOR_VERSION}" < "9" ; then
+      AC_MSG_ERROR([Xcode 6, or 9+ is required to build JDK 8, the version found was $XCODE_VERSION. Use --with-xcode-path to specify the location of Xcode or make Xcode active by using xcode-select.])
     fi
 
     # Some versions of Xcode command line tools install gcc and g++ as symlinks to
