@@ -48,7 +48,7 @@ task inflatePkgTemplate {
         copy {
             from('templates/CorrettoPkg.pkgproj.template') {
                 rename { file -> file.replace('.template', '') }
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ["full": project.version["full"], "major": project.version["major"], "arch": correttoArch])
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ["full": project.version["full"], "major": project.version["major"], "arch": correttoArch, "macos-arch": (correttoArch == "aarch64" ? "arm64" : "x86_64")])
             }
             into buildRoot
         }
