@@ -124,12 +124,24 @@ task copyBuildResults() {
     }
 }
 
+task packageDebugSymbols(type: Exec) {
+    description 'Package the JDK debug symbols and puts the results in build/distributions.'
+    dependsOn copyBuildResults
+    String tarFile = "${distributionDir}/${project.correttoDebugSymbolsArchiveName}.tar.gz"
+    outputs.file tarFile
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar -czf ${tarFile} ${project.correttoJdkArchiveName}/**/*.diz"
+}
+
 task packageBuildResults(type: Exec) {
     description 'Package the JDK image and puts the results in build/distributions.'
-    dependsOn copyBuildResults
-    outputs.dir distributionDir
+    dependsOn packageDebugSymbols
+    String tarFile = "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz"
+    outputs.file tarFile
     workingDir buildDir
-    commandLine 'tar', 'cfz', "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz", project.correttoJdkArchiveName
+    commandLine 'bash', '-c',
+        "tar --exclude=*.diz -czf ${tarFile} ${project.correttoJdkArchiveName}"
 }
 
 artifacts {

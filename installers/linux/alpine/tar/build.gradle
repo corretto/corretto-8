@@ -38,6 +38,7 @@ ext {
 def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
 def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
+def debugArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 
 /**
  * Create a local copy of the source tree in our
@@ -62,8 +63,6 @@ task configureBuild(type: Exec) {
             "--with-build-number=b${project.version.build}",
             "--with-corretto-revision=${project.version.revision}",
             "--with-milestone=${milestone}",
-            '--disable-debug-symbols',
-            '--disable-zip-debug-info',
             'LIBCXX=-static-libstdc++ -static-libgcc',
             '--with-vendor-name=Amazon.com Inc.',
             '--with-vendor-url=https://aws.amazon.com/corretto/',
@@ -114,12 +113,24 @@ task copyBuildResults() {
     }
 }
 
+task packageDebugSymbols(type: Exec) {
+    description 'Package the JDK debug symbols and puts the results in build/distributions.'
+    dependsOn copyBuildResults
+    String tarFile = "${distributionDir}/${debugArchiveName}"
+    outputs.file tarFile
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar -czf ${tarFile} ${binaryResultName}/**/*.diz"
+}
+
 task packageBuildResults(type: Exec) {
     description 'Package the JDK image and puts the results in build/distributions.'
-    dependsOn copyBuildResults
-    outputs.dir distributionDir
+    dependsOn packageDebugSymbols
+    String tarFile = "${distributionDir}/${archiveName}"
+    outputs.file tarFile
     workingDir buildDir
-    commandLine 'tar', 'cfz', "${distributionDir}/${archiveName}", binaryResultName
+    commandLine 'bash', '-c',
+        "tar --exclude=*.diz -czf ${tarFile} ${binaryResultName}"
 }
 
 artifacts {
