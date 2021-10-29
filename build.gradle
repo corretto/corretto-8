@@ -92,7 +92,6 @@ allprojects {
         switch(project.findProperty("corretto.debug_level")) {
             case null:
             case "release":
-                correttoCommonFlags += ['--disable-debug-symbols', '--disable-zip-debug-info']
                 break
             case "fastdebug":
                 correttoDebugLevel = "fastdebug"
@@ -173,7 +172,7 @@ allprojects {
             correttoJdkArchiveName =
                     "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
         }
-
+        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}".toString()
     }
 }
 

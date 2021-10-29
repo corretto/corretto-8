@@ -97,11 +97,22 @@ task copyImage() {
     }
 }
 
-task packageJdk(type: Zip) {
+task packageDebugSymbols(type: Zip) {
     dependsOn copyImage
+    archiveName  = "unsigned-jdk-debugsymbols-image.${project.correttoArch}.zip"
+
+    from ("$buildRoot/build/j2sdk-image") {
+        include '**/*.diz'
+    }
+}
+
+task packageJdk(type: Zip) {
+    dependsOn packageDebugSymbols
     archiveName  = "unsigned-jdk-image.${project.correttoArch}.zip"
 
-    from "$buildRoot/build/j2sdk-image"
+    from("$buildRoot/build/j2sdk-image") {
+        exclude '**/*.diz'
+    }
 }
 
 task packageJre(type: Zip) {

@@ -169,11 +169,21 @@ task prepareArtifacts {
     }
 }
 
-task packaging(type: Exec) {
+task packageDebugSymbols(type: Exec) {
     dependsOn prepareArtifacts
+    String tarDir = "${distributionDir}/${project.correttoDebugSymbolsArchiveName}.tar.gz"
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar -czf ${tarDir} ${correttoMacDir}/Contents/Home/bin/*.diz"
+    outputs.file tarDir
+}
+
+task packaging(type: Exec) {
+    dependsOn packageDebugSymbols
     String tarDir = "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz"
     workingDir buildDir
-    commandLine "tar", "czf", tarDir, correttoMacDir
+    commandLine 'bash', '-c',
+        "tar --exclude=*.diz -czf ${tarDir} ${correttoMacDir}"
     outputs.file tarDir
 }
 
