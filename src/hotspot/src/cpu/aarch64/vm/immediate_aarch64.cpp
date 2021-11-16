@@ -60,9 +60,9 @@ int compare_immediate_pair(const void *i1, const void *i2)
 // helper functions used by expandLogicalImmediate
 
 // for i = 1, ... N result<i-1> = 1 other bits are zero
-static inline u_int64_t ones(int N)
+static inline uint64_t ones(int N)
 {
-  return (N == 64 ? (u_int64_t)-1UL : ((1UL << N) - 1));
+  return (N == 64 ? (uint64_t)-1ULL : ((1ULL << N) - 1));
 }
 
 /*

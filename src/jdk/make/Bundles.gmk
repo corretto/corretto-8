@@ -81,12 +81,12 @@ ifeq ($(OPENJDK_TARGET_OS), macosx)
   $(JDK_BUNDLE_DIR)/Home/%: $(JDK_IMAGE_DIR)/%
 	$(ECHO) Copying $(patsubst $(OUTPUT_ROOT)/%,%,$@)
 	$(MKDIR) -p $(@D)
-	if [ -d "$<" ]; then $(MKDIR) -p $@; else $(CP) -f -R -L '$<' '$@'; fi
+	if [ -d "$<" ]; then $(MKDIR) -p $@; else $(CP) -f -R -P '$<' '$@'; fi
 
   $(JRE_BUNDLE_DIR)/Home/%: $(JRE_IMAGE_DIR)/%
 	$(ECHO) Copying $(patsubst $(OUTPUT_ROOT)/%,%,$@)
 	$(MKDIR) -p $(@D)
-	if [ -d "$<" ]; then $(MKDIR) -p $@; else $(CP) -f -R -L '$<' '$@'; fi
+	if [ -d "$<" ]; then $(MKDIR) -p $@; else $(CP) -f -R -P '$<' '$@'; fi
 
   $(JDK_BUNDLE_DIR)/MacOS/libjli.dylib:
 	$(ECHO) Copying $(patsubst $(OUTPUT_ROOT)/%,%,$@)

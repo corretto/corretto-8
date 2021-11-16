@@ -540,6 +540,7 @@ address SharedRuntime::raw_exception_handler_for_return_address(JavaThread* thre
 
 
 JRT_LEAF(address, SharedRuntime::exception_handler_for_return_address(JavaThread* thread, address return_address))
+  Thread::WXWriteFromExecSetter wx_write;
   return raw_exception_handler_for_return_address(thread, return_address);
 JRT_END
 
@@ -1712,6 +1713,8 @@ void SharedRuntime::check_member_name_argument_is_last_argument(methodHandle met
 IRT_LEAF(void, SharedRuntime::fixup_callers_callsite(Method* method, address caller_pc))
   Method* moop(method);
 
+  Thread::WXWriteFromExecSetter wx_write;
+
   address entry_point = moop->from_compiled_entry();
 
   // It's possible that deoptimization can occur at a call site which hasn't
@@ -2678,9 +2681,6 @@ void AdapterHandlerLibrary::create_native_wrapper(methodHandle method) {
       CompileTask::print_compilation(tty, nm, method->is_static() ? "(static)" : "");
     }
     nm->post_compiled_method_load_event();
-  } else {
-    // CodeCache is full, disable compilation
-    CompileBroker::handle_full_code_cache();
   }
 }
 

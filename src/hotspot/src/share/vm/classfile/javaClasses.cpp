@@ -245,6 +245,7 @@ Handle java_lang_String::create_from_platform_dependent_str(const char* str, TRA
     assert(thread->is_Java_thread(), "must be java thread");
     HandleMark hm(thread);
     ThreadToNativeFromVM ttn(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
     js = (_to_java_string_fn)(thread->jni_environment(), str);
   }
   return Handle(THREAD, JNIHandles::resolve(js));
@@ -273,6 +274,7 @@ char* java_lang_String::as_platform_dependent_str(Handle java_string, TRAPS) {
     bool is_copy;
     HandleMark hm(thread);
     ThreadToNativeFromVM ttn(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
     native_platform_string = (_to_platform_string_fn)(env, js, &is_copy);
     assert(is_copy == JNI_TRUE, "is_copy value changed");
     JNIHandles::destroy_local(js);

@@ -3246,7 +3246,7 @@ char* os::reserve_memory_aligned(size_t size, size_t alignment) {
   return aligned_base;
 }
 
-char* os::pd_reserve_memory(size_t bytes, char* addr, size_t alignment_hint) {
+char* os::pd_reserve_memory(size_t bytes, char* addr, size_t alignment_hint, bool executable) {
   assert((size_t)addr % os::vm_allocation_granularity() == 0,
          "reserve alignment");
   assert(bytes % os::vm_allocation_granularity() == 0, "reserve block size");
@@ -3448,7 +3448,7 @@ void os::pd_commit_memory_or_exit(char* addr, size_t size,
   pd_commit_memory_or_exit(addr, size, exec, mesg);
 }
 
-bool os::pd_uncommit_memory(char* addr, size_t bytes) {
+bool os::pd_uncommit_memory(char* addr, size_t bytes, bool exec) {
   if (bytes == 0) {
     // Don't bother the OS with noops.
     return true;
@@ -3467,7 +3467,7 @@ bool os::pd_create_stack_guard_pages(char* addr, size_t size) {
 }
 
 bool os::remove_stack_guard_pages(char* addr, size_t size) {
-  return os::uncommit_memory(addr, size);
+  return os::uncommit_memory(addr, size, !ExecMem);
 }
 
 // Set protections specified

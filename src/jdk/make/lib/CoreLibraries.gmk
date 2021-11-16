@@ -77,7 +77,7 @@ else
       LANG := C, \
       CFLAGS := $(CFLAGS_JDKLIB) \
           -I$(JDK_TOPDIR)/src/share/native/java/lang/fdlibm/include, \
-      LDFLAGS := -nostdlib -r -arch x86_64, \
+      LDFLAGS := -nostdlib -r, \
       OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libfdlibm, \
       DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
 
@@ -437,7 +437,7 @@ $(eval $(call SetupNativeCompilation,BUILD_LIBJLI, \
     INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
     LANG := C, \
     OPTIMIZATION := HIGH, \
-    CFLAGS := $(LIBJLI_CFLAGS), \
+    CFLAGS := $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
     MAPFILE := $(JDK_TOPDIR)/make/mapfiles/libjli/mapfile-vers, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
@@ -503,7 +503,7 @@ else ifeq ($(OPENJDK_TARGET_OS), macosx)
       INCLUDE_FILES := $(BUILD_LIBJLI_FILES), \
       LANG := C, \
       OPTIMIZATION := HIGH, \
-      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
+      CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS) -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
       LDFLAGS := -nostdlib -r -mmacosx-version-min=$(MACOSX_VERSION_MIN), \
       OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libjli_static, \
       DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))

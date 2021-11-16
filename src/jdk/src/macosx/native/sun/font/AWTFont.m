@@ -246,6 +246,12 @@ static void addFont(CTFontUIFontType uiType,
         if (uiType == kCTFontUIFontEmphasizedSystem) {
             uiBoldName = (NSString*)name;
         }
+        if (uiType == kCTFontUIFontSystem) {
+            uiName = (NSString*)name;
+        }
+        if (uiType == kCTFontUIFontEmphasizedSystem) {
+            uiBoldName = (NSString*)name;
+        }
         [allFonts addObject:name];
         [fontFamilyTable setObject:family forKey:name];
 #ifdef DEBUG

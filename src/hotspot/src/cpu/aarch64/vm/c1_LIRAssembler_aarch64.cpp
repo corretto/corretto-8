@@ -524,7 +524,7 @@ void LIR_Assembler::poll_for_safepoint(relocInfo::relocType rtype, CodeEmitInfo*
   __ br(rscratch1);
   address polling_page(os::get_polling_page());
   assert(os::is_poll_address(polling_page), "should be");
-  unsigned long off;
+  uint64_t off;
   __ adrp(rscratch1, Address(polling_page, rtype), off);
   __ bind(poll);
   if (info)
@@ -554,7 +554,7 @@ int LIR_Assembler::safepoint_poll(LIR_Opr tmp, CodeEmitInfo* info) {
   if (UseCompilerSafepoints) {
     guarantee(info != NULL, "Shouldn't be NULL");
     assert(os::is_poll_address(polling_page), "should be");
-    unsigned long off;
+    uint64_t off;
     __ adrp(rscratch1, Address(polling_page, relocInfo::poll_type), off);
     assert(off == 0, "must be");
     add_debug_info_for_branch(info);  // This isn't just debug info:
@@ -1434,7 +1434,7 @@ void LIR_Assembler::emit_typecheck_helper(LIR_OpTypeCheck *op, Label* success, L
     __ load_klass(klass_RInfo, obj);
     if (k->is_loaded()) {
       // See if we get an immediate positive hit
-      __ ldr(rscratch1, Address(klass_RInfo, long(k->super_check_offset())));
+      __ ldr(rscratch1, Address(klass_RInfo, int64_t(k->super_check_offset())));
       __ cmp(k_RInfo, rscratch1);
       if ((juint)in_bytes(Klass::secondary_super_cache_offset()) != k->super_check_offset()) {
         __ br(Assembler::NE, *failure_target);
@@ -2306,14 +2306,14 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
     if (!(flags & LIR_OpArrayCopy::LIR_OpArrayCopy::dst_objarray)) {
       __ load_klass(tmp, dst);
       __ ldrw(rscratch1, Address(tmp, in_bytes(Klass::layout_helper_offset())));
-      __ cmpw(rscratch1, Klass::_lh_neutral_value);
+      __ cmpw(rscratch1, (int32_t)Klass::_lh_neutral_value);
       __ br(Assembler::GE, *stub->entry());
     }
 
     if (!(flags & LIR_OpArrayCopy::LIR_OpArrayCopy::src_objarray)) {
       __ load_klass(tmp, src);
       __ ldrw(rscratch1, Address(tmp, in_bytes(Klass::layout_helper_offset())));
-      __ cmpw(rscratch1, Klass::_lh_neutral_value);
+      __ cmpw(rscratch1, (int32_t)Klass::_lh_neutral_value);
       __ br(Assembler::GE, *stub->entry());
     }
   }
@@ -2687,7 +2687,7 @@ void LIR_Assembler::emit_updatecrc32(LIR_OpUpdateCRC32* op) {
   Register res = op->result_opr()->as_register();
 
   assert_different_registers(val, crc, res);
-  unsigned long offset;
+  uint64_t offset;
   __ adrp(res, ExternalAddress(StubRoutines::crc_table_addr()), offset);
   if (offset) __ add(res, res, offset);
 

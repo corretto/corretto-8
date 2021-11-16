@@ -23,6 +23,7 @@
  * questions.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -41,6 +42,11 @@ extern jboolean VerifyFixClassname(char *utf_name);
 extern char*
 getUTF(JNIEnv *env, jstring str, char* localBuf, int bufSize);
 
+extern jboolean
+VerifyClassname(char *utf_name, jboolean arrayAllowed);
+
+extern jboolean
+VerifyFixClassname(char *utf_name);
 
 JNIEXPORT jboolean JNICALL
 Java_sun_misc_URLClassPath_knownToNotExist0(JNIEnv *env, jclass cls, jobject loader,

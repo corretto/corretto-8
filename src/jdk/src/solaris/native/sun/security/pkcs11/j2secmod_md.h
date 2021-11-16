@@ -43,3 +43,6 @@ typedef int (*FPTR_Initialize)(const char *configdir,
 typedef void *(*FPTR_LoadModule)(char *moduleSpec, void *parent, int recurse);
 typedef char **(*FPTR_GetModuleSpecList)(void *module);
 typedef void *(*FPTR_GetDBModuleList)(void);
+
+void throwIOException(JNIEnv *env, const char *message);
+void throwNullPointerException(JNIEnv *env, const char *message);

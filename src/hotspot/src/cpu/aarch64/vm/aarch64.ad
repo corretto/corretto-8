@@ -353,7 +353,9 @@ alloc_class chunk0(
     R15, R15_H,
     R16, R16_H,
     R17, R17_H,
+#ifndef __APPLE__
     R18, R18_H,
+#endif
 
     // arg registers
     R0, R0_H,
@@ -455,7 +457,9 @@ reg_class any_reg32(
     R15,
     R16,
     R17,
+#ifndef __APPLE__
     R18,
+#endif
     R19,
     R20,
     R21,
@@ -500,7 +504,9 @@ reg_class any_reg(
     R15, R15_H,
     R16, R16_H,
     R17, R17_H,
+#ifndef __APPLE__
     R18, R18_H,
+#endif
     R19, R19_H,
     R20, R20_H,
     R21, R21_H,
@@ -534,7 +540,9 @@ reg_class no_special_reg32(
     R15,
     R16,
     R17,
+#ifndef __APPLE__
     R18,
+#endif
     R19,
     R20,
     R21,
@@ -568,7 +576,9 @@ reg_class no_special_reg(
     R15, R15_H,
     R16, R16_H,
     R17, R17_H,
+#ifndef __APPLE__
     R18, R18_H,
+#endif
     R19, R19_H,
     R20, R20_H,
     R21, R21_H,
@@ -672,7 +682,9 @@ reg_class ptr_reg(
     R15, R15_H,
     R16, R16_H,
     R17, R17_H,
+#ifndef __APPLE__
     R18, R18_H,
+#endif
     R19, R19_H,
     R20, R20_H,
     R21, R21_H,
@@ -706,7 +718,9 @@ reg_class no_special_ptr_reg(
     R15, R15_H,
     R16, R16_H,
     R17, R17_H,
+#ifndef __APPLE__
     R18, R18_H,
+#endif
     R19, R19_H,
     R20, R20_H,
     R21, R21_H,
@@ -1514,7 +1528,7 @@ void MachPrologNode::emit(CodeBuffer &cbuf, PhaseRegAlloc *ra_) const {
   MacroAssembler _masm(&cbuf);
 
   // n.b. frame size includes space for return pc and rfp
-  long framesize = ((long)C->frame_slots()) << LogBytesPerInt;
+  int framesize = C->frame_slots() << LogBytesPerInt;
   assert(framesize%(2*wordSize) == 0, "must preserve 2*wordSize alignment");
 
   // insert a nop at the start of the prolog so we can patch in a
@@ -1625,15 +1639,20 @@ static enum RC rc_class(OptoReg::Name reg) {
     return rc_bad;
   }
 
-  // we have 30 int registers * 2 halves
+  // we have 30(29 for macosx) int registers * 2 halves
   // (rscratch1 and rscratch2 are omitted)
 
-  if (reg < 60) {
+#ifdef __APPLE__
+  int int_regs = 29 * 2;
+#else
+  int int_regs = 30 * 2;
+#endif
+  if (reg < int_regs) {
     return rc_int;
   }
 
   // we have 32 float register * 2 halves
-  if (reg < 60 + 128) {
+  if (reg < int_regs + 128) {
     return rc_float;
   }
 
@@ -2924,7 +2943,7 @@ encode %{
 	if (con < (address)(uintptr_t)os::vm_page_size()) {
 	  __ mov(dst_reg, con);
 	} else {
-	  unsigned long offset;
+	  uint64_t offset;
 	  __ adrp(dst_reg, con, offset);
 	  __ add(dst_reg, dst_reg, offset);
 	}
@@ -2948,7 +2967,7 @@ encode %{
     MacroAssembler _masm(&cbuf);
     address page = (address)$src$$constant;
     Register dst_reg = as_Register($dst$$reg);
-    unsigned long off;
+    uint64_t off;
     __ adrp(dst_reg, Address(page, relocInfo::poll_type), off);
     assert(off == 0, "assumed offset == 0");
   %}
@@ -4059,7 +4078,7 @@ operand immLoffset16()
 // 32 bit integer valid for add sub immediate
 operand immIAddSub()
 %{
-  predicate(Assembler::operand_valid_for_add_sub_immediate((long)n->get_int()));
+  predicate(Assembler::operand_valid_for_add_sub_immediate((int64_t)n->get_int()));
   match(ConI);
   op_cost(0);
   format %{ %}
@@ -4070,7 +4089,7 @@ operand immIAddSub()
 // TODO -- check this is right when e.g the mask is 0x80000000
 operand immILog()
 %{
-  predicate(Assembler::operand_valid_for_logical_immediate(/*is32*/true, (unsigned long)n->get_int()));
+  predicate(Assembler::operand_valid_for_logical_immediate(/*is32*/true, (uint64_t)n->get_int()));
   match(ConI);
 
   op_cost(0);
@@ -4148,7 +4167,7 @@ operand immLAddSub()
 // 64 bit integer valid for logical immediate
 operand immLLog()
 %{
-  predicate(Assembler::operand_valid_for_logical_immediate(/*is32*/false, (unsigned long)n->get_long()));
+  predicate(Assembler::operand_valid_for_logical_immediate(/*is32*/false, (uint64_t)n->get_long()));
   match(ConL);
   op_cost(0);
   format %{ %}
@@ -10818,7 +10837,7 @@ instruct ubfxwI(iRegINoSp dst, iRegIorL2I src, immI rshift, immI_bitmask mask)
   format %{ "ubfxw $dst, $src, $mask" %}
   ins_encode %{
     int rshift = $rshift$$constant & 31;
-    long mask = $mask$$constant;
+    intptr_t mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfxw(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);
@@ -10835,7 +10854,7 @@ instruct ubfxL(iRegLNoSp dst, iRegL src, immI rshift, immL_bitmask mask)
   format %{ "ubfx $dst, $src, $mask" %}
   ins_encode %{
     int rshift = $rshift$$constant & 63;
-    long mask = $mask$$constant;
+    intptr_t mask = $mask$$constant;
     int width = exact_log2_long(mask+1);
     __ ubfx(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);
@@ -10855,7 +10874,7 @@ instruct ubfxIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI rshift, immI_bitmask m
   format %{ "ubfx $dst, $src, $mask" %}
   ins_encode %{
     int rshift = $rshift$$constant & 31;
-    long mask = $mask$$constant;
+    intptr_t mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfx(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);
@@ -11681,7 +11700,7 @@ instruct andI_reg_imm(iRegINoSp dst, iRegIorL2I src1, immILog src2, rFlagsReg cr
   ins_encode %{
     __ andw(as_Register($dst$$reg),
 	    as_Register($src1$$reg),
-	    (unsigned long)($src2$$constant));
+	    (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);
@@ -11713,7 +11732,7 @@ instruct orI_reg_imm(iRegINoSp dst, iRegIorL2I src1, immILog src2) %{
   ins_encode %{
     __ orrw(as_Register($dst$$reg),
             as_Register($src1$$reg),
-            (unsigned long)($src2$$constant));
+            (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);
@@ -11745,7 +11764,7 @@ instruct xorI_reg_imm(iRegINoSp dst, iRegIorL2I src1, immILog src2) %{
   ins_encode %{
     __ eorw(as_Register($dst$$reg),
             as_Register($src1$$reg),
-            (unsigned long)($src2$$constant));
+            (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);
@@ -11778,7 +11797,7 @@ instruct andL_reg_imm(iRegLNoSp dst, iRegL src1, immLLog src2, rFlagsReg cr) %{
   ins_encode %{
     __ andr(as_Register($dst$$reg),
             as_Register($src1$$reg),
-            (unsigned long)($src2$$constant));
+            (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);
@@ -11810,7 +11829,7 @@ instruct orL_reg_imm(iRegLNoSp dst, iRegL src1, immLLog src2) %{
   ins_encode %{
     __ orr(as_Register($dst$$reg),
            as_Register($src1$$reg),
-           (unsigned long)($src2$$constant));
+           (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);
@@ -11842,7 +11861,7 @@ instruct xorL_reg_imm(iRegLNoSp dst, iRegL src1, immLLog src2) %{
   ins_encode %{
     __ eor(as_Register($dst$$reg),
            as_Register($src1$$reg),
-           (unsigned long)($src2$$constant));
+           (uint64_t)($src2$$constant));
   %}
 
   ins_pipe(ialu_reg_imm);

@@ -341,7 +341,7 @@ void CardTableModRefBS::resize_covered_region(MemRegion new_region) {
         // owned by generation A but being used by generation B.
         if (!UseAdaptiveGCBoundary) {
           if (!os::uncommit_memory((char*)uncommit_region.start(),
-                                   uncommit_region.byte_size())) {
+                                   uncommit_region.byte_size(), !ExecMem)) {
             assert(false, "Card table contraction failed");
             // The call failed so don't change the end of the
             // committed region.  This is better than taking the

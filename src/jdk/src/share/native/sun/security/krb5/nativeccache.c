@@ -24,6 +24,8 @@
  */
 
 #import "sun_security_krb5_Credentials.h"
+#import <string.h>
+#import <time.h>
 #import <Kerberos/Kerberos.h>
 #import <string.h>
 #import <time.h>

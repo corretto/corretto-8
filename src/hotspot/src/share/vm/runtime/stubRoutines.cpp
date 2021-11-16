@@ -28,7 +28,7 @@
 #include "oops/oop.inline.hpp"
 #include "runtime/interfaceSupport.hpp"
 #include "runtime/sharedRuntime.hpp"
-#include "runtime/stubRoutines.hpp"
+#include "runtime/stubRoutines.inline.hpp"
 #include "runtime/timer.hpp"
 #include "utilities/copy.hpp"
 #ifdef COMPILER2
@@ -237,6 +237,8 @@ void StubRoutines::initialize2() {
 
 #ifdef ASSERT
 
+os::current_thread_enable_wx(WXExec);
+
 #define TEST_ARRAYCOPY(type)                                                    \
   test_arraycopy_func(          type##_arraycopy(),          sizeof(type));     \
   test_arraycopy_func(          type##_disjoint_arraycopy(), sizeof(type));     \
@@ -309,6 +311,8 @@ void StubRoutines::initialize2() {
   // Aligned to BytesPerLong
   test_arraycopy_func(CAST_FROM_FN_PTR(address, Copy::aligned_conjoint_words), sizeof(jlong));
   test_arraycopy_func(CAST_FROM_FN_PTR(address, Copy::aligned_disjoint_words), sizeof(jlong));
+
+  os::current_thread_enable_wx(WXWrite);
 
 #endif
 }

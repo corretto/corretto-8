@@ -1798,6 +1798,7 @@ Deoptimization::UnrollBlock* Deoptimization::uncommon_trap(JavaThread* thread, j
     // This enters VM and may safepoint
     uncommon_trap_inner(thread, trap_request);
   }
+  Thread::WXWriteFromExecSetter wx_write;
   return fetch_unroll_info_helper(thread);
 }
 

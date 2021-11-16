@@ -30,6 +30,7 @@
 
 #include "sun_java2d_SunGraphics2D.h"
 
+#include "jvm.h"
 #include "jlong.h"
 #include "jni_util.h"
 #include "OGLContext.h"
