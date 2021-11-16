@@ -14952,10 +14952,23 @@ test -n "$target_alias" &&
       VAR_CPU_ENDIAN=little
       ;;
     arm*)
-      VAR_CPU=arm
-      VAR_CPU_ARCH=arm
-      VAR_CPU_BITS=32
-      VAR_CPU_ENDIAN=little
+      # Second argument is the os name from the trip/quad.
+      # on macos-aarch64, triplet returned by autoconf is
+      # arm-darwin*, but on darwin only aarch64 is present.
+      case "$build_os" in
+        *darwin*)
+          VAR_CPU=aarch64
+          VAR_CPU_ARCH=aarch64
+          VAR_CPU_BITS=64
+          VAR_CPU_ENDIAN=little
+        ;;
+        *)
+          VAR_CPU=arm
+          VAR_CPU_ARCH=arm
+          VAR_CPU_BITS=32
+          VAR_CPU_ENDIAN=little
+        ;;
+      esac
       ;;
     aarch64)
       VAR_CPU=aarch64
@@ -15112,10 +15125,23 @@ printf "%s\n" "$OPENJDK_BUILD_LIBC" >&6; }
       VAR_CPU_ENDIAN=little
       ;;
     arm*)
-      VAR_CPU=arm
-      VAR_CPU_ARCH=arm
-      VAR_CPU_BITS=32
-      VAR_CPU_ENDIAN=little
+      # Second argument is the os name from the trip/quad.
+      # on macos-aarch64, triplet returned by autoconf is
+      # arm-darwin*, but on darwin only aarch64 is present.
+      case "$host_os" in
+        *darwin*)
+          VAR_CPU=aarch64
+          VAR_CPU_ARCH=aarch64
+          VAR_CPU_BITS=64
+          VAR_CPU_ENDIAN=little
+        ;;
+        *)
+          VAR_CPU=arm
+          VAR_CPU_ARCH=arm
+          VAR_CPU_BITS=32
+          VAR_CPU_ENDIAN=little
+        ;;
+      esac
       ;;
     aarch64)
       VAR_CPU=aarch64
@@ -15389,6 +15415,8 @@ printf "%s\n" "$COMPILE_TYPE" >&6; }
     if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xmacosx; then
       ADD_LP64="-D_LP64=1"
     fi
+  elif test "x$OPENJDK_TARGET_OS" = xmacosx && test "x$TOOLCHAIN_TYPE" = xclang ; then
+    OPENJDK_TARGET_CPU_JLI_CFLAGS="$OPENJDK_TARGET_CPU_JLI_CFLAGS -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
   fi
   LP64=$A_LP64
 
@@ -43907,6 +43935,26 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
       SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
       SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
     fi
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
+    PICFLAG="-fPIC"
+    C_FLAG_REORDER=''
+    CXX_FLAG_REORDER=''
+
+    if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+      # Linking is different on MacOSX
+      SHARED_LIBRARY_FLAGS="-dynamiclib -compatibility_version 1.0.0 -current_version 1.0.0 $PICFLAG"
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker @loader_path/.'
+      SET_SHARED_LIBRARY_ORIGIN="$SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -install_name -Xlinker @rpath/$1'
+      SET_SHARED_LIBRARY_MAPFILE=''
+    else
+      # Default works for linux, might work on other platforms as well.
+      SHARED_LIBRARY_FLAGS='-shared'
+      SET_EXECUTABLE_ORIGIN='-Xlinker -rpath -Xlinker \$$$$ORIGIN$1'
+      SET_SHARED_LIBRARY_ORIGIN="-Xlinker -z -Xlinker origin $SET_EXECUTABLE_ORIGIN"
+      SET_SHARED_LIBRARY_NAME='-Xlinker -soname=$1'
+      SET_SHARED_LIBRARY_MAPFILE='-Xlinker -version-script=$1'
+    fi
   elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     PICFLAG="-KPIC"
     PIEFLAG=""
@@ -43970,6 +44018,8 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
 
   # Generate make dependency files
   if test "x$TOOLCHAIN_TYPE" = xgcc; then
+    C_FLAG_DEPS="-MMD -MF"
+  elif test "x$TOOLCHAIN_TYPE" = xclang; then
     C_FLAG_DEPS="-MMD -MF"
   elif test "x$TOOLCHAIN_TYPE" = xclang; then
     C_FLAG_DEPS="-MMD -MF"
@@ -44043,6 +44093,20 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
     # The remaining toolchains share opt flags between CC and CXX;
     # setup for C and duplicate afterwards.
     if test "x$TOOLCHAIN_TYPE" = xgcc; then
+      if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+        # On MacOSX we optimize for size, something
+        # we should do for all platforms?
+        C_O_FLAG_HIGHEST="-Os"
+        C_O_FLAG_HI="-Os"
+        C_O_FLAG_NORM="-Os"
+        C_O_FLAG_NONE=""
+      else
+        C_O_FLAG_HIGHEST="-O3"
+        C_O_FLAG_HI="-O3"
+        C_O_FLAG_NORM="-O2"
+        C_O_FLAG_NONE="-O0"
+      fi
+    elif test "x$TOOLCHAIN_TYPE" = xclang; then
       if test "x$OPENJDK_TARGET_OS" = xmacosx; then
         # On MacOSX we optimize for size, something
         # we should do for all platforms?
@@ -44929,6 +44993,23 @@ printf "%s\n" "$supports" >&6; }
     LDFLAGS_JDKEXE="${LDFLAGS_JDK} /STACK:$LDFLAGS_STACK_SIZE"
   else
     if test "x$TOOLCHAIN_TYPE" = xgcc -o "x$TOOLCHAIN_TYPE" = xclang; then
+      # If this is a --hash-style=gnu system, use --hash-style=both, why?
+      # We have previously set HAS_GNU_HASH if this is the case
+      if test -n "$HAS_GNU_HASH"; then
+        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker --hash-style=both "
+      fi
+      if test "x$OPENJDK_TARGET_OS" = xlinux; then
+        # And since we now know that the linker is gnu, then add:
+        #   -z defs, to forbid undefined symbols in object files
+        #   -z noexecstack, to mark stack regions as non-executable
+        LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -z -Xlinker defs -Xlinker -z -Xlinker noexecstack"
+        if test "x$DEBUG_LEVEL" = "xrelease"; then
+          # When building release libraries, tell the linker optimize them.
+          # Should this be supplied to the OSS linker as well?
+          LDFLAGS_JDK="${LDFLAGS_JDK} -Xlinker -O1"
+        fi
+      fi
+    elif test "x$TOOLCHAIN_TYPE" = xclang; then
       # If this is a --hash-style=gnu system, use --hash-style=both, why?
       # We have previously set HAS_GNU_HASH if this is the case
       if test -n "$HAS_GNU_HASH"; then
@@ -51623,7 +51704,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
     OLD_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -lstdc++"
+    CXXFLAGS="$CXXFLAGS -lc++"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -51656,7 +51737,7 @@ printf "%s\n" "$has_dynamic_libstdcxx" >&6; }
     # Test if stdc++ can be linked statically.
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if static link of stdc++ is possible" >&5
 printf %s "checking if static link of stdc++ is possible... " >&6; }
-    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
     ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -51714,7 +51795,7 @@ printf %s "checking how to link with libstdc++... " >&6; }
     # If dynamic was requested, it's available since it would fail above otherwise.
     # If dynamic wasn't requested, go with static unless it isn't available.
     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
-      LIBCXX="$LIBCXX -lstdc++"
+      LIBCXX="$LIBCXX -lc++"
       LDCXX="$CXX"
       STATIC_CXX_SETTING="STATIC_CXX=false"
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: dynamic" >&5

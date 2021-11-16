@@ -954,6 +954,8 @@ void Thread::check_for_valid_safepoint_state(bool potential_vm_operation) {
       InterfaceSupport::check_gc_alot();
     }
 #endif
+
+  DEBUG_ONLY(_wx_init = false);
 }
 #endif
 
@@ -1313,6 +1315,7 @@ void WatcherThread::run() {
 
   this->record_stack_base_and_size();
   this->initialize_thread_local_storage();
+  this->init_wx();
   this->set_native_thread_name(this->name());
   this->set_active_handles(JNIHandleBlock::allocate_block());
   while(!_should_terminate) {
@@ -1650,6 +1653,8 @@ void JavaThread::run() {
 
   // Initialize thread local storage; set before calling MutexLocker
   this->initialize_thread_local_storage();
+
+  this->init_wx();
 
   this->create_stack_guard_pages();
 
@@ -2428,6 +2433,8 @@ void JavaThread::check_safepoint_and_suspend_for_native_trans(JavaThread *thread
 // Note only the native==>VM/Java barriers can call this function and when
 // thread state is _thread_in_native_trans.
 void JavaThread::check_special_condition_for_native_trans(JavaThread *thread) {
+  Thread::WXWriteFromExecSetter wx_write;
+
   check_safepoint_and_suspend_for_native_trans(thread);
 
   if (thread->has_async_exception()) {
@@ -2445,7 +2452,10 @@ void JavaThread::check_special_condition_for_native_trans(JavaThread *thread) {
 // can potentially block and perform a GC if they are the last thread
 // exiting the GC_locker.
 void JavaThread::check_special_condition_for_native_trans_and_transition(JavaThread *thread) {
+
   check_special_condition_for_native_trans(thread);
+
+  Thread::WXWriteFromExecSetter wx_write;
 
   // Finish the transition
   thread->set_thread_state(_thread_in_Java);
@@ -2504,7 +2514,7 @@ void JavaThread::create_stack_guard_pages() {
     _stack_guard_state = stack_guard_enabled;
   } else {
     warning("Attempt to protect stack guard pages failed.");
-    if (os::uncommit_memory((char *) low_addr, len)) {
+    if (os::uncommit_memory((char *) low_addr, len, !ExecMem)) {
       warning("Attempt to deallocate stack guard pages failed.");
     }
   }
@@ -3336,6 +3346,8 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
   // Initialize the os module before using TLS
   os::init();
 
+  os::current_thread_enable_wx(WXWrite);
+
   // Initialize system properties.
   Arguments::init_system_properties();
 
@@ -3416,6 +3428,7 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
   main_thread->initialize_thread_local_storage();
 
   main_thread->set_active_handles(JNIHandleBlock::allocate_block());
+  main_thread->init_wx();
 
   if (!main_thread->set_as_starting_thread()) {
     vm_shutdown_during_initialization(
@@ -3862,6 +3875,7 @@ void Threads::shutdown_vm_agents() {
     if (unload_entry != NULL) {
       JavaThread* thread = JavaThread::current();
       ThreadToNativeFromVM ttn(thread);
+      Thread::WXExecFromWriteSetter wx_exec;
       HandleMark hm(thread);
       (*unload_entry)(&main_vm);
     }
@@ -3881,6 +3895,7 @@ void Threads::create_vm_init_libraries() {
       // Invoke the JVM_OnLoad function
       JavaThread* thread = JavaThread::current();
       ThreadToNativeFromVM ttn(thread);
+      Thread::WXExecFromWriteSetter wx_exec;
       HandleMark hm(thread);
       jint err = (*on_load_entry)(&main_vm, agent->options(), NULL);
       if (err != JNI_OK) {

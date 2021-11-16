@@ -238,6 +238,7 @@ GangWorker::GangWorker(AbstractWorkGang* gang, uint id) {
 }
 
 void GangWorker::run() {
+  init_wx();
   initialize();
   loop();
 }

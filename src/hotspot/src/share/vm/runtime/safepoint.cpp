@@ -881,6 +881,8 @@ void SafepointSynchronize::handle_polling_page_exception(JavaThread *thread) {
   assert(thread->thread_state() == _thread_in_Java, "should come from Java code");
   assert(SafepointSynchronize::is_synchronizing(), "polling encountered outside safepoint synchronization");
 
+  Thread::WXWriteFromExecSetter wx_write;
+
   if (ShowSafepointMsgs) {
     tty->print("handle_polling_page_exception: ");
   }

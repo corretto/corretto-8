@@ -35,13 +35,126 @@
 #include "runtime/icache.hpp"
 #include "runtime/interfaceSupport.hpp"
 #include "runtime/signature.hpp"
+#include "utilities/align.hpp"
 
 #define __ _masm->
+
+//describe amount of space in bytes occupied by type on native stack
+#ifdef __APPLE__
+    const int nativeByteSpace        = sizeof(jbyte);
+    const int nativeShortSpace       = sizeof(jshort);
+    const int nativeIntSpace         = sizeof(jint);
+    const int nativeLongSpace        = wordSize;
+    const int nativeFloatSpace       = nativeIntSpace;
+    const int nativeDoubleSpace      = nativeLongSpace;
+#else
+    const int nativeByteSpace        = wordSize;
+    const int nativeShortSpace       = wordSize;
+    const int nativeIntSpace         = wordSize;
+    const int nativeLongSpace        = wordSize;
+    const int nativeFloatSpace       = nativeIntSpace;
+    const int nativeDoubleSpace      = nativeLongSpace;
+#endif
+
+template <typename T>
+static inline void store_and_inc(char* &to, T value, int inc_size) {
+  *(T *)to = value;
+  to = to + inc_size;
+}
 
 // Implementation of SignatureHandlerGenerator
 Register InterpreterRuntime::SignatureHandlerGenerator::from() { return rlocals; }
 Register InterpreterRuntime::SignatureHandlerGenerator::to()   { return sp; }
 Register InterpreterRuntime::SignatureHandlerGenerator::temp() { return rscratch1; }
+
+// On macos/aarch64 native stack is packed, int/float are using only 4 bytes
+// on stack. Natural alignment for types are still in place,
+// for example double/long should be 8 bytes alligned
+
+void InterpreterRuntime::SignatureHandlerGenerator::pass_byte() {
+  const Address src(from(), Interpreter::local_offset_in_bytes(offset()));
+
+  switch (_num_int_args) {
+  case 0:
+    __ ldr(c_rarg1, src);
+    _num_int_args++;
+    break;
+  case 1:
+    __ ldr(c_rarg2, src);
+    _num_int_args++;
+    break;
+  case 2:
+    __ ldr(c_rarg3, src);
+    _num_int_args++;
+    break;
+  case 3:
+    __ ldr(c_rarg4, src);
+    _num_int_args++;
+    break;
+  case 4:
+    __ ldr(c_rarg5, src);
+    _num_int_args++;
+    break;
+  case 5:
+    __ ldr(c_rarg6, src);
+    _num_int_args++;
+    break;
+  case 6:
+    __ ldr(c_rarg7, src);
+    _num_int_args++;
+    break;
+  default:
+    __ ldrb(r0, src);
+    __ strb(r0, Address(to(), _stack_offset));
+    _stack_offset += nativeByteSpace;
+
+    _num_int_args++;
+    break;
+  }
+}
+
+void InterpreterRuntime::SignatureHandlerGenerator::pass_short() {
+  const Address src(from(), Interpreter::local_offset_in_bytes(offset()));
+
+  switch (_num_int_args) {
+  case 0:
+    __ ldr(c_rarg1, src);
+    _num_int_args++;
+    break;
+  case 1:
+    __ ldr(c_rarg2, src);
+    _num_int_args++;
+    break;
+  case 2:
+    __ ldr(c_rarg3, src);
+    _num_int_args++;
+    break;
+  case 3:
+    __ ldr(c_rarg4, src);
+    _num_int_args++;
+    break;
+  case 4:
+    __ ldr(c_rarg5, src);
+    _num_int_args++;
+    break;
+  case 5:
+    __ ldr(c_rarg6, src);
+    _num_int_args++;
+    break;
+  case 6:
+    __ ldr(c_rarg7, src);
+    _num_int_args++;
+    break;
+  default:
+    _stack_offset = align_up(_stack_offset, nativeShortSpace);
+    __ ldrh(r0, src);
+    __ strh(r0, Address(to(), _stack_offset));
+    _stack_offset += nativeShortSpace;
+
+    _num_int_args++;
+    break;
+  }
+}
 
 void InterpreterRuntime::SignatureHandlerGenerator::pass_int() {
   const Address src(from(), Interpreter::local_offset_in_bytes(offset()));
@@ -76,9 +189,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_int() {
     _num_int_args++;
     break;
   default:
+    _stack_offset = align_up(_stack_offset, nativeIntSpace);
     __ ldr(r0, src);
     __ str(r0, Address(to(), _stack_offset));
-    _stack_offset += wordSize;
+    _stack_offset += nativeIntSpace;
     _num_int_args++;
     break;
   }
@@ -117,9 +231,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_long() {
     _num_int_args++;
     break;
   default:
+    _stack_offset = align_up(_stack_offset, nativeLongSpace);
     __ ldr(r0, src);
     __ str(r0, Address(to(), _stack_offset));
-    _stack_offset += wordSize;
+    _stack_offset += nativeLongSpace;
     _num_int_args++;
     break;
   }
@@ -131,9 +246,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_float() {
   if (_num_fp_args < Argument::n_float_register_parameters_c) {
     __ ldrs(as_FloatRegister(_num_fp_args++), src);
   } else {
+    _stack_offset = align_up(_stack_offset, nativeFloatSpace);
     __ ldrw(r0, src);
     __ strw(r0, Address(to(), _stack_offset));
-    _stack_offset += wordSize;
+    _stack_offset += nativeFloatSpace;
     _num_fp_args++;
   }
 }
@@ -144,9 +260,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_double() {
   if (_num_fp_args < Argument::n_float_register_parameters_c) {
     __ ldrd(as_FloatRegister(_num_fp_args++), src);
   } else {
+    _stack_offset = align_up(_stack_offset, nativeDoubleSpace);
     __ ldr(r0, src);
     __ str(r0, Address(to(), _stack_offset));
-    _stack_offset += wordSize;
+    _stack_offset += nativeDoubleSpace;
     _num_fp_args++;
   }
 }
@@ -239,6 +356,7 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_object() {
       __ cbnz(temp(), L);
       __ mov(r0, zr);
       __ bind(L);
+      _stack_offset = align_up(_stack_offset, wordSize);
       __ str(r0, Address(to(), _stack_offset));
       _stack_offset += wordSize;
       _num_int_args++;
@@ -268,12 +386,45 @@ class SlowSignatureHandler
   : public NativeSignatureIterator {
  private:
   address   _from;
-  intptr_t* _to;
+  char*     _to;
   intptr_t* _int_args;
   intptr_t* _fp_args;
   intptr_t* _fp_identifiers;
   unsigned int _num_int_args;
   unsigned int _num_fp_args;
+
+  virtual void pass_byte()
+  {
+    NOT_BSD(return pass_int();)
+    jbyte from_obj = *(jbyte *)(_from+Interpreter::local_offset_in_bytes(0));
+    _from -= Interpreter::stackElementSize;
+
+    if (_num_int_args < Argument::n_int_register_parameters_c-1) {
+      *_int_args++ = from_obj;
+      _num_int_args++;
+    } else {
+      store_and_inc(_to, from_obj, nativeByteSpace);
+
+      _num_int_args++;
+    }
+  }
+
+  virtual void pass_short()
+  {
+    NOT_BSD(return pass_int();)
+    jshort from_obj = *(jshort *)(_from+Interpreter::local_offset_in_bytes(0));
+    _from -= Interpreter::stackElementSize;
+
+    if (_num_int_args < Argument::n_int_register_parameters_c-1) {
+      *_int_args++ = from_obj;
+      _num_int_args++;
+    } else {
+      _to = align_up(_to, nativeShortSpace);
+      store_and_inc(_to, from_obj, nativeShortSpace);
+
+      _num_int_args++;
+    }
+  }
 
   virtual void pass_int()
   {
@@ -284,7 +435,8 @@ class SlowSignatureHandler
       *_int_args++ = from_obj;
       _num_int_args++;
     } else {
-      *_to++ = from_obj;
+      _to = align_up(_to, nativeIntSpace);
+      store_and_inc(_to, from_obj, nativeIntSpace);
       _num_int_args++;
     }
   }
@@ -298,7 +450,8 @@ class SlowSignatureHandler
       *_int_args++ = from_obj;
       _num_int_args++;
     } else {
-      *_to++ = from_obj;
+      _to = align_up(_to, nativeLongSpace);
+      store_and_inc(_to, from_obj, nativeLongSpace);
       _num_int_args++;
     }
   }
@@ -312,7 +465,8 @@ class SlowSignatureHandler
       *_int_args++ = (*from_addr == 0) ? NULL : (intptr_t)from_addr;
       _num_int_args++;
     } else {
-      *_to++ = (*from_addr == 0) ? NULL : (intptr_t) from_addr;
+      _to = align_up(_to, wordSize);
+      store_and_inc(_to, (*from_addr == 0) ? (intptr_t)NULL : (intptr_t) from_addr, wordSize);
       _num_int_args++;
     }
   }
@@ -326,7 +480,8 @@ class SlowSignatureHandler
       *_fp_args++ = from_obj;
       _num_fp_args++;
     } else {
-      *_to++ = from_obj;
+      _to = align_up(_to, nativeFloatSpace);
+      store_and_inc(_to, from_obj, nativeFloatSpace);
       _num_fp_args++;
     }
   }
@@ -338,10 +493,11 @@ class SlowSignatureHandler
 
     if (_num_fp_args < Argument::n_float_register_parameters_c) {
       *_fp_args++ = from_obj;
-      *_fp_identifiers |= (1 << _num_fp_args); // mark as double
+      *_fp_identifiers |= (1ull << _num_fp_args); // mark as double
       _num_fp_args++;
     } else {
-      *_to++ = from_obj;
+      _to = align_up(_to, nativeDoubleSpace);
+      store_and_inc(_to, from_obj, nativeDoubleSpace);
       _num_fp_args++;
     }
   }
@@ -351,7 +507,7 @@ class SlowSignatureHandler
     : NativeSignatureIterator(method)
   {
     _from = from;
-    _to   = to;
+    _to   = (char *)to;
 
     _int_args = to - (method->is_static() ? 16 : 17);
     _fp_args =  to - 8;
@@ -373,7 +529,7 @@ IRT_ENTRY(address,
 
   // handle arguments
   SlowSignatureHandler ssh(m, (address)from, to);
-  ssh.iterate(UCONST64(-1));
+  ssh.iterate((uint64_t)CONST64(-1));
 
   // return result handler
   return Interpreter::result_handler(m->result_type());

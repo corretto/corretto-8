@@ -164,7 +164,7 @@ void NativeMovRegMem::set_offset(int x) {
   unsigned insn = *(unsigned*)pc;
   if (maybe_cpool_ref(pc)) {
     address addr = MacroAssembler::target_addr_for_insn(pc);
-    *(long*)addr = x;
+    *(int64_t*)addr = x;
   } else {
     MacroAssembler::pd_patch_instruction(pc, (address)intptr_t(x));
     ICache::invalidate_range(instruction_address(), instruction_size);

@@ -540,7 +540,6 @@ nmethod* nmethod::new_native_nmethod(methodHandle method,
   if (nm != NULL) {
     nm->log_new_nmethod();
   }
-
   return nm;
 }
 

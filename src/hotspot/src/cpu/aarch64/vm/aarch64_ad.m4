@@ -120,7 +120,7 @@ BASE_INVERTED_INSN(L, $1, $2, $3, $4)')dnl
 dnl
 define(`BOTH_INVERTED_SHIFT_INSNS',
 `INVERTED_SHIFT_INSN(I, $1, $2w, $3, $4, ~0, int)
-INVERTED_SHIFT_INSN(L, $1, $2, $3, $4, ~0l, long)')dnl
+INVERTED_SHIFT_INSN(L, $1, $2, $3, $4, ~0l, jlong)')dnl
 dnl
 define(`ALL_SHIFT_KINDS',
 `BOTH_SHIFT_INSNS($1, $2, URShift, LSR)
@@ -188,7 +188,7 @@ define(`BFX_INSN',
   format %{ "$3 $dst, $src, $mask" %}
   ins_encode %{
     int rshift = $rshift$$constant & $4;
-    long mask = $mask$$constant;
+    intptr_t mask = $mask$$constant;
     int width = exact_log2$6(mask+1);
     __ $3(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);
@@ -210,7 +210,7 @@ instruct ubfxIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI rshift, immI_bitmask m
   format %{ "ubfx $dst, $src, $mask" %}
   ins_encode %{
     int rshift = $rshift$$constant & 31;
-    long mask = $mask$$constant;
+    intptr_t mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfx(as_Register($dst$$reg),
             as_Register($src$$reg), rshift, width);

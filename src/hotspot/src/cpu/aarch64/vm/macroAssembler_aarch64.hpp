@@ -102,7 +102,7 @@ class MacroAssembler: public Assembler {
       = (operand_valid_for_logical_immediate(false /*is32*/,
                                              (uint64_t)Universe::narrow_klass_base())
          && ((uint64_t)Universe::narrow_klass_base()
-             > (1u << log2_intptr(CompressedClassSpaceSize))));
+             > (1UL << log2_intptr((uintptr_t)CompressedClassSpaceSize))));
   }
 
   // Biased locking support
@@ -422,8 +422,8 @@ class MacroAssembler: public Assembler {
   // first two private routines for loading 32 bit or 64 bit constants
 private:
 
-  void mov_immediate64(Register dst, u_int64_t imm64);
-  void mov_immediate32(Register dst, u_int32_t imm32);
+  void mov_immediate64(Register dst, uint64_t imm64);
+  void mov_immediate32(Register dst, uint32_t imm32);
 
   int push(unsigned int bitset, Register stack);
   int pop(unsigned int bitset, Register stack);
@@ -444,29 +444,17 @@ public:
   // now mov instructions for loading absolute addresses and 32 or
   // 64 bit integers
 
-  inline void mov(Register dst, address addr)
-  {
-    mov_immediate64(dst, (u_int64_t)addr);
-  }
+  inline void mov(Register dst, address addr)             { mov_immediate64(dst, (uint64_t)addr); }
+  inline void mov(Register dst, int imm64)                { mov_immediate64(dst, (uint64_t)imm64); }
+  inline void mov(Register dst, long imm64)               { mov_immediate64(dst, (uint64_t)imm64); }
+  inline void mov(Register dst, long long imm64)          { mov_immediate64(dst, (uint64_t)imm64); }
+  inline void mov(Register dst, unsigned int imm64)       { mov_immediate64(dst, (uint64_t)imm64); }
+  inline void mov(Register dst, unsigned long imm64)      { mov_immediate64(dst, (uint64_t)imm64); }
+  inline void mov(Register dst, unsigned long long imm64) { mov_immediate64(dst, (uint64_t)imm64); }
 
-  inline void mov(Register dst, u_int64_t imm64)
-  {
-    mov_immediate64(dst, imm64);
-  }
-
-  inline void movw(Register dst, u_int32_t imm32)
+  inline void movw(Register dst, uint32_t imm32)
   {
     mov_immediate32(dst, imm32);
-  }
-
-  inline void mov(Register dst, long l)
-  {
-    mov(dst, (u_int64_t)l);
-  }
-
-  inline void mov(Register dst, int i)
-  {
-    mov(dst, (long)i);
   }
 
   void mov(Register dst, RegisterOrConstant src) {
@@ -478,7 +466,7 @@ public:
 
   void movptr(Register r, uintptr_t imm64);
 
-  void mov(FloatRegister Vd, SIMD_Arrangement T, u_int32_t imm32);
+  void mov(FloatRegister Vd, SIMD_Arrangement T, uint32_t imm32);
 
   void mov(FloatRegister Vd, SIMD_Arrangement T, FloatRegister Vn) {
     orr(Vd, T, Vn, Vn);
@@ -1116,7 +1104,7 @@ public:
   void sub(Register Rd, Register Rn, RegisterOrConstant decrement);
   void subw(Register Rd, Register Rn, RegisterOrConstant decrement);
 
-  void adrp(Register reg1, const Address &dest, unsigned long &byte_offset);
+  void adrp(Register reg1, const Address &dest, uint64_t &byte_offset);
 
   void tableswitch(Register index, jint lowbound, jint highbound,
                    Label &jumptable, Label &jumptable_end, int stride = 1) {
@@ -1133,7 +1121,7 @@ public:
   // actually be used: you must use the Address that is returned.  It
   // is up to you to ensure that the shift provided matches the size
   // of your data.
-  Address form_address(Register Rd, Register base, long byte_offset, int shift);
+  Address form_address(Register Rd, Register base, int64_t byte_offset, int shift);
 
   // Return true iff an address is within the 48-bit AArch64 address
   // space.
@@ -1158,7 +1146,7 @@ public:
     if (NearCpool) {
       ldr(dest, const_addr);
     } else {
-      unsigned long offset;
+      uint64_t offset;
       adrp(dest, InternalAddress(const_addr.target()), offset);
       ldr(dest, Address(dest, offset));
     }
@@ -1182,7 +1170,7 @@ public:
   void char_arrays_equals(Register ary1, Register ary2,
                           Register result, Register tmp1);
   void fill_words(Register base, Register cnt, Register value);
-  void zero_words(Register base, u_int64_t cnt);
+  void zero_words(Register base, uint64_t cnt);
   void zero_words(Register base, Register cnt);
   void block_zero(Register base, Register cnt, bool is_large = false);
 

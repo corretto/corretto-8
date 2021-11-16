@@ -274,7 +274,7 @@ address InterpreterGenerator::generate_empty_entry(void) {
   // If we need a safepoint check, generate full interpreter entry.
   Label slow_path;
   {
-    unsigned long offset;
+    uint64_t offset;
     assert(SafepointSynchronize::_not_synchronized == 0,
            "SafepointSynchronize::_not_synchronized");
     __ adrp(rscratch2, SafepointSynchronize::address_of_state(), offset);

@@ -72,7 +72,7 @@ address JNI_FastGetField::generate_fast_get_int_field0(BasicType type) {
 
   Label slow;
 
-  unsigned long offset;
+  uint64_t offset;
   __ adrp(rcounter_addr,
           SafepointSynchronize::safepoint_counter_addr(), offset);
   Address safepoint_counter_addr(rcounter_addr, offset);

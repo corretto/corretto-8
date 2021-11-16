@@ -1039,7 +1039,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
     AC_MSG_CHECKING([if dynamic link of stdc++ is possible])
     AC_LANG_PUSH(C++)
     OLD_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -lstdc++"
+    CXXFLAGS="$CXXFLAGS -lc++"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
         [has_dynamic_libstdcxx=yes],
         [has_dynamic_libstdcxx=no])
@@ -1049,7 +1049,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
 
     # Test if stdc++ can be linked statically.
     AC_MSG_CHECKING([if static link of stdc++ is possible])
-    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
     AC_LANG_PUSH(C++)
     OLD_LIBS="$LIBS"
     OLD_CXX="$CXX"
@@ -1079,7 +1079,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
     # If dynamic was requested, it's available since it would fail above otherwise.
     # If dynamic wasn't requested, go with static unless it isn't available.
     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
-      LIBCXX="$LIBCXX -lstdc++"
+      LIBCXX="$LIBCXX -lc++"
       LDCXX="$CXX"
       STATIC_CXX_SETTING="STATIC_CXX=false"
       AC_MSG_RESULT([dynamic])

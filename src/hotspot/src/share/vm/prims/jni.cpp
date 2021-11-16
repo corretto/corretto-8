@@ -5282,6 +5282,7 @@ _JNI_IMPORT_OR_EXPORT_ jint JNICALL JNI_CreateJavaVM(JavaVM **vm, void **penv, v
 #endif
 
     // Since this is not a JVM_ENTRY we have to set the thread state manually before leaving.
+    Thread::enable_wx_from_write(WXExec);
     ThreadStateTransition::transition_and_fence(thread, _thread_in_vm, _thread_in_native);
   } else {
     if (can_try_again) {
@@ -5369,6 +5370,7 @@ jint JNICALL jni_DestroyJavaVM(JavaVM *vm) {
   // Since this is not a JVM_ENTRY we have to set the thread state manually before entering.
   JavaThread* thread = JavaThread::current();
   ThreadStateTransition::transition_from_native(thread, _thread_in_vm);
+  Thread::enable_wx_from_exec(WXWrite);
   if (Threads::destroy_vm()) {
     // Should not change thread state, VM is gone
     vm_created = false;
@@ -5411,6 +5413,8 @@ static jint attach_current_thread(JavaVM *vm, void **penv, void *_args, bool dae
   thread->record_stack_base_and_size();
 
   thread->initialize_thread_local_storage();
+
+  thread->init_wx();
 
   if (!os::create_attached_thread(thread)) {
     delete thread;
@@ -5485,6 +5489,7 @@ static jint attach_current_thread(JavaVM *vm, void **penv, void *_args, bool dae
   // needed.
 
   ThreadStateTransition::transition_and_fence(thread, _thread_in_vm, _thread_in_native);
+  Thread::enable_wx_from_write(WXExec);
 
   // Perform any platform dependent FPU setup
   os::setup_fpu();
@@ -5559,6 +5564,7 @@ jint JNICALL jni_DetachCurrentThread(JavaVM *vm)  {
   // Safepoint support. Have to do call-back to safepoint code, if in the
   // middel of a safepoint operation
   ThreadStateTransition::transition_from_native(thread, _thread_in_vm);
+  Thread::enable_wx_from_exec(WXWrite);
 
   // XXX: Note that JavaThread::exit() call below removes the guards on the
   // stack pages set up via enable_stack_{red,yellow}_zone() calls

@@ -89,6 +89,7 @@ extern "C" void JNICALL jfr_on_class_file_load_hook(jvmtiEnv *jvmti_env,
   }
   JavaThread* jt = JavaThread::thread_from_jni_environment(jni_env);
   DEBUG_ONLY(JfrJavaSupport::check_java_thread_in_native(jt));;
+  Thread::WXWriteFromExecSetter wx_write;
   ThreadInVMfromNative tvmfn(jt);
   JfrUpcalls::on_retransform(JfrTraceId::get(class_being_redefined),
                              class_being_redefined,
@@ -223,6 +224,7 @@ JfrJvmtiAgent::~JfrJvmtiAgent() {
   JavaThread* jt = current_java_thread();
   DEBUG_ONLY(JfrJavaSupport::check_java_thread_in_vm(jt));
   ThreadToNativeFromVM transition(jt);
+  Thread::WXExecFromWriteSetter wx_exec;
   update_class_file_load_hook_event(JVMTI_DISABLE);
   unregister_callbacks(jt);
   if (jfr_jvmti_env != NULL) {
@@ -238,6 +240,7 @@ static bool initialize() {
   assert(jt->thread_state() == _thread_in_vm, "invariant");
   DEBUG_ONLY(JfrJavaSupport::check_java_thread_in_vm(jt));
   ThreadToNativeFromVM transition(jt);
+  Thread::WXExecFromWriteSetter wx_exec;
   if (create_jvmti_env(jt) != JNI_OK) {
     assert(jfr_jvmti_env == NULL, "invariant");
     return false;

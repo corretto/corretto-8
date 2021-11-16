@@ -69,4 +69,10 @@
 #endif
   }
 
+private:
+
+  static void current_thread_enable_wx_impl(WXMode mode) { }
+
+public:
+
 #endif // OS_CPU_LINUX_ZERO_VM_OS_LINUX_ZERO_HPP

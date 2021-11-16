@@ -100,7 +100,11 @@ public class Disassembler {
             }
          } else if (os.lastIndexOf("Mac OS X", 0) != -1) {
             path.append(sep + "lib" + sep);
-            libname += "-amd64" + ".dylib";       // x86_64 => amd64
+            if (arch.equals("amd64") || arch.equals("x86_64")) {
+               libname += "-amd64" + ".dylib";       // x86_64 => amd64
+            } else {
+               libname += "-" + arch + ".dylib";
+            }
          } else {
             path.append(sep + "lib" + sep + "arch" + sep);
             libname +=  "-" + arch + ".so";

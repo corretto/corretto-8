@@ -33,7 +33,7 @@
 #include "interpreter/interpreter.hpp"
 
 #ifndef PRODUCT
-const unsigned long Assembler::asm_bp = 0x00007fffee09ac88;
+const uintptr_t Assembler::asm_bp = 0x00007fffee09ac88;
 #endif
 
 #include "compiler/disassembler.hpp"
@@ -1232,7 +1232,7 @@ extern "C" {
       Disassembler::decode((address)start, (address)start + len);
   }
 
-  JNIEXPORT void das1(unsigned long insn) {
+  JNIEXPORT void das1(uintptr_t insn) {
     das(insn, 1);
   }
 }
@@ -1271,7 +1271,7 @@ void Address::lea(MacroAssembler *as, Register r) const {
   }
 }
 
-void Assembler::adrp(Register reg1, const Address &dest, unsigned long &byte_offset) {
+void Assembler::adrp(Register reg1, const Address &dest, uint64_t &byte_offset) {
   ShouldNotReachHere();
 }
 
@@ -1280,7 +1280,7 @@ void Assembler::adrp(Register reg1, const Address &dest, unsigned long &byte_off
 #define starti Instruction_aarch64 do_not_use(this); set_current(&do_not_use)
 
   void Assembler::adr(Register Rd, address adr) {
-    long offset = adr - pc();
+    intptr_t offset = adr - pc();
     int offset_lo = offset & 3;
     offset >>= 2;
     starti;
@@ -1291,7 +1291,7 @@ void Assembler::adrp(Register reg1, const Address &dest, unsigned long &byte_off
   void Assembler::_adrp(Register Rd, address adr) {
     uint64_t pc_page = (uint64_t)pc() >> 12;
     uint64_t adr_page = (uint64_t)adr >> 12;
-    long offset = adr_page - pc_page;
+    intptr_t offset = adr_page - pc_page;
     int offset_lo = offset & 3;
     offset >>= 2;
     starti;
@@ -1443,9 +1443,8 @@ void Assembler::add_sub_immediate(Register Rd, Register Rn, unsigned uimm, int o
   srf(Rn, 5);
 }
 
-bool Assembler::operand_valid_for_add_sub_immediate(long imm) {
-  bool shift = false;
-  unsigned long uimm = uabs(imm);
+bool Assembler::operand_valid_for_add_sub_immediate(int64_t imm) {
+  uint64_t uimm = (uint64_t)uabs((jlong)imm);
   if (uimm < (1 << 12))
     return true;
   if (uimm < (1 << 24)

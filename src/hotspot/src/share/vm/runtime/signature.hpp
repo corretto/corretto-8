@@ -273,16 +273,16 @@ class NativeSignatureIterator: public SignatureIterator {
   int          _prepended;             // number of prepended JNI parameters (1 JNIEnv, plus 1 mirror if static)
   int          _jni_offset;            // the current parameter offset, starting with 0
 
-  void do_bool  ()                     { pass_int();    _jni_offset++; _offset++;       }
-  void do_char  ()                     { pass_int();    _jni_offset++; _offset++;       }
+  void do_bool  ()                     { pass_byte();    _jni_offset++; _offset++;       }
+  void do_char  ()                     { pass_short();    _jni_offset++; _offset++;       }
   void do_float ()                     { pass_float();  _jni_offset++; _offset++;       }
 #ifdef _LP64
   void do_double()                     { pass_double(); _jni_offset++; _offset += 2;    }
 #else
   void do_double()                     { pass_double(); _jni_offset += 2; _offset += 2; }
 #endif
-  void do_byte  ()                     { pass_int();    _jni_offset++; _offset++;       }
-  void do_short ()                     { pass_int();    _jni_offset++; _offset++;       }
+  void do_byte  ()                     { pass_byte();    _jni_offset++; _offset++;       }
+  void do_short ()                     { pass_short();    _jni_offset++; _offset++;       }
   void do_int   ()                     { pass_int();    _jni_offset++; _offset++;       }
 #ifdef _LP64
   void do_long  ()                     { pass_long();   _jni_offset++; _offset += 2;    }
@@ -299,6 +299,8 @@ class NativeSignatureIterator: public SignatureIterator {
   int      jni_offset() const          { return _jni_offset + _prepended; }
 //  int     java_offset() const          { return method()->size_of_parameters() - _offset - 1; }
   bool      is_static() const          { return method()->is_static(); }
+  virtual void pass_byte()             { pass_int(); }
+  virtual void pass_short()            { pass_int(); }
   virtual void pass_int()              = 0;
   virtual void pass_long()             = 0;
   virtual void pass_object()           = 0;
