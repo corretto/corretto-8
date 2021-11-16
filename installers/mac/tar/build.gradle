@@ -163,6 +163,17 @@ task prepareArtifacts {
                 commandLine "install_name_tool", "-id", "@rpath/libfreetype.dylib.6", "./jre/lib/libfreetype.dylib.6"
             }
         }
+
+        // Include JNF if requested
+        def jnfFrameworkPath = project.findProperty("corretto.jnf_path")
+        if (jnfFrameworkPath) {
+            copy {
+                from("${jnfFrameworkPath}") {
+                    include "JavaNativeFoundation.framework/**"
+                }
+                into "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+            }
+        }
     }
 }
 
