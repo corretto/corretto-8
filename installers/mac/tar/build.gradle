@@ -24,7 +24,9 @@ configurations {
 }
 
 dependencies {
-    javafx project(path: ':javafx', configuration: 'archives')
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        javafx project(path: ':javafx', configuration: 'archives')
+    }
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -102,19 +104,23 @@ task inflatePlistTemplate(type: Copy) {
 }
 
 task applyJavafxOverlay(type: Copy) {
-    dependsOn project.configurations.javafx
-    dependsOn renameBuildArtifacts
-    from tarTree(project.configurations.javafx.singleFile)
-    into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
-    eachFile {
-        if (it.path.startsWith('rt/')) {
-            it.path = it.path.replace('rt/', 'jre/')
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        dependsOn project.configurations.javafx
+        dependsOn renameBuildArtifacts
+        from tarTree(project.configurations.javafx.singleFile)
+        into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+        eachFile {
+            if (it.path.startsWith('rt/')) {
+                it.path = it.path.replace('rt/', 'jre/')
+            }
         }
     }
 }
 
 task prepareArtifacts {
-    dependsOn applyJavafxOverlay
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        dependsOn applyJavafxOverlay
+    }
     dependsOn inflatePlistTemplate
     doLast {
         if(file("${buildDir}/${correttoMacDir}").exists()) {
@@ -128,7 +134,9 @@ task prepareArtifacts {
                 include "Contents/Home/lib/**"
                 include "Contents/Home/man/man1/**"
                 include "Contents/Home/src.zip"
-                include "Contents/Home/javafx-src.zip"
+                if (!project.hasProperty("corretto.disable_jfx")) {
+                    include "Contents/Home/javafx-src.zip"
+                }
                 include "Contents/Info.plist"
                 include "Contents/MacOS/**"
             }
