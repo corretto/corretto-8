@@ -79,16 +79,16 @@ inline void     OrderAccess::acquire()    { inlasm_acquire(); }
 inline void     OrderAccess::release()    { inlasm_release(); }
 inline void     OrderAccess::fence()      { inlasm_fence();   }
 
-inline jbyte    OrderAccess::load_acquire(volatile jbyte*   p) { register jbyte t = *p;   inlasm_acquire_reg(t); return t; }
-inline jshort   OrderAccess::load_acquire(volatile jshort*  p) { register jshort t = *p;  inlasm_acquire_reg(t); return t; }
-inline jint     OrderAccess::load_acquire(volatile jint*    p) { register jint t = *p;    inlasm_acquire_reg(t); return t; }
-inline jlong    OrderAccess::load_acquire(volatile jlong*   p) { register jlong t = *p;   inlasm_acquire_reg(t); return t; }
-inline jubyte   OrderAccess::load_acquire(volatile jubyte*  p) { register jubyte t = *p;  inlasm_acquire_reg(t); return t; }
-inline jushort  OrderAccess::load_acquire(volatile jushort* p) { register jushort t = *p; inlasm_acquire_reg(t); return t; }
-inline juint    OrderAccess::load_acquire(volatile juint*   p) { register juint t = *p;   inlasm_acquire_reg(t); return t; }
+inline jbyte    OrderAccess::load_acquire(volatile jbyte*   p) { jbyte t = *p;   inlasm_acquire_reg(t); return t; }
+inline jshort   OrderAccess::load_acquire(volatile jshort*  p) { jshort t = *p;  inlasm_acquire_reg(t); return t; }
+inline jint     OrderAccess::load_acquire(volatile jint*    p) { jint t = *p;    inlasm_acquire_reg(t); return t; }
+inline jlong    OrderAccess::load_acquire(volatile jlong*   p) { jlong t = *p;   inlasm_acquire_reg(t); return t; }
+inline jubyte   OrderAccess::load_acquire(volatile jubyte*  p) { jubyte t = *p;  inlasm_acquire_reg(t); return t; }
+inline jushort  OrderAccess::load_acquire(volatile jushort* p) { jushort t = *p; inlasm_acquire_reg(t); return t; }
+inline juint    OrderAccess::load_acquire(volatile juint*   p) { juint t = *p;   inlasm_acquire_reg(t); return t; }
 inline julong   OrderAccess::load_acquire(volatile julong*  p) { return (julong)load_acquire((volatile jlong*)p); }
-inline jfloat   OrderAccess::load_acquire(volatile jfloat*  p) { register jfloat t = *p;  inlasm_acquire(); return t; }
-inline jdouble  OrderAccess::load_acquire(volatile jdouble* p) { register jdouble t = *p; inlasm_acquire(); return t; }
+inline jfloat   OrderAccess::load_acquire(volatile jfloat*  p) { jfloat t = *p;  inlasm_acquire(); return t; }
+inline jdouble  OrderAccess::load_acquire(volatile jdouble* p) { jdouble t = *p; inlasm_acquire(); return t; }
 
 inline intptr_t OrderAccess::load_ptr_acquire(volatile intptr_t*   p) { return (intptr_t)load_acquire((volatile jlong*)p); }
 inline void*    OrderAccess::load_ptr_acquire(volatile void*       p) { return (void*)   load_acquire((volatile jlong*)p); }
