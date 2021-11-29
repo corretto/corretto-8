@@ -75,7 +75,8 @@ allprojects {
                 '--with-vendor-name=Amazon.com Inc.',
                 '--with-vendor-url=https://aws.amazon.com/corretto/',
                 "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
-                "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+                "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+		'--with-boot-jdk=/home/ec2-user/amazon-corretto-8.312.07.1-linux-x64'
         ]
         is_x86 = false
         if (project.hasProperty("x86")) {
