@@ -1,0 +1,11 @@
+--- a/buildSrc/linux.gradle
++++ b/buildSrc/linux.gradle
+@@ -44,7 +44,7 @@
+ def commonFlags = [
+         "-fno-strict-aliasing", "-fPIC", "-fno-omit-frame-pointer", // optimization flags
+         "-fstack-protector",
+-        "-W", "-Wall", "-Wno-unused", "-Wno-parentheses", "-Werror=implicit-function-declaration"] // warning flags
++        "-W", "-Wall", "-Wno-unused", "-Wno-parentheses", "-Werror=implicit-function-declaration", "-Wno-deprecated-declarations", "-Wno-cast-function-type"] // warning flags
+ 
+ if (!IS_64) {
+     commonFlags += "-m32"
