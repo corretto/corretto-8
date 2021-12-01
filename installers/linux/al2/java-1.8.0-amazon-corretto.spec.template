@@ -50,7 +50,7 @@
 
 # By default bundle OpenJFX on x86_64. To skip bundling, use --without bundlejfx
 %bcond_without bundlejfx
-%if %{_arch} == "x86_64" && %{with bundlejfx}
+%if "%{_arch}" == "x86_64" && %{with bundlejfx}
 %global perform_openjfx_overlay 1
 %else
 %global perform_openjfx_overlay 0
@@ -101,6 +101,11 @@ BuildRequires: libXrender-devel
 BuildRequires: libXtst-devel
 BuildRequires: pkgconfig
 BuildRequires: xorg-x11-proto-devel
+
+%if %{al_ver} >= 2022
+BuildRequires: libXxf86vm-devel
+BuildRequires: mesa-libGL-devel
+%endif
 
 %if %{with bootjdk}
 BuildRequires: java-1.8.0-openjdk-devel
