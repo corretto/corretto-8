@@ -786,7 +786,7 @@ final class CertificateRequest {
                     // allowed key types.
                     if (ka.possessionGenerator instanceof
                             X509PossessionGenerator) {
-                        X509PossessionGenerator xpg = 
+                        X509PossessionGenerator xpg =
                             (X509PossessionGenerator) ka.possessionGenerator;
                         if (Collections.disjoint(crKeyTypes,
                                 Arrays.asList(xpg.keyTypes))) {

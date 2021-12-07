@@ -19,7 +19,7 @@
 # Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
 # or visit www.oracle.com if you need additional information or have any
 # questions.
-#  
+#
 #
 
 # Generic compiler settings
@@ -77,6 +77,7 @@ LP64=1
 !if "$(BUILDARCH)" == "i486"
 MACHINE=I386
 DEFAULT_COMPILER_NAME=VS2003
+# VS2013 generates bad l2f without /arch:IA32
 CXX_FLAGS=$(CXX_FLAGS) /D "IA32" /arch:IA32
 !endif
 
@@ -210,7 +211,7 @@ PRODUCT_OPT_OPTION   = /O2 /Oy-
 FASTDEBUG_OPT_OPTION = /O2 /Oy-
 DEBUG_OPT_OPTION     = /Od
 GX_OPTION = /EHsc
-# This VS2005 compiler has /GS as a default and requires bufferoverflowU.lib 
+# This VS2005 compiler has /GS as a default and requires bufferoverflowU.lib
 #    on the link command line, otherwise we get missing __security_check_cookie
 #    externals at link time. Even with /GS-, you need bufferoverflowU.lib.
 #    NOTE: Currently we decided to not use /GS-
@@ -349,7 +350,7 @@ LD_FLAGS= $(LD_FLAGS) /map /debug
 !endif
 
 
-!if $(MSC_VER) >= 1600 
+!if $(MSC_VER) >= 1600
 LD_FLAGS= $(LD_FLAGS) psapi.lib
 !endif
 
