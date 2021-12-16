@@ -113,6 +113,7 @@ Requires: dejavu-sans-mono-fonts
 Requires: ca-certificates
 Requires: zlib
 Requires: giflib
+Requires: log4j-cve-2021-44228-cve-mitigations
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
@@ -255,3 +256,7 @@ fi
 %{java_home}/jre/THIRD_PARTY_README
 %{java_home}/jre/bin
 %{java_home}/jre/lib
+
+%changelog
+* Tue Dec 16 2021 Clive Verghese <verghese@amazon.com> 
+- Add requires for log4j CVE-2021-44228 static mitigation
