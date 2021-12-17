@@ -11,8 +11,7 @@ if (Os.isFamily(Os.FAMILY_MAC)) {
     subProjects += [':installers:linux:al2',
                     ':installers:linux:universal:tar',
                     ':installers:linux:universal:rpm',
-                    ':installers:linux:universal:deb',
-                    ':installers:linux:universal:test']
+                    ':installers:linux:universal:deb']
     if (!Os.isArch("aarch64")) {
         subProjects += [':installers:linux:alpine:tar']
     }
