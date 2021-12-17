@@ -20,7 +20,7 @@
  */
 
 plugins {
-    id 'nebula.ospackage' version '8.2.0'
+    id 'nebula.ospackage' version 'latest.release'
 }
 
 dependencies {

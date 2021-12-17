@@ -19,7 +19,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 plugins {
-    id "nebula.ospackage" version "8.2.0"
+    id "nebula.ospackage" version "latest.release"
 }
 
 dependencies {
