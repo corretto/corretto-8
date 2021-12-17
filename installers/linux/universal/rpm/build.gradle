@@ -89,12 +89,13 @@ task extractUniversalTar() {
 task inflateRpmScriptTemplate(type: Copy) {
     dependsOn extractUniversalTar
     // Use the same priority as IcedTea JDK RPM distribution, based on java version
-    def priority = "10${project.version.major}00${project.version.update}".toString()
+    def priority = String.format("1%2s%2s%3s", project.version.major, project.version.minor, project.version.security).replace(' ', '0')
     from('scripts') {
         include '**/*.template'
         rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens,
-                tokens: project.version + [alternatives_priority: priority])
+        (project.version + [alternatives_priority: priority]).each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
     }
     into "${buildRoot}/scripts"
 }

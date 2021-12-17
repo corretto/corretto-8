@@ -103,9 +103,10 @@ task inflateDebScriptTemplate(type: Copy) {
     from('scripts') {
         include '**/*.template'
         rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens,
-                tokens: project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority,
-                                           jdk_tools: jdkTools.join(' '), jre_tools: jreTools.join(' ')])
+        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, jdk_tools: jdkTools.join(' ')])
+        .each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
     }
     into "${buildRoot}/scripts"
 }
@@ -119,9 +120,10 @@ task inflateJinfoTemplate(type: Copy) {
     from('jinfo') {
         include '**/*.template'
         rename ( 'jinfo.template', jinfoName )
-        filter(org.apache.tools.ant.filters.ReplaceTokens,
-                tokens: project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority,
-                                           directory_name: jdkInstallationDirName.toString()])
+        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, directory_name: jdkInstallationDirName.toString()])
+        .each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
         expand(jre_tools: jreTools, jdk_tools: jdkTools)
     }
     into "${buildRoot}/jinfo"

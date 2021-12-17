@@ -48,7 +48,9 @@ task inflatePkgTemplate {
         copy {
             from('templates/CorrettoPkg.pkgproj.template') {
                 rename { file -> file.replace('.template', '') }
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+                project.version.each {
+                    prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+                }
             }
             into buildRoot
         }
@@ -56,7 +58,9 @@ task inflatePkgTemplate {
         copy {
             from('templates/introduction.html.template') {
                 rename { file -> file.replace('.template', '') }
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+                project.version.each {
+                    prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+                }
             }
             into "${buildRoot}/resources"
         }

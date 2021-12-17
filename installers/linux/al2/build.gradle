@@ -26,7 +26,9 @@
 task inflateRpmSpec(type: Copy) {
     from('java-1.8.0-amazon-corretto.spec.template') {
         rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+        project.version.each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
     }
     into buildRoot
 }

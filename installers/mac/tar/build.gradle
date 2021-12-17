@@ -94,7 +94,9 @@ task inflatePlistTemplate(type: Copy) {
     dependsOn renameBuildArtifacts
     from('templates/Info.plist.template') {
         rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+        project.version.each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
     }
     into "${jdkResultingImage}/${correttoMacDir}/Contents"
 }
