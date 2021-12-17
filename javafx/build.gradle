@@ -31,9 +31,12 @@ configurations {
 
 repositories {
     ivy {
-        url 'http://hg.openjdk.java.net'
+        url 'https://hg.openjdk.java.net'
         patternLayout {
             artifact '[organization]/[module]/rt/archive/[revision].[ext]'
+            metadataSources {
+                artifact()
+            }
         }
     }
 }
