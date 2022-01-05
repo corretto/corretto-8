@@ -175,11 +175,13 @@ task prepareArtifacts {
         // Include JNF if requested
         def jnfFrameworkPath = project.findProperty("corretto.jnf_path")
         if (jnfFrameworkPath) {
-            copy {
-                from("${jnfFrameworkPath}") {
-                    include "JavaNativeFoundation.framework/**"
-                }
-                into "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+                commandLine "cp", "-a", "${jnfFrameworkPath}/JavaNativeFoundation.framework", "."
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+                commandLine "rm", "-r", "JavaNativeFoundation.framework/Headers"
             }
         }
     }
