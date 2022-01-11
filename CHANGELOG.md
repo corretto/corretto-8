@@ -2,6 +2,51 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.322.06.1
+
+Release Date: January 18, 2022
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86, x86_64
++  macOS 10.10 and later, x86_64
+
+
+The following issues are addressed in 8.322.06.1
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 8.322.06 | All | Update Corretto 8 patch set to 8.322.06. Update the security baseline to OpenJDK8u322. ||
+| Fix Windows x86 crashes in Swing apps | Windows x86 | Swing Application crashes / hangs since update from 8.275.01.1 to 8.282.08.1 | [#305](https://github.com/corretto/corretto-8/issues/305) |
+| Use SHA256 hashes in RPM File Digest | RPM-based Linux | Update plugins to support FIPS compliant file digests in generated RPMs | [#344](https://github.com/corretto/corretto-8/issues/344) |
+| Sign Mac bundle | Macos x64 | The Macos tgz contained signed files, but was not signed as a bundle. | |
+| Update Amazon CACerts | All | Pull in the latest CA Certificates from Amazon Linux | |
+
+The following CVEs are addressed in 8.322.06.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2022-21341 | 5.3 | core-libs/java.io:serialization |
+| CVE-2022-21365 | 5.3 | client-libs/javax.imageio |
+| CVE-2022-21282 | 5.3 | xml/jaxp |
+| CVE-2022-21305 | 5.3 | hotspot/compiler |
+| CVE-2022-21299 | 5.3 | xml/jaxp |
+| CVE-2022-21296 | 5.3 | xml/jaxp |
+| CVE-2022-21349 | 5.3 | client-libs/2d |
+| CVE-2022-21283 | 5.3 | core-libs/java.util |
+| CVE-2022-21340 | 5.3 | security-libs/java.security |
+| CVE-2022-21293 | 5.3 | core-libs/java.lang |
+| CVE-2022-21294 | 5.3 | core-libs/java.util |
+| CVE-2022-21360 | 5.3 | client-libs/javax.imageio |
+| CVE-2022-21248 | 3.7 | core-libs/java.io:serialization |
+
+
 ## Corretto version: 8.312.07.1
 
 Release Date: October 19, 2021
