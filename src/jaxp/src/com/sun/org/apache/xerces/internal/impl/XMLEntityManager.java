@@ -1141,7 +1141,7 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
             externalEntity = (Entity.ExternalEntity)entity;
             extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
             extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
-            expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
+            expandedSystemId = expandSystemId(extLitSysId, extBaseSysId, fStrictURI);
             boolean unparsed = entity.isUnparsed();
             boolean parameter = entityName.startsWith("%");
             boolean general = !parameter;
@@ -1218,15 +1218,13 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
              */
             xmlInputSource = staxInputSource.getXMLInputSource() ;
             if (!fISCreatedByResolver) {
-                //let the not-LoadExternalDTD or not-SupportDTD process to handle the situation
-                if (fLoadExternalDTD) {
-                    String accessError = SecuritySupport.checkAccess(expandedSystemId, fAccessExternalDTD, Constants.ACCESS_EXTERNAL_ALL);
-                    if (accessError != null) {
-                        fErrorReporter.reportError(this.getEntityScanner(),XMLMessageFormatter.XML_DOMAIN,
-                                "AccessExternalEntity",
-                                new Object[] { SecuritySupport.sanitizePath(expandedSystemId), accessError },
-                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
-                    }
+                String accessError = SecuritySupport.checkAccess(expandedSystemId,
+                        fAccessExternalDTD, Constants.ACCESS_EXTERNAL_ALL);
+                if (accessError != null) {
+                    fErrorReporter.reportError(this.getEntityScanner(),XMLMessageFormatter.XML_DOMAIN,
+                            "AccessExternalEntity",
+                            new Object[] { SecuritySupport.sanitizePath(expandedSystemId), accessError },
+                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
                 }
             }
         }
