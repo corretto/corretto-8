@@ -345,7 +345,13 @@ u1* ClassPathZipEntry::open_entry(const char* name, jint* filesize, bool nul_ter
       !(*ReadMappedEntry)(_zip, entry, &buffer, filename)) {
       // mmapped access not available, perhaps due to compression,
       // read contents into resource array
-      int size = (*filesize) + ((nul_terminate) ? 1 : 0);
+      size_t size = *filesize;
+      if (nul_terminate) {
+        if (sizeof(size) == sizeof(uint32_t) && size == UINT_MAX) {
+          return NULL; // 32-bit integer overflow will occur.
+        }
+        size++;
+      }
       buffer = NEW_RESOURCE_ARRAY(u1, size);
       if (!(*ReadEntry)(_zip, entry, buffer, filename)) return NULL;
   }
