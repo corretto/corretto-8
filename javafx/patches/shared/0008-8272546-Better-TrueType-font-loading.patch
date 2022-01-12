@@ -1,0 +1,27 @@
+From fc028c8fe3d02e842b8b1f83870f94d6f081dc5a Mon Sep 17 00:00:00 2001
+From: Aleksei Voitylov <avoitylov@openjdk.org>
+Date: Thu, 9 Dec 2021 15:20:00 +0000
+Subject: [PATCH] 8272546: Better TrueType font loading
+
+Reviewed-by:
+---
+ .../src/main/java/com/sun/javafx/font/PrismFontFile.java     | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFile.java b/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFile.java
+index a1d85e95e1..352e78660f 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFile.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/font/PrismFontFile.java
+@@ -481,7 +481,10 @@ public abstract class PrismFontFile implements FontResource, FontConstants {
+                 /* checksum */ ibuffer.skip(4);
+                 table.offset = ibuffer.getInt();
+                 table.length = ibuffer.getInt();
+-                if (table.offset + table.length > filesize) {
++                if ((table.offset < 0) || (table.length < 0) ||
++                    (table.offset + table.length < table.length) ||
++                    (table.offset + table.length > filesize))
++                {
+                     throw new Exception("bad table, tag="+table.tag);
+                 }
+             }
+
