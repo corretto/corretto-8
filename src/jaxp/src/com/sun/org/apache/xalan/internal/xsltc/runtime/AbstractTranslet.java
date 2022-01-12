@@ -116,6 +116,9 @@ public abstract class AbstractTranslet implements Translet {
      */
     private String _accessExternalStylesheet = XalanConstants.EXTERNAL_ACCESS_DEFAULT;
 
+    // The error message when access to exteranl resources is rejected
+    private String _accessErr = null;
+
     /************************************************************************
      * Debugging
      ************************************************************************/
@@ -779,6 +782,20 @@ public abstract class AbstractTranslet implements Translet {
      */
     public void setAllowedProtocols(String protocols) {
         _accessExternalStylesheet = protocols;
+    }
+
+    /**
+     * Returns the access error.
+     */
+    public String getAccessError() {
+        return _accessErr;
+    }
+
+    /**
+     * Sets the access error.
+     */
+    public void setAccessError(String accessErr) {
+        this._accessErr = accessErr;
     }
 
     /************************************************************************
