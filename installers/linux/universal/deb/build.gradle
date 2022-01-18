@@ -103,7 +103,12 @@ task inflateDebScriptTemplate(type: Copy) {
     from('scripts') {
         include '**/*.template'
         rename { file -> file.replace('.template', '') }
-        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, jdk_tools: jdkTools.join(' ')])
+        (project.version + [
+            java_home: jdkHome,
+            alternatives_priority: alternativesPriority,
+            jdk_tools: jdkTools.join(' '),
+            jre_tools: jreTools.join(' ')
+        ])
         .each {
             prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
         }
