@@ -2,6 +2,26 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.322.06.2
+
+Release Date: January 18, 2022
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  RPM-based Linux using glibc 2.12 or later, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
+
+
+The following issues are addressed in 8.322.06.2
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Fix RPM and Deb issues | RPM/Deb Based | Fix issue with RPM and Deb alternatives | [#352](https://github.com/corretto/corretto-8/issues/352)]|
+
 ## Corretto version: 8.322.06.1
 
 Release Date: January 18, 2022
