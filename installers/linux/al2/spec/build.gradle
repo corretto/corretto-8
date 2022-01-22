@@ -19,6 +19,14 @@
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+dependencies {
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+
+def tarName = "java-1.8.0-amazon-corretto"
+def tarVersion = "1.8.0_${version.update}.b${version.build}"
+
 /**
  * Apply version numbers to the RPM spec file template and copy
  * to the build root.
@@ -33,4 +41,64 @@ task inflateRpmSpec(type: Copy) {
     into buildRoot
 }
 
-assemble.dependsOn(inflateRpmSpec)
+task copySourceTar(type: Tar) {
+    doFirst {
+        getJavaFxOverlay
+    }
+    dependsOn project.configurations.compile, inflateRpmSpec
+    compression Compression.GZIP
+    archiveName "${buildDir}/distributions/${tarName}.tar.gz"
+    from("$buildRoot") {
+        include "java-1.8.0-amazon-corretto.spec"
+        into 'rpm'
+    }
+    from tarTree(project.configurations.compile.singleFile)
+    into '/'
+
+}
+
+task getJavaFxOverlay() {
+    def overlayS3Path = project.findProperty('corretto.javafx_overlay_s3_path')
+    if (overlayS3Path != null) {
+        mkdir "$buildRoot"
+        delete "${rootDir}/src/jfx"
+        exec {
+            workingDir "$buildRoot"
+            executable = 'aws'
+            args = [
+                's3',
+                'cp',
+                overlayS3Path,
+                'javafx-sdk-al2.tar.gz'
+                ]
+        }
+
+        copy {
+            from tarTree("${buildRoot}/javafx-sdk-al2.tar.gz")
+            into "${rootDir}/src/jfx"
+        }
+
+        exec {
+            workingDir "$rootDir"
+            executable = 'mv'
+            args = ['src/jfx/rt', 'src/jfx/jre']
+
+        }
+        delete "${buildRoot}/javafx-sdk-al2.tar.gz"
+    }
+}
+
+task rpmBuild(type: Exec) {
+  dependsOn copySourceTar
+    workingDir "$buildDir"
+    executable = '/usr/bin/rpmbuild'
+    args  = ['-vv',
+        '-bs',
+        '--define',
+        'dist .amzn2',
+        '--define',
+        "_sourcedir ${buildDir}/distributions",
+        '--define',
+        "_srcrpmdir ${buildDir}/distributions",
+        "${buildRoot}/java-1.8.0-amazon-corretto.spec"]
+}
