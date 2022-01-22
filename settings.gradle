@@ -8,7 +8,7 @@ if (Os.isFamily(Os.FAMILY_MAC)) {
     subProjects += [':installers:mac:pkg',
                     ':installers:mac:tar']
 } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-    subProjects += [':installers:linux:al2',
+    subProjects += [':installers:linux:al2:spec',
                     ':installers:linux:universal:tar',
                     ':installers:linux:universal:rpm',
                     ':installers:linux:universal:deb']
