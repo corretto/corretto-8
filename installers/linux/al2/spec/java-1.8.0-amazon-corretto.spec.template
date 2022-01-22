@@ -102,6 +102,13 @@ BuildRequires: libXtst-devel
 BuildRequires: pkgconfig
 BuildRequires: xorg-x11-proto-devel
 
+%{!?al_ver: %define al_ver 2}
+
+%if %{al_ver} >= 2022
+BuildRequires: libXxf86vm-devel
+BuildRequires: mesa-libGL-devel
+%endif
+
 %if %{with bootjdk}
 BuildRequires: java-1.8.0-openjdk-devel
 %endif
@@ -258,5 +265,5 @@ fi
 %{java_home}/jre/lib
 
 %changelog
-* Tue Dec 16 2021 Clive Verghese <verghese@amazon.com> 
+* Thu Dec 16 2021 Clive Verghese <verghese@amazon.com>
 - Add requires for log4j CVE-2021-44228 static mitigation
