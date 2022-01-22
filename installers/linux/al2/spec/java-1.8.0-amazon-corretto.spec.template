@@ -110,7 +110,7 @@ BuildRequires: mesa-libGL-devel
 %endif
 
 %if %{with bootjdk}
-BuildRequires: java-1.8.0-openjdk-devel
+BuildRequires: java-1.8.0-devel
 %endif
 Requires: jpackage-utils
 

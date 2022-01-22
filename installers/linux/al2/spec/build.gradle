@@ -95,7 +95,7 @@ task rpmBuild(type: Exec) {
     args  = ['-vv',
         '-bs',
         '--define',
-        'dist .amzn2',
+        "dist .${project.findProperty('corretto.amzn_dist') ?: 'amzn2'}",
         '--define',
         "_sourcedir ${buildDir}/distributions",
         '--define',
