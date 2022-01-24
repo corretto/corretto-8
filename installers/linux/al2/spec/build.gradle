@@ -19,7 +19,12 @@
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+configurations {
+    javafx
+}
+
 dependencies {
+    javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -41,9 +46,20 @@ task inflateRpmSpec(type: Copy) {
     into buildRoot
 }
 
+task createJavafxOverlay(type: Copy) {
+    dependsOn project.configurations.javafx
+    from tarTree(project.configurations.javafx.singleFile)
+    into "$buildDir/javafx"
+    eachFile {
+        if (it.path.startsWith('rt/')) {
+            it.path = it.path.replace('rt/', 'jre/')
+        }
+    }
+}
+
 task copySourceTar(type: Tar) {
-    doFirst {
-        getJavaFxOverlay
+     if (project.correttoArch == 'x64') {
+        dependsOn createJavafxOverlay
     }
     dependsOn project.configurations.compile, inflateRpmSpec
     compression Compression.GZIP
@@ -57,37 +73,6 @@ task copySourceTar(type: Tar) {
 
 }
 
-task getJavaFxOverlay() {
-    def overlayS3Path = project.findProperty('corretto.javafx_overlay_s3_path')
-    if (overlayS3Path != null) {
-        mkdir "$buildRoot"
-        delete "${rootDir}/src/jfx"
-        exec {
-            workingDir "$buildRoot"
-            executable = 'aws'
-            args = [
-                's3',
-                'cp',
-                overlayS3Path,
-                'javafx-sdk-al2.tar.gz'
-                ]
-        }
-
-        copy {
-            from tarTree("${buildRoot}/javafx-sdk-al2.tar.gz")
-            into "${rootDir}/src/jfx"
-        }
-
-        exec {
-            workingDir "$rootDir"
-            executable = 'mv'
-            args = ['src/jfx/rt', 'src/jfx/jre']
-
-        }
-        delete "${buildRoot}/javafx-sdk-al2.tar.gz"
-    }
-}
-
 task rpmBuild(type: Exec) {
   dependsOn copySourceTar
     workingDir "$buildDir"
@@ -96,6 +81,8 @@ task rpmBuild(type: Exec) {
         '-bs',
         '--define',
         "dist .${project.findProperty('corretto.amzn_dist') ?: 'amzn2'}",
+        '--define',
+        "_topdir ${buildDir}/rpmbuild",
         '--define',
         "_sourcedir ${buildDir}/distributions",
         '--define',
