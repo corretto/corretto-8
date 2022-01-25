@@ -49,7 +49,7 @@ task inflateRpmSpec(type: Copy) {
 task createJavafxOverlay(type: Copy) {
     dependsOn project.configurations.javafx
     from tarTree(project.configurations.javafx.singleFile)
-    into "$buildDir/javafx"
+    into "$buildDir/distributions/javafx"
     eachFile {
         if (it.path.startsWith('rt/')) {
             it.path = it.path.replace('rt/', 'jre/')
@@ -68,8 +68,12 @@ task copySourceTar(type: Tar) {
         include "java-1.8.0-amazon-corretto.spec"
         into 'rpm'
     }
-    from tarTree(project.configurations.compile.singleFile)
-    into '/'
+    from(tarTree(project.configurations.compile.singleFile)) {
+        into '/'
+    }
+    from("$buildDir/distributions/javafx") {
+        into "src/javafx"
+    }
 
 }
 

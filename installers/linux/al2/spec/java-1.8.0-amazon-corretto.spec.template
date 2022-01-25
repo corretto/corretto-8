@@ -171,7 +171,7 @@ install -d -m 755 %{buildroot}%{java_home}
 cp -a build/linux-%{_arch}-normal-server-release/images/j2sdk-image/* %{buildroot}%{java_home}
 
 %if %{perform_openjfx_overlay}
-cp -a -v jfx/* %{buildroot}%{java_home}
+cp -a -v javafx/* %{buildroot}%{java_home}
 %endif
 
 # Make a *relative* symlink pointing to the cacerts file from ca-certificates.
