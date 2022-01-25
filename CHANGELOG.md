@@ -2,6 +2,23 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.322.06.3
+
+Release Date: January 25, 2022
+
+The following platforms are updated in this release.
+
+**Target Platforms**
++  Amazon Linux 2 x86_64 and aarch64
+
+The following issues are addressed in 8.322.06.3
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update JavaFX | Amazon Linux 2 | Rebuild with the latest JavaFX | |
+
+
+
 ## Corretto version: 8.322.06.2
 
 Release Date: January 18, 2022
