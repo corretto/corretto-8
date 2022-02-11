@@ -51704,7 +51704,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
     OLD_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -lc++"
+    CXXFLAGS="$CXXFLAGS -lstdc++"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -51737,7 +51737,7 @@ printf "%s\n" "$has_dynamic_libstdcxx" >&6; }
     # Test if stdc++ can be linked statically.
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if static link of stdc++ is possible" >&5
 printf %s "checking if static link of stdc++ is possible... " >&6; }
-    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
     ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -51795,7 +51795,7 @@ printf %s "checking how to link with libstdc++... " >&6; }
     # If dynamic was requested, it's available since it would fail above otherwise.
     # If dynamic wasn't requested, go with static unless it isn't available.
     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
-      LIBCXX="$LIBCXX -lc++"
+      LIBCXX="$LIBCXX -lstdc++"
       LDCXX="$CXX"
       STATIC_CXX_SETTING="STATIC_CXX=false"
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: dynamic" >&5
