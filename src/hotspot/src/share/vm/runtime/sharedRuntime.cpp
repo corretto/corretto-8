@@ -2681,6 +2681,9 @@ void AdapterHandlerLibrary::create_native_wrapper(methodHandle method) {
       CompileTask::print_compilation(tty, nm, method->is_static() ? "(static)" : "");
     }
     nm->post_compiled_method_load_event();
+  } else {
+    // CodeCache is full, disable compilation
+    CompileBroker::handle_full_code_cache();
   }
 }
 
