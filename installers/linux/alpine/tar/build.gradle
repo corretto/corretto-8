@@ -58,16 +58,14 @@ task configureBuild(type: Exec) {
     workingDir "$buildRoot/src"
 
     def milestone = project.findProperty("corretto.milestone") ?: "fcs"
-    commandLine 'bash', 'configure',
-            "--with-update-version=${project.version.update}",
-            "--with-build-number=b${project.version.build}",
-            "--with-corretto-revision=${project.version.revision}",
-            "--with-milestone=${milestone}",
-            'LIBCXX=-static-libstdc++ -static-libgcc',
-            '--with-vendor-name=Amazon.com Inc.',
-            '--with-vendor-url=https://aws.amazon.com/corretto/',
-            "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
-            "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+    def configureCmd = [
+        'bash',
+        'configure',
+        'LIBCXX=-static-libstdc++ -static-libgcc'
+    ]
+    configureCmd += correttoCommonFlags
+
+    commandLine configureCmd
 }
 
 task executeBuild(type: Exec) {
