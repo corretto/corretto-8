@@ -120,7 +120,7 @@ task packageDebugSymbols(type: Exec) {
     outputs.file tarFile
     workingDir buildDir
     commandLine 'bash', '-c',
-        "tar -czf ${tarFile} ${binaryResultName}/**/*.diz"
+        "tar -czf ${tarFile} \$(find ${binaryResultName} -name \"*.diz\")"
 }
 
 task packageBuildResults(type: Exec) {
