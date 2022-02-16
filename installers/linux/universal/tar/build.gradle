@@ -131,7 +131,7 @@ task packageDebugSymbols(type: Exec) {
     outputs.file tarFile
     workingDir buildDir
     commandLine 'bash', '-c',
-        "tar -czf ${tarFile} ${project.correttoJdkArchiveName}/**/*.diz"
+        "tar -czf ${tarFile} \$(find ${project.correttoJdkArchiveName} -name \"*.diz\")"
 }
 
 task packageBuildResults(type: Exec) {

@@ -192,7 +192,7 @@ task packageDebugSymbols(type: Exec) {
     String tarDir = "${distributionDir}/${project.correttoDebugSymbolsArchiveName}.tar.gz"
     workingDir buildDir
     commandLine 'bash', '-c',
-        "tar -czf ${tarDir} ${correttoMacDir}/Contents/Home/bin/*.diz"
+        "tar -czf ${tarDir} \$(find ${correttoMacDir} -name \"*.diz\")"
     outputs.file tarDir
 }
 
