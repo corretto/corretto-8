@@ -65,7 +65,7 @@ allprojects {
         jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
                     'servertool', 'tnameserv', 'unpack200']
 
-        def milestone = project.findProperty("corretto.milestone") ?: "preview"
+        def milestone = project.findProperty("corretto.milestone") ?: "fcs"
         correttoCommonFlags = [
                 "--with-update-version=${project.version.update}",
                 "--with-build-number=b${project.version.build}",
