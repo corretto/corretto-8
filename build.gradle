@@ -209,15 +209,28 @@ project(':openjdksrc') {
         compression Compression.GZIP
         archiveName "amazon-corretto-source-${project.version.full}.tar.gz"
         from fileTree(rootDir) {
-            include 'src/**'
-            exclude 'src/corretto-build/**'
+            exclude 'corretto-build/**'
             include 'LICENSE',
                     'README.md',
+                    'README',
                     'THIRD_PARTY_README',
                     'ASSEMBLY_EXCEPTION',
+                    'Makefile',
                     'commitId.txt',
                     'version.txt',
-                    'amazon-cacerts'
+                    'amazon-cacerts',
+                    'common/**',
+                    'configure',
+                    'corba/**',
+                    'get_source.sh',
+                    'hotspot/**',
+                    'jaxp/**',
+                    'jaxws/**',
+                    'jdk/**',
+                    'langtools/**',
+                    'make/**',
+                    'nashorn/**',
+                    'test/**'
         }
     }
 
