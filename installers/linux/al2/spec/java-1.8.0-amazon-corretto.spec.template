@@ -258,9 +258,20 @@ fi
 %endif
 
 %files
+%config(noreplace) %{java_home}/jre/lib/calendars.properties
+%config(noreplace) %{java_home}/jre/lib/logging.properties
+%config(noreplace) %{java_home}/jre/lib/net.properties
+%config(noreplace) %{java_home}/jre/lib/security/policy/limited/local_policy.jar
+%config(noreplace) %{java_home}/jre/lib/security/policy/limited/US_export_policy.jar
+%config(noreplace) %{java_home}/jre/lib/security/policy/unlimited/local_policy.jar
+%config(noreplace) %{java_home}/jre/lib/security/policy/unlimited/US_export_policy.jar
+%config(noreplace) %{java_home}/jre/lib/security/blacklisted.certs
+%config(noreplace) %{java_home}/jre/lib/security/java.policy
+%config(noreplace) %{java_home}/jre/lib/security/java.security
 %{java_home}/jre/ASSEMBLY_EXCEPTION
 %{java_home}/jre/LICENSE
 %{java_home}/jre/THIRD_PARTY_README
+
 %{java_home}/jre/bin
 %{java_home}/jre/lib
 

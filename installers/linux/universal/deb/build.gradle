@@ -178,11 +178,19 @@ task generateJdkDeb(type: Deb) {
     provides('java8-runtime-headless')
 
     from(jdkBinaryDir) {
+        include(project.configurationFiles)
+        // Deb actually uses configuationFile and not fileType see https://github.com/nebula-plugins/gradle-ospackage-plugin/issues/118#issuecomment-656004360
+        // Path must be the fully qualified install path
+        configurationFile = project.configurationFiles.collect{ "${jdkHome}/${it}" }.join("\n")
         into jdkHome
+    }
+    from(jdkBinaryDir) {
+        into jdkHome
+        exclude(project.configurationFiles)
         createDirectoryEntry = true
     }
 
-    from("$buildRoot/jinfo") {
+    from("${buildRoot}/jinfo") {
         include '**/*.jinfo'
         into jvmDir
     }
