@@ -65,6 +65,19 @@ allprojects {
         jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
                     'servertool', 'tnameserv', 'unpack200']
 
+        configurationFiles = [
+            "jre/lib/calendars.properties",
+            "jre/lib/logging.properties",
+            "jre/lib/net.properties",
+            "jre/lib/security/policy/limited/local_policy.jar",
+            "jre/lib/security/policy/limited/US_export_policy.jar",
+            "jre/lib/security/policy/unlimited/local_policy.jar",
+            "jre/lib/security/policy/unlimited/US_export_policy.jar",
+            "jre/lib/security/blacklisted.certs",
+            "jre/lib/security/java.policy",
+            "jre/lib/security/java.security"
+        ];
+
         def milestone = project.findProperty("corretto.milestone") ?: "fcs"
         correttoCommonFlags = [
                 "--with-update-version=${project.version.update}",
@@ -212,4 +225,3 @@ project(':openjdksrc') {
         archives sourceDistributionTarball
     }
 }
-

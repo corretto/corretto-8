@@ -131,7 +131,14 @@ task generateJdkRpm(type: Rpm) {
     provides('java-sdk-openjdk ', "${epoch}:${project.version.full}", EQUAL)
 
     from(jdkBinaryDir) {
+        include(project.configurationFiles)
+        fileType CONFIG | NOREPLACE
         into jdkHome
+    }
+
+    from(jdkBinaryDir) {
+        into jdkHome
+        exclude(project.configurationFiles)
         createDirectoryEntry = true
     }
 }
@@ -139,4 +146,3 @@ task generateJdkRpm(type: Rpm) {
 artifacts {
     archives generateJdkRpm
 }
-
