@@ -20,6 +20,8 @@
  */
 
 #include <stdlib.h>
+
+#include "utilities/debug.hpp"
 #include "immediate_aarch64.hpp"
 
 // there are at most 2^13 possible logical immediate encodings
@@ -132,8 +134,8 @@ u_int64_t replicate(u_int64_t bits, int nbits, int count)
     return bits;
   }
 
-  uint64_t result = 0;
-  uint64_t mask = ones(nbits);
+  u_int64_t result = 0;
+  u_int64_t mask = ones(nbits);
   for (int i = 0; i < count ; i++) {
     result <<= nbits;
     result |= (bits & mask);
