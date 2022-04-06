@@ -262,6 +262,7 @@ Thread::Thread() {
 
 #ifdef ASSERT
   _visited_for_critical_count = false;
+  _wx_init = false;
 #endif
 
   _SR_lock = new Monitor(Mutex::suspend_resume, "SR_lock", true);
@@ -954,8 +955,6 @@ void Thread::check_for_valid_safepoint_state(bool potential_vm_operation) {
       InterfaceSupport::check_gc_alot();
     }
 #endif
-
-  DEBUG_ONLY(_wx_init = false);
 }
 #endif
 
