@@ -22,19 +22,31 @@
  *
  */
 
-#ifndef CPU_AARCH64_PAUTH_AARCH64_INLINE_HPP
-#define CPU_AARCH64_PAUTH_AARCH64_INLINE_HPP
+#ifndef OS_CPU_LINUX_AARCH64_PAUTH_BSD_AARCH64_INLINE_HPP
+#define OS_CPU_LINUX_AARCH64_PAUTH_BSD_AARCH64_INLINE_HPP
 
-#ifdef TARGET_OS_ARCH_linux_aarch64
-# include "pauth_linux_aarch64.inline.hpp"
-#endif
-#ifdef TARGET_OS_ARCH_bsd_aarch64
-# include "pauth_bsd_aarch64.inline.hpp"
+#ifdef __APPLE__
+#include <ptrauth.h>
 #endif
 
-inline bool pauth_ptr_is_raw(address ptr) {
-  // Confirm none of the high bits are set in the pointer.
-  return ptr == pauth_strip_pointer(ptr);
+// Only the PAC instructions in the NOP space can be used. This ensures the
+// binaries work on systems without PAC. Write these instructions using their
+// alternate "hint" instructions to ensure older compilers can still be used.
+// For Apple, use the provided interface as this may provide additional
+// optimization.
+
+#define XPACLRI "hint #0x7;"
+
+inline address pauth_strip_pointer(address ptr) {
+#ifdef __APPLE__
+  return ptrauth_strip(ptr, ptrauth_key_asib);
+#else
+  register address result __asm__("x30") = ptr;
+  asm (XPACLRI : "+r"(result));
+  return result;
+#endif
 }
 
-#endif // CPU_AARCH64_PAUTH_AARCH64_INLINE_HPP
+#undef XPACLRI
+
+#endif // OS_CPU_LINUX_AARCH64_PAUTH_BSD_AARCH64_INLINE_HPP
