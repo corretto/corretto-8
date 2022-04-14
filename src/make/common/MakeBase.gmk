@@ -318,9 +318,9 @@ SCM_TIP_FILECMD := $(PRINTF) "$(SCM):%s" \
 # Emit the scm:id pair to $@
 define GetSourceTips
 	$(CD) $(SRC_ROOT) ; \
-	if [ -d $(SCM_DIR) -a "$(SCM_VERSION)" != "" ] ; then \
+	if [ -d "$(SCM_DIR)" -a "$(SCM_VERSION)" != "" ] ; then \
 	  $(ID_COMMAND) >> $@ ; \
-	elif [ -f $(SCM_TIP_FILENAME) ] ; then \
+	elif [ -f "$(SCM_TIP_FILENAME)" ] ; then \
           $(SCM_TIP_FILECMD) >> $@ ; \
 	fi;
 	$(PRINTF) "\n" >> $@
