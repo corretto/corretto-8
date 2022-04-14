@@ -53,12 +53,12 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownServiceException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -91,6 +91,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author Morten Jorgensen
  * @author G. Todd Miller
  * @author Santiago Pericas-Geertsen
+ * @LastModified: Sept 2021
  */
 public final class TransformerImpl extends Transformer
     implements DOMCache, ErrorListener
@@ -1045,7 +1046,7 @@ public final class TransformerImpl extends Transformer
             else if (name.equals(OutputKeys.CDATA_SECTION_ELEMENTS)) {
                 if (value != null) {
                     StringTokenizer e = new StringTokenizer(value);
-                    Vector uriAndLocalNames = null;
+                    ArrayList<String> uriAndLocalNames = null;
                     while (e.hasMoreTokens()) {
                         final String token = e.nextToken();
 
@@ -1065,11 +1066,11 @@ public final class TransformerImpl extends Transformer
                         }
 
                         if (uriAndLocalNames == null) {
-                            uriAndLocalNames = new Vector();
+                            uriAndLocalNames = new ArrayList<>();
                         }
                         // add the uri/localName as a pair, in that order
-                        uriAndLocalNames.addElement(uri);
-                        uriAndLocalNames.addElement(localName);
+                        uriAndLocalNames.add(uri);
+                        uriAndLocalNames.add(localName);
                     }
                     handler.setCdataSectionElements(uriAndLocalNames);
                 }

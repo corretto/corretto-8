@@ -26,6 +26,7 @@
 #define SHARE_VM_CODE_DEPENDENCIES_HPP
 
 #include "ci/ciCallSite.hpp"
+#include "ci/ciInstanceKlass.hpp"
 #include "ci/ciKlass.hpp"
 #include "ci/ciMethodHandle.hpp"
 #include "classfile/systemDictionary.hpp"
