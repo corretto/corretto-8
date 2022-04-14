@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,27 +20,9 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.w3c.dom;
 
-/*
- * @test
- * @bug 4102731
- * @summary Test the java.net.multicastsocket.leave method
- *
- */
+public interface Document {
 
-import java.net.*;
-import java.io.*;
-
-public class Leave {
-
-    public static void main(String args[]) throws Exception {
-        MulticastSocket socket = null;
-        InetAddress mca = null;
-
-        mca = InetAddress.getByName("224.80.80.80");
-        socket = new MulticastSocket();
-        socket.joinGroup(mca);
-        socket.leaveGroup(mca);
-        socket.close();
-    }
+    public org.w3c.dom.DocumentType getDoctype();
 }

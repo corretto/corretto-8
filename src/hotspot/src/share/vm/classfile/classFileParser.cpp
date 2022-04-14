@@ -2719,6 +2719,7 @@ static int inner_classes_jump_to_outer(const Array<u2>* inner_classes, int inner
 static bool inner_classes_check_loop_through_outer(const Array<u2>* inner_classes, int idx, const ConstantPool* cp, int length) {
   int slow = inner_classes->at(idx + InstanceKlass::inner_class_inner_class_info_offset);
   int fast = inner_classes->at(idx + InstanceKlass::inner_class_outer_class_info_offset);
+
   while (fast != -1 && fast != 0) {
     if (slow != 0 && (cp->klass_name_at(slow) == cp->klass_name_at(fast))) {
       return true;  // found a circularity
@@ -2748,14 +2749,15 @@ bool ClassFileParser::check_inner_classes_circularity(const ConstantPool* cp, in
     for (int y = idx + InstanceKlass::inner_class_next_offset; y < length;
          y += InstanceKlass::inner_class_next_offset) {
 
-      // To maintain compatibility, throw an exception if duplicate inner classes
-      // entries are found.
-      guarantee_property((_inner_classes->at(idx) != _inner_classes->at(y) ||
-                          _inner_classes->at(idx+1) != _inner_classes->at(y+1) ||
-                          _inner_classes->at(idx+2) != _inner_classes->at(y+2) ||
-                          _inner_classes->at(idx+3) != _inner_classes->at(y+3)),
-                         "Duplicate entry in InnerClasses attribute in class file %s",
-                         CHECK_(true));
+      // 4347400: make sure there's no duplicate entry in the classes array
+      if (_major_version >= JAVA_1_5_VERSION) {
+        guarantee_property((_inner_classes->at(idx) != _inner_classes->at(y) ||
+                            _inner_classes->at(idx+1) != _inner_classes->at(y+1) ||
+                            _inner_classes->at(idx+2) != _inner_classes->at(y+2) ||
+                            _inner_classes->at(idx+3) != _inner_classes->at(y+3)),
+                           "Duplicate entry in InnerClasses attribute in class file %s",
+                           CHECK_(true));
+      }
       // Return true if there are two entries with the same inner_class_info_index.
       if (_inner_classes->at(y) == _inner_classes->at(idx)) {
         return true;
@@ -2801,8 +2803,7 @@ u2 ClassFileParser::parse_classfile_inner_classes_attribute(const ConstantPool* 
     // Inner class index
     u2 inner_class_info_index = cfs->get_u2_fast();
     check_property(
-      inner_class_info_index == 0 ||
-        valid_klass_reference_at(inner_class_info_index),
+      valid_klass_reference_at(inner_class_info_index),
       "inner_class_info_index %u has bad constant type in class file %s",
       inner_class_info_index, CHECK_0);
     // Outer class index
@@ -2812,6 +2813,13 @@ u2 ClassFileParser::parse_classfile_inner_classes_attribute(const ConstantPool* 
         valid_klass_reference_at(outer_class_info_index),
       "outer_class_info_index %u has bad constant type in class file %s",
       outer_class_info_index, CHECK_0);
+
+    if (outer_class_info_index != 0) {
+      const Symbol* const outer_class_name = cp->klass_name_at(outer_class_info_index);
+      char* bytes = (char*)outer_class_name->bytes();
+      guarantee_property(bytes[0] != JVM_SIGNATURE_ARRAY,
+                         "Outer class is an array class in class file %s", CHECK_0);
+    }
     // Inner class name
     u2 inner_name_index = cfs->get_u2_fast();
     check_property(
@@ -2838,10 +2846,9 @@ u2 ClassFileParser::parse_classfile_inner_classes_attribute(const ConstantPool* 
     inner_classes->at_put(index++, inner_access_flags.as_short());
   }
 
-  // 4347400: make sure there's no duplicate entry in the classes array
-  // Also, check for circular entries.
+  // Check for circular and duplicate entries.
   bool has_circularity = false;
-  if (_need_verify && _major_version >= JAVA_1_5_VERSION) {
+  if (_need_verify) {
     has_circularity = check_inner_classes_circularity(cp, length * 4, CHECK_0);
     if (has_circularity) {
       // If circularity check failed then ignore InnerClasses attribute.

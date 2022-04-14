@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,6 +41,9 @@ class FixedLengthInputStream extends LeftOverInputStream {
 
     FixedLengthInputStream (ExchangeImpl t, InputStream src, long len) {
         super (t, src);
+        if (len < 0) {
+            throw new IllegalArgumentException("Content-Length: " + len);
+        }
         this.remaining = len;
     }
 
@@ -60,6 +63,8 @@ class FixedLengthInputStream extends LeftOverInputStream {
                 t.getServerImpl().requestCompleted (t.getConnection());
             }
         }
+        if (n < 0 && !eof)
+            throw new IOException("connection closed before all data received");
         return n;
     }
 

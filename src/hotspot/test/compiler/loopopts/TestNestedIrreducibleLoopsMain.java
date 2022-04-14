@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 1999, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,24 +23,23 @@
 
 /*
  * @test
- * @bug 4091811 4148753
- * @summary Test java.net.MulticastSocket joinGroup and leaveGroup
+ * @bug 8253353
+ * @summary Tests custom bytecode with deep nested irreducible loops.
  *
+ * @compile TestNestedIrreducibleLoops.jasm
+ * @run main/othervm -Xbatch -XX:CompileCommand=dontinline,TestNestedIrreducibleLoops::*
+ *                   -XX:CompileCommand=exclude,TestNestedIrreducibleLoopsMain::main
+ *                   TestNestedIrreducibleLoopsMain
  */
 
-import java.io.*;
-import java.net.*;
-
-
-public class JoinGroup {
-
-    public static void main(String args[]) throws Exception  {
-        MulticastSocket soc = null;
-        InetAddress sin = null;
-
-        soc = new MulticastSocket();
-        sin = InetAddress.getByName("224.80.80.80");
-        soc.joinGroup(sin);
-        soc.leaveGroup(sin);
+public class TestNestedIrreducibleLoopsMain {
+    public static void main(String[] args) {
+        TestNestedIrreducibleLoops t = new TestNestedIrreducibleLoops();
+        t.loopCounter = 3;
+        int j;
+        for (int i = 0; i < 11000; i++) {
+            t.start = i & 0x3ff;
+            j = t.test(); // Produces deep nested irreducible loops
+        }
     }
 }

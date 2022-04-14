@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -74,6 +74,8 @@ class JarFile extends ZipFile {
     private JarVerifier jv;
     private boolean jvInitialized;
     private boolean verify;
+    // The maximum size of array to allocate. Some VMs reserve some header words in an array.
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     // indicates if Class-Path attribute present (only valid if hasCheckedSpecialAttributes true)
     private boolean hasClassPathAttribute;
@@ -84,6 +86,9 @@ class JarFile extends ZipFile {
     static {
         SharedSecrets.setJavaUtilJarAccess(new JavaUtilJarAccessImpl());
     }
+
+    private static final sun.misc.JavaUtilZipFileAccess JUZFA =
+            sun.misc.SharedSecrets.getJavaUtilZipFileAccess();
 
     /**
      * The JAR manifest file name.
@@ -192,7 +197,13 @@ class JarFile extends ZipFile {
                 if (verify) {
                     byte[] b = getBytes(manEntry);
                     if (!jvInitialized) {
-                        jv = new JarVerifier(b);
+                        if (JUZFA.getManifestNum(this) == 1) {
+                            jv = new JarVerifier(manEntry.getName(), b);
+                        } else {
+                            if (JarVerifier.debug != null) {
+                                JarVerifier.debug.println("Multiple MANIFEST.MF found. Treat JAR file as unsigned");
+                            }
+                        }
                     }
                     man = new Manifest(jv, new ByteArrayInputStream(b));
                 } else {
@@ -374,7 +385,7 @@ class JarFile extends ZipFile {
                         }
                         if (mev == null) {
                             mev = new ManifestEntryVerifier
-                                (getManifestFromReference());
+                                (getManifestFromReference(), jv.manifestName);
                         }
                         byte[] b = getBytes(e);
                         if (b != null && b.length > 0) {
@@ -422,7 +433,11 @@ class JarFile extends ZipFile {
      */
     private byte[] getBytes(ZipEntry ze) throws IOException {
         try (InputStream is = super.getInputStream(ze)) {
-            int len = (int)ze.getSize();
+            long uncompressedSize = ze.getSize();
+            if (uncompressedSize > MAX_ARRAY_SIZE) {
+                throw new IOException("Unsupported size: " + uncompressedSize);
+            }
+            int len = (int)uncompressedSize;
             byte[] b = IOUtils.readAllBytes(is);
             if (len != -1 && b.length != len)
                 throw new EOFException("Expected:" + len + ", read:" + b.length);

@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,6 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 package com.sun.org.apache.xerces.internal.impl;
 
@@ -69,7 +69,6 @@ import javax.xml.stream.events.XMLEvent;
  * @author Elena Litani, IBM
  * @author Michael Glavassevich, IBM
  * @author Sunitha Reddy, Sun Microsystems
- * @version $Id: XML11NSDocumentScannerImpl.java,v 1.6 2010-11-01 04:39:40 joehw Exp $
  */
 public class XML11NSDocumentScannerImpl extends XML11DocumentScannerImpl {
 

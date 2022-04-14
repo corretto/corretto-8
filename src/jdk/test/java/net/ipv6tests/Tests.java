@@ -26,6 +26,12 @@ import java.io.*;
 import java.util.*;
 
 public class Tests {
+
+    static final boolean isWindows =
+            System.getProperty("os.name").startsWith("Windows");
+    static final boolean isMacOS =
+            System.getProperty("os.name").contains("OS X");
+
     /**
      * performs a simple exchange of data between the two sockets
      * and throws an exception if there is any problem.
@@ -270,6 +276,14 @@ public class Tests {
             if (ifs != null) {
                 while (ifs.hasMoreElements()) {
                     NetworkInterface nic = (NetworkInterface)ifs.nextElement();
+                    // Skip (Windows)Teredo Tunneling Pseudo-Interface
+                    if (isWindows) {
+                        String dName = nic.getDisplayName();
+                        if (dName != null && dName.contains("Teredo"))
+                            continue;
+                    } else if (isMacOS && nic.getName().contains("awdl")) {
+                        continue;
+                    }
                     try {
                         if (nic.isUp() && !nic.isLoopback())
                             return nic;

@@ -96,6 +96,7 @@
 #endif // INCLUDE_ALL_GCS
 
 #include <errno.h>
+#include <jfr/recorder/jfrRecorder.hpp>
 
 #ifndef USDT2
 HS_DTRACE_PROBE_DECL1(hotspot, thread__sleep__begin, long long);
@@ -1772,6 +1773,18 @@ Klass* InstanceKlass::compute_enclosing_class_impl(instanceKlassHandle k,
         found = (k() == inner_klass);
         if (found && ooff != 0) {
           ok = i_cp->klass_at(ooff, CHECK_NULL);
+          if (!ok->oop_is_instance()) {
+            // If the outer class is not an instance klass then it cannot have
+            // declared any inner classes.
+            ResourceMark rm(THREAD);
+            Exceptions::fthrow(
+              THREAD_AND_LOCATION,
+              vmSymbols::java_lang_IncompatibleClassChangeError(),
+              "%s and %s disagree on InnerClasses attribute",
+              ok->external_name(),
+              k->external_name());
+            return NULL;
+          }
           outer_klass = instanceKlassHandle(thread, ok);
           *inner_is_member = true;
         }
@@ -3161,6 +3174,15 @@ JVM_ENTRY(void, JVM_StartThread(JNIEnv* env, jobject jthread))
     THROW_MSG(vmSymbols::java_lang_OutOfMemoryError(),
               "unable to create new native thread");
   }
+
+#if INCLUDE_JFR
+  if (JfrRecorder::is_recording() && EventThreadStart::is_enabled() &&
+      EventThreadStart::is_stacktrace_enabled()) {
+    JfrThreadLocal* tl = native_thread->jfr_thread_local();
+    // skip Thread.start() and Thread.start0()
+    tl->set_cached_stack_trace_id(JfrStackTraceRepository::record(thread, 2));
+  }
+#endif
 
   Thread::start(native_thread);
 
