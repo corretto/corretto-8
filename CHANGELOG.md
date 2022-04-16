@@ -2,7 +2,7 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
-## Corretto version: 8.332.07.1
+## Corretto version: 8.332.08.1
 
 Release Date: April 19, 2022
 
@@ -18,14 +18,14 @@ Release Date: April 19, 2022
 + macOS 10.13 and later, x86_64
 + macOS 11.0 and later, aarch64
 
-The following issues are addressed in 8.332.07.1
+The following issues are addressed in 8.332.08.1
 
 | Issue Name          | Platform | Description                           | Link |
 |---------------------| --- |---------------------------------------| --- |
-| Import jdk8u332-b07 | All | Updates Corretto baseline to OpenJDK 8u332-b07 | [jdk8u332-b07](https://github.com/openjdk/jdk8u/releases/tag/jdk8u332-b07)
+| Import jdk8u332-b08 | All | Updates Corretto baseline to OpenJDK 8u332-b08 | [jdk8u332-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u332-b08)
 | Update zlib         | All | CVE-2018-25032: based upon our analysis, OpenJDK/Corretto is not affected by CVE-2018-25032, because the zlib "memLevel" parameter is not settable and is fixed at 8, and the usage of the Z_FIXED strategy is prevented. With these settings there is no way to invoke the issue described in the CVE and we only include this fix out of an abundance of caution. | |
 
-The following CVEs are addressed in 8.332.07.1
+The following CVEs are addressed in 8.332.08.1
 
 | CVE | CVSS | Component |
 | --- | --- | --- |
