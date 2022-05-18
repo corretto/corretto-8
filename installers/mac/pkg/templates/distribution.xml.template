@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installer-gui-script minSpecVersion="1.0">
+    <options rootVolumeOnly="true" hostArchitectures="@macos-arch@"/>
+    <!--+==========================+
+        |       Presentation       |
+        +==========================+-->
+    <title>Amazon Corretto @major@</title>
+    <background file="amazon.png" scaling="proportional" alignment="bottomleft"/>
+    <background-darkAqua file="amazon.png" scaling="proportional" alignment="bottomleft"/>
+    <welcome file="introduction.html"/>
+    <!--+==========================+
+        |         Installer        |
+        +==========================+-->
+    <choices-outline>
+        <line choice="installer_choice_1"/>
+    </choices-outline>
+    <choice id="installer_choice_1" title="amazon-corretto-@major@.jdk" description="">
+        <pkg-ref id="com.amazon.corretto.@major@"/>
+    </choice>
+    <!--+==========================+
+        |    Package References    |
+        +==========================+-->
+    <pkg-ref id="com.amazon.corretto.@major@" version="@full@" auth="root" customLocation="/Library/Java/JavaVirtualMachines/amazon-corretto-@major@.jdk">amazon-corretto-@major@.jdk.pkg</pkg-ref>
+</installer-gui-script>
