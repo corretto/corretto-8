@@ -23,6 +23,7 @@
  * questions.
  */
 
+#include "jvm.h"
 #include "sun_management_OperatingSystemImpl.h"
 
 #include <sys/time.h>

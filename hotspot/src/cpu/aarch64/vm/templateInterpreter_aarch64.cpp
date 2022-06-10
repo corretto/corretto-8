@@ -374,7 +374,7 @@ void InterpreterGenerator::generate_counter_incr(
 
     if (ProfileInterpreter && profile_method != NULL) {
       // Test to see if we should create a method data oop
-      unsigned long offset;
+      uint64_t offset;
       __ adrp(rscratch2, ExternalAddress((address)&InvocationCounter::InterpreterProfileLimit),
               offset);
       __ ldrw(rscratch2, Address(rscratch2, offset));
@@ -386,7 +386,7 @@ void InterpreterGenerator::generate_counter_incr(
     }
 
     {
-      unsigned long offset;
+      uint64_t offset;
       __ adrp(rscratch2,
               ExternalAddress((address)&InvocationCounter::InterpreterInvocationLimit),
               offset);
@@ -747,7 +747,7 @@ address InterpreterGenerator::generate_CRC32_update_entry() {
     Label slow_path;
     // If we need a safepoint check, generate full interpreter entry.
     ExternalAddress state(SafepointSynchronize::address_of_state());
-    unsigned long offset;
+    uint64_t offset;
     __ adrp(rscratch1, ExternalAddress(SafepointSynchronize::address_of_state()), offset);
     __ ldrw(rscratch1, Address(rscratch1, offset));
     assert(SafepointSynchronize::_not_synchronized == 0, "rewrite this code");
@@ -802,7 +802,7 @@ address InterpreterGenerator::generate_CRC32_updateBytes_entry(AbstractInterpret
     Label slow_path;
     // If we need a safepoint check, generate full interpreter entry.
     ExternalAddress state(SafepointSynchronize::address_of_state());
-    unsigned long offset;
+    uint64_t offset;
     __ adrp(rscratch1, ExternalAddress(SafepointSynchronize::address_of_state()), offset);
     __ ldrw(rscratch1, Address(rscratch1, offset));
     assert(SafepointSynchronize::_not_synchronized == 0, "rewrite this code");
@@ -1132,7 +1132,7 @@ address InterpreterGenerator::generate_native_entry(bool synchronized) {
   {
     Label Continue;
     {
-      unsigned long offset;
+      uint64_t offset;
       __ adrp(rscratch2, SafepointSynchronize::address_of_state(), offset);
       __ ldrw(rscratch2, Address(rscratch2, offset));
     }

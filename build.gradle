@@ -1,0 +1,227 @@
+/*
+* Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+// Tasks can refer to version information using the project.version
+// property. For an example of its usage, see ':installers:linux:rpm:buildLogic'
+// where the version numbers are used to populate a templated RPM spec file.
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+allprojects {
+    apply plugin: 'base'
+
+    configurations {
+        compile {
+            transitive = false
+        }
+    }
+
+    version = {
+        def full = file('version.txt').text.trim()
+        def tokens = full.tokenize(".")
+        [full    : full,
+         major   : tokens[0],
+         update  : tokens[1],
+         build   : tokens[2],
+         revision: tokens[3],
+         upstream: "1.${tokens[0]}.0_${tokens[1]}.b${tokens[2]}"]
+    }.call()
+    buildDir = 'corretto-build'
+
+    ext {
+        buildRoot = file("$buildDir/buildRoot")
+        distributionDir = file("$buildDir/distributions")
+        packageInfo = [
+                url       : "https://github.com/corretto/corretto-${project.version.major}",
+                vendor    : 'Amazon',
+                packager  : 'Amazon',
+                license   : 'ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with ' +
+                        'exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.',
+                maintainer: 'Amazon Corretto Team <corretto-team@amazon.com>',
+                buildHost : 'build.amazon.com'
+        ]
+        jdkTools = ['javac', 'appletviewer', 'extcheck', 'extcheck', 'jar', 'jarsigner', 'java-rmi.cgi', 'javadoc',
+                    'javah', 'javap', 'jcmd', 'jconsole', 'jdb', 'jdeps', 'jhat', 'jinfo', 'jmap', 'jps', 'jrunscript',
+                    'jsadebugd', 'jstack', 'jstat', 'jstatd', 'native2ascii', 'rmic', 'schemagen', 'serialver',
+                    'wsgen', 'wsimport', 'xjc']
+        jreTools = ['java', 'jjs', 'keytool', 'orbd', 'pack200', 'policytool', 'rmid', 'rmiregistry',
+                    'servertool', 'tnameserv', 'unpack200']
+
+        configurationFiles = [
+            "jre/lib/calendars.properties",
+            "jre/lib/logging.properties",
+            "jre/lib/net.properties",
+            "jre/lib/security/policy/limited/local_policy.jar",
+            "jre/lib/security/policy/limited/US_export_policy.jar",
+            "jre/lib/security/policy/unlimited/local_policy.jar",
+            "jre/lib/security/policy/unlimited/US_export_policy.jar",
+            "jre/lib/security/blacklisted.certs",
+            "jre/lib/security/java.policy",
+            "jre/lib/security/java.security"
+        ];
+
+        def milestone = project.findProperty("corretto.milestone") ?: "fcs"
+        correttoCommonFlags = [
+                "--with-update-version=${project.version.update}",
+                "--with-build-number=b${project.version.build}",
+                "--with-corretto-revision=${project.version.revision}",
+                "--with-milestone=${milestone}",
+                '--enable-jfr',
+                '--with-vendor-name=Amazon.com Inc.',
+                '--with-vendor-url=https://aws.amazon.com/corretto/',
+                "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+                "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/"
+        ]
+        is_x86 = false
+        if (project.hasProperty("x86")) {
+            is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
+        }
+        if (is_x86) {
+            correttoCommonFlags += ["--with-target-bits=32"]
+        } else {
+            correttoCommonFlags += ["--with-target-bits=64"]
+        }
+
+        // Valid value: null, release, debug, fastdebug, slowdebug
+        def correttoDebugLevel = "release" // Default: release
+        switch(project.findProperty("corretto.debug_level")) {
+            case null:
+            case "release":
+                break
+            case "fastdebug":
+                correttoDebugLevel = "fastdebug"
+                correttoCommonFlags += ['--with-debug-level=fastdebug']
+                break
+            case "debug":
+            case "slowdebug":
+                correttoDebugLevel = "slowdebug"
+                correttoCommonFlags += ['--with-debug-level=slowdebug', '--disable-zip-debug-info']
+                break
+            default:
+                throw new RuntimeException("Invalid corretto.debug_level")
+        }
+
+        def freetypeIncludePath = project.findProperty("corretto.freetype_include")
+        def freetypeLibPath = project.findProperty("corretto.freetype_lib")
+        def jnfFrameworkPath = project.findProperty("corretto.jnf_path")
+
+        // If freetype location is specified, pass to configure
+        if (freetypeIncludePath && freetypeLibPath) {
+            correttoCommonFlags += ["--with-freetype-include=${freetypeIncludePath}", "--with-freetype-lib=${freetypeLibPath}"]
+        }
+
+        // If JNF location is specified, pass to configure
+        if (jnfFrameworkPath) {
+            correttoCommonFlags += ["--with-extra-ldflags=-F${jnfFrameworkPath}"]
+        }
+
+        // customized flags. Identify the index of double dashes as the start of a flag
+        String extraConfig = project.findProperty("corretto.extra_config")
+        def lastIndex = -1
+        if (extraConfig != null) {
+            for (int index = extraConfig.indexOf("--"); index >= 0; index = extraConfig.indexOf("--", index + 1)) {
+                if (lastIndex != -1) {
+                    correttoCommonFlags += extraConfig.substring(lastIndex, index).trim()
+                }
+                lastIndex = index
+            }
+            if (lastIndex != -1) {
+                correttoCommonFlags += extraConfig.substring(lastIndex).trim()
+            }
+        }
+
+        // Determine the system architecture
+        def jdkArch = ""
+        def os = ""
+        if (Os.isFamily(Os.FAMILY_MAC)) {
+            os = 'macosx'
+            nativeArch = ['uname', '-m'].execute().text.trim()
+            if (nativeArch == "arm64") {
+                jdkArch = "aarch64"
+            } else {
+                jdkArch = "x86_64"
+            }
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            os = 'linux'
+            jdkArch = ['uname', '-m'].execute().text.trim()
+        } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            os = 'windows'
+            def arch = System.getenv('PROCESSOR_ARCHITECTURE')
+            if (arch == 'AMD64') {
+                jdkArch = "x86_64"
+            } else { //x86
+                jdkArch = arch
+            }
+        } else {
+            throw new GradleException("OS is not supported")
+        }
+
+        // Ext property: correttoArch
+        switch (jdkArch) {
+            case 'x86':
+            case 'aarch64':
+                correttoArch = jdkArch
+                break
+            case 'x86_64':
+                correttoArch = 'x64'
+                break
+            default:
+                throw new GradleException("${jdkArch} is not supported")
+        }
+
+        // Call toString explicitly to avoid lazy evaluation
+        jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
+        // no debug level suffix for release build
+        if (correttoDebugLevel == "release") {
+            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}".toString()
+        } else {
+            correttoJdkArchiveName =
+                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
+        }
+        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}".toString()
+    }
+}
+
+project(':openjdksrc') {
+    /**
+     * Compresses a snapshot of the source code used to perform the build.
+     */
+    task sourceDistributionTarball(type: Tar) {
+        description 'Assemble source files required for building and distributing Corretto.'
+        compression Compression.GZIP
+        archiveName "amazon-corretto-source-${project.version.full}.tar.gz"
+        from fileTree(rootDir) {
+            include 'src/**'
+            exclude 'src/corretto-build/**'
+            include 'LICENSE',
+                    'README.md',
+                    'THIRD_PARTY_README',
+                    'ASSEMBLY_EXCEPTION',
+                    'commitId.txt',
+                    'version.txt',
+                    'amazon-cacerts'
+        }
+    }
+
+    artifacts {
+        archives sourceDistributionTarball
+    }
+}

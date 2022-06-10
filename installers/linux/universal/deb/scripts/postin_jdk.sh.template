@@ -1,0 +1,29 @@
+# postinst script for Corretto
+#
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+# for details, see https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html or
+# the debian-policy package
+
+
+# Note that Nebula gradle-ospackage-plugin default and only support `configure` option for post installation script.
+
+for i in @jdk_tools@; do
+    if [ -e @java_home@/bin/$i ]; then
+        cmd="update-alternatives --install /usr/bin/$i $i @java_home@/bin/$i @alternatives_priority@"
+        if [ -e @java_home@/man/man1/$i.1 ]; then
+            cmd="$cmd --slave /usr/share/man/man1/$i.1 $i.1 @java_home@/man/man1/$i.1"
+        fi
+        $cmd
+    fi
+done
+
+for i in @jre_tools@; do
+    if [ -e @java_home@/jre/bin/$i ]; then
+        cmd="update-alternatives --install /usr/bin/$i $i @java_home@/jre/bin/$i @alternatives_priority@"
+        if [ -e @java_home@/man/man1/$i.1 ]; then
+            cmd="$cmd --slave /usr/share/man/man1/$i.1 $i.1 @java_home@/man/man1/$i.1"
+        fi
+        $cmd
+    fi
+done

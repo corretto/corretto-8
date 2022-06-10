@@ -1,0 +1,25 @@
+# HG changeset patch
+# User Ben Taylor <benty@amazon.com>
+# Date 1607456627 28800
+#      Tue Dec 08 11:43:47 2020 -0800
+# Node ID 26171d9f7dbbda915a3223b67f4f51f4508ab1fd
+# Parent  9f49e3b6147f44a4f0e84e25780e0340952f2816
+Build with libc++, not libstdc++, on macos
+
+diff --git a/buildSrc/mac.gradle b/buildSrc/mac.gradle
+--- a/buildSrc/mac.gradle
++++ b/buildSrc/mac.gradle
+@@ -192,11 +192,11 @@
+         "-c",
+         ccBaseFlags,
+         IS_DEBUG_NATIVE ? ["-DDEBUG", "-O0"] : ["-O3", "-DNDEBUG"]].flatten()
+-    MAC.launcherlibrary.ccFlags += "-stdlib=libstdc++"
++    MAC.launcherlibrary.ccFlags += "-stdlib=libc++"
+ MAC.launcherlibrary.linker = linker
+ MAC.launcherlibrary.linkFlags = ["-ldl", "-dynamiclib",
+         "-framework", "Cocoa",
+-        "-stdlib=libstdc++"]
++        "-stdlib=libc++"]
+ 
+ MAC.iio = [:]
+ MAC.iio.javahInclude = ["com/sun/javafx/iio/**/*"]

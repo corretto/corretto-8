@@ -268,6 +268,9 @@ private:
   // Claimed high water mark for parallel chunked scanning
   static volatile int _parallel_claimed_idx;
 
+  // Number of entries based on which observing growth by has_grown_much().
+  static int _low_water_mark;
+
   static oop intern(Handle string_or_null, jchar* chars, int length, TRAPS);
   oop basic_add(int index, Handle string_or_null, jchar* name, int len,
                 unsigned int hashValue, TRAPS);
@@ -388,5 +391,25 @@ public:
   // Parallel chunked scanning
   static void clear_parallel_claimed_index() { _parallel_claimed_idx = 0; }
   static int parallel_claimed_index() { return _parallel_claimed_idx; }
+
+  // Return whether the number of entries is much (i.e. by a certain threshold)
+  // greater than the lowest number observed by the same function
+  // since the last time true has been returned.
+  // The initial lowest number observed is zero.
+  //
+  // If the number of entries during a call is less than the current water mark
+  // (e.g. because some unlinking has happened in the meantime),
+  // then the water mark is lowered to this number.
+  //
+  // Thus detected population growth hints that any GC algorithm (such as G1),
+  // which otherwise potentially never unlinks string table entries
+  // (by missing coincidental invocation of a GC phase that does this),
+  // should probably do so now.
+  //
+  // In any case, always report by how many entries the string table has grown
+  // since the low water mark, and how many there are in the table now,
+  // by means of the out parameter.
+  static bool has_grown_much(int *growth, int *number_of_entries);
+
 };
 #endif // SHARE_VM_CLASSFILE_SYMBOLTABLE_HPP

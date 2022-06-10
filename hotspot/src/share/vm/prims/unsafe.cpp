@@ -167,11 +167,18 @@ jint Unsafe_invocation_key_to_method_slot(jint key) {
 
 #define GET_FIELD(obj, offset, type_name, v) \
   oop p = JNIHandles::resolve(obj); \
-  type_name v = *(type_name*)index_oop_from_field_offset_long(p, offset)
+  JavaThread* t = JavaThread::current(); \
+  t->set_doing_unsafe_access(true); \
+  type_name v = *(volatile type_name*)index_oop_from_field_offset_long(p, offset); \
+  t->set_doing_unsafe_access(false);
 
 #define SET_FIELD(obj, offset, type_name, x) \
   oop p = JNIHandles::resolve(obj); \
-  *(type_name*)index_oop_from_field_offset_long(p, offset) = truncate_##type_name(x)
+  JavaThread* t = JavaThread::current(); \
+  t->set_doing_unsafe_access(true); \
+  void* pnt = (type_name*)index_oop_from_field_offset_long(p, offset); \
+  *(volatile type_name*)pnt = truncate_##type_name(x); \
+  t->set_doing_unsafe_access(false);
 
 #define GET_FIELD_VOLATILE(obj, offset, type_name, v) \
   oop p = JNIHandles::resolve(obj); \
@@ -599,6 +606,7 @@ UNSAFE_ENTRY(jobject, Unsafe_AllocateInstance(JNIEnv *env, jobject unsafe, jclas
   UnsafeWrapper("Unsafe_AllocateInstance");
   {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
     return env->AllocObject(cls);
   }
 UNSAFE_END
@@ -965,6 +973,7 @@ UNSAFE_ENTRY(jclass, Unsafe_DefineClass(JNIEnv *env, jobject unsafe, jstring nam
   UnsafeWrapper("Unsafe_DefineClass");
   {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
     return Unsafe_DefineClass_impl(env, name, data, offset, length, loader, pd);
   }
 UNSAFE_END
@@ -974,6 +983,7 @@ UNSAFE_ENTRY(jclass, Unsafe_DefineClass0(JNIEnv *env, jobject unsafe, jstring na
   UnsafeWrapper("Unsafe_DefineClass");
   {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
 
     int depthFromDefineClass0 = 1;
     jclass  caller = JVM_GetCallerClass(env, depthFromDefineClass0);
@@ -1191,6 +1201,7 @@ UNSAFE_ENTRY(void, Unsafe_ThrowException(JNIEnv *env, jobject unsafe, jthrowable
   UnsafeWrapper("Unsafe_ThrowException");
   {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
     env->Throw(thr);
   }
 UNSAFE_END
@@ -1744,6 +1755,7 @@ JVM_ENTRY(void, JVM_RegisterUnsafeMethods(JNIEnv *env, jclass unsafecls))
   UnsafeWrapper("JVM_RegisterUnsafeMethods");
   {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
 
     // Unsafe methods
     {

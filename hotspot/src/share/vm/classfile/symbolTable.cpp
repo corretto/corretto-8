@@ -642,11 +642,16 @@ class StableMemoryChecker : public StackObj {
 
 
 // --------------------------------------------------------------------------
+
+const int MuchGrowthDetectionThreshold = 1*M;
+
 StringTable* StringTable::_the_table = NULL;
 
 bool StringTable::_needs_rehashing = false;
 
 volatile int StringTable::_parallel_claimed_idx = 0;
+
+int StringTable::_low_water_mark = 0;
 
 // Pick hashing algorithm
 unsigned int StringTable::hash_string(const jchar* s, int len) {
@@ -1120,4 +1125,25 @@ void StringTable::rehash_table() {
   // Then rehash with a new global seed.
   _needs_rehashing = false;
   _the_table = new_table;
+}
+
+bool StringTable::has_grown_much(int *growth, int *number_of_entries) {
+  if (!SafepointSynchronize::is_at_safepoint()) {
+    // As long as we cannot access the table safely, let's punt.
+    return false;
+  }
+
+  *number_of_entries = the_table()->number_of_entries();
+  *growth = *number_of_entries - _low_water_mark;
+
+  if (*growth > MuchGrowthDetectionThreshold) {
+    _low_water_mark = *number_of_entries;
+    return true;
+  }
+
+  if (*number_of_entries < _low_water_mark) {
+    _low_water_mark = *number_of_entries;
+  }
+
+  return false;
 }

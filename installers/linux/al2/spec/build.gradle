@@ -1,0 +1,95 @@
+/*
+* Copyright (c) 2018, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+configurations {
+    javafx
+}
+
+dependencies {
+    javafx project(path: ':javafx', configuration: 'archives')
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+
+def tarName = "java-1.8.0-amazon-corretto"
+def tarVersion = "1.8.0_${version.update}.b${version.build}"
+
+/**
+ * Apply version numbers to the RPM spec file template and copy
+ * to the build root.
+ */
+task inflateRpmSpec(type: Copy) {
+    from('java-1.8.0-amazon-corretto.spec.template') {
+        rename { file -> file.replace('.template', '') }
+        project.version.each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
+    }
+    into buildRoot
+}
+
+task createJavafxOverlay(type: Copy) {
+    dependsOn project.configurations.javafx
+    from tarTree(project.configurations.javafx.singleFile)
+    into "$buildDir/distributions/javafx"
+    eachFile {
+        if (it.path.startsWith('rt/')) {
+            it.path = it.path.replace('rt/', 'jre/')
+        }
+    }
+}
+
+task copySourceTar(type: Tar) {
+     if (project.correttoArch == 'x64') {
+        dependsOn createJavafxOverlay
+    }
+    dependsOn project.configurations.compile, inflateRpmSpec
+    compression Compression.GZIP
+    archiveName "${buildDir}/distributions/${tarName}.tar.gz"
+    from("$buildRoot") {
+        include "java-1.8.0-amazon-corretto.spec"
+        into 'rpm'
+    }
+    from(tarTree(project.configurations.compile.singleFile)) {
+        into '/'
+    }
+    from("$buildDir/distributions/javafx") {
+        into "src/javafx"
+    }
+
+}
+
+task rpmBuild(type: Exec) {
+  dependsOn copySourceTar
+    workingDir "$buildDir"
+    executable = '/usr/bin/rpmbuild'
+    args  = ['-vv',
+        '-bs',
+        '--define',
+        "dist .${project.findProperty('corretto.amzn_dist') ?: 'amzn2'}",
+        '--define',
+        "_topdir ${buildDir}/rpmbuild",
+        '--define',
+        "_sourcedir ${buildDir}/distributions",
+        '--define',
+        "_srcrpmdir ${buildDir}/distributions",
+        "${buildRoot}/java-1.8.0-amazon-corretto.spec"]
+}

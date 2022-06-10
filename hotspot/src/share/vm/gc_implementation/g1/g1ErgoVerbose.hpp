@@ -126,6 +126,7 @@ public:
 #define ergo_format_perc(_name_)     ", " _name_ ": %1.2f %%"
 #define ergo_format_ms(_name_)       ", " _name_ ": %1.2f ms"
 #define ergo_format_size(_name_)     ", " _name_ ": " SIZE_FORMAT
+#define ergo_format_int(_name_)      ", " _name_ ": %d"
 
 // Double parameter format strings
 #define ergo_format_byte_perc(_name_)                                   \

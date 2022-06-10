@@ -1303,6 +1303,20 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     public String getSimpleName() {
+        String simpleName = this.simpleName;
+        if (simpleName == null) {
+            this.simpleName = simpleName = getSimpleNameImpl();
+        }
+        return simpleName;
+    }
+
+    // cache the simple name to reduce the latency of calling getSimpleName()
+    private transient String simpleName;
+
+    /**
+     * Non-cached implementation of getSimpleName
+     */
+    private String getSimpleNameImpl() {
         if (isArray())
             return getComponentType().getSimpleName()+"[]";
 
@@ -1380,6 +1394,20 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     public String getCanonicalName() {
+        String canonicalName = this.canonicalName;
+        if (canonicalName == null) {
+            this.canonicalName = canonicalName = getCanonicalNameImpl();
+        }
+        return canonicalName;
+    }
+
+    // cache the canonical name to reduce vm call frequency.
+    private transient String canonicalName;
+
+    /**
+     * Non-cached implementation of getCanonicalName
+     */
+    private String getCanonicalNameImpl() {
         if (isArray()) {
             String canonicalName = getComponentType().getCanonicalName();
             if (canonicalName != null)

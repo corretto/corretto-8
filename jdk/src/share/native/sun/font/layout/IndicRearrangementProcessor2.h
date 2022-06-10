@@ -76,8 +76,8 @@ public:
     static UClassID getStaticClassID();
 
 protected:
-    le_int32 firstGlyph;
-    le_int32 lastGlyph;
+    le_uint32 firstGlyph;
+    le_uint32 lastGlyph;
 
     LEReferenceToArrayOf<IndicRearrangementStateEntry2> entryTable;
     LEReferenceTo<IndicRearrangementSubtableHeader2> indicRearrangementSubtableHeader;

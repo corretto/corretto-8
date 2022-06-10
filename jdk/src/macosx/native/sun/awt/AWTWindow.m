@@ -39,7 +39,7 @@
 #import "LWCToolkit.h"
 #import "GeomUtilities.h"
 #import "ThreadUtilities.h"
-#import "OSVersion.h"
+//#import "OSVersion.h"
 
 #define MASK(KEY) \
     (sun_lwawt_macosx_CPlatformWindow_ ## KEY)

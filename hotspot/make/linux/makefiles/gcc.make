@@ -62,6 +62,9 @@ else
   CC_VER_MINOR := $(shell $(CC) -dumpversion | sed 's/egcs-//' | cut -d'.' -f2)
 endif
 
+ifeq ($(OPENJDK_TARGET_LIBC), musl)
+  SYSDEFS += -DMUSL_LIBC
+endif
 
 ifeq ($(USE_CLANG), true)
   # Clang has precompiled headers support by default, but the user can switch
@@ -202,7 +205,9 @@ else
 endif
 
 # Compiler warnings are treated as errors
-WARNINGS_ARE_ERRORS = -Werror
+ifneq ($(COMPILER_WARNINGS_FATAL),false)
+  WARNINGS_ARE_ERRORS = -Werror
+endif
 
 ifeq ($(USE_CLANG), true)
   # However we need to clean the code up before we can unrestrictedly enable this option with Clang
@@ -221,6 +226,9 @@ ifeq ($(USE_CLANG),)
     WARNING_FLAGS += -Wconversion
   endif
 endif
+
+# workaround for glibc >= 2.24 JDK-8179887
+WARNING_FLAGS += -Wno-deprecated-declarations
 
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases

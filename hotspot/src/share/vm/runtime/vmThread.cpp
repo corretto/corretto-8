@@ -253,6 +253,7 @@ void VMThread::destroy() {
 void VMThread::run() {
   assert(this == vm_thread(), "check");
 
+  this->init_wx();
   this->initialize_thread_local_storage();
   this->set_native_thread_name(this->name());
   this->record_stack_base_and_size();
@@ -260,7 +261,6 @@ void VMThread::run() {
   // case of spurious wakeup, it should wait on the last
   // value set prior to the notify
   this->set_active_handles(JNIHandleBlock::allocate_block());
-
   {
     MutexLocker ml(Notify_lock);
     Notify_lock->notify();

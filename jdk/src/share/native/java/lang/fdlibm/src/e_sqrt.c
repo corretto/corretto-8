@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2001, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -171,7 +171,7 @@ static  double  one     = 1.0, tiny=1.0e-300;
             t  = s0;
             if((t<ix0)||((t==ix0)&&(t1<=ix1))) {
                 s1  = t1+r;
-                if(((t1&sign)==sign)&&(s1&sign)==0) s0 += 1;
+                if(((int)(t1&sign)==sign)&&(s1&sign)==0) s0 += 1;
                 ix0 -= t;
                 if (ix1 < t1) ix0 -= 1;
                 ix1 -= t1;

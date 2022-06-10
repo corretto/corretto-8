@@ -87,7 +87,10 @@ void FileMapInfo::fail_continue(const char *msg, ...) {
     // do not validate, we can still continue "limping" to validate the remaining
     // entries. No need to quit.
     tty->print("[");
+PRAGMA_DIAG_PUSH
+PRAGMA_FORMAT_NONLITERAL_IGNORED_INTERNAL
     tty->vprint(msg, ap);
+PRAGMA_DIAG_POP
     tty->print_cr("]");
   } else {
     if (RequireSharedSpaces) {

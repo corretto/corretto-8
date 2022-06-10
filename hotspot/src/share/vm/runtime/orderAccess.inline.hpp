@@ -70,6 +70,9 @@
 #ifdef TARGET_OS_ARCH_bsd_x86
 # include "orderAccess_bsd_x86.inline.hpp"
 #endif
+#ifdef TARGET_OS_ARCH_bsd_aarch64
+# include "orderAccess_bsd_aarch64.inline.hpp"
+#endif
 #ifdef TARGET_OS_ARCH_bsd_zero
 # include "orderAccess_bsd_zero.inline.hpp"
 #endif

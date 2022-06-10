@@ -463,15 +463,4 @@ class StubRoutines: AllStatic {
   static void arrayof_oop_copy_uninit(HeapWord* src, HeapWord* dest, size_t count);
 };
 
-// Safefetch allows to load a value from a location that's not known
-// to be valid. If the load causes a fault, the error value is returned.
-inline int SafeFetch32(int* adr, int errValue) {
-  assert(StubRoutines::SafeFetch32_stub(), "stub not yet generated");
-  return StubRoutines::SafeFetch32_stub()(adr, errValue);
-}
-inline intptr_t SafeFetchN(intptr_t* adr, intptr_t errValue) {
-  assert(StubRoutines::SafeFetchN_stub(), "stub not yet generated");
-  return StubRoutines::SafeFetchN_stub()(adr, errValue);
-}
-
 #endif // SHARE_VM_RUNTIME_STUBROUTINES_HPP

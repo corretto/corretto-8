@@ -1,0 +1,119 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import static org.apache.tools.ant.taskdefs.condition.Os.OS_NAME
+import static org.apache.tools.ant.taskdefs.condition.Os.OS_ARCH
+
+Properties openJfxVersion = readAsProperties('upstream.version')
+
+configurations {
+    source
+}
+
+repositories {
+    ivy {
+        url 'https://hg.openjdk.java.net'
+        patternLayout {
+            artifact '[organization]/[module]/rt/archive/[revision].[ext]'
+            metadataSources {
+                artifact()
+            }
+        }
+    }
+}
+
+dependencies {
+    source "openjfx:8u-dev:${openJfxVersion.getProperty('tag')}@tar.gz"
+}
+
+task unpackSource(type: Copy) {
+    if (project.hasProperty("openjfxPath")) {
+        // Get source from local path
+        def openjfx = file("${project.getProperty('openjfxPath')}")
+        doFirst {
+            assert openJfxVersion.getProperty('sha256') == sha256(openjfx)
+        }
+        from tarTree(openjfx)
+        into buildRoot
+    } else {
+        // Get source from HG
+        dependsOn configurations.source
+        doFirst {
+            assert openJfxVersion.getProperty('sha256') == sha256(configurations.source.singleFile)
+        }
+        from tarTree(configurations.source.singleFile)
+        into buildRoot
+    }
+}
+
+task patchJfx {
+    dependsOn unpackSource
+    doLast {
+        fileTree('patches/shared').matching {
+            include '*.patch'
+        }.files.sort().each { f ->
+            ant.patch(patchfile: f, 
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true) 
+        }
+        fileTree("patches/${OS_NAME}").matching {
+            include '*.patch'
+        }.files.sort().each { f ->
+            ant.patch(patchfile: f, 
+                    dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true) 
+        }
+    }
+}
+
+task buildJfx(type: Exec) {
+    dependsOn patchJfx
+    workingDir "$buildRoot/rt-${openJfxVersion.getProperty('tag')}"
+    commandLine 'bash', 'gradlew', 'sdk',
+            '-PCOMPILE_WEBKIT=false',
+            '-PCOMPILE_MEDIA=false',
+            '-PBUILD_JAVADOC=false',
+            '-PBUILD_SRC_ZIP=true',
+            '-PCONF=Release'
+    outputs.dir "$workingDir/build/sdk"
+}
+
+task packageJfx(type: Tar) {
+    dependsOn buildJfx
+    archiveName "amazon-corretto-openjfx-${openJfxVersion.getProperty('tag')}-${OS_NAME}-${OS_ARCH}.tar.gz"
+    compression Compression.GZIP
+    from buildJfx.outputs
+}
+
+Properties readAsProperties(String filename) {
+    Properties prop = new Properties()
+    file(filename).withInputStream { prop.load(it) }
+    return prop
+}
+
+String sha256(File file) {
+    ant.checksum(file: file, property: "sha256-${file.name}", algorithm: 'SHA-256')
+    return ant.properties["sha256-${file.name}"]
+}
+
+artifacts {
+    archives packageJfx
+}
+

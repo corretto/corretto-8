@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -241,7 +241,7 @@ connect_to_socket(char *hostname, unsigned short port)
 {
     int fd;
 
-    if (port == 0 || port > 65535) {
+    if (port == 0) {
         HPROF_ERROR(JNI_FALSE, "invalid port number");
         return -1;
     }

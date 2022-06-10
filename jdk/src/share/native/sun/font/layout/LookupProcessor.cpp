@@ -174,7 +174,7 @@ LookupProcessor::LookupProcessor(const LETableReference &baseAddress,
   LEReferenceTo<ScriptListTable> scriptListTable;
   LEReferenceTo<LangSysTable> langSysTable;
     le_uint16 featureCount = 0;
-    le_uint16 lookupListCount = 0;
+    le_uint32 lookupListCount = 0;
     le_uint16 requiredFeatureIndex = 0xFFFF;
 
     if (LE_FAILURE(success)) {
@@ -216,7 +216,7 @@ LookupProcessor::LookupProcessor(const LETableReference &baseAddress,
         return;
     }
 
-    for (int i = 0; i < lookupListCount; i += 1) {
+    for (size_t i = 0; i < lookupListCount; i += 1) {
         lookupSelectArray[i] = 0;
     }
 

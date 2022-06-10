@@ -651,7 +651,7 @@ LayoutEngine *LayoutEngine::layoutEngineFactory(const LEFontInstance *fontInstan
                     break;
               }
 
-                // note: falling through to default case.
+              // Falls through.
             default:
                 result = new OpenTypeLayoutEngine(fontInstance, scriptCode, languageCode, typoFlags, gsubTable, success);
                 break;

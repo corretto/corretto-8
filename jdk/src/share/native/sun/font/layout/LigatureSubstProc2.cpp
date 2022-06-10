@@ -49,8 +49,11 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(LigatureSubstitutionProcessor2)
 
 LigatureSubstitutionProcessor2::LigatureSubstitutionProcessor2(const LEReferenceTo<MorphSubtableHeader2> &morphSubtableHeader, LEErrorCode &success)
   : StateTableProcessor2(morphSubtableHeader, success),
-  ligActionOffset(0),
-  ligatureSubstitutionHeader(morphSubtableHeader, success), componentOffset(0), ligatureOffset(0), entryTable()
+    ligActionOffset(0),
+    componentOffset(0),
+    ligatureOffset(0),
+    entryTable(),
+    ligatureSubstitutionHeader(morphSubtableHeader, success)
 {
     if (LE_FAILURE(success)) return;
 
@@ -131,7 +134,7 @@ le_uint16 LigatureSubstitutionProcessor2::processStateEntry(LEGlyphStorage &glyp
 
             offset = action & lafComponentOffsetMask;
             if (offset != 0) {
-                if(componentGlyph >= glyphStorage.getGlyphCount()) {
+	      if(componentGlyph >= (le_uint32)glyphStorage.getGlyphCount()) {
                   LE_DEBUG_BAD_FONT("preposterous componentGlyph");
                   currGlyph+= dir;
                   return nextStateIndex; // get out! bad font

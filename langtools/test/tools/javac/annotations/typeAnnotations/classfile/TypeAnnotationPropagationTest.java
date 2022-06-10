@@ -23,8 +23,9 @@
 
 /*
  * @test
- * @bug 8144185 8191969
+ * @bug 8144185
  * @summary javac produces incorrect RuntimeInvisibleTypeAnnotations length attribute
+ * @modules jdk.jdeps/com.sun.tools.classfile
  */
 
 import static java.lang.annotation.ElementType.TYPE_USE;
@@ -98,3 +99,4 @@ public class TypeAnnotationPropagationTest extends ClassfileTestHelper {
         @interface A {}
     }
 }
+

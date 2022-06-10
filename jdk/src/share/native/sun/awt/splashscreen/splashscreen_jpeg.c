@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -238,13 +238,15 @@ int
 SplashDecodeJpegStream(Splash * splash, SplashStream * stream)
 {
     struct jpeg_decompress_struct cinfo;
-    int success = 0;
+    int success;
     struct my_error_mgr jerr;
 
     cinfo.err = jpeg_std_error(&jerr.pub);
     jerr.pub.error_exit = my_error_exit;
 
     if (setjmp(jerr.setjmp_buffer)) {
+        // initialize it again because compiler believes it may change
+        success = 0;
         goto done;
     }
     jpeg_create_decompress(&cinfo);

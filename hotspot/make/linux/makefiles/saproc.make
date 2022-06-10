@@ -67,9 +67,11 @@ endif
 # if $(AGENT_DIR) does not exist, we don't build SA
 # also, we don't build SA on Itanium or zero.
 
+ifneq ($(wildcard /usr/include/thread_db.h),)
 ifneq ($(wildcard $(AGENT_DIR)),)
 ifneq ($(filter-out ia64 zero,$(SRCARCH)),)
   BUILDLIBSAPROC = $(LIBSAPROC)
+endif
 endif
 endif
 

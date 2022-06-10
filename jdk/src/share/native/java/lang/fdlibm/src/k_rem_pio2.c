@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -131,7 +130,6 @@
  *
  */
 
-
 /*
  * Constants:
  * The hexadecimal values are the intended ones for the following
@@ -198,7 +196,8 @@ twon24  =  5.96046447753906250000e-08; /* 0x3E700000, 0x00000000 */
 
     /* compute q[0],q[1],...q[jk] */
         for (i=0;i<=jk;i++) {
-            for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j]; q[i] = fw;
+            for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j];
+            q[i] = fw;
         }
 
         jz = jk;

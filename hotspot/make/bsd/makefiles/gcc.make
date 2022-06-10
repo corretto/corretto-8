@@ -149,6 +149,7 @@ ifeq ($(USE_CLANG), true)
     PCH_FLAG/sharedRuntimeTrig.o = $(PCH_FLAG/NO_PCH)
     PCH_FLAG/sharedRuntimeTrans.o = $(PCH_FLAG/NO_PCH)
     PCH_FLAG/unsafe.o = $(PCH_FLAG/NO_PCH)
+    PCH_FLAG/metaspaceShared.o = $(PCH_FLAG/NO_PCH)
   
   endif
 else # ($(USE_CLANG), true)
@@ -258,6 +259,7 @@ ifeq ($(USE_CLANG), true)
 #  WARNINGS_ARE_ERRORS += -Wno-tautological-constant-out-of-range-compare
   WARNINGS_ARE_ERRORS += -Wno-delete-non-virtual-dtor -Wno-deprecated -Wno-format -Wno-dynamic-class-memaccess
   WARNINGS_ARE_ERRORS += -Wno-empty-body
+  WARNINGS_ARE_ERRORS += -Wno-uninitialized -Wno-undefined-bool-conversion
 endif
 
 WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wformat=2

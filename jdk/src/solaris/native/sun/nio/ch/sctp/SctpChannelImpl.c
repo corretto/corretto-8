@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -538,7 +538,7 @@ JNIEXPORT jint JNICALL Java_sun_nio_ch_sctp_SctpChannelImpl_send0
    jobject targetAddress, jint targetPort, jint assocId, jint streamNumber,
    jboolean unordered, jint ppid) {
     SOCKADDR sa;
-    int sa_len = sizeof(sa);
+    socklen_t sa_len = sizeof(sa);
     ssize_t rv = 0;
     jlong *addr = jlong_to_ptr(address);
     struct iovec iov[1];

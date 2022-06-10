@@ -235,7 +235,7 @@ inline int g_isnan(double f) { return isnand(f); }
 #elif defined(__APPLE__)
 inline int g_isnan(double f) { return isnan(f); }
 #elif defined(LINUX) || defined(_ALLBSD_SOURCE)
-inline int g_isnan(float  f) { return isnanf(f); }
+inline int g_isnan(float  f) { return isnan(f); }
 inline int g_isnan(double f) { return isnan(f); }
 #else
 #error "missing platform-specific definition here"
@@ -249,8 +249,8 @@ inline int g_isnan(double f) { return isnan(f); }
 
 // Checking for finiteness
 
-inline int g_isfinite(jfloat  f)                 { return finite(f); }
-inline int g_isfinite(jdouble f)                 { return finite(f); }
+inline int g_isfinite(jfloat  f)                 { return isfinite(f); }
+inline int g_isfinite(jdouble f)                 { return isfinite(f); }
 
 
 // Wide characters
@@ -279,6 +279,7 @@ inline int wcslen(const jchar* x) { return wcslen((const wchar_t*)x); }
 #define PRAGMA_FORMAT_NONLITERAL_IGNORED _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"") \
                                          _Pragma("GCC diagnostic ignored \"-Wformat-security\"")
 #define PRAGMA_FORMAT_IGNORED _Pragma("GCC diagnostic ignored \"-Wformat\"")
+#define PRAGMA_FORMAT_OVERFLOW_IGNORED _Pragma("GCC diagnostic ignored \"-Wformat-overflow\"")
 
 #if defined(__clang_major__) && \
       (__clang_major__ >= 4 || \

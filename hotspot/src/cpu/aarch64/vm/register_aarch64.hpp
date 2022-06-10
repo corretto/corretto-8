@@ -65,7 +65,7 @@ class RegisterImpl: public AbstractRegisterImpl {
 
   // Return the bit which represents this register.  This is intended
   // to be ORed into a bitmask: for usage see class RegSet below.
-  unsigned long bit(bool should_set = true) const { return should_set ? 1 << encoding() : 0; }
+  uint64_t bit(bool should_set = true) const { return should_set ? 1 << encoding() : 0; }
 };
 
 // The integer registers of the aarch64 architecture

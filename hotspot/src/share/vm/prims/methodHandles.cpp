@@ -1409,6 +1409,7 @@ JVM_ENTRY(void, JVM_RegisterMethodHandleMethods(JNIEnv *env, jclass MHN_class)) 
 
   if (enable_MH) {
     ThreadToNativeFromVM ttnfv(thread);
+    Thread::WXExecFromWriteSetter wx_exec;
 
     if (enable_MH) {
       enable_MH = register_natives(env, MHN_class, MHN_methods, sizeof(MHN_methods)/sizeof(JNINativeMethod));

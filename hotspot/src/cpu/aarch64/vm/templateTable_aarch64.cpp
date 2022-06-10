@@ -94,9 +94,16 @@ static inline Address aaddress(Register r) {
   return iaddress(r);
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
 static inline Address at_rsp() {
   return Address(esp, 0);
 }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 // At top of Java expression stack which may be different than esp().  It
 // isn't for category 1 objects.

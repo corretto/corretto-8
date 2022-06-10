@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -780,7 +780,7 @@ check_heap_tags(struct LookupTable *utab, unsigned char *pstart, int nbytes)
                             long_form = 0;
                             max_count = 72;
                             quote     = "\"";
-                            /*FALLTHRU*/
+                            // Falls through.
                         case HPROF_INT:
                         case HPROF_DOUBLE:
                         case HPROF_LONG:

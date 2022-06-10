@@ -1,0 +1,201 @@
+/*
+ * Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation. Amazon designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+plugins {
+    id 'nebula.ospackage' version 'latest.release'
+}
+
+dependencies {
+    compile project(path: ':installers:linux:universal:tar', configuration: 'archives')
+}
+
+ext {
+    // project.correttoArch has been verified in the root project
+    // No need to set default
+    switch (project.correttoArch) {
+        case 'aarch64':
+            // Ubuntu arch designation for 64bit ARM is arm64
+            arch_deb = 'arm64'
+            break
+        case 'x64':
+            // Ubuntu arch designation for AMD64 & Intel 64 is amd64
+            arch_deb = 'amd64'
+            break
+    }
+}
+
+def jvmDir = '/usr/lib/jvm'
+def jdkInstallationDirName = "java-1.${project.version.major}.0-amazon-corretto"
+def jdkHome = "${jvmDir}/${jdkInstallationDirName}".toString()
+def jdkBinaryDir = "${buildRoot}/${project.correttoJdkArchiveName}"
+def jdkPackageName = "java-1.${project.version.major}.0-amazon-corretto-jdk"
+
+// In trusty repo, openjdk7 has priority 1071 and openjdk6 has 1061
+// Corretto uses the same priority in both rpm and deb
+def alternativesPriority = "10${project.version.major}00${project.version.update}".toString()
+
+def jinfoName = ".${jdkInstallationDirName}.jinfo"
+
+ospackage {
+    // Valid version must start with a digit and only contain [A-Za-z0-9.+:~-]
+    // See http://manpages.ubuntu.com/manpages/artful/en/man5/deb-version.5.html
+    version "${project.version.major}.${project.version.update}.${project.version.build}"
+    release project.version.revision
+
+    url "${packageInfo.url}"
+    vendor "${packageInfo.vendor}"
+    packager "${packageInfo.packager}"
+    license "${packageInfo.license}"
+    buildHost "${packageInfo.buildHost}"
+    maintainer "${packageInfo.maintainer}"
+    packageGroup 'java'
+    priority 'optional'
+    user 'root'
+    permissionGroup 'root'
+    epoch 1
+    arch arch_deb
+    multiArch SAME
+}
+
+/**
+ * Extract universal Corretto universal tar for DEB packaging.
+ */
+task extractUniversalTar() {
+    dependsOn project.configurations.compile
+    doLast {
+        exec {
+            def universalTar = fileTree(project.configurations.compile.singleFile).getSingleFile().getPath()
+            workingDir buildRoot
+            if (!buildRoot.exists()) {
+                buildRoot.mkdirs()
+            }
+
+            commandLine 'tar', 'xfz', universalTar
+        }
+    }
+}
+
+/**
+ * Populate version numbers, java home and alternatives
+ * priority to postin_jdk.sh.template and preun_jdk.sh.template.
+ * Create script copies under build root scripts folder.
+ */
+task inflateDebScriptTemplate(type: Copy) {
+    dependsOn extractUniversalTar
+    from('scripts') {
+        include '**/*.template'
+        rename { file -> file.replace('.template', '') }
+        (project.version + [
+            java_home: jdkHome,
+            alternatives_priority: alternativesPriority,
+            jdk_tools: jdkTools.join(' '),
+            jre_tools: jreTools.join(' ')
+        ])
+        .each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
+    }
+    into "${buildRoot}/scripts"
+}
+
+/**
+ * Inflate jinfo file used by update-java-alternatives command.
+ * Create script copy under buildRoot/jinfo folder. See
+ * http://manpages.ubuntu.com/manpages/xenial/man8/update-java-alternatives.8.html#files
+ */
+task inflateJinfoTemplate(type: Copy) {
+    from('jinfo') {
+        include '**/*.template'
+        rename ( 'jinfo.template', jinfoName )
+        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, directory_name: jdkInstallationDirName.toString()])
+        .each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
+        expand(jre_tools: jreTools, jdk_tools: jdkTools)
+    }
+    into "${buildRoot}/jinfo"
+}
+
+/**
+ * Generate DEB for JDK, with package published under
+ * distributions folder.
+ */
+task generateJdkDeb(type: Deb) {
+    description 'Create the DEB package for Corretto JDK'
+    dependsOn inflateDebScriptTemplate
+    dependsOn inflateJinfoTemplate
+
+    packageName jdkPackageName
+    packageDescription "Amazon Corretto\'s packaging of the OpenJDK ${project.version.major} code."
+    summary "Amazon Corretto ${project.version.major} development environment"
+
+    postInstall file("$buildRoot/scripts/postin_jdk.sh")
+    preUninstall file("$buildRoot/scripts/preun_jdk.sh")
+
+    requires('java-common')
+    requires('libc6', '2.12', GREATER | EQUAL)
+
+    provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
+    provides('java-sdk')
+    provides('java2-sdk')
+    provides('java5-sdk')
+    provides('java6-sdk')
+    provides('java7-sdk')
+    provides('java7-jdk')
+    provides('java8-jdk')
+    provides('java-compiler')
+    // TODO: Move this to the jre when splitting the fat deb
+    provides('java-runtime')
+    provides('java2-runtime')
+    provides('java5-runtime')
+    provides('java6-runtime')
+    provides('java7-runtime')
+    provides('java8-runtime')
+    // TODO: Move this to the headless jre when splitting the fat deb
+    provides('java-runtime-headless')
+    provides('java2-runtime-headless')
+    provides('java5-runtime-headless')
+    provides('java6-runtime-headless')
+    provides('java7-runtime-headless')
+    provides('java8-runtime-headless')
+
+    from(jdkBinaryDir) {
+        include(project.configurationFiles)
+        // Deb actually uses configuationFile and not fileType see https://github.com/nebula-plugins/gradle-ospackage-plugin/issues/118#issuecomment-656004360
+        // Path must be the fully qualified install path
+        configurationFile = project.configurationFiles.collect{ "${jdkHome}/${it}" }.join("\n")
+        into jdkHome
+    }
+    from(jdkBinaryDir) {
+        into jdkHome
+        exclude(project.configurationFiles)
+        createDirectoryEntry = true
+    }
+
+    from("${buildRoot}/jinfo") {
+        include '**/*.jinfo'
+        into jvmDir
+    }
+}
+
+artifacts {
+    archives generateJdkDeb
+}

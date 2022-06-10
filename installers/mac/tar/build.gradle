@@ -1,0 +1,212 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+configurations {
+    javafx
+}
+
+dependencies {
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        javafx project(path: ':javafx', configuration: 'archives')
+    }
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-bundle"
+def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
+
+/**
+ * Create a local copy of the source tree in our
+ * build root -- this is required since OpenJDK's
+ * build wants to occur inside the source tree,
+ * and we don't want to tamper with someone
+ * else's tree.
+ */
+task copySource(type: Exec) {
+    if (!file(buildRoot).exists()) {
+        file(buildRoot).mkdirs()
+    }
+    workingDir '/usr/bin'
+    commandLine 'rsync', '-am',
+            '--exclude=pre-build',
+            '--exclude=installers',
+            '--exclude=src/corretto-build',
+            "${project.rootDir}/", buildRoot
+}
+
+task configureBuild(type: Exec) {
+    dependsOn project.configurations.compile
+    dependsOn copySource
+    workingDir "$buildRoot/src"
+    // Platform specific flags
+    def command = ['bash', 'configure',
+            "--with-toolchain-type=clang",
+            '--with-x']
+    // Common flags
+    command += project.correttoCommonFlags
+    commandLine command.flatten()
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make', 'images'
+    outputs.dir jdkResultingImage
+}
+
+task importAmazonCacerts(type: Exec) {
+    dependsOn executeBuild
+    workingDir "${jdkResultingImage}/jdk1.${project.version.major}.0_${project.version.update}.jdk/Contents/Home/"
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'keytool', '-importkeystore', '-noprompt',
+            '-srckeystore', "${buildRoot}/amazon-cacerts",
+            '-srcstorepass', keystore_password,
+            '-destkeystore', 'jre/lib/security/cacerts',
+            '-deststorepass', keystore_password
+}
+
+task renameBuildArtifacts {
+    dependsOn importAmazonCacerts
+    doLast {
+        file("${jdkResultingImage}/jdk1.${project.version.major}.0_${project.version.update}.jdk").
+                renameTo(file("${jdkResultingImage}/${correttoMacDir}"))
+    }
+}
+
+task inflatePlistTemplate(type: Copy) {
+    dependsOn renameBuildArtifacts
+    from('templates/Info.plist.template') {
+        rename { file -> file.replace('.template', '') }
+        project.version.each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
+    }
+    into "${jdkResultingImage}/${correttoMacDir}/Contents"
+}
+
+task applyJavafxOverlay(type: Copy) {
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        dependsOn project.configurations.javafx
+        dependsOn renameBuildArtifacts
+        from tarTree(project.configurations.javafx.singleFile)
+        into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+        eachFile {
+            if (it.path.startsWith('rt/')) {
+                it.path = it.path.replace('rt/', 'jre/')
+            }
+        }
+    }
+}
+
+task prepareArtifacts {
+    if (!project.hasProperty("corretto.disable_jfx")) {
+        dependsOn applyJavafxOverlay
+    }
+    dependsOn inflatePlistTemplate
+    doLast {
+        if(file("${buildDir}/${correttoMacDir}").exists()) {
+            delete "${buildDir}/${correttoMacDir}"
+        }
+        copy {
+            from("${jdkResultingImage}/${correttoMacDir}") {
+                include "Contents/Home/bin/**"
+                include "Contents/Home/include/**"
+                include "Contents/Home/jre/**"
+                include "Contents/Home/lib/**"
+                include "Contents/Home/man/man1/**"
+                include "Contents/Home/src.zip"
+                if (!project.hasProperty("corretto.disable_jfx")) {
+                    include "Contents/Home/javafx-src.zip"
+                }
+                include "Contents/Info.plist"
+                include "Contents/MacOS/**"
+            }
+            from(buildRoot) {
+                include 'ASSEMBLY_EXCEPTION'
+                include 'LICENSE'
+                include 'THIRD_PARTY_README'
+                include 'commitId.txt'
+                include 'version.txt'
+                into "Contents/Home"
+            }
+            into "${buildDir}/${correttoMacDir}"
+        }
+        // Set the directory as bundle
+        exec {
+            commandLine "SetFile", "-a", "B", "${buildDir}/${correttoMacDir}"
+        }
+
+        // Fix freetype linking and permissions
+        def freetypeLibPath = project.findProperty("corretto.freetype_lib")
+        if (freetypeLibPath) {
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
+                commandLine "chmod", "755", "./jre/lib/libfreetype.dylib.6"
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
+                commandLine "install_name_tool", "-change", "${freetypeLibPath}/libfreetype.6.dylib", "@rpath/libfreetype.dylib.6", "./jre/lib/libfontmanager.dylib"
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home"
+                commandLine "install_name_tool", "-id", "@rpath/libfreetype.dylib.6", "./jre/lib/libfreetype.dylib.6"
+            }
+        }
+
+        // Include JNF if requested
+        def jnfFrameworkPath = project.findProperty("corretto.jnf_path")
+        if (jnfFrameworkPath) {
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+                commandLine "cp", "-a", "${jnfFrameworkPath}/JavaNativeFoundation.framework", "."
+            }
+            exec {
+                workingDir "${buildDir}/${correttoMacDir}/Contents/Home/jre/lib"
+                commandLine "rm", "-r", "JavaNativeFoundation.framework/Headers"
+            }
+        }
+    }
+}
+
+task packageDebugSymbols(type: Exec) {
+    dependsOn prepareArtifacts
+    String tarDir = "${distributionDir}/${project.correttoDebugSymbolsArchiveName}.tar.gz"
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar -czf ${tarDir} \$(find ${correttoMacDir} -name \"*.diz\")"
+    outputs.file tarDir
+}
+
+task packaging(type: Exec) {
+    dependsOn packageDebugSymbols
+    String tarDir = "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz"
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar --exclude=*.diz -czf ${tarDir} ${correttoMacDir}"
+    outputs.file tarDir
+}
+
+build.dependsOn packaging
+
+artifacts {
+    archives file: packaging.outputs.getFiles().getSingleFile(), builtBy: packaging
+}

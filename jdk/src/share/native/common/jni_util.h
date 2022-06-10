@@ -320,6 +320,13 @@ JNU_NotifyAll(JNIEnv *env, jobject object);
         }                                       \
     } while (0)                                 \
 
+#define CHECK_0_RETURN(x, y)                    \
+    do {                                        \
+        if ((x) == 0) {                         \
+            return (y);                         \
+        }                                       \
+    } while (0)                                 \
+
 #ifdef __cplusplus
 #define JNU_CHECK_EXCEPTION(env)                \
     do {                                        \

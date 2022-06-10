@@ -1,0 +1,3 @@
+if [ $1 -eq 0 ] ; then
+    alternatives --remove javac ${RPM_INSTALL_PREFIX}/bin/javac
+fi

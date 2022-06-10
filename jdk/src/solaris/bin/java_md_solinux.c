@@ -292,6 +292,14 @@ RequiresSetenv(int wanted, const char *jvmpath) {
     char *dmllp = NULL;
     char *p; /* a utility pointer */
 
+#ifdef MUSL_LIBC
+    /*
+     * The musl library loader requires LD_LIBRARY_PATH to be set in order
+     * to correctly resolve the dependency libjava.so has on libjvm.so.
+     */
+    return JNI_TRUE;
+#endif
+
 #ifdef AIX
     /* We always have to set the LIBPATH on AIX because ld doesn't support $ORIGIN. */
     return JNI_TRUE;
@@ -819,7 +827,7 @@ GetJREPath(char *path, jint pathsize, const char * arch, jboolean speculative)
             return JNI_TRUE;
         }
         /* ensure storage for path + /jre + NULL */
-        if ((JLI_StrLen(path) + 4  + 1) > pathsize) {
+        if ((JLI_StrLen(path) + 4  + 1) > (size_t)pathsize) {
             JLI_TraceLauncher("Insufficient space to store JRE path\n");
             return JNI_FALSE;
         }
@@ -1043,7 +1051,7 @@ ContinueInNewThread0(int (JNICALL *continuation)(void *), jlong stack_size, void
     if (pthread_create(&tid, &attr, (void *(*)(void*))continuation, (void*)args) == 0) {
       void * tmp;
       pthread_join(tid, &tmp);
-      rslt = (int)tmp;
+      rslt = (int)(intptr_t)tmp;
     } else {
      /*
       * Continue execution in current thread if for some reason (e.g. out of

@@ -103,6 +103,9 @@
 #ifdef TARGET_OS_ARCH_bsd_x86
 # include "globals_bsd_x86.hpp"
 #endif
+#ifdef TARGET_OS_ARCH_bsd_aarch64
+# include "globals_bsd_aarch64.hpp"
+#endif
 #ifdef TARGET_OS_ARCH_bsd_zero
 # include "globals_bsd_zero.hpp"
 #endif
@@ -1163,7 +1166,7 @@ class CommandLineFlags {
                                                                             \
   product(intx, MonitorBound, 0, "Bound Monitor population")                \
                                                                             \
-  product(bool, MonitorInUseLists, false, "Track Monitors for Deflation")   \
+  product(bool, MonitorInUseLists, true, "Track Monitors for Deflation")    \
                                                                             \
   product(intx, SyncFlags, 0, "(Unsafe, Unstable) Experimental Sync flags") \
                                                                             \

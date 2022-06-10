@@ -39,8 +39,16 @@
 
 #ifndef register_t
 #define register_t uint64_t
+#if defined(x86_64) && !defined(amd64)
+#define amd64 1
 #endif
 
+#if defined(__aarch64__) && !defined(aarch64)
+#define aarch64 1
+#endif
+#endif
+
+#if defined(amd64)
 /*** registers copied from bsd/amd64 */
 typedef struct reg {
   register_t      r_r15;
@@ -70,6 +78,43 @@ typedef struct reg {
   register_t      r_rsp;
   register_t      r_ss;          // not used
 } reg;
+
+#elif defined(aarch64)
+typedef struct reg {
+  register_t      r_r28;
+  register_t      r_r27;
+  register_t      r_r26;
+  register_t      r_r25;
+  register_t      r_r24;
+  register_t      r_r23;
+  register_t      r_r22;
+  register_t      r_r21;
+  register_t      r_r20;
+  register_t      r_r19;
+  register_t      r_r18;
+  register_t      r_r17;
+  register_t      r_r16;
+  register_t      r_r15;
+  register_t      r_r14;
+  register_t      r_r13;
+  register_t      r_r12;
+  register_t      r_r11;
+  register_t      r_r10;
+  register_t      r_r9;
+  register_t      r_r8;
+  register_t      r_r7;
+  register_t      r_r6;
+  register_t      r_r5;
+  register_t      r_r4;
+  register_t      r_r3;
+  register_t      r_r2;
+  register_t      r_r1;
+  register_t      r_r0;
+  register_t      r_fp;
+  register_t      r_sp;
+  register_t      r_pc;
+} reg;
+#endif
 
 // convenient defs
 typedef struct mach_header_64 mach_header_64;

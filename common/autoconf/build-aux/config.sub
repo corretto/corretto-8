@@ -29,6 +29,11 @@
 
 DIR=`dirname $0`
 
+if echo $* | grep linux-musl >/dev/null ; then
+    echo $*
+    exit
+fi
+
 # First, filter out everything that doesn't begin with "aarch64-"
 if ! echo $* | grep '^aarch64-' >/dev/null ; then
     . $DIR/autoconf-config.sub "$@"

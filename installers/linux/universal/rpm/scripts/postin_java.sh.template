@@ -1,0 +1,25 @@
+if [ $1 -eq 1 ] ; then
+     alternatives --install /usr/bin/java java ${RPM_INSTALL_PREFIX}/jre/bin/java @alternatives_priority@ \
+                  --slave /usr/lib/jvm/jre jre ${RPM_INSTALL_PREFIX}/jre \
+                  --slave /usr/bin/jjs jjs ${RPM_INSTALL_PREFIX}/jre/bin/jjs \
+                  --slave /usr/bin/keytool keytool ${RPM_INSTALL_PREFIX}/jre/bin/keytool \
+                  --slave /usr/bin/orbd orbd ${RPM_INSTALL_PREFIX}/jre/bin/orbd \
+                  --slave /usr/bin/pack200 pack200 ${RPM_INSTALL_PREFIX}/jre/bin/pack200 \
+                  --slave /usr/bin/policytool policytool ${RPM_INSTALL_PREFIX}/jre/bin/policytool \
+                  --slave /usr/bin/rmid rmid ${RPM_INSTALL_PREFIX}/jre/bin/rmid \
+                  --slave /usr/bin/rmiregistry rmiregistry ${RPM_INSTALL_PREFIX}/jre/bin/rmiregistry \
+                  --slave /usr/bin/servertool servertool ${RPM_INSTALL_PREFIX}/jre/bin/servertool \
+                  --slave /usr/bin/tnameserv tnameserv ${RPM_INSTALL_PREFIX}/jre/bin/tnameserv \
+                  --slave /usr/bin/unpack200 unpack200 ${RPM_INSTALL_PREFIX}/jre/bin/unpack200 \
+                  --slave /usr/share/man/man1/java.1 java.1 ${RPM_INSTALL_PREFIX}/man/man1/java.1 \
+                  --slave /usr/share/man/man1/jjs.1 jjs.1 ${RPM_INSTALL_PREFIX}/man/man1/jjs.1 \
+                  --slave /usr/share/man/man1/keytool.1 keytool.1 ${RPM_INSTALL_PREFIX}/man/man1/keytool.1 \
+                  --slave /usr/share/man/man1/orbd.1 orbd.1 ${RPM_INSTALL_PREFIX}/man/man1/orbd.1 \
+                  --slave /usr/share/man/man1/pack200.1 pack200.1 ${RPM_INSTALL_PREFIX}/man/man1/pack200.1 \
+                  --slave /usr/share/man/man1/policytool.1 policytool.1 ${RPM_INSTALL_PREFIX}/man/man1/policytool.1 \
+                  --slave /usr/share/man/man1/rmid.1 rmid.1 ${RPM_INSTALL_PREFIX}/man/man1/rmid.1 \
+                  --slave /usr/share/man/man1/rmiregistry.1 rmiregistry.1 ${RPM_INSTALL_PREFIX}/man/man1/rmiregistry.1 \
+                  --slave /usr/share/man/man1/servertool.1 servertool.1 ${RPM_INSTALL_PREFIX}/man/man1/servertool.1 \
+                  --slave /usr/share/man/man1/tnameserv.1 tnameserv.1 ${RPM_INSTALL_PREFIX}/man/man1/tnameserv.1 \
+                  --slave /usr/share/man/man1/unpack200.1 unpack200.1 ${RPM_INSTALL_PREFIX}/man/man1/unpack200.1
+fi

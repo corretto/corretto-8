@@ -101,6 +101,7 @@ void GCTaskThread::print_on(outputStream* st) const {
 // for tasks to be enqueued for execution.
 
 void GCTaskThread::run() {
+  this->init_wx();
   // Set up the thread for stack overflow support
   this->record_stack_base_and_size();
   this->initialize_thread_local_storage();

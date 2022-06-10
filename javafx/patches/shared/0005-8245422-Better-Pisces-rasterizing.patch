@@ -1,0 +1,2247 @@
+From 022babcd340a448e8d76433aab71c98f047562b2 Mon Sep 17 00:00:00 2001
+From: Kevin Rushforth <kcr@openjdk.org>
+Date: Fri, 29 May 2020 11:49:54 +0000
+Subject: [PATCH] 8245422: Better Pisces rasterizing
+
+Reviewed-by: prr, rhalade, arapte, mschoene
+---
+ .../java/com/sun/openpisces/Renderer.java     |  16 +-
+ .../impl/shape/NativePiscesRasterizer.java    |  42 +-
+ .../impl/shape/OpenPiscesRasterizer.java      |  62 +--
+ .../main/java/com/sun/prism/sw/SWContext.java |  35 +-
+ .../graphics/src/main/native-prism/Dasher.c   | 128 ++++--
+ .../native-prism/NativePiscesRasterizer.c     |  65 ++-
+ .../src/main/native-prism/PathConsumer.h      |  19 +-
+ .../graphics/src/main/native-prism/Renderer.c | 112 +++--
+ .../graphics/src/main/native-prism/Renderer.h |   8 +-
+ .../graphics/src/main/native-prism/Stroker.c  | 392 +++++++++++++-----
+ .../src/main/native-prism/Transformer.c       |  90 ++--
+ 11 files changed, 678 insertions(+), 291 deletions(-)
+
+diff --git a/modules/graphics/src/main/java/com/sun/openpisces/Renderer.java b/modules/graphics/src/main/java/com/sun/openpisces/Renderer.java
+index 625c4511..ae1f0682 100644
+--- a/modules/graphics/src/main/java/com/sun/openpisces/Renderer.java
++++ b/modules/graphics/src/main/java/com/sun/openpisces/Renderer.java
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -139,12 +139,14 @@ public final class Renderer implements PathConsumer2D {
+     private static final int CURX = 1;
+     // NEXT and OR are meant to be indeces into "int" fields, but arrays must
+     // be homogenous, so every field is a float. However floats can represent
+-    // exactly up to 26 bit ints, so we're ok.
++    // exactly up to 24 bit ints, so we're ok as long as we check for overflow.
+     private static final int OR   = 2;
+     private static final int SLOPE = 3;
+     private static final int NEXT = 4;
+     private static final int SIZEOF_EDGE = 5;
+ 
++    private static final int MAX_EDGE_IDX = 1 << 24;
++
+     private int sampleRowMin;
+     private int sampleRowMax;
+     private float edgeMinX;
+@@ -162,6 +164,9 @@ public final class Renderer implements PathConsumer2D {
+     private void addEdgeToBucket(final int eptr, final int bucket) {
+         // we could implement this in terms of insertEdge, but this is a special
+         // case, so we optimize a bit.
++        if (edgeBuckets[bucket*2] >= MAX_EDGE_IDX) {
++            throw new ArrayIndexOutOfBoundsException(edgeBuckets[bucket*2]);
++        }
+         edges[eptr+NEXT] = edgeBuckets[bucket*2];
+         edgeBuckets[bucket*2] = eptr + 1;
+         edgeBuckets[bucket*2 + 1] += 2;
+@@ -294,6 +299,12 @@ public final class Renderer implements PathConsumer2D {
+             if (x1 > edgeMaxX) { edgeMaxX = x1; }
+         }
+ 
++        final int bucketIdx = firstCrossing - boundsMinY;
++        final int nextCurrEdge = edgeBuckets[bucketIdx*2];
++        if (nextCurrEdge >= MAX_EDGE_IDX) {
++            throw new ArrayIndexOutOfBoundsException(nextCurrEdge);
++        }
++
+         final int ptr = numEdges * SIZEOF_EDGE;
+         edges = Helpers.widenArray(edges, ptr, SIZEOF_EDGE);
+         numEdges++;
+@@ -301,7 +312,6 @@ public final class Renderer implements PathConsumer2D {
+         edges[ptr+CURX] = x1 + (firstCrossing + 0.5f - y1) * slope;
+         edges[ptr+SLOPE] = slope;
+         edges[ptr+YMAX] = lastCrossing;
+-        final int bucketIdx = firstCrossing - boundsMinY;
+         addEdgeToBucket(ptr, bucketIdx);
+         edgeBuckets[(lastCrossing - boundsMinY)*2 + 1] |= 1;
+     }
+diff --git a/modules/graphics/src/main/java/com/sun/prism/impl/shape/NativePiscesRasterizer.java b/modules/graphics/src/main/java/com/sun/prism/impl/shape/NativePiscesRasterizer.java
+index 14de3976..5140461c 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/impl/shape/NativePiscesRasterizer.java
++++ b/modules/graphics/src/main/java/com/sun/prism/impl/shape/NativePiscesRasterizer.java
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -31,6 +31,7 @@ import com.sun.javafx.geom.PathIterator;
+ import com.sun.javafx.geom.RectBounds;
+ import com.sun.javafx.geom.Shape;
+ import com.sun.javafx.geom.transform.BaseTransform;
++import com.sun.javafx.util.Logging;
+ import com.sun.prism.BasicStroke;
+ import com.sun.prism.impl.PrismSettings;
+ import java.nio.ByteBuffer;
+@@ -153,21 +154,30 @@ public class NativePiscesRasterizer implements ShapeRasterizer {
+             cachedMask = new byte[csize];
+             cachedBuffer = ByteBuffer.wrap(cachedMask);
+         }
+-        if (stroke != null) {
+-            produceStrokeAlphas(p2d.getFloatCoordsNoClone(),
+-                                p2d.getCommandsNoClone(),
+-                                p2d.getNumCommands(),
+-                                stroke.getLineWidth(), stroke.getEndCap(),
+-                                stroke.getLineJoin(), stroke.getMiterLimit(),
+-                                stroke.getDashArray(), stroke.getDashPhase(),
+-                                mxx, mxy, mxt, myx, myy, myt,
+-                                bounds, cachedMask);
+-        } else {
+-            produceFillAlphas(p2d.getFloatCoordsNoClone(),
+-                              p2d.getCommandsNoClone(),
+-                              p2d.getNumCommands(), p2d.getWindingRule() == Path2D.WIND_NON_ZERO,
+-                              mxx, mxy, mxt, myx, myy, myt,
+-                              bounds, cachedMask);
++        try {
++            if (stroke != null) {
++                produceStrokeAlphas(p2d.getFloatCoordsNoClone(),
++                                    p2d.getCommandsNoClone(),
++                                    p2d.getNumCommands(),
++                                    stroke.getLineWidth(), stroke.getEndCap(),
++                                    stroke.getLineJoin(), stroke.getMiterLimit(),
++                                    stroke.getDashArray(), stroke.getDashPhase(),
++                                    mxx, mxy, mxt, myx, myy, myt,
++                                    bounds, cachedMask);
++            } else {
++                produceFillAlphas(p2d.getFloatCoordsNoClone(),
++                                  p2d.getCommandsNoClone(),
++                                  p2d.getNumCommands(), p2d.getWindingRule() == Path2D.WIND_NON_ZERO,
++                                  mxx, mxy, mxt, myx, myy, myt,
++                                  bounds, cachedMask);
++            }
++        } catch (Throwable ex) {
++            if (PrismSettings.verbose) {
++                ex.printStackTrace();
++            }
++            Logging.getJavaFXLogger().warning("Cannot rasterize Shape: "
++                    + ex.toString());
++            return emptyData;
+         }
+         x = bounds[0];
+         y = bounds[1];
+diff --git a/modules/graphics/src/main/java/com/sun/prism/impl/shape/OpenPiscesRasterizer.java b/modules/graphics/src/main/java/com/sun/prism/impl/shape/OpenPiscesRasterizer.java
+index 10b69fbe..460586a8 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/impl/shape/OpenPiscesRasterizer.java
++++ b/modules/graphics/src/main/java/com/sun/prism/impl/shape/OpenPiscesRasterizer.java
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -30,6 +30,7 @@ import com.sun.javafx.geom.Path2D;
+ import com.sun.javafx.geom.Rectangle;
+ import com.sun.javafx.geom.Shape;
+ import com.sun.javafx.geom.transform.BaseTransform;
++import com.sun.javafx.util.Logging;
+ import com.sun.openpisces.AlphaConsumer;
+ import com.sun.openpisces.Renderer;
+ import com.sun.prism.BasicStroke;
+@@ -76,35 +77,44 @@ public class OpenPiscesRasterizer implements ShapeRasterizer {
+             return emptyData;
+         }
+         Renderer renderer = null;
+-        if (shape instanceof Path2D) {
+-            renderer = OpenPiscesPrismUtils.setupRenderer((Path2D) shape, stroke, xform, rclip,
+-                    antialiasedShape);
+-        }
+-        if (renderer == null) {
+-            renderer = OpenPiscesPrismUtils.setupRenderer(shape, stroke, xform, rclip,
+-                    antialiasedShape);
+-        }
+-        int outpix_xmin = renderer.getOutpixMinX();
+-        int outpix_ymin = renderer.getOutpixMinY();
+-        int outpix_xmax = renderer.getOutpixMaxX();
+-        int outpix_ymax = renderer.getOutpixMaxY();
+-        int w = outpix_xmax - outpix_xmin;
+-        int h = outpix_ymax - outpix_ymin;
+-        if (w <= 0 || h <= 0) {
+-            return emptyData;
+-        }
++        try {
++            if (shape instanceof Path2D) {
++                renderer = OpenPiscesPrismUtils.setupRenderer((Path2D) shape,
++                        stroke, xform, rclip, antialiasedShape);
++            }
++            if (renderer == null) {
++                renderer = OpenPiscesPrismUtils.setupRenderer(shape,
++                        stroke, xform, rclip, antialiasedShape);
++            }
++            int outpix_xmin = renderer.getOutpixMinX();
++            int outpix_ymin = renderer.getOutpixMinY();
++            int outpix_xmax = renderer.getOutpixMaxX();
++            int outpix_ymax = renderer.getOutpixMaxY();
++            int w = outpix_xmax - outpix_xmin;
++            int h = outpix_ymax - outpix_ymin;
++            if (w <= 0 || h <= 0) {
++                return emptyData;
++            }
+ 
+-        Consumer consumer = savedConsumer;
+-        if (consumer == null || w * h > consumer.getAlphaLength()) {
+-            int csize = (w * h + 0xfff) & (~0xfff);
+-            savedConsumer = consumer = new Consumer(csize);
+-            if (PrismSettings.verbose) {
++            Consumer consumer = savedConsumer;
++            if (consumer == null || w * h > consumer.getAlphaLength()) {
++                int csize = (w * h + 0xfff) & (~0xfff);
++                savedConsumer = consumer = new Consumer(csize);
++                if (PrismSettings.verbose) {
+                 System.out.println("new alphas");
++                }
+             }
++            consumer.setBoundsNoClone(outpix_xmin, outpix_ymin, w, h);
++            renderer.produceAlphas(consumer);
++            return consumer.getMaskData();
++        } catch (Throwable ex) {
++            if (PrismSettings.verbose) {
++                ex.printStackTrace();
++            }
++            Logging.getJavaFXLogger().warning("Cannot rasterize Shape: "
++                    + ex.toString());
++            return emptyData;
+         }
+-        consumer.setBoundsNoClone(outpix_xmin, outpix_ymin, w, h);
+-        renderer.produceAlphas(consumer);
+-        return consumer.getMaskData();
+     }
+ 
+     private static class Consumer implements AlphaConsumer {
+diff --git a/modules/graphics/src/main/java/com/sun/prism/sw/SWContext.java b/modules/graphics/src/main/java/com/sun/prism/sw/SWContext.java
+index e910f2f7..f98f4d0f 100644
+--- a/modules/graphics/src/main/java/com/sun/prism/sw/SWContext.java
++++ b/modules/graphics/src/main/java/com/sun/prism/sw/SWContext.java
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -28,6 +28,7 @@ package com.sun.prism.sw;
+ import com.sun.javafx.geom.Rectangle;
+ import com.sun.javafx.geom.Shape;
+ import com.sun.javafx.geom.transform.BaseTransform;
++import com.sun.javafx.util.Logging;
+ import com.sun.openpisces.Renderer;
+ import com.sun.pisces.PiscesRenderer;
+ import com.sun.prism.BasicStroke;
+@@ -57,11 +58,19 @@ final class SWContext {
+         private SoftReference<SWMaskTexture> maskTextureRef;
+ 
+         public void renderShape(PiscesRenderer pr, Shape shape, BasicStroke stroke, BaseTransform tr, Rectangle clip, boolean antialiasedShape) {
+-            final MaskData mask = ShapeUtil.rasterizeShape(shape, stroke, clip.toRectBounds(), tr, true, antialiasedShape);
+-            final SWMaskTexture tex = this.validateMaskTexture(mask.getWidth(), mask.getHeight());
+-            mask.uploadToTexture(tex, 0, 0, false);
+-            pr.fillAlphaMask(tex.getDataNoClone(), mask.getOriginX(), mask.getOriginY(),
+-                             mask.getWidth(), mask.getHeight(), 0, tex.getPhysicalWidth());
++            try {
++                final MaskData mask = ShapeUtil.rasterizeShape(shape, stroke, clip.toRectBounds(), tr, true, antialiasedShape);
++                final SWMaskTexture tex = this.validateMaskTexture(mask.getWidth(), mask.getHeight());
++                mask.uploadToTexture(tex, 0, 0, false);
++                pr.fillAlphaMask(tex.getDataNoClone(), mask.getOriginX(), mask.getOriginY(),
++                                 mask.getWidth(), mask.getHeight(), 0, tex.getPhysicalWidth());
++            } catch (Throwable ex) {
++                if (PrismSettings.verbose) {
++                    ex.printStackTrace();
++                }
++                Logging.getJavaFXLogger().warning("Cannot rasterize Shape: "
++                        + ex.toString());
++            }
+         }
+ 
+         private SWMaskTexture initMaskTexture(int width, int height) {
+@@ -113,9 +122,17 @@ final class SWContext {
+                 shape = stroke.createStrokedShape(shape);
+                 stroke = null;
+             }
+-            final Renderer r = OpenPiscesPrismUtils.setupRenderer(shape, stroke, tr, clip, antialiasedShape);
+-            alphaConsumer.initConsumer(r, pr);
+-            r.produceAlphas(alphaConsumer);
++            try {
++                final Renderer r = OpenPiscesPrismUtils.setupRenderer(shape, stroke, tr, clip, antialiasedShape);
++                alphaConsumer.initConsumer(r, pr);
++                r.produceAlphas(alphaConsumer);
++            } catch (Throwable ex) {
++                if (PrismSettings.verbose) {
++                    ex.printStackTrace();
++                }
++                Logging.getJavaFXLogger().warning("Cannot rasterize Shape: "
++                        + ex.toString());
++            }
+         }
+ 
+         public void dispose() { }
+diff --git a/modules/graphics/src/main/native-prism/Dasher.c b/modules/graphics/src/main/native-prism/Dasher.c
+index c11ffb0d..000f7f48 100644
+--- a/modules/graphics/src/main/native-prism/Dasher.c
++++ b/modules/graphics/src/main/native-prism/Dasher.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -162,36 +162,43 @@ void Dasher_destroy(Dasher *pDasher) {
+     pDasher->firstSegmentsBufferSIZE = 0;
+ }
+ 
+-static void emitSeg(PathConsumer *pDasher, jfloat buf[], jint off, jint type) {
++static jint emitSeg(PathConsumer *pDasher, jfloat buf[], jint off, jint type) {
+     switch (type) {
+     case 8:
+-        this.out->curveTo(this.out,
++        return this.out->curveTo(this.out,
+                           buf[off+0], buf[off+1],
+                           buf[off+2], buf[off+3],
+                           buf[off+4], buf[off+5]);
+         break;
+     case 6:
+-        this.out->quadTo(this.out,
++        return this.out->quadTo(this.out,
+                          buf[off+0], buf[off+1],
+                          buf[off+2], buf[off+3]);
+         break;
+     case 4:
+-        this.out->lineTo(this.out, buf[off], buf[off+1]);
++        return this.out->lineTo(this.out, buf[off], buf[off+1]);
+     }
++    return ERROR_NONE;
+ }
+ 
+-static void emitFirstSegments(PathConsumer *pDasher) {
++static jint emitFirstSegments(PathConsumer *pDasher) {
+     jint i;
+     for (i = 0; i < this.firstSegidx; ) {
+-        emitSeg(pDasher, this.firstSegmentsBuffer, i+1, (jint) this.firstSegmentsBuffer[i]);
++        jint status;
++        status = emitSeg(pDasher, this.firstSegmentsBuffer, i+1, (jint) this.firstSegmentsBuffer[i]);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+         i += (((jint) this.firstSegmentsBuffer[i]) - 1);
+     }
+     this.firstSegidx = 0;
++    return ERROR_NONE;
+ }
+ 
+ // precondition: pts must be in relative coordinates (relative to x0,y0)
+ // fullCurve is true iff the curve in pts has not been split.
+-static void goTo(PathConsumer *pDasher, jfloat pts[], jint off, jint type) {
++static jint goTo(PathConsumer *pDasher, jfloat pts[], jint off, jint type) {
++    jint status = ERROR_NONE;
+     jfloat x = pts[off + type - 4];
+     jfloat y = pts[off + type - 3];
+     if (this.dashOn) {
+@@ -199,6 +206,9 @@ static void goTo(PathConsumer *pDasher, jfloat pts[], jint off, jint type) {
+             if (this.firstSegmentsBufferSIZE < this.firstSegidx + (type-1)) {
+                 jint newSize = (this.firstSegidx + (type-1)) * 2;
+                 jfloat *newSegs = new_float(newSize);
++                if (!newSegs) {
++                    return ERROR_OOM;
++                }
+                 System_arraycopy(this.firstSegmentsBuffer, 0, newSegs, 0, this.firstSegidx);
+                 free(this.firstSegmentsBuffer);
+                 this.firstSegmentsBuffer = newSegs;
+@@ -209,10 +219,16 @@ static void goTo(PathConsumer *pDasher, jfloat pts[], jint off, jint type) {
+             this.firstSegidx += type - 2;
+         } else {
+             if (this.needsMoveTo) {
+-                this.out->moveTo(this.out, this.x0, this.y0);
++                status = this.out->moveTo(this.out, this.x0, this.y0);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
+                 this.needsMoveTo = JNI_FALSE;
+             }
+-            emitSeg(pDasher, pts, off, type);
++            status = emitSeg(pDasher, pts, off, type);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+         }
+     } else {
+         this.starting = JNI_FALSE;
+@@ -220,12 +236,20 @@ static void goTo(PathConsumer *pDasher, jfloat pts[], jint off, jint type) {
+     }
+     this.x0 = x;
+     this.y0 = y;
++    return status;
+ }
+ 
+-static void Dasher_MoveTo(PathConsumer *pDasher, jfloat newx0, jfloat newy0) {
++static jint Dasher_MoveTo(PathConsumer *pDasher, jfloat newx0, jfloat newy0) {
++    jint status = ERROR_NONE;
+     if (this.firstSegidx > 0) {
+-        this.out->moveTo(this.out, this.sx, this.sy);
+-        emitFirstSegments(pDasher);
++        status = this.out->moveTo(this.out, this.sx, this.sy);
++        if (status != ERROR_NONE) {
++            return status;
++        }
++        status = emitFirstSegments(pDasher);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+     this.needsMoveTo = JNI_TRUE;
+     this.idx = this.startIdx;
+@@ -234,9 +258,11 @@ static void Dasher_MoveTo(PathConsumer *pDasher, jfloat newx0, jfloat newy0) {
+     this.sx = this.x0 = newx0;
+     this.sy = this.y0 = newy0;
+     this.starting = JNI_TRUE;
++    return status;
+ }
+ 
+-static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
++static jint Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
++    jint status = ERROR_NONE;
+     jfloat cx, cy;
+     jfloat dx = x1 - this.x0;
+     jfloat dy = y1 - this.y0;
+@@ -244,7 +270,7 @@ static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
+     jfloat len = (jfloat) sqrt(dx*dx + dy*dy);
+ 
+     if (len == 0) {
+-        return;
++        return status;
+     }
+ 
+     // The scaling factors needed to get the dx and dy of the
+@@ -258,7 +284,10 @@ static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
+         if (len <= leftInThisDashSegment) {
+             this.curCurvepts[0] = x1;
+             this.curCurvepts[1] = y1;
+-            goTo(pDasher, this.curCurvepts, 0, 4);
++            status = goTo(pDasher, this.curCurvepts, 0, 4);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+             // Advance phase within current dash segment
+             this.phase += len;
+             if (len == leftInThisDashSegment) {
+@@ -266,7 +295,7 @@ static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
+                 this.idx = (this.idx + 1) % this.numdashes;
+                 this.dashOn = !this.dashOn;
+             }
+-            return;
++            return status;
+         }
+ 
+         dashdx = this.dash[this.idx] * cx;
+@@ -280,7 +309,10 @@ static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
+             this.curCurvepts[1] = this.y0 + p * dashdy;
+         }
+ 
+-        goTo(pDasher, this.curCurvepts, 0, 4);
++        status = goTo(pDasher, this.curCurvepts, 0, 4);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+ 
+         len -= leftInThisDashSegment;
+         // Advance to next dash segment
+@@ -288,6 +320,7 @@ static void Dasher_LineTo(PathConsumer *pDasher, jfloat x1, jfloat y1) {
+         this.dashOn = !this.dashOn;
+         this.phase = 0;
+     }
++    return status;
+ }
+ 
+ static jboolean pointCurve(jfloat curve[], jint type) {
+@@ -304,14 +337,15 @@ static jboolean pointCurve(jfloat curve[], jint type) {
+ 
+ // preconditions: curCurvepts must be an array of length at least 2 * type,
+ // that contains the curve we want to dash in the first type elements
+-static void somethingTo(PathConsumer *pDasher, jint type) {
++static jint somethingTo(PathConsumer *pDasher, jint type) {
++    jint status = ERROR_NONE;
+     jint curCurveoff;
+     jfloat lastSplitT;
+     jfloat t;
+     jfloat leftInThisDashSegment;
+ 
+     if (pointCurve(this.curCurvepts, type)) {
+-        return;
++        return status;
+     }
+     LIinitializeIterationOnCurve(&this.li, this.curCurvepts, type);
+ 
+@@ -326,7 +360,10 @@ static void somethingTo(PathConsumer *pDasher, jint type) {
+                                 this.curCurvepts, 0,
+                                 this.curCurvepts, type, type);
+             lastSplitT = t;
+-            goTo(pDasher, this.curCurvepts, 2, type);
++            status = goTo(pDasher, this.curCurvepts, 2, type);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+             curCurveoff = type;
+         }
+         // Advance to next dash segment
+@@ -335,16 +372,20 @@ static void somethingTo(PathConsumer *pDasher, jint type) {
+         this.phase = 0;
+         leftInThisDashSegment = this.dash[this.idx];
+     }
+-    goTo(pDasher, this.curCurvepts, curCurveoff+2, type);
++    status = goTo(pDasher, this.curCurvepts, curCurveoff+2, type);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.phase += LIlastSegLen(&this.li);
+     if (this.phase >= this.dash[this.idx]) {
+         this.phase = 0.0f;
+         this.idx = (this.idx + 1) % this.numdashes;
+         this.dashOn = !this.dashOn;
+     }
++    return status;
+ }
+ 
+-static void Dasher_CurveTo(PathConsumer *pDasher,
++static jint Dasher_CurveTo(PathConsumer *pDasher,
+                            jfloat x1, jfloat y1,
+                            jfloat x2, jfloat y2,
+                            jfloat x3, jfloat y3)
+@@ -353,36 +394,53 @@ static void Dasher_CurveTo(PathConsumer *pDasher,
+     this.curCurvepts[2] = x1;        this.curCurvepts[3] = y1;
+     this.curCurvepts[4] = x2;        this.curCurvepts[5] = y2;
+     this.curCurvepts[6] = x3;        this.curCurvepts[7] = y3;
+-    somethingTo(pDasher, 8);
++    return somethingTo(pDasher, 8);
+ }
+ 
+-static void Dasher_QuadTo(PathConsumer *pDasher,
++static jint Dasher_QuadTo(PathConsumer *pDasher,
+                           jfloat x1, jfloat y1,
+                           jfloat x2, jfloat y2)
+ {
+     this.curCurvepts[0] = this.x0;   this.curCurvepts[1] = this.y0;
+     this.curCurvepts[2] = x1;        this.curCurvepts[3] = y1;
+     this.curCurvepts[4] = x2;        this.curCurvepts[5] = y2;
+-    somethingTo(pDasher, 6);
++    return somethingTo(pDasher, 6);
+ }
+ 
+-static void Dasher_ClosePath(PathConsumer *pDasher) {
+-    Dasher_LineTo(pDasher, this.sx, this.sy);
++static jint Dasher_ClosePath(PathConsumer *pDasher) {
++    jint status = ERROR_NONE;
++    status = Dasher_LineTo(pDasher, this.sx, this.sy);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     if (this.firstSegidx > 0) {
+         if (!this.dashOn || this.needsMoveTo) {
+-            this.out->moveTo(this.out, this.sx, this.sy);
++            status = this.out->moveTo(this.out, this.sx, this.sy);
++            if (status != ERROR_NONE) {
++                return status;
++            }
++        }
++        status = emitFirstSegments(pDasher);
++        if (status != ERROR_NONE) {
++            return status;
+         }
+-        emitFirstSegments(pDasher);
+     }
+-    Dasher_MoveTo(pDasher, this.sx, this.sy);
++    return Dasher_MoveTo(pDasher, this.sx, this.sy);
+ }
+ 
+-static void Dasher_PathDone(PathConsumer *pDasher) {
++static jint Dasher_PathDone(PathConsumer *pDasher) {
++    jint status = ERROR_NONE;
+     if (this.firstSegidx > 0) {
+-        this.out->moveTo(this.out, this.sx, this.sy);
+-        emitFirstSegments(pDasher);
++        status = this.out->moveTo(this.out, this.sx, this.sy);
++        if (status != ERROR_NONE) {
++            return status;
++        }
++        status = emitFirstSegments(pDasher);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+-    this.out->pathDone(this.out);
++    return this.out->pathDone(this.out);
+ }
+ 
+ 
+diff --git a/modules/graphics/src/main/native-prism/NativePiscesRasterizer.c b/modules/graphics/src/main/native-prism/NativePiscesRasterizer.c
+index b378938e..9f367e3e 100644
+--- a/modules/graphics/src/main/native-prism/NativePiscesRasterizer.c
++++ b/modules/graphics/src/main/native-prism/NativePiscesRasterizer.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -45,6 +45,7 @@
+ 
+ #define NPException    "java/lang/NullPointerException"
+ #define AIOOBException "java/lang/ArrayIndexOutOfBoundsException"
++#define OOMError       "java/lang/OutOfMemoryError"
+ #define IError         "java/lang/InternalError"
+ 
+ #define CheckNPE(env, a)                                \
+@@ -71,11 +72,25 @@ static void Throw(JNIEnv *env, char *throw_class_name, char *detail) {
+     }
+ }
+ 
++static char * errorToString(jint errorCode) {
++    switch (errorCode) {
++        case ERROR_NONE:
++            return NULL;
++        case ERROR_OOM:
++            return "Out of Memory";
++        case ERROR_AIOOBE:
++            return "[PathConsumer";
++        default:
++            return "Unknown error";
++    }
++}
++
+ static char * feedConsumer
+     (JNIEnv *env, PathConsumer *consumer,
+      jfloatArray coordsArray, jint coordSize,
+      jbyteArray commandsArray, jint numCommands)
+ {
++    jint status = ERROR_NONE;
+     char *failure = NULL;
+     jfloat *coords;
+ 
+@@ -94,8 +109,11 @@ static char * feedConsumer
+                         if (coordoff + 2 > coordSize) {
+                             failure = "[not enough coordinates for moveTo";
+                         } else {
+-                            consumer->moveTo(consumer,
++                            status = consumer->moveTo(consumer,
+                                              coords[coordoff+0], coords[coordoff+1]);
++                            if (status != ERROR_NONE) {
++                                failure = errorToString(status);
++                            }
+                             coordoff += 2;
+                         }
+                         break;
+@@ -103,8 +121,11 @@ static char * feedConsumer
+                         if (coordoff + 2 > coordSize) {
+                             failure = "[not enough coordinates for lineTo";
+                         } else {
+-                            consumer->lineTo(consumer,
++                            status = consumer->lineTo(consumer,
+                                              coords[coordoff+0], coords[coordoff+1]);
++                            if (status != ERROR_NONE) {
++                                failure = errorToString(status);
++                            }
+                             coordoff += 2;
+                         }
+                         break;
+@@ -112,9 +133,12 @@ static char * feedConsumer
+                         if (coordoff + 4 > coordSize) {
+                             failure = "[not enough coordinates for quadTo";
+                         } else {
+-                            consumer->quadTo(consumer,
++                            status = consumer->quadTo(consumer,
+                                              coords[coordoff+0], coords[coordoff+1],
+                                              coords[coordoff+2], coords[coordoff+3]);
++                            if (status != ERROR_NONE) {
++                                failure = errorToString(status);
++                            }
+                             coordoff += 4;
+                         }
+                         break;
+@@ -122,15 +146,21 @@ static char * feedConsumer
+                         if (coordoff + 6 > coordSize) {
+                             failure = "[not enough coordinates for curveTo";
+                         } else {
+-                            consumer->curveTo(consumer,
++                            status = consumer->curveTo(consumer,
+                                               coords[coordoff+0], coords[coordoff+1],
+                                               coords[coordoff+2], coords[coordoff+3],
+                                               coords[coordoff+4], coords[coordoff+5]);
++                            if (status != ERROR_NONE) {
++                                failure = errorToString(status);
++                            }
+                             coordoff += 6;
+                         }
+                         break;
+                     case SEG_CLOSE:
+-                        consumer->closePath(consumer);
++                        status = consumer->closePath(consumer);
++                        if (status != ERROR_NONE) {
++                            failure = errorToString(status);
++                        }
+                         break;
+                     default:
+                         failure = "unrecognized Path segment";
+@@ -141,7 +171,10 @@ static char * feedConsumer
+         }
+         (*env)->ReleasePrimitiveArrayCritical(env, coordsArray, coords, JNI_ABORT);
+         if (failure == NULL) {
+-            consumer->pathDone(consumer);
++            status = consumer->pathDone(consumer);
++            if (status != ERROR_NONE) {
++                failure = errorToString(status);
++            }
+         }
+     }
+     return failure;
+@@ -211,7 +244,14 @@ Java_com_sun_prism_impl_shape_NativePiscesRasterizer_produceFillAlphas
+             } else {
+                 ac.alphas = (*env)->GetPrimitiveArrayCritical(env, maskArray, 0);
+                 if (ac.alphas != NULL) {
+-                    Renderer_produceAlphas(&renderer, &ac);
++                    jint status;
++                    if ((status = Renderer_produceAlphas(&renderer, &ac)) != ERROR_NONE) {
++                        if (status == ERROR_OOM) {
++                            Throw(env, OOMError, "produceAlphas");
++                        } else {
++                            Throw(env, AIOOBException, "produceAlphas");
++                        }
++                    }
+                     (*env)->ReleasePrimitiveArrayCritical(env, maskArray, ac.alphas, 0);
+                 }
+             }
+@@ -300,7 +340,14 @@ Java_com_sun_prism_impl_shape_NativePiscesRasterizer_produceStrokeAlphas
+             } else {
+                 ac.alphas = (*env)->GetPrimitiveArrayCritical(env, maskArray, 0);
+                 if (ac.alphas != NULL) {
+-                    Renderer_produceAlphas(&renderer, &ac);
++                    jint status;
++                    if ((status = Renderer_produceAlphas(&renderer, &ac)) != ERROR_NONE) {
++                        if (status == ERROR_OOM) {
++                            Throw(env, OOMError, "produceAlphas");
++                        } else {
++                            Throw(env, AIOOBException, "produceAlphas");
++                        }
++                    }
+                     (*env)->ReleasePrimitiveArrayCritical(env, maskArray, ac.alphas, 0);
+                 }
+             }
+diff --git a/modules/graphics/src/main/native-prism/PathConsumer.h b/modules/graphics/src/main/native-prism/PathConsumer.h
+index c0e4fa33..b746c259 100644
+--- a/modules/graphics/src/main/native-prism/PathConsumer.h
++++ b/modules/graphics/src/main/native-prism/PathConsumer.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -32,21 +32,26 @@ extern "C" {
+ 
+ #include <jni.h>
+ 
++// Pisces error codes
++#define ERROR_NONE   0
++#define ERROR_OOM    1
++#define ERROR_AIOOBE 2
++
+ typedef struct _PathConsumer PathConsumer;
+ 
+-typedef void MoveToFunc(PathConsumer *pConsumer,
++typedef jint MoveToFunc(PathConsumer *pConsumer,
+                         jfloat x0, jfloat y0);
+-typedef void LineToFunc(PathConsumer *pConsumer,
++typedef jint LineToFunc(PathConsumer *pConsumer,
+                         jfloat x1, jfloat y1);
+-typedef void QuadToFunc(PathConsumer *pConsumer,
++typedef jint QuadToFunc(PathConsumer *pConsumer,
+                         jfloat xc, jfloat yc,
+                         jfloat x1, jfloat y1);
+-typedef void CurveToFunc(PathConsumer *pConsumer,
++typedef jint CurveToFunc(PathConsumer *pConsumer,
+                          jfloat xc0, jfloat yc0,
+                          jfloat xc1, jfloat yc1,
+                          jfloat x1, jfloat y1);
+-typedef void ClosePathFunc(PathConsumer *pConsumer);
+-typedef void PathDoneFunc(PathConsumer *pConsumer);
++typedef jint ClosePathFunc(PathConsumer *pConsumer);
++typedef jint PathDoneFunc(PathConsumer *pConsumer);
+ 
+ struct _PathConsumer {
+     MoveToFunc       *moveTo;
+diff --git a/modules/graphics/src/main/native-prism/Renderer.c b/modules/graphics/src/main/native-prism/Renderer.c
+index ddc2c6f0..c0232f18 100644
+--- a/modules/graphics/src/main/native-prism/Renderer.c
++++ b/modules/graphics/src/main/native-prism/Renderer.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -70,6 +70,8 @@ static void ScanlineIterator_reset(ScanlineIterator *pIterator,
+     this.edgeCount = 0;
+ }
+ 
++// Iterate to the next scanline and return the number of crossings.
++// A count of -1 is returned to indicate OOM.
+ static jint ScanlineIterator_next(ScanlineIterator *pIterator, Renderer *pRenderer) {
+     jint i, ecur;
+     jint *xings;
+@@ -95,6 +97,9 @@ static jint ScanlineIterator_next(ScanlineIterator *pIterator, Renderer *pRender
+     if (this.edgePtrsSIZE < count + (bucketcount >> 1)) {
+         jint newSize = (count + (bucketcount >> 1)) * 2;
+         jint *newPtrs = new_int(newSize);
++        if (!newPtrs) {
++            return -1;
++        }
+         System_arraycopy(this.edgePtrs, 0, newPtrs, 0, count);
+         free(this.edgePtrs);
+         this.edgePtrs = newPtrs;
+@@ -117,6 +122,9 @@ static jint ScanlineIterator_next(ScanlineIterator *pIterator, Renderer *pRender
+     if (this.crossingsSIZE < count) {
+         free(this.crossings);
+         this.crossings = xings = new_int(this.edgePtrsSIZE);
++        if (!xings) {
++            return -1;
++        }
+         this.crossingsSIZE = this.edgePtrsSIZE;
+     }
+     for (i = 0; i < count; i++) {
+@@ -163,26 +171,31 @@ static jint ScanlineIterator_curY(ScanlineIterator *pIterator) {
+ 
+ // each bucket is a linked list. this method adds eptr to the
+ // start "bucket"th linked list.
+-static void addEdgeToBucket(PathConsumer *pRenderer, const jint eptr, const jint bucket) {
++static jint addEdgeToBucket(PathConsumer *pRenderer, const jint eptr, const jint bucket) {
+     // we could implement this in terms of insertEdge, but this is a special
+     // case, so we optimize a bit.
++    if (this.edgeBuckets[bucket*2] >= MAX_EDGE_IDX) {
++        return ERROR_AIOOBE;
++    }
+     this.edges[eptr+NEXT] = (jfloat) this.edgeBuckets[bucket*2];
+     this.edgeBuckets[bucket*2] = eptr + 1;
+     this.edgeBuckets[bucket*2 + 1] += 2;
++    return ERROR_NONE;
+ }
+ 
+-static void addLine(PathConsumer *pRenderer,
++static jint addLine(PathConsumer *pRenderer,
+                     jfloat x1, jfloat y1,
+                     jfloat x2, jfloat y2);
+ 
+ // Flattens using adaptive forward differencing. This only carries out
+ // one iteration of the AFD loop. All it does is update AFD variables (i.e.
+ // X0, Y0, D*[X|Y], COUNT; not variables used for computing scanline crossings).
+-static void quadBreakIntoLinesAndAdd(PathConsumer *pRenderer,
++static jint quadBreakIntoLinesAndAdd(PathConsumer *pRenderer,
+                                      jfloat x0, jfloat y0,
+                                      const Curve c,
+                                      const jfloat x2, const jfloat y2)
+ {
++    jint status = ERROR_NONE;
+     jfloat ddx, ddy, dx, dy;
+     const jfloat QUAD_DEC_BND = 32;
+     const jint countlg = 4;
+@@ -205,11 +218,14 @@ static void quadBreakIntoLinesAndAdd(PathConsumer *pRenderer,
+         jfloat y1 = y0 + dy;
+         dx += ddx;
+         dy += ddy;
+-        addLine(pRenderer, x0, y0, x1, y1);
++        status = addLine(pRenderer, x0, y0, x1, y1);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+         x0 = x1;
+         y0 = y1;
+     }
+-    addLine(pRenderer, x0, y0, x2, y2);
++    return addLine(pRenderer, x0, y0, x2, y2);
+ }
+ 
+ // x0, y0 and x3,y3 are the endpoints of the curve. We could compute these
+@@ -217,11 +233,12 @@ static void quadBreakIntoLinesAndAdd(PathConsumer *pRenderer,
+ // numerical errors, and our callers already have the exact values.
+ // Another alternative would be to pass all the control points, and call c.set
+ // here, but then too many numbers are passed around.
+-static void curveBreakIntoLinesAndAdd(PathConsumer *pRenderer,
++static jint curveBreakIntoLinesAndAdd(PathConsumer *pRenderer,
+                                       jfloat x0, jfloat y0,
+                                       const Curve c,
+                                       const jfloat x3, const jfloat y3)
+ {
++    jint status = ERROR_NONE;
+     const jint countlg = 3;
+     jint count = 1 << countlg;
+     jfloat x1, y1;
+@@ -272,16 +289,21 @@ static void curveBreakIntoLinesAndAdd(PathConsumer *pRenderer,
+             x1 = x3;
+             y1 = y3;
+         }
+-        addLine(pRenderer, x0, y0, x1, y1);
++        status = addLine(pRenderer, x0, y0, x1, y1);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+         x0 = x1;
+         y0 = y1;
+     }
++    return status;
+ }
+ 
+-static void addLine(PathConsumer *pRenderer,
++static jint addLine(PathConsumer *pRenderer,
+                     jfloat x1, jfloat y1,
+                     jfloat x2, jfloat y2)
+ {
++    jint status = ERROR_NONE;
+     jfloat or = 1; // orientation of the line. 1 if y increases, 0 otherwise.
+     jint firstCrossing, lastCrossing;
+     jfloat slope;
+@@ -299,7 +321,7 @@ static void addLine(PathConsumer *pRenderer,
+     firstCrossing = Math_max((jint) ceil(y1 - 0.5f), this.boundsMinY);
+     lastCrossing = Math_min((jint) ceil(y2 - 0.5f), this.boundsMaxY);
+     if (firstCrossing >= lastCrossing) {
+-        return;
++        return status;
+     }
+     if (firstCrossing < this.sampleRowMin) { this.sampleRowMin = firstCrossing; }
+     if (lastCrossing > this.sampleRowMax) { this.sampleRowMax = lastCrossing; }
+@@ -314,10 +336,18 @@ static void addLine(PathConsumer *pRenderer,
+         if (x1 > this.edgeMaxX) { this.edgeMaxX = x1; }
+     }
+ 
++    bucketIdx = firstCrossing - this.boundsMinY;
++    if (this.edgeBuckets[bucketIdx*2] >= MAX_EDGE_IDX) {
++        return ERROR_AIOOBE;
++    }
++
+     ptr = this.numEdges * SIZEOF_EDGE;
+     if (this.edgesSIZE < ptr + SIZEOF_EDGE) {
+         jint newSize = (ptr + SIZEOF_EDGE) * 2;
+         jfloat *newEdges = new_float(newSize);
++        if (!newEdges) {
++            return ERROR_OOM;
++        }
+         System_arraycopy(this.edges, 0, newEdges, 0, ptr);
+         free(this.edges);
+         this.edges = newEdges;
+@@ -328,9 +358,12 @@ static void addLine(PathConsumer *pRenderer,
+     this.edges[ptr+CURX] = x1 + (firstCrossing + 0.5f - y1) * slope;
+     this.edges[ptr+SLOPE] = slope;
+     this.edges[ptr+YMAX] = (jfloat) lastCrossing;
+-    bucketIdx = firstCrossing - this.boundsMinY;
+-    addEdgeToBucket(pRenderer, ptr, bucketIdx);
++    status = addEdgeToBucket(pRenderer, ptr, bucketIdx);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.edgeBuckets[(lastCrossing - this.boundsMinY)*2 + 1] |= 1;
++    return status;
+ }
+ 
+ // END EDGE LIST
+@@ -439,31 +472,40 @@ static jfloat tosubpixy(jfloat pix_y) {
+     return pix_y * SUBPIXEL_POSITIONS_Y;
+ }
+ 
+-static void Renderer_moveTo(PathConsumer *pRenderer,
++static jint Renderer_moveTo(PathConsumer *pRenderer,
+                             jfloat pix_x0, jfloat pix_y0)
+ {
+-    Renderer_closePath(pRenderer);
++    jint status = Renderer_closePath(pRenderer);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.pix_sx0 = pix_x0;
+     this.pix_sy0 = pix_y0;
+     this.y0 = tosubpixy(pix_y0);
+     this.x0 = tosubpixx(pix_x0);
++    return status;
+ }
+ 
+-static void Renderer_lineTo(PathConsumer *pRenderer,
++static jint Renderer_lineTo(PathConsumer *pRenderer,
+                             jfloat pix_x1, jfloat pix_y1)
+ {
+     jfloat x1 = tosubpixx(pix_x1);
+     jfloat y1 = tosubpixy(pix_y1);
+-    addLine(pRenderer, this.x0, this.y0, x1, y1);
++    jint status = addLine(pRenderer, this.x0, this.y0, x1, y1);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.x0 = x1;
+     this.y0 = y1;
++    return status;
+ }
+ 
+-static void Renderer_curveTo(PathConsumer *pRenderer,
++static jint Renderer_curveTo(PathConsumer *pRenderer,
+                              jfloat x1, jfloat y1,
+                              jfloat x2, jfloat y2,
+                              jfloat x3, jfloat y3)
+ {
++    jint status = ERROR_NONE;
+     const jfloat xe = tosubpixx(x3);
+     const jfloat ye = tosubpixy(y3);
+     Curve_setcubic(&this.c,
+@@ -471,40 +513,49 @@ static void Renderer_curveTo(PathConsumer *pRenderer,
+                    tosubpixx(x1), tosubpixy(y1),
+                    tosubpixx(x2), tosubpixy(y2),
+                    xe, ye);
+-    curveBreakIntoLinesAndAdd(pRenderer, this.x0, this.y0, this.c, xe, ye);
++    status = curveBreakIntoLinesAndAdd(pRenderer, this.x0, this.y0, this.c, xe, ye);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.x0 = xe;
+     this.y0 = ye;
++    return status;
+ }
+ 
+-void Renderer_quadTo(PathConsumer *pRenderer,
++jint Renderer_quadTo(PathConsumer *pRenderer,
+                      jfloat x1, jfloat y1,
+                      jfloat x2, jfloat y2)
+ {
++    jint status = ERROR_NONE;
+     const jfloat xe = tosubpixx(x2);
+     const jfloat ye = tosubpixy(y2);
+     Curve_setquad(&this.c,
+                   this.x0, this.y0,
+                   tosubpixx(x1), tosubpixy(y1),
+                   xe, ye);
+-    quadBreakIntoLinesAndAdd(pRenderer, this.x0, this.y0, this.c, xe, ye);
++    status = quadBreakIntoLinesAndAdd(pRenderer, this.x0, this.y0, this.c, xe, ye);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.x0 = xe;
+     this.y0 = ye;
++    return status;
+ }
+ 
+-static void Renderer_closePath(PathConsumer *pRenderer) {
++static jint Renderer_closePath(PathConsumer *pRenderer) {
+     // lineTo expects its input in pixel coordinates.
+-    Renderer_lineTo(pRenderer, this.pix_sx0, this.pix_sy0);
++    return Renderer_lineTo(pRenderer, this.pix_sx0, this.pix_sy0);
+ }
+ 
+-static void Renderer_pathDone(PathConsumer *pRenderer) {
+-    Renderer_closePath(pRenderer);
++static jint Renderer_pathDone(PathConsumer *pRenderer) {
++    return Renderer_closePath(pRenderer);
+ }
+ 
+ static void setAndClearRelativeAlphas(AlphaConsumer *pAC,
+                                       jint alphaRow[], jint pix_y,
+                                       jint pix_from, jint pix_to);
+ 
+-void Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC) {
++jint Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC) {
+ //    ac.setMaxAlpha(MAX_AA_ALPHA);
+ 
+     // Mask to determine the relevant bit of the crossing sum
+@@ -521,6 +572,9 @@ void Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC) {
+     jint *alpha;
+     if (1024 < width+2) {
+         alpha = new_int(width+2);
++        if (!alpha) {
++            return ERROR_OOM;
++        }
+     } else {
+         alpha = savedAlpha;
+     }
+@@ -546,6 +600,12 @@ void Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC) {
+         jint sum, prev;
+         jint i;
+ 
++        if (numCrossings < 0) {
++            ScanlineIterator_destroy(&it);
++            if (alpha != savedAlpha) free (alpha);
++            return ERROR_OOM;
++        }
++
+         y = ScanlineIterator_curY(&it);
+ 
+         if (numCrossings > 0) {
+@@ -612,6 +672,8 @@ void Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC) {
+     }
+     ScanlineIterator_destroy(&it);
+     if (alpha != savedAlpha) free (alpha);
++
++    return ERROR_NONE;
+ }
+ 
+ //@Override
+diff --git a/modules/graphics/src/main/native-prism/Renderer.h b/modules/graphics/src/main/native-prism/Renderer.h
+index ed05150e..58f32961 100644
+--- a/modules/graphics/src/main/native-prism/Renderer.h
++++ b/modules/graphics/src/main/native-prism/Renderer.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -54,12 +54,14 @@ typedef struct {
+ 
+ // NEXT and OR are meant to be indices into "int" fields, but arrays must
+ // be homogenous, so every field is a float. However floats can represent
+-// exactly up to 26 bit ints, so we're ok.
++// exactly up to 24 bit ints, so we're ok as long as we check for overflow.
+ #define OR           2
+ #define SLOPE        3
+ #define NEXT         4
+ #define SIZEOF_EDGE  5
+ 
++#define MAX_EDGE_IDX (1 << 24)
++
+ #define WIND_EVEN_ODD   0
+ #define WIND_NON_ZERO   1
+ 
+@@ -110,7 +112,7 @@ extern void Renderer_destroy(Renderer *pRenderer);
+ 
+ extern void Renderer_getOutputBounds(Renderer *pRenderer, jint bounds[]);
+ 
+-extern void Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC);
++extern jint Renderer_produceAlphas(Renderer *pRenderer, AlphaConsumer *pAC);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/modules/graphics/src/main/native-prism/Stroker.c b/modules/graphics/src/main/native-prism/Stroker.c
+index 032b3306..5b20fbc3 100644
+--- a/modules/graphics/src/main/native-prism/Stroker.c
++++ b/modules/graphics/src/main/native-prism/Stroker.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -51,41 +51,41 @@ static PathDoneFunc     Stroker_pathDone;
+ 
+ #define this (*((Stroker *) pStroker))
+ 
+-static void drawJoin(PathConsumer *pStroker,
++static jint drawJoin(PathConsumer *pStroker,
+                      jfloat pdx, jfloat pdy,
+                      jfloat x0, jfloat y0,
+                      jfloat dx, jfloat dy,
+                      jfloat omx, jfloat omy,
+                      jfloat mx, jfloat my);
+ 
+-static void drawRoundJoin2(PathConsumer *pStroker,
++static jint drawRoundJoin2(PathConsumer *pStroker,
+                            jfloat cx, jfloat cy,
+                            jfloat omx, jfloat omy,
+                            jfloat mx, jfloat my,
+                            jboolean rev);
+ 
+-static void drawBezApproxForArc(PathConsumer *pStroker,
++static jint drawBezApproxForArc(PathConsumer *pStroker,
+                                 const jfloat cx, const jfloat cy,
+                                 const jfloat omx, const jfloat omy,
+                                 const jfloat mx, const jfloat my,
+                                 jboolean rev);
+ 
+-static void emitMoveTo(PathConsumer *pStroker, const jfloat x0, const jfloat y0);
++static jint emitMoveTo(PathConsumer *pStroker, const jfloat x0, const jfloat y0);
+ 
+-static void emitLineTo(PathConsumer *pStroker, const jfloat x1, const jfloat y1,
++static jint emitLineTo(PathConsumer *pStroker, const jfloat x1, const jfloat y1,
+                        const jboolean rev);
+ 
+-static void emitCurveTo(PathConsumer *pStroker,
++static jint emitCurveTo(PathConsumer *pStroker,
+                         const jfloat x0, const jfloat y0,
+                         const jfloat x1, const jfloat y1,
+                         const jfloat x2, const jfloat y2,
+                         const jfloat x3, const jfloat y3, const jboolean rev);
+ 
+-static void emitClose(PathConsumer *pStroker);
++static jint emitClose(PathConsumer *pStroker);
+ 
+-static void emitReverse(PathConsumer *pStroker);
++static jint emitReverse(PathConsumer *pStroker);
+ 
+-static void finish(PathConsumer *pStroker);
++static jint finish(PathConsumer *pStroker);
+ 
+ extern void PolyStack_init(PolyStack *pStack);
+ 
+@@ -93,19 +93,19 @@ extern void PolyStack_destroy(PolyStack *pStack);
+ 
+ extern jboolean PolyStack_isEmpty(PolyStack *pStack);
+ 
+-extern void PolyStack_pushLine(PolyStack *pStack,
++extern jint PolyStack_pushLine(PolyStack *pStack,
+                                jfloat x, jfloat y);
+ 
+-extern void PolyStack_pushCubic(PolyStack *pStack,
++extern jint PolyStack_pushCubic(PolyStack *pStack,
+                                 jfloat x0, jfloat y0,
+                                 jfloat x1, jfloat y1,
+                                 jfloat x2, jfloat y2);
+ 
+-extern void PolyStack_pushQuad(PolyStack *pStack,
++extern jint PolyStack_pushQuad(PolyStack *pStack,
+                                jfloat x0, jfloat y0,
+                                jfloat x1, jfloat y1);
+ 
+-extern void PolyStack_pop(PolyStack *pStack, PathConsumer *io);
++extern jint PolyStack_pop(PolyStack *pStack, PathConsumer *io);
+ 
+     /**
+      * Constructs a <code>Stroker</code>.
+@@ -213,7 +213,7 @@ static jboolean isCW(const jfloat dx1, const jfloat dy1,
+ // it to floating point, so that's why the divisions by 2^16 are there.
+ #define ROUND_JOIN_THRESHOLD   (1000/65536.0f)
+ 
+-static void drawRoundJoin(PathConsumer *pStroker,
++static jint drawRoundJoin(PathConsumer *pStroker,
+                           jfloat x, jfloat y,
+                           jfloat omx, jfloat omy, jfloat mx, jfloat my,
+                           jboolean rev,
+@@ -222,14 +222,14 @@ static void drawRoundJoin(PathConsumer *pStroker,
+     jfloat domx, domy, len;
+ 
+     if ((omx == 0 && omy == 0) || (mx == 0 && my == 0)) {
+-        return;
++        return ERROR_NONE;
+     }
+ 
+     domx = omx - mx;
+     domy = omy - my;
+     len = domx*domx + domy*domy;
+     if (len < threshold) {
+-        return;
++        return ERROR_NONE;
+     }
+ 
+     if (rev) {
+@@ -238,15 +238,17 @@ static void drawRoundJoin(PathConsumer *pStroker,
+         mx = -mx;
+         my = -my;
+     }
+-    drawRoundJoin2(pStroker, x, y, omx, omy, mx, my, rev);
++    return drawRoundJoin2(pStroker, x, y, omx, omy, mx, my, rev);
+ }
+ 
+-static void drawRoundJoin2(PathConsumer *pStroker,
++static jint drawRoundJoin2(PathConsumer *pStroker,
+                            jfloat cx, jfloat cy,
+                            jfloat omx, jfloat omy,
+                            jfloat mx, jfloat my,
+                            jboolean rev)
+ {
++    jint status = ERROR_NONE;
++
+     // The sign of the dot product of mx,my and omx,omy is equal to the
+     // the sign of the cosine of ext
+     // (ext is the angle between omx,omy and mx,my).
+@@ -258,7 +260,7 @@ static void drawRoundJoin2(PathConsumer *pStroker,
+ 
+     switch (numCurves) {
+     case 1:
+-        drawBezApproxForArc(pStroker, cx, cy, omx, omy, mx, my, rev);
++        status = drawBezApproxForArc(pStroker, cx, cy, omx, omy, mx, my, rev);
+         break;
+     case 2:
+         {
+@@ -288,15 +290,19 @@ static void drawRoundJoin2(PathConsumer *pStroker,
+                 mmx = -mmx;
+                 mmy = -mmy;
+             }
+-            drawBezApproxForArc(pStroker, cx, cy, omx, omy, mmx, mmy, rev);
+-            drawBezApproxForArc(pStroker, cx, cy, mmx, mmy, mx, my, rev);
++            status = drawBezApproxForArc(pStroker, cx, cy, omx, omy, mmx, mmy, rev);
++            if (status != ERROR_NONE) {
++                return status;
++            }
++            status = drawBezApproxForArc(pStroker, cx, cy, mmx, mmy, mx, my, rev);
+             break;
+         }
+     }
++    return status;
+ }
+ 
+ // the input arc defined by omx,omy and mx,my must span <= 90 degrees.
+-static void drawBezApproxForArc(PathConsumer *pStroker,
++static jint drawBezApproxForArc(PathConsumer *pStroker,
+                                 const jfloat cx, const jfloat cy,
+                                 const jfloat omx, const jfloat omy,
+                                 const jfloat mx, const jfloat my,
+@@ -326,28 +332,33 @@ static void drawBezApproxForArc(PathConsumer *pStroker,
+     x3 = x4 + cv * my;
+     y3 = y4 - cv * mx;
+ 
+-    emitCurveTo(pStroker, x1, y1, x2, y2, x3, y3, x4, y4, rev);
++    return emitCurveTo(pStroker, x1, y1, x2, y2, x3, y3, x4, y4, rev);
+ }
+ 
+-static void drawRoundCap(PathConsumer *pStroker, jfloat cx, jfloat cy, jfloat mx, jfloat my) {
++static jint drawRoundCap(PathConsumer *pStroker, jfloat cx, jfloat cy, jfloat mx, jfloat my) {
++    jint status = ERROR_NONE;
+     const jfloat C = 0.5522847498307933f;
+     // the first and second arguments of the following two calls
+     // are really will be ignored by emitCurveTo (because of the false),
+     // but we put them in anyway, as opposed to just giving it 4 zeroes,
+     // because it's just 4 additions and it's not good to rely on this
+     // sort of assumption (right now it's true, but that may change).
+-    emitCurveTo(pStroker,
++    status = emitCurveTo(pStroker,
+                 cx+mx,      cy+my,
+                 cx+mx-C*my, cy+my+C*mx,
+                 cx-my+C*mx, cy+mx+C*my,
+                 cx-my,      cy+mx,
+                 JNI_FALSE);
+-    emitCurveTo(pStroker,
++    if (status != ERROR_NONE) {
++        return status;
++    }
++    status = emitCurveTo(pStroker,
+                 cx-my,      cy+mx,
+                 cx-my-C*mx, cy+mx-C*my,
+                 cx-mx-C*my, cy-my+C*mx,
+                 cx-mx,      cy-my,
+                 JNI_FALSE);
++    return status;
+ }
+ 
+ // Return the intersection point of the lines (x0, y0) -> (x1, y1)
+@@ -415,7 +426,7 @@ static void safecomputeMiter(const jfloat x0, const jfloat y0,
+     m[off] = y0 + t*y10;
+ }
+ 
+-static void drawMiter(PathConsumer *pStroker,
++static jint drawMiter(PathConsumer *pStroker,
+                       const jfloat pdx, const jfloat pdy,
+                       const jfloat x0, const jfloat y0,
+                       const jfloat dx, const jfloat dy,
+@@ -427,7 +438,7 @@ static void drawMiter(PathConsumer *pStroker,
+     if ((mx == omx && my == omy) ||
+         (pdx == 0 && pdy == 0) ||
+         (dx == 0 && dy == 0)) {
+-        return;
++        return ERROR_NONE;
+     }
+ 
+     if (rev) {
+@@ -444,22 +455,29 @@ static void drawMiter(PathConsumer *pStroker,
+     lenSq = (this.miter[0]-x0)*(this.miter[0]-x0) + (this.miter[1]-y0)*(this.miter[1]-y0);
+ 
+     if (lenSq < this.miterLimitSq) {
+-        emitLineTo(pStroker, this.miter[0], this.miter[1], rev);
++        return emitLineTo(pStroker, this.miter[0], this.miter[1], rev);
+     }
++    return ERROR_NONE;
+ }
+ 
+-static void Stroker_moveTo(PathConsumer *pStroker, jfloat x0, jfloat y0) {
++static jint Stroker_moveTo(PathConsumer *pStroker, jfloat x0, jfloat y0) {
++    jint status = ERROR_NONE;
+     if (this.prev == DRAWING_OP_TO) {
+-        finish(pStroker);
++        status = finish(pStroker);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+     this.sx0 = this.cx0 = x0;
+     this.sy0 = this.cy0 = y0;
+     this.cdx = this.sdx = 1;
+     this.cdy = this.sdy = 0;
+     this.prev = MOVE_TO;
++    return status;
+ }
+ 
+-static void Stroker_lineTo(PathConsumer *pStroker, jfloat x1, jfloat y1) {
++static jint Stroker_lineTo(PathConsumer *pStroker, jfloat x1, jfloat y1) {
++    jint status = ERROR_NONE;
+     jfloat dx = x1 - this.cx0;
+     jfloat dy = y1 - this.cy0;
+     jfloat mx, my;
+@@ -471,15 +489,30 @@ static void Stroker_lineTo(PathConsumer *pStroker, jfloat x1, jfloat y1) {
+     mx = this.offset[0][0];
+     my = this.offset[0][1];
+ 
+-    drawJoin(pStroker,
++    status = drawJoin(pStroker,
+              this.cdx, this.cdy, this.cx0, this.cy0,
+              dx, dy, this.cmx, this.cmy, mx, my);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+-    emitLineTo(pStroker, this.cx0 + mx, this.cy0 + my, JNI_FALSE);
+-    emitLineTo(pStroker, x1 + mx, y1 + my, JNI_FALSE);
++    status = emitLineTo(pStroker, this.cx0 + mx, this.cy0 + my, JNI_FALSE);
++    if (status != ERROR_NONE) {
++        return status;
++    }
++    status = emitLineTo(pStroker, x1 + mx, y1 + my, JNI_FALSE);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+-    emitLineTo(pStroker, this.cx0 - mx, this.cy0 - my, JNI_TRUE);
+-    emitLineTo(pStroker, x1 - mx, y1 - my, JNI_TRUE);
++    status = emitLineTo(pStroker, this.cx0 - mx, this.cy0 - my, JNI_TRUE);
++    if (status != ERROR_NONE) {
++        return status;
++    }
++    status = emitLineTo(pStroker, x1 - mx, y1 - my, JNI_TRUE);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+     this.cmx = mx;
+     this.cmy = my;
+@@ -488,129 +521,187 @@ static void Stroker_lineTo(PathConsumer *pStroker, jfloat x1, jfloat y1) {
+     this.cx0 = x1;
+     this.cy0 = y1;
+     this.prev = DRAWING_OP_TO;
++    return status;
+ }
+ 
+-static void Stroker_closePath(PathConsumer *pStroker) {
++static jint Stroker_closePath(PathConsumer *pStroker) {
++    jint status = ERROR_NONE;
+     if (this.prev != DRAWING_OP_TO) {
+         if (this.prev == CLOSE) {
+-            return;
++            return status;
++        }
++        status = emitMoveTo(pStroker, this.cx0, this.cy0 - this.lineWidth2);
++        if (status != ERROR_NONE) {
++            return status;
+         }
+-        emitMoveTo(pStroker, this.cx0, this.cy0 - this.lineWidth2);
+         this.cmx = this.smx = 0;
+         this.cmy = this.smy = -this.lineWidth2;
+         this.cdx = this.sdx = 1;
+         this.cdy = this.sdy = 0;
+-        finish(pStroker);
+-        return;
++        return finish(pStroker);
+     }
+ 
+     if (this.cx0 != this.sx0 || this.cy0 != this.sy0) {
+-        Stroker_lineTo(pStroker, this.sx0, this.sy0);
++        status = Stroker_lineTo(pStroker, this.sx0, this.sy0);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+ 
+-    drawJoin(pStroker,
++    status = drawJoin(pStroker,
+              this.cdx, this.cdy, this.cx0, this.cy0,
+              this.sdx, this.sdy, this.cmx, this.cmy,
+              this.smx, this.smy);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+-    emitLineTo(pStroker, this.sx0 + this.smx, this.sy0 + this.smy, JNI_FALSE);
++    status = emitLineTo(pStroker, this.sx0 + this.smx, this.sy0 + this.smy, JNI_FALSE);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+-    emitMoveTo(pStroker, this.sx0 - this.smx, this.sy0 - this.smy);
+-    emitReverse(pStroker);
++    status = emitMoveTo(pStroker, this.sx0 - this.smx, this.sy0 - this.smy);
++    if (status != ERROR_NONE) {
++        return status;
++    }
++    status = emitReverse(pStroker);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+     this.prev = CLOSE;
+-    emitClose(pStroker);
++    return emitClose(pStroker);
+ }
+ 
+-static void emitReverse(PathConsumer *pStroker) {
++static jint emitReverse(PathConsumer *pStroker) {
++    jint status = ERROR_NONE;
+     while (!PolyStack_isEmpty(&this.reverse)) {
+-        PolyStack_pop(&this.reverse, this.out);
++        status = PolyStack_pop(&this.reverse, this.out);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
++    return status;
+ }
+ 
+-static void Stroker_pathDone(PathConsumer *pStroker) {
++static jint Stroker_pathDone(PathConsumer *pStroker) {
++    jint status = ERROR_NONE;
+     if (this.prev == DRAWING_OP_TO) {
+-        finish(pStroker);
++        status = finish(pStroker);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+ 
+-    this.out->pathDone(this.out);
++    status = this.out->pathDone(this.out);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     // this shouldn't matter since this object won't be used
+     // after the call to this method.
+     this.prev = CLOSE;
++    return status;
+ }
+ 
+-static void finish(PathConsumer *pStroker) {
++static jint finish(PathConsumer *pStroker) {
++    jint status = ERROR_NONE;
+     if (this.capStyle == CAP_ROUND) {
+-        drawRoundCap(pStroker, this.cx0, this.cy0, this.cmx, this.cmy);
++        status = drawRoundCap(pStroker, this.cx0, this.cy0, this.cmx, this.cmy);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     } else if (this.capStyle == CAP_SQUARE) {
+-        emitLineTo(pStroker, this.cx0 - this.cmy + this.cmx, this.cy0 + this.cmx + this.cmy, JNI_FALSE);
+-        emitLineTo(pStroker, this.cx0 - this.cmy - this.cmx, this.cy0 + this.cmx - this.cmy, JNI_FALSE);
++        status = emitLineTo(pStroker, this.cx0 - this.cmy + this.cmx, this.cy0 + this.cmx + this.cmy, JNI_FALSE);
++        if (status != ERROR_NONE) {
++            return status;
++        }
++        status = emitLineTo(pStroker, this.cx0 - this.cmy - this.cmx, this.cy0 + this.cmx - this.cmy, JNI_FALSE);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+ 
+-    emitReverse(pStroker);
++    status = emitReverse(pStroker);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+     if (this.capStyle == CAP_ROUND) {
+-        drawRoundCap(pStroker, this.sx0, this.sy0, -this.smx, -this.smy);
++        status = drawRoundCap(pStroker, this.sx0, this.sy0, -this.smx, -this.smy);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     } else if (this.capStyle == CAP_SQUARE) {
+-        emitLineTo(pStroker, this.sx0 + this.smy - this.smx, this.sy0 - this.smx - this.smy, JNI_FALSE);
+-        emitLineTo(pStroker, this.sx0 + this.smy + this.smx, this.sy0 - this.smx + this.smy, JNI_FALSE);
++        status = emitLineTo(pStroker, this.sx0 + this.smy - this.smx, this.sy0 - this.smx - this.smy, JNI_FALSE);
++        if (status != ERROR_NONE) {
++            return status;
++        }
++        status = emitLineTo(pStroker, this.sx0 + this.smy + this.smx, this.sy0 - this.smx + this.smy, JNI_FALSE);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+     }
+ 
+-    emitClose(pStroker);
++    return emitClose(pStroker);
+ }
+ 
+-static void emitMoveTo(PathConsumer *pStroker, const jfloat x0, const jfloat y0) {
+-    this.out->moveTo(this.out, x0, y0);
++static jint emitMoveTo(PathConsumer *pStroker, const jfloat x0, const jfloat y0) {
++    return this.out->moveTo(this.out, x0, y0);
+ }
+ 
+-static void emitLineTo(PathConsumer *pStroker, const jfloat x1, const jfloat y1,
++static jint emitLineTo(PathConsumer *pStroker, const jfloat x1, const jfloat y1,
+                        const jboolean rev)
+ {
+     if (rev) {
+-        PolyStack_pushLine(&this.reverse, x1, y1);
++        return PolyStack_pushLine(&this.reverse, x1, y1);
+     } else {
+-        this.out->lineTo(this.out, x1, y1);
++        return this.out->lineTo(this.out, x1, y1);
+     }
+ }
+ 
+-static void emitQuadTo(PathConsumer *pStroker,
++static jint emitQuadTo(PathConsumer *pStroker,
+                        const jfloat x0, const jfloat y0,
+                        const jfloat x1, const jfloat y1,
+                        const jfloat x2, const jfloat y2, const jboolean rev)
+ {
+     if (rev) {
+-        PolyStack_pushQuad(&this.reverse, x0, y0, x1, y1);
++        return PolyStack_pushQuad(&this.reverse, x0, y0, x1, y1);
+     } else {
+-        this.out->quadTo(this.out, x1, y1, x2, y2);
++        return this.out->quadTo(this.out, x1, y1, x2, y2);
+     }
+ }
+ 
+-static void emitCurveTo(PathConsumer *pStroker,
++static jint emitCurveTo(PathConsumer *pStroker,
+                         const jfloat x0, const jfloat y0,
+                         const jfloat x1, const jfloat y1,
+                         const jfloat x2, const jfloat y2,
+                         const jfloat x3, const jfloat y3, const jboolean rev)
+ {
+     if (rev) {
+-        PolyStack_pushCubic(&this.reverse, x0, y0, x1, y1, x2, y2);
++        return PolyStack_pushCubic(&this.reverse, x0, y0, x1, y1, x2, y2);
+     } else {
+-        this.out->curveTo(this.out, x1, y1, x2, y2, x3, y3);
++        return this.out->curveTo(this.out, x1, y1, x2, y2, x3, y3);
+     }
+ }
+ 
+-static void emitClose(PathConsumer *pStroker) {
+-    this.out->closePath(this.out);
++static jint emitClose(PathConsumer *pStroker) {
++    return this.out->closePath(this.out);
+ }
+ 
+-static void drawJoin(PathConsumer *pStroker,
++static jint drawJoin(PathConsumer *pStroker,
+                      jfloat pdx, jfloat pdy,
+                      jfloat x0, jfloat y0,
+                      jfloat dx, jfloat dy,
+                      jfloat omx, jfloat omy,
+                      jfloat mx, jfloat my)
+ {
++    jint status = ERROR_NONE;
+     if (this.prev != DRAWING_OP_TO) {
+-        emitMoveTo(pStroker, x0 + mx, y0 + my);
++        status = emitMoveTo(pStroker, x0 + mx, y0 + my);
++        if (status != ERROR_NONE) {
++            return status;
++        }
+         this.sdx = dx;
+         this.sdy = dy;
+         this.smx = mx;
+@@ -618,17 +709,27 @@ static void drawJoin(PathConsumer *pStroker,
+     } else {
+         jboolean cw = isCW(pdx, pdy, dx, dy);
+         if (this.joinStyle == JOIN_MITER) {
+-            drawMiter(pStroker, pdx, pdy, x0, y0, dx, dy, omx, omy, mx, my, cw);
++            status = drawMiter(pStroker, pdx, pdy, x0, y0, dx, dy, omx, omy, mx, my, cw);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+         } else if (this.joinStyle == JOIN_ROUND) {
+-            drawRoundJoin(pStroker,
++            status = drawRoundJoin(pStroker,
+                           x0, y0,
+                           omx, omy,
+                           mx, my, cw,
+                           ROUND_JOIN_THRESHOLD);
++            if (status != ERROR_NONE) {
++                return status;
++            }
++        }
++        status = emitLineTo(pStroker, x0, y0, !cw);
++        if (status != ERROR_NONE) {
++            return status;
+         }
+-        emitLineTo(pStroker, x0, y0, !cw);
+     }
+     this.prev = DRAWING_OP_TO;
++    return status;
+ }
+ 
+ static jboolean withinULP(const jfloat x1, const jfloat y1,
+@@ -1066,11 +1167,12 @@ static jint findSubdivPoints(PathConsumer *pStroker,
+     return ret;
+ }
+ 
+-static void Stroker_curveTo(PathConsumer *pStroker,
++static jint Stroker_curveTo(PathConsumer *pStroker,
+                            jfloat x1, jfloat y1,
+                            jfloat x2, jfloat y2,
+                            jfloat x3, jfloat y3)
+ {
++    jint status = ERROR_NONE;
+     jfloat xf, yf, dxs, dys, dxf, dyf;
+     jfloat mx, my;
+     jint nSplits;
+@@ -1113,8 +1215,7 @@ static void Stroker_curveTo(PathConsumer *pStroker,
+     }
+     if (dxs == 0.0f && dys == 0.0f) {
+         // this happens iff the "curve" is just a point
+-        Stroker_lineTo(pStroker, middle[0], middle[1]);
+-        return;
++        return Stroker_lineTo(pStroker, middle[0], middle[1]);
+     }
+ 
+     // if these vectors are too small, normalize them, to avoid future
+@@ -1133,10 +1234,13 @@ static void Stroker_curveTo(PathConsumer *pStroker,
+     computeOffset(dxs, dys, this.lineWidth2, this.offset[0]);
+     mx = this.offset[0][0];
+     my = this.offset[0][1];
+-    drawJoin(pStroker,
++    status = drawJoin(pStroker,
+              this.cdx, this.cdy, this.cx0, this.cy0,
+              dxs, dys, this.cmx, this.cmy,
+              mx, my);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+     nSplits = findSubdivPoints(pStroker, middle, subdivTs, 8, this.lineWidth2);
+     prevT = 0.0f;
+@@ -1153,18 +1257,36 @@ static void Stroker_curveTo(PathConsumer *pStroker,
+     for (i = 0; i <= nSplits; i++) {
+         kind = computeOffsetCubic(pStroker, middle, i*6, lp, rp);
+         if (kind != 0) {
+-            emitLineTo(pStroker, lp[0], lp[1], JNI_FALSE);
++            status = emitLineTo(pStroker, lp[0], lp[1], JNI_FALSE);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+             switch(kind) {
+             case 8:
+-                emitCurveTo(pStroker, lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], lp[6], lp[7], JNI_FALSE);
+-                emitCurveTo(pStroker, rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], rp[6], rp[7], JNI_TRUE);
++                status = emitCurveTo(pStroker, lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], lp[6], lp[7], JNI_FALSE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
++                status = emitCurveTo(pStroker, rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], rp[6], rp[7], JNI_TRUE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
+                 break;
+             case 4:
+-                emitLineTo(pStroker, lp[2], lp[3], JNI_FALSE);
+-                emitLineTo(pStroker, rp[0], rp[1], JNI_TRUE);
++                status = emitLineTo(pStroker, lp[2], lp[3], JNI_FALSE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
++                status = emitLineTo(pStroker, rp[0], rp[1], JNI_TRUE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
+                 break;
+             }
+-            emitLineTo(pStroker, rp[kind - 2], rp[kind - 1], JNI_TRUE);
++            status = emitLineTo(pStroker, rp[kind - 2], rp[kind - 1], JNI_TRUE);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+         }
+     }
+ 
+@@ -1175,12 +1297,14 @@ static void Stroker_curveTo(PathConsumer *pStroker,
+     this.cx0 = xf;
+     this.cy0 = yf;
+     this.prev = DRAWING_OP_TO;
++    return status;
+ }
+ 
+-static void Stroker_quadTo(PathConsumer *pStroker,
++static jint Stroker_quadTo(PathConsumer *pStroker,
+                           jfloat x1, jfloat y1,
+                           jfloat x2, jfloat y2)
+ {
++    jint status = ERROR_NONE;
+     jfloat xf, yf, dxs, dys, dxf, dyf;
+     jfloat mx, my;
+     jint nSplits, i, kind;
+@@ -1205,8 +1329,7 @@ static void Stroker_quadTo(PathConsumer *pStroker,
+     }
+     if (dxs == 0.0f && dys == 0.0f) {
+         // this happens iff the "curve" is just a point
+-        Stroker_lineTo(pStroker, middle[0], middle[1]);
+-        return;
++        return Stroker_lineTo(pStroker, middle[0], middle[1]);
+     }
+     // if these vectors are too small, normalize them, to avoid future
+     // precision problems.
+@@ -1224,10 +1347,13 @@ static void Stroker_quadTo(PathConsumer *pStroker,
+     computeOffset(dxs, dys, this.lineWidth2, this.offset[0]);
+     mx = this.offset[0][0];
+     my = this.offset[0][1];
+-    drawJoin(pStroker,
++    status = drawJoin(pStroker,
+              this.cdx, this.cdy, this.cx0, this.cy0,
+              dxs, dys, this.cmx, this.cmy,
+              mx, my);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+ 
+     nSplits = findSubdivPoints(pStroker, middle, subdivTs, 6, this.lineWidth2);
+     prevt = 0.0f;
+@@ -1244,18 +1370,36 @@ static void Stroker_quadTo(PathConsumer *pStroker,
+     for (i = 0; i <= nSplits; i++) {
+         kind = computeOffsetQuad(pStroker, middle, i*4, lp, rp);
+         if (kind != 0) {
+-            emitLineTo(pStroker, lp[0], lp[1], JNI_FALSE);
++            status = emitLineTo(pStroker, lp[0], lp[1], JNI_FALSE);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+             switch(kind) {
+             case 6:
+-                emitQuadTo(pStroker, lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], JNI_FALSE);
+-                emitQuadTo(pStroker, rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], JNI_TRUE);
++                status = emitQuadTo(pStroker, lp[0], lp[1], lp[2], lp[3], lp[4], lp[5], JNI_FALSE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
++                status = emitQuadTo(pStroker, rp[0], rp[1], rp[2], rp[3], rp[4], rp[5], JNI_TRUE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
+                 break;
+             case 4:
+-                emitLineTo(pStroker, lp[2], lp[3], JNI_FALSE);
+-                emitLineTo(pStroker, rp[0], rp[1], JNI_TRUE);
++                status = emitLineTo(pStroker, lp[2], lp[3], JNI_FALSE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
++                status = emitLineTo(pStroker, rp[0], rp[1], JNI_TRUE);
++                if (status != ERROR_NONE) {
++                    return status;
++                }
+                 break;
+             }
+-            emitLineTo(pStroker, rp[kind - 2], rp[kind - 1], JNI_TRUE);
++            status = emitLineTo(pStroker, rp[kind - 2], rp[kind - 1], JNI_TRUE);
++            if (status != ERROR_NONE) {
++                return status;
++            }
+         }
+     }
+ 
+@@ -1266,6 +1410,7 @@ static void Stroker_quadTo(PathConsumer *pStroker,
+     this.cx0 = xf;
+     this.cy0 = yf;
+     this.prev = DRAWING_OP_TO;
++    return status;
+ }
+ 
+ // a stack of polynomial curves where each curve shares endpoints with
+@@ -1305,10 +1450,13 @@ jboolean PolyStack_isEmpty(PolyStack *pStack) {
+     return this.numCurves == 0;
+ }
+ 
+-static void ensureSpace(PolyStack *pStack, jint n) {
++static jint ensureSpace(PolyStack *pStack, jint n) {
+     if (this.end + n >= this.curvesSIZE) {
+         jint newSize = (this.end + n) * 2;
+         jfloat *newCurves = new_float(newSize);
++        if (!newCurves) {
++            return ERROR_OOM;
++        }
+         System_arraycopy(this.curves, 0, newCurves, 0, this.end);
+         free(this.curves);
+         this.curves = newCurves;
+@@ -1317,19 +1465,26 @@ static void ensureSpace(PolyStack *pStack, jint n) {
+     if (this.numCurves >= this.curveTypesSIZE) {
+         jint newSize = this.numCurves * 2;
+         jint *newTypes = new_int(newSize);
++        if (!newTypes) {
++            return ERROR_OOM;
++        }
+         System_arraycopy(this.curveTypes, 0, newTypes, 0, this.numCurves);
+         free(this.curveTypes);
+         this.curveTypes = newTypes;
+         this.curveTypesSIZE = newSize;
+     }
++    return ERROR_NONE;
+ }
+ 
+-void PolyStack_pushCubic(PolyStack *pStack,
++jint PolyStack_pushCubic(PolyStack *pStack,
+                          jfloat x0, jfloat y0,
+                          jfloat x1, jfloat y1,
+                          jfloat x2, jfloat y2)
+ {
+-    ensureSpace(pStack, 6);
++    jint status = ensureSpace(pStack, 6);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.curveTypes[this.numCurves++] = 8;
+     // assert(x0 == lastX && y0 == lastY)
+ 
+@@ -1337,26 +1492,35 @@ void PolyStack_pushCubic(PolyStack *pStack,
+     this.curves[this.end++] = x2;    this.curves[this.end++] = y2;
+     this.curves[this.end++] = x1;    this.curves[this.end++] = y1;
+     this.curves[this.end++] = x0;    this.curves[this.end++] = y0;
++    return status;
+ }
+ 
+-void PolyStack_pushQuad(PolyStack *pStack,
++jint PolyStack_pushQuad(PolyStack *pStack,
+                         jfloat x0, jfloat y0,
+                         jfloat x1, jfloat y1)
+ {
+-    ensureSpace(pStack, 4);
++    jint status = ensureSpace(pStack, 4);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.curveTypes[this.numCurves++] = 6;
+     // assert(x0 == lastX && y0 == lastY)
+     this.curves[this.end++] = x1;    this.curves[this.end++] = y1;
+     this.curves[this.end++] = x0;    this.curves[this.end++] = y0;
++    return status;
+ }
+ 
+-void PolyStack_pushLine(PolyStack *pStack,
++jint PolyStack_pushLine(PolyStack *pStack,
+                         jfloat x, jfloat y)
+ {
+-    ensureSpace(pStack, 2);
++    jint status = ensureSpace(pStack, 2);
++    if (status != ERROR_NONE) {
++        return status;
++    }
+     this.curveTypes[this.numCurves++] = 4;
+     // assert(x0 == lastX && y0 == lastY)
+     this.curves[this.end++] = x;    this.curves[this.end++] = y;
++    return status;
+ }
+ 
+ //@SuppressWarnings("unused")
+@@ -1370,7 +1534,8 @@ jint PolyStack_pop(PolyStack *pStack, jfloat pts[]) {
+ }
+ */
+ 
+-void PolyStack_pop(PolyStack *pStack, PathConsumer *io) {
++jint PolyStack_pop(PolyStack *pStack, PathConsumer *io) {
++    jint status = ERROR_NONE;
+     jint type;
+ 
+     this.numCurves--;
+@@ -1378,19 +1543,20 @@ void PolyStack_pop(PolyStack *pStack, PathConsumer *io) {
+     this.end -= (type - 2);
+     switch(type) {
+     case 8:
+-        io->curveTo(io,
++        status = io->curveTo(io,
+                     this.curves[this.end+0], this.curves[this.end+1],
+                     this.curves[this.end+2], this.curves[this.end+3],
+                     this.curves[this.end+4], this.curves[this.end+5]);
+         break;
+     case 6:
+-        io->quadTo(io,
++        status = io->quadTo(io,
+                    this.curves[this.end+0], this.curves[this.end+1],
+                    this.curves[this.end+2], this.curves[this.end+3]);
+-            break;
++        break;
+     case 4:
+-        io->lineTo(io, this.curves[this.end], this.curves[this.end+1]);
++        status = io->lineTo(io, this.curves[this.end], this.curves[this.end+1]);
+     }
++    return status;
+ }
+ 
+ //@Override
+diff --git a/modules/graphics/src/main/native-prism/Transformer.c b/modules/graphics/src/main/native-prism/Transformer.c
+index fbd3f6f1..53ad8b5d 100644
+--- a/modules/graphics/src/main/native-prism/Transformer.c
++++ b/modules/graphics/src/main/native-prism/Transformer.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -88,39 +88,39 @@ PathConsumer *Transformer_init(Transformer *pTransformer,
+     return &pTransformer->consumer;
+ }
+ 
+-static void Translate_moveTo(PathConsumer *pTransformer,
++static jint Translate_moveTo(PathConsumer *pTransformer,
+                              jfloat x0, jfloat y0)
+ {
+-    this.out->moveTo(this.out,
++    return this.out->moveTo(this.out,
+                      (jfloat) (x0 + this.mxt),
+                      (jfloat) (y0 + this.myt));
+ }
+ 
+-static void Translate_lineTo(PathConsumer *pTransformer,
++static jint Translate_lineTo(PathConsumer *pTransformer,
+                              jfloat x1, jfloat y1)
+ {
+-    this.out->lineTo(this.out,
++    return this.out->lineTo(this.out,
+                      (jfloat) (x1 + this.mxt),
+                      (jfloat) (y1 + this.myt));
+ }
+ 
+-static void Translate_quadTo(PathConsumer *pTransformer,
++static jint Translate_quadTo(PathConsumer *pTransformer,
+                              jfloat xc, jfloat yc,
+                              jfloat x1, jfloat y1)
+ {
+-    this.out->quadTo(this.out,
++    return this.out->quadTo(this.out,
+                      (jfloat) (xc + this.mxt),
+                      (jfloat) (yc + this.myt),
+                      (jfloat) (x1 + this.mxt),
+                      (jfloat) (y1 + this.myt));
+ }
+ 
+-static void Translate_curveTo(PathConsumer *pTransformer,
++static jint Translate_curveTo(PathConsumer *pTransformer,
+                               jfloat xc0, jfloat yc0,
+                               jfloat xc1, jfloat yc1,
+                               jfloat x1, jfloat y1)
+ {
+-    this.out->curveTo(this.out,
++    return this.out->curveTo(this.out,
+                       (jfloat) (xc0 + this.mxt),
+                       (jfloat) (yc0 + this.myt),
+                       (jfloat) (xc1 + this.mxt),
+@@ -129,39 +129,39 @@ static void Translate_curveTo(PathConsumer *pTransformer,
+                       (jfloat) (y1  + this.myt));
+ }
+ 
+-static void DeltaScale_moveTo(PathConsumer *pTransformer,
++static jint DeltaScale_moveTo(PathConsumer *pTransformer,
+                               jfloat x0, jfloat y0)
+ {
+-    this.out->moveTo(this.out,
++    return this.out->moveTo(this.out,
+                      (jfloat) (x0 * this.mxx),
+                      (jfloat) (y0 * this.myy));
+ }
+ 
+-static void DeltaScale_lineTo(PathConsumer *pTransformer,
++static jint DeltaScale_lineTo(PathConsumer *pTransformer,
+                               jfloat x1, jfloat y1)
+ {
+-    this.out->lineTo(this.out,
++    return this.out->lineTo(this.out,
+                      (jfloat) (x1 * this.mxx),
+                      (jfloat) (y1 * this.myy));
+ }
+ 
+-static void DeltaScale_quadTo(PathConsumer *pTransformer,
++static jint DeltaScale_quadTo(PathConsumer *pTransformer,
+                               jfloat xc, jfloat yc,
+                               jfloat x1, jfloat y1)
+ {
+-    this.out->quadTo(this.out,
++    return this.out->quadTo(this.out,
+                      (jfloat) (xc * this.mxx),
+                      (jfloat) (yc * this.myy),
+                      (jfloat) (x1 * this.mxx),
+                      (jfloat) (y1 * this.myy));
+ }
+ 
+-static void DeltaScale_curveTo(PathConsumer *pTransformer,
++static jint DeltaScale_curveTo(PathConsumer *pTransformer,
+                                jfloat xc0, jfloat yc0,
+                                jfloat xc1, jfloat yc1,
+                                jfloat x1, jfloat y1)
+ {
+-    this.out->curveTo(this.out,
++    return this.out->curveTo(this.out,
+                       (jfloat) (xc0 * this.mxx),
+                       (jfloat) (yc0 * this.myy),
+                       (jfloat) (xc1 * this.mxx),
+@@ -170,39 +170,39 @@ static void DeltaScale_curveTo(PathConsumer *pTransformer,
+                       (jfloat) (y1  * this.myy));
+ }
+ 
+-static void DeltaTransform_moveTo(PathConsumer *pTransformer,
++static jint DeltaTransform_moveTo(PathConsumer *pTransformer,
+                                   jfloat x0, jfloat y0)
+ {
+-    this.out->moveTo(this.out,
++    return this.out->moveTo(this.out,
+                      (jfloat) (x0 * this.mxx + y0 * this.mxy),
+                      (jfloat) (x0 * this.myx + y0 * this.myy));
+ }
+ 
+-static void DeltaTransform_lineTo(PathConsumer *pTransformer,
++static jint DeltaTransform_lineTo(PathConsumer *pTransformer,
+                                   jfloat x1, jfloat y1)
+ {
+-    this.out->lineTo(this.out,
++    return this.out->lineTo(this.out,
+                      (jfloat) (x1 * this.mxx + y1 * this.mxy),
+                      (jfloat) (x1 * this.myx + y1 * this.myy));
+ }
+ 
+-static void DeltaTransform_quadTo(PathConsumer *pTransformer,
++static jint DeltaTransform_quadTo(PathConsumer *pTransformer,
+                                   jfloat xc, jfloat yc,
+                                   jfloat x1, jfloat y1)
+ {
+-    this.out->quadTo(this.out,
++    return this.out->quadTo(this.out,
+                      (jfloat) (xc * this.mxx + yc * this.mxy),
+                      (jfloat) (xc * this.myx + yc * this.myy),
+                      (jfloat) (x1 * this.mxx + y1 * this.mxy),
+                      (jfloat) (x1 * this.myx + y1 * this.myy));
+ }
+ 
+-static void DeltaTransform_curveTo(PathConsumer *pTransformer,
++static jint DeltaTransform_curveTo(PathConsumer *pTransformer,
+                                    jfloat xc0, jfloat yc0,
+                                    jfloat xc1, jfloat yc1,
+                                    jfloat x1, jfloat y1)
+ {
+-    this.out->curveTo(this.out,
++    return this.out->curveTo(this.out,
+                       (jfloat) (xc0 * this.mxx + yc0 * this.mxy),
+                       (jfloat) (xc0 * this.myx + yc0 * this.myy),
+                       (jfloat) (xc1 * this.mxx + yc1 * this.mxy),
+@@ -211,39 +211,39 @@ static void DeltaTransform_curveTo(PathConsumer *pTransformer,
+                       (jfloat) (x1  * this.myx + y1  * this.myy));
+ }
+ 
+-static void ScaleTranslate_moveTo(PathConsumer *pTransformer,
++static jint ScaleTranslate_moveTo(PathConsumer *pTransformer,
+                                   jfloat x0, jfloat y0)
+ {
+-    this.out->moveTo(this.out,
++    return this.out->moveTo(this.out,
+                      (jfloat) (x0 * this.mxx + this.mxt),
+                      (jfloat) (y0 * this.myy + this.myt));
+ }
+ 
+-static void ScaleTranslate_lineTo(PathConsumer *pTransformer,
++static jint ScaleTranslate_lineTo(PathConsumer *pTransformer,
+                                   jfloat x1, jfloat y1)
+ {
+-    this.out->lineTo(this.out,
++    return this.out->lineTo(this.out,
+                      (jfloat) (x1 * this.mxx + this.mxt),
+                      (jfloat) (y1 * this.myy + this.myt));
+ }
+ 
+-static void ScaleTranslate_quadTo(PathConsumer *pTransformer,
++static jint ScaleTranslate_quadTo(PathConsumer *pTransformer,
+                                   jfloat xc, jfloat yc,
+                                   jfloat x1, jfloat y1)
+ {
+-    this.out->quadTo(this.out,
++    return this.out->quadTo(this.out,
+                      (jfloat) (xc * this.mxx + this.mxt),
+                      (jfloat) (yc * this.myy + this.myt),
+                      (jfloat) (x1 * this.mxx + this.mxt),
+                      (jfloat) (y1 * this.myy + this.myt));
+ }
+ 
+-static void ScaleTranslate_curveTo(PathConsumer *pTransformer,
++static jint ScaleTranslate_curveTo(PathConsumer *pTransformer,
+                                    jfloat xc0, jfloat yc0,
+                                    jfloat xc1, jfloat yc1,
+                                    jfloat x1, jfloat y1)
+ {
+-    this.out->curveTo(this.out,
++    return this.out->curveTo(this.out,
+                       (jfloat) (xc0 * this.mxx + this.mxt),
+                       (jfloat) (yc0 * this.myy + this.myt),
+                       (jfloat) (xc1 * this.mxx + this.mxt),
+@@ -252,39 +252,39 @@ static void ScaleTranslate_curveTo(PathConsumer *pTransformer,
+                       (jfloat) (y1  * this.myy + this.myt));
+ }
+ 
+-static void Transform_moveTo(PathConsumer *pTransformer,
++static jint Transform_moveTo(PathConsumer *pTransformer,
+                              jfloat x0, jfloat y0)
+ {
+-    this.out->moveTo(this.out,
++    return this.out->moveTo(this.out,
+                      (jfloat) (x0 * this.mxx + y0 * this.mxy + this.mxt),
+                      (jfloat) (x0 * this.myx + y0 * this.myy + this.myt));
+ }
+ 
+-static void Transform_lineTo(PathConsumer *pTransformer,
++static jint Transform_lineTo(PathConsumer *pTransformer,
+                              jfloat x1, jfloat y1)
+ {
+-    this.out->lineTo(this.out,
++    return this.out->lineTo(this.out,
+                      (jfloat) (x1 * this.mxx + y1 * this.mxy + this.mxt),
+                      (jfloat) (x1 * this.myx + y1 * this.myy + this.myt));
+ }
+ 
+-static void Transform_quadTo(PathConsumer *pTransformer,
++static jint Transform_quadTo(PathConsumer *pTransformer,
+                              jfloat xc, jfloat yc,
+                              jfloat x1, jfloat y1)
+ {
+-    this.out->quadTo(this.out,
++    return this.out->quadTo(this.out,
+                      (jfloat) (xc * this.mxx + yc * this.mxy + this.mxt),
+                      (jfloat) (xc * this.myx + yc * this.myy + this.myt),
+                      (jfloat) (x1 * this.mxx + y1 * this.mxy + this.mxt),
+                      (jfloat) (x1 * this.myx + y1 * this.myy + this.myt));
+ }
+ 
+-static void Transform_curveTo(PathConsumer *pTransformer,
++static jint Transform_curveTo(PathConsumer *pTransformer,
+                               jfloat xc0, jfloat yc0,
+                               jfloat xc1, jfloat yc1,
+                               jfloat x1, jfloat y1)
+ {
+-    this.out->curveTo(this.out,
++    return this.out->curveTo(this.out,
+                       (jfloat) (xc0 * this.mxx + yc0 * this.mxy + this.mxt),
+                       (jfloat) (xc0 * this.myx + yc0 * this.myy + this.myt),
+                       (jfloat) (xc1 * this.mxx + yc1 * this.mxy + this.mxt),
+@@ -293,10 +293,10 @@ static void Transform_curveTo(PathConsumer *pTransformer,
+                       (jfloat) (x1  * this.myx + y1  * this.myy + this.myt));
+ }
+ 
+-static void Transformer_closePath(PathConsumer *pTransformer) {
+-    this.out->closePath(this.out);
++static jint Transformer_closePath(PathConsumer *pTransformer) {
++    return this.out->closePath(this.out);
+ }
+ 
+-static void Transformer_pathDone(PathConsumer *pTransformer) {
+-    this.out->pathDone(this.out);
++static jint Transformer_pathDone(PathConsumer *pTransformer) {
++    return this.out->pathDone(this.out);
+ }
+-- 
+2.25.0.2.g232378479e
+

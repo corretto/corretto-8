@@ -23,7 +23,7 @@
  * questions.
  */
 
-#include <sys/poll.h>
+#include <poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string.h>
@@ -310,7 +310,7 @@ Java_sun_nio_ch_Net_bind0(JNIEnv *env, jclass clazz, jobject fdo, jboolean prefe
                           jboolean useExclBind, jobject iao, int port)
 {
     SOCKADDR sa;
-    int sa_len = SOCKADDR_LEN;
+    socklen_t sa_len = SOCKADDR_LEN;
     int rv = 0;
 
     if (NET_InetAddressToSockaddr(env, iao, port, (struct sockaddr *)&sa, &sa_len, preferIPv6) != 0) {
@@ -335,7 +335,7 @@ Java_sun_nio_ch_Net_connect0(JNIEnv *env, jclass clazz, jboolean preferIPv6,
                              jobject fdo, jobject iao, jint port)
 {
     SOCKADDR sa;
-    int sa_len = SOCKADDR_LEN;
+    socklen_t sa_len = SOCKADDR_LEN;
     int rv;
 
     if (NET_InetAddressToSockaddr(env, iao, port, (struct sockaddr *) &sa,
@@ -453,7 +453,7 @@ Java_sun_nio_ch_Net_getIntOption0(JNIEnv *env, jclass clazz, jobject fdo,
     }
 
     if (mayNeedConversion) {
-        n = NET_GetSockOpt(fdval(env, fdo), level, opt, arg, (int*)&arglen);
+        n = NET_GetSockOpt(fdval(env, fdo), level, opt, arg, &arglen);
     } else {
         n = getsockopt(fdval(env, fdo), level, opt, arg, &arglen);
     }
@@ -536,7 +536,8 @@ Java_sun_nio_ch_Net_joinOrDrop4(JNIEnv *env, jobject this, jboolean join, jobjec
 {
     struct ip_mreq mreq;
     struct my_ip_mreq_source mreq_source;
-    int opt, n, optlen;
+    int opt, n;
+    socklen_t optlen;
     void* optval;
 
     if (source == 0) {
@@ -624,7 +625,8 @@ Java_sun_nio_ch_Net_joinOrDrop6(JNIEnv *env, jobject this, jboolean join, jobjec
 #ifdef AF_INET6
     struct ipv6_mreq mreq6;
     struct my_group_source_req req;
-    int opt, n, optlen;
+    int opt, n;
+    socklen_t optlen;
     void* optval;
 
     if (source == NULL) {

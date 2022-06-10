@@ -177,6 +177,9 @@ AC_DEFUN_ONCE([LIB_SETUP_X11],
     HELP_MSG_MISSING_DEPENDENCY([x11])
     AC_MSG_ERROR([Could not find all X11 headers (shape.h Xrender.h XTest.h Intrinsic.h). $HELP_MSG])
   fi
+  if test "x$OPENJDK_TARGET_LIBC" = xmusl; then
+    X_CFLAGS="$X_CFLAGS -DMUSL_LIBC"
+  fi
 
   AC_SUBST(X_CFLAGS)
   AC_SUBST(X_LIBS)
@@ -774,11 +777,36 @@ AC_DEFUN_ONCE([LIB_SETUP_MISC_LIBS],
   # Check for the jpeg library
   #
 
-  USE_EXTERNAL_LIBJPEG=true
-  AC_CHECK_LIB(jpeg, main, [],
-      [ USE_EXTERNAL_LIBJPEG=false
-      AC_MSG_NOTICE([Will use jpeg decoder bundled with the OpenJDK source])
-  ])
+  AC_ARG_WITH(libjpeg, [AS_HELP_STRING([--with-libjpeg],
+      [use libjpeg from build system or OpenJDK source (system, bundled) @<:@bundled@:>@])])
+
+  AC_MSG_CHECKING([for which libjpeg to use])
+
+  # default is bundled
+  DEFAULT_LIBJPEG=bundled
+
+  #
+  # if user didn't specify, use DEFAULT_LIBJPEG
+  #
+  if test "x${with_libjpeg}" = "x"; then
+    with_libjpeg=${DEFAULT_LIBJPEG}
+  fi
+
+  AC_MSG_RESULT(${with_libjpeg})
+
+  if test "x${with_libjpeg}" = "xbundled"; then
+    USE_EXTERNAL_LIBJPEG=false
+  elif test "x${with_libjpeg}" = "xsystem"; then
+    AC_CHECK_HEADER(jpeglib.h, [],
+        [ AC_MSG_ERROR([--with-libjpeg=system specified, but jpeglib.h not found!])])
+    AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, [],
+        [ AC_MSG_ERROR([--with-libjpeg=system specified, but no libjpeg found])])
+
+    USE_EXTERNAL_LIBJPEG=true
+  else
+    AC_MSG_ERROR([Invalid use of --with-libjpeg: ${with_libjpeg}, use 'system' or 'bundled'])
+  fi
+
   AC_SUBST(USE_EXTERNAL_LIBJPEG)
 
   ###############################################################################
@@ -817,6 +845,82 @@ AC_DEFUN_ONCE([LIB_SETUP_MISC_LIBS],
     AC_MSG_ERROR([Invalid value of --with-giflib: ${with_giflib}, use 'system' or 'bundled'])
   fi
   AC_SUBST(USE_EXTERNAL_LIBGIF)
+
+  ###############################################################################
+  #
+  # Check for the lcms2 library
+  #
+
+  AC_ARG_WITH(lcms, [AS_HELP_STRING([--with-lcms],
+   [use lcms2 from build system or OpenJDK source (system, bundled) @<:@bundled@:>@])])
+
+  AC_MSG_CHECKING([for which lcms to use])
+
+  DEFAULT_LCMS=bundled
+
+  #
+  # If user didn't specify, use DEFAULT_LCMS
+  #
+  if test "x${with_lcms}" = "x"; then
+      with_lcms=${DEFAULT_LCMS}
+  fi
+
+  if test "x${with_lcms}" = "xbundled"; then
+    USE_EXTERNAL_LCMS=false
+    AC_MSG_RESULT([bundled])
+  elif test "x${with_lcms}" = "xsystem"; then
+    AC_MSG_RESULT([system])
+    PKG_CHECK_MODULES([LCMS], [lcms2], [LCMS_FOUND=yes], [LCMS_FOUND=no])
+    if test "x${LCMS_FOUND}" = "xyes"; then
+      USE_EXTERNAL_LCMS=true
+    else
+      AC_MSG_ERROR([--with-lcms=system specified, but no lcms found!])
+    fi
+  else
+    AC_MSG_ERROR([Invalid value for --with-lcms: ${with_lcms}, use 'system' or 'bundled'])
+  fi
+
+  AC_SUBST(USE_EXTERNAL_LCMS)
+
+  ###############################################################################
+  #
+  # Check for the png library
+  #
+
+  AC_ARG_WITH(libpng, [AS_HELP_STRING([--with-libpng],
+     [use libpng from build system or OpenJDK source (system, bundled) @<:@bundled@:>@])])
+
+
+  AC_MSG_CHECKING([for which libpng to use])
+
+  # default is bundled
+  DEFAULT_LIBPNG=bundled
+
+  #
+  # if user didn't specify, use DEFAULT_LIBPNG
+  #
+  if test "x${with_libpng}" = "x"; then
+      with_libpng=${DEFAULT_LIBPNG}
+  fi
+
+  if test "x${with_libpng}" = "xbundled"; then
+      USE_EXTERNAL_LIBPNG=false
+      AC_MSG_RESULT([bundled])
+  elif test "x${with_libpng}" = "xsystem"; then
+      PKG_CHECK_MODULES(PNG, libpng,
+                   [ LIBPNG_FOUND=yes ],
+                   [ LIBPNG_FOUND=no ])
+      if test "x${LIBPNG_FOUND}" = "xyes"; then
+          USE_EXTERNAL_LIBPNG=true
+          AC_MSG_RESULT([system])
+      else
+          AC_MSG_RESULT([system not found])
+          AC_MSG_ERROR([--with-libpng=system specified, but no libpng found!])
+      fi
+  else
+      AC_MSG_ERROR([Invalid value of --with-libpng: ${with_libpng}, use 'system' or 'bundled'])
+  fi
+  AC_SUBST(USE_EXTERNAL_LIBPNG)
 
   ###############################################################################
   #
@@ -935,7 +1039,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
     AC_MSG_CHECKING([if dynamic link of stdc++ is possible])
     AC_LANG_PUSH(C++)
     OLD_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -lstdc++"
+    CXXFLAGS="$CXXFLAGS -lc++"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
         [has_dynamic_libstdcxx=yes],
         [has_dynamic_libstdcxx=no])
@@ -945,7 +1049,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
 
     # Test if stdc++ can be linked statically.
     AC_MSG_CHECKING([if static link of stdc++ is possible])
-    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic"
+    STATIC_STDCXX_FLAGS="-Wl,-Bstatic -lc++ -lgcc -Wl,-Bdynamic"
     AC_LANG_PUSH(C++)
     OLD_LIBS="$LIBS"
     OLD_CXX="$CXX"
@@ -975,7 +1079,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STATIC_LINK_LIBSTDCPP],
     # If dynamic was requested, it's available since it would fail above otherwise.
     # If dynamic wasn't requested, go with static unless it isn't available.
     if test "x$with_stdc__lib" = xdynamic || test "x$has_static_libstdcxx" = xno || test "x$JVM_VARIANT_ZEROSHARK" = xtrue; then
-      LIBCXX="$LIBCXX -lstdc++"
+      LIBCXX="$LIBCXX -lc++"
       LDCXX="$CXX"
       STATIC_CXX_SETTING="STATIC_CXX=false"
       AC_MSG_RESULT([dynamic])

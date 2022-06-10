@@ -262,6 +262,7 @@ Thread::Thread() {
 
 #ifdef ASSERT
   _visited_for_critical_count = false;
+  _wx_init = false;
 #endif
 
   _SR_lock = new Monitor(Mutex::suspend_resume, "SR_lock", true);
@@ -1313,6 +1314,7 @@ void WatcherThread::run() {
 
   this->record_stack_base_and_size();
   this->initialize_thread_local_storage();
+  this->init_wx();
   this->set_native_thread_name(this->name());
   this->set_active_handles(JNIHandleBlock::allocate_block());
   while(!_should_terminate) {
@@ -1650,6 +1652,8 @@ void JavaThread::run() {
 
   // Initialize thread local storage; set before calling MutexLocker
   this->initialize_thread_local_storage();
+
+  this->init_wx();
 
   this->create_stack_guard_pages();
 
@@ -2428,6 +2432,8 @@ void JavaThread::check_safepoint_and_suspend_for_native_trans(JavaThread *thread
 // Note only the native==>VM/Java barriers can call this function and when
 // thread state is _thread_in_native_trans.
 void JavaThread::check_special_condition_for_native_trans(JavaThread *thread) {
+  Thread::WXWriteFromExecSetter wx_write;
+
   check_safepoint_and_suspend_for_native_trans(thread);
 
   if (thread->has_async_exception()) {
@@ -2445,7 +2451,10 @@ void JavaThread::check_special_condition_for_native_trans(JavaThread *thread) {
 // can potentially block and perform a GC if they are the last thread
 // exiting the GC_locker.
 void JavaThread::check_special_condition_for_native_trans_and_transition(JavaThread *thread) {
+
   check_special_condition_for_native_trans(thread);
+
+  Thread::WXWriteFromExecSetter wx_write;
 
   // Finish the transition
   thread->set_thread_state(_thread_in_Java);
@@ -2504,7 +2513,7 @@ void JavaThread::create_stack_guard_pages() {
     _stack_guard_state = stack_guard_enabled;
   } else {
     warning("Attempt to protect stack guard pages failed.");
-    if (os::uncommit_memory((char *) low_addr, len)) {
+    if (os::uncommit_memory((char *) low_addr, len, !ExecMem)) {
       warning("Attempt to deallocate stack guard pages failed.");
     }
   }
@@ -3336,6 +3345,8 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
   // Initialize the os module before using TLS
   os::init();
 
+  os::current_thread_enable_wx(WXWrite);
+
   // Initialize system properties.
   Arguments::init_system_properties();
 
@@ -3416,6 +3427,7 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
   main_thread->initialize_thread_local_storage();
 
   main_thread->set_active_handles(JNIHandleBlock::allocate_block());
+  main_thread->init_wx();
 
   if (!main_thread->set_as_starting_thread()) {
     vm_shutdown_during_initialization(
@@ -3862,6 +3874,7 @@ void Threads::shutdown_vm_agents() {
     if (unload_entry != NULL) {
       JavaThread* thread = JavaThread::current();
       ThreadToNativeFromVM ttn(thread);
+      Thread::WXExecFromWriteSetter wx_exec;
       HandleMark hm(thread);
       (*unload_entry)(&main_vm);
     }
@@ -3881,6 +3894,7 @@ void Threads::create_vm_init_libraries() {
       // Invoke the JVM_OnLoad function
       JavaThread* thread = JavaThread::current();
       ThreadToNativeFromVM ttn(thread);
+      Thread::WXExecFromWriteSetter wx_exec;
       HandleMark hm(thread);
       jint err = (*on_load_entry)(&main_vm, agent->options(), NULL);
       if (err != JNI_OK) {
@@ -3895,18 +3909,33 @@ void Threads::create_vm_init_libraries() {
 JavaThread* Threads::find_java_thread_from_java_tid(jlong java_tid) {
   assert(Threads_lock->owned_by_self(), "Must hold Threads_lock");
 
-  JavaThread* java_thread = NULL;
-  // Sequential search for now.  Need to do better optimization later.
-  for (JavaThread* thread = Threads::first(); thread != NULL; thread = thread->next()) {
-    oop tobj = thread->threadObj();
-    if (!thread->is_exiting() &&
-        tobj != NULL &&
-        java_tid == java_lang_Thread::thread_id(tobj)) {
-      java_thread = thread;
-      break;
+  // Try fast way first. ThreadService maintains a global database under the
+  // assumption that java tids are globally unique at any given point in time.
+  // I.e., there is a global 1-1 mapping between java tids and active JavaThreads.
+  JavaThread* java_thread = ThreadService::get_java_thread(java_tid);
+  
+  // Return directly if java_thread found in _tid_java_map is valid.
+  // If java_thread not exist in _tid_java_map or not valid, do a sequential search.
+  // The special case is primordial thread (tid=1), which doesn't include an oop,
+  // and thus doesn't exist in tid_thread_map.
+  if (is_valid_java_thread(java_tid, java_thread)) {
+    return java_thread;
+  } else {
+    for (java_thread = Threads::first(); java_thread != NULL; java_thread = java_thread->next()) {
+      if (is_valid_java_thread(java_tid, java_thread)) {
+        return java_thread;
+      }
     }
   }
-  return java_thread;
+  return NULL;
+}
+
+bool Threads::is_valid_java_thread(jlong java_tid, JavaThread* java_thread) {
+  oop tobj;
+  return (java_thread != NULL &&
+          !java_thread->is_exiting() &&
+          (tobj = java_thread->threadObj()) != NULL &&
+          java_tid == java_lang_Thread::thread_id(tobj));
 }
 
 

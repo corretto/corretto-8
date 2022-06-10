@@ -30,36 +30,6 @@
 #include "runtime/java.hpp"
 #include "runtime/stubCodeGenerator.hpp"
 #include "vm_version_aarch64.hpp"
-#ifdef TARGET_OS_FAMILY_linux
-# include "os_linux.inline.hpp"
-#endif
-
-#include <sys/auxv.h>
-#include <asm/hwcap.h>
-
-#ifndef HWCAP_AES
-#define HWCAP_AES   (1<<3)
-#endif
-
-#ifndef HWCAP_PMULL
-#define HWCAP_PMULL (1<<4)
-#endif
-
-#ifndef HWCAP_SHA1
-#define HWCAP_SHA1  (1<<5)
-#endif
-
-#ifndef HWCAP_SHA2
-#define HWCAP_SHA2  (1<<6)
-#endif
-
-#ifndef HWCAP_CRC32
-#define HWCAP_CRC32 (1<<7)
-#endif
-
-#ifndef HWCAP_ATOMICS
-#define HWCAP_ATOMICS (1<<8)
-#endif
 
 int VM_Version::_cpu;
 int VM_Version::_model;
@@ -68,72 +38,37 @@ int VM_Version::_variant;
 int VM_Version::_revision;
 int VM_Version::_stepping;
 int VM_Version::_cpuFeatures;
+int VM_Version::_icache_line_size;
+int VM_Version::_dcache_line_size;
+int VM_Version::_zva_length;
+bool VM_Version::_zva_enabled;
 const char*           VM_Version::_features_str = "";
-VM_Version::PsrInfo VM_Version::_psr_info   = { 0, };
 
-static BufferBlob* stub_blob;
-static const int stub_size = 550;
+void VM_Version::initialize() {
+  get_processor_features();
 
-extern "C" {
-  typedef void (*getPsrInfo_stub_t)(void*);
-}
-static getPsrInfo_stub_t getPsrInfo_stub = NULL;
+  char buf[512];
 
+  strcpy(buf, "simd");
+  if (_cpuFeatures & CPU_CRC32) strcat(buf, ", crc");
+  if (_cpuFeatures & CPU_AES)   strcat(buf, ", aes");
+  if (_cpuFeatures & CPU_SHA1)  strcat(buf, ", sha1");
+  if (_cpuFeatures & CPU_SHA2)  strcat(buf, ", sha256");
+  if (_cpuFeatures & CPU_LSE) strcat(buf, ", lse");
 
-class VM_Version_StubGenerator: public StubCodeGenerator {
- public:
-
-  VM_Version_StubGenerator(CodeBuffer *c) : StubCodeGenerator(c) {}
-
-  address generate_getPsrInfo() {
-    StubCodeMark mark(this, "VM_Version", "getPsrInfo_stub");
-#   define __ _masm->
-    address start = __ pc();
-
-    // void getPsrInfo(VM_Version::PsrInfo* psr_info);
-
-    address entry = __ pc();
-
-    __ enter();
-
-    __ get_dczid_el0(rscratch1);
-    __ strw(rscratch1, Address(c_rarg0, in_bytes(VM_Version::dczid_el0_offset())));
-
-    __ get_ctr_el0(rscratch1);
-    __ strw(rscratch1, Address(c_rarg0, in_bytes(VM_Version::ctr_el0_offset())));
-
-    __ leave();
-    __ ret(lr);
-
-#   undef __
-
-    return start;
-  }
-};
-
-
-void VM_Version::get_processor_features() {
-  _supports_cx8 = true;
-  _supports_atomic_getset4 = true;
-  _supports_atomic_getadd4 = true;
-  _supports_atomic_getset8 = true;
-  _supports_atomic_getadd8 = true;
-
-  getPsrInfo_stub(&_psr_info);
-
-  int dcache_line = VM_Version::dcache_line_size();
+  _features_str = strdup(buf);
 
   // Limit AllocatePrefetchDistance so that it does not exceed the
   // constraint in AllocatePrefetchDistanceConstraintFunc.
   if (FLAG_IS_DEFAULT(AllocatePrefetchDistance))
-    FLAG_SET_DEFAULT(AllocatePrefetchDistance, MIN2(512, 3*dcache_line));
+    FLAG_SET_DEFAULT(AllocatePrefetchDistance, MIN2(512, 3*_dcache_line_size));
 
   if (FLAG_IS_DEFAULT(AllocatePrefetchStepSize))
-    FLAG_SET_DEFAULT(AllocatePrefetchStepSize, dcache_line);
+    FLAG_SET_DEFAULT(AllocatePrefetchStepSize, _dcache_line_size);
   if (FLAG_IS_DEFAULT(PrefetchScanIntervalInBytes))
-    FLAG_SET_DEFAULT(PrefetchScanIntervalInBytes, 3*dcache_line);
+    FLAG_SET_DEFAULT(PrefetchScanIntervalInBytes, 3*_dcache_line_size);
   if (FLAG_IS_DEFAULT(PrefetchCopyIntervalInBytes))
-    FLAG_SET_DEFAULT(PrefetchCopyIntervalInBytes, 3*dcache_line);
+    FLAG_SET_DEFAULT(PrefetchCopyIntervalInBytes, 3*_dcache_line_size);
 
   if (PrefetchCopyIntervalInBytes != -1 &&
        ((PrefetchCopyIntervalInBytes & 7) || (PrefetchCopyIntervalInBytes >= 32768))) {
@@ -155,42 +90,6 @@ void VM_Version::get_processor_features() {
 
   FLAG_SET_DEFAULT(UseSSE42Intrinsics, true);
 
-  unsigned long auxv = getauxval(AT_HWCAP);
-
-  char buf[512];
-
-  strcpy(buf, "simd");
-  if (auxv & HWCAP_CRC32) strcat(buf, ", crc");
-  if (auxv & HWCAP_AES)   strcat(buf, ", aes");
-  if (auxv & HWCAP_SHA1)  strcat(buf, ", sha1");
-  if (auxv & HWCAP_SHA2)  strcat(buf, ", sha256");
-  if (auxv & HWCAP_ATOMICS) strcat(buf, ", lse");
-
-  _features_str = strdup(buf);
-  _cpuFeatures = auxv;
-
-  int cpu_lines = 0;
-  if (FILE *f = fopen("/proc/cpuinfo", "r")) {
-    char buf[128], *p;
-    while (fgets(buf, sizeof (buf), f) != NULL) {
-      if ((p = strchr(buf, ':')) != NULL) {
-        long v = strtol(p+1, NULL, 0);
-        if (strncmp(buf, "CPU implementer", sizeof "CPU implementer" - 1) == 0) {
-          _cpu = v;
-          cpu_lines++;
-        } else if (strncmp(buf, "CPU variant", sizeof "CPU variant" - 1) == 0) {
-          _variant = v;
-        } else if (strncmp(buf, "CPU part", sizeof "CPU part" - 1) == 0) {
-          if (_model != v)  _model2 = _model;
-          _model = v;
-        } else if (strncmp(buf, "CPU revision", sizeof "CPU revision" - 1) == 0) {
-          _revision = v;
-        }
-      }
-    }
-    fclose(f);
-  }
-
   // Enable vendor specific features
   if (_cpu == CPU_CAVIUM) {
     if (_variant == 0) _cpuFeatures |= CPU_DMB_ATOMICS;
@@ -203,19 +102,15 @@ void VM_Version::get_processor_features() {
   }
   if (_cpu == CPU_ARM && (_model == 0xd03 || _model2 == 0xd03)) _cpuFeatures |= CPU_A53MAC;
   if (_cpu == CPU_ARM && (_model == 0xd07 || _model2 == 0xd07)) _cpuFeatures |= CPU_STXR_PREFETCH;
-  // If an olde style /proc/cpuinfo (cpu_lines == 1) then if _model is an A57 (0xd07)
-  // we assume the worst and assume we could be on a big little system and have
-  // undisclosed A53 cores which we could be swapped to at any stage
-  if (_cpu == CPU_ARM && cpu_lines == 1 && _model == 0xd07) _cpuFeatures |= CPU_A53MAC;
 
   if (FLAG_IS_DEFAULT(UseCRC32)) {
-    UseCRC32 = (auxv & HWCAP_CRC32) != 0;
+    UseCRC32 = (_cpuFeatures & CPU_CRC32) != 0;
   }
-  if (UseCRC32 && (auxv & HWCAP_CRC32) == 0) {
+  if (UseCRC32 && (_cpuFeatures & CPU_CRC32) == 0) {
     warning("UseCRC32 specified, but not supported on this CPU");
   }
 
-  if (auxv & HWCAP_ATOMICS) {
+  if (_cpuFeatures & CPU_LSE) {
     if (FLAG_IS_DEFAULT(UseLSE))
       FLAG_SET_DEFAULT(UseLSE, true);
   } else {
@@ -224,7 +119,7 @@ void VM_Version::get_processor_features() {
     }
   }
 
-  if (auxv & HWCAP_AES) {
+  if (_cpuFeatures & CPU_AES) {
     UseAES = UseAES || FLAG_IS_DEFAULT(UseAES);
     UseAESIntrinsics =
         UseAESIntrinsics || (UseAES && FLAG_IS_DEFAULT(UseAESIntrinsics));
@@ -241,7 +136,7 @@ void VM_Version::get_processor_features() {
     }
   }
 
-  if (auxv & HWCAP_PMULL) {
+  if (_cpuFeatures & CPU_PMULL) {
     if (FLAG_IS_DEFAULT(UseGHASHIntrinsics)) {
       FLAG_SET_DEFAULT(UseGHASHIntrinsics, true);
     }
@@ -254,7 +149,7 @@ void VM_Version::get_processor_features() {
     UseCRC32Intrinsics = true;
   }
 
-  if (auxv & (HWCAP_SHA1 | HWCAP_SHA2)) {
+  if (_cpuFeatures & (CPU_SHA1 | CPU_SHA2)) {
     if (FLAG_IS_DEFAULT(UseSHA)) {
       FLAG_SET_DEFAULT(UseSHA, true);
     }
@@ -268,7 +163,7 @@ void VM_Version::get_processor_features() {
     FLAG_SET_DEFAULT(UseSHA256Intrinsics, false);
     FLAG_SET_DEFAULT(UseSHA512Intrinsics, false);
   } else {
-    if (auxv & HWCAP_SHA1) {
+    if (_cpuFeatures & CPU_SHA1) {
       if (FLAG_IS_DEFAULT(UseSHA1Intrinsics)) {
         FLAG_SET_DEFAULT(UseSHA1Intrinsics, true);
       }
@@ -276,7 +171,7 @@ void VM_Version::get_processor_features() {
       warning("SHA1 instruction is not available on this CPU.");
       FLAG_SET_DEFAULT(UseSHA1Intrinsics, false);
     }
-    if (auxv & HWCAP_SHA2) {
+    if (_cpuFeatures & CPU_SHA2) {
       if (FLAG_IS_DEFAULT(UseSHA256Intrinsics)) {
         FLAG_SET_DEFAULT(UseSHA256Intrinsics, true);
       }
@@ -290,12 +185,12 @@ void VM_Version::get_processor_features() {
     }
   }
 
-  if (is_zva_enabled()) {
+  if (_zva_enabled) {
     if (FLAG_IS_DEFAULT(UseBlockZeroing)) {
       FLAG_SET_DEFAULT(UseBlockZeroing, true);
     }
     if (FLAG_IS_DEFAULT(BlockZeroingLowLimit)) {
-      FLAG_SET_DEFAULT(BlockZeroingLowLimit, 4 * VM_Version::zva_length());
+      FLAG_SET_DEFAULT(BlockZeroingLowLimit, 4 * _zva_length);
     }
   } else if (UseBlockZeroing) {
     warning("DC ZVA is not available on this CPU");
@@ -330,27 +225,4 @@ void VM_Version::get_processor_features() {
     vm_exit_during_initialization("client compiler does not support ReservedCodeCacheSize > 128M");
   }
 #endif
-}
-
-void VM_Version::initialize() {
-  ResourceMark rm;
-
-  stub_blob = BufferBlob::create("getPsrInfo_stub", stub_size);
-  if (stub_blob == NULL) {
-    vm_exit_during_initialization("Unable to allocate getPsrInfo_stub");
-  }
-
-  CodeBuffer c(stub_blob);
-  VM_Version_StubGenerator g(&c);
-  getPsrInfo_stub = CAST_TO_FN_PTR(getPsrInfo_stub_t,
-                                   g.generate_getPsrInfo());
-
-  get_processor_features();
-
-  if (CriticalJNINatives) {
-    if (FLAG_IS_CMDLINE(CriticalJNINatives)) {
-      warning("CriticalJNINatives specified, but not supported in this VM");
-    }
-    FLAG_SET_DEFAULT(CriticalJNINatives, false);
-  }
 }

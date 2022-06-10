@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -540,6 +540,7 @@ address SharedRuntime::raw_exception_handler_for_return_address(JavaThread* thre
 
 
 JRT_LEAF(address, SharedRuntime::exception_handler_for_return_address(JavaThread* thread, address return_address))
+  Thread::WXWriteFromExecSetter wx_write;
   return raw_exception_handler_for_return_address(thread, return_address);
 JRT_END
 
@@ -1711,6 +1712,8 @@ void SharedRuntime::check_member_name_argument_is_last_argument(methodHandle met
 // so he no longer calls into the interpreter.
 IRT_LEAF(void, SharedRuntime::fixup_callers_callsite(Method* method, address caller_pc))
   Method* moop(method);
+
+  Thread::WXWriteFromExecSetter wx_write;
 
   address entry_point = moop->from_compiled_entry();
 

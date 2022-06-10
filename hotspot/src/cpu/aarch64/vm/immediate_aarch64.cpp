@@ -20,6 +20,8 @@
  */
 
 #include <stdlib.h>
+
+#include "utilities/debug.hpp"
 #include "immediate_aarch64.hpp"
 
 // there are at most 2^13 possible logical immediate encodings
@@ -122,8 +124,17 @@ static inline u_int32_t uimm(u_int32_t val, int hi, int lo)
 
 u_int64_t replicate(u_int64_t bits, int nbits, int count)
 {
+  assert(count > 0, "must be");
+  assert(nbits > 0, "must be");
+  assert(count * nbits <= 64, "must be");
+
+  // Special case nbits == 64 since the shift below with that nbits value
+  // would result in undefined behavior.
+  if (nbits == 64) {
+    return bits;
+  }
+
   u_int64_t result = 0;
-  // nbits may be 64 in which case we want mask to be -1
   u_int64_t mask = ones(nbits);
   for (int i = 0; i < count ; i++) {
     result <<= nbits;

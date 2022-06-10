@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -135,7 +135,7 @@ void
 NET_AllocSockaddr(struct sockaddr **him, int *len);
 
 JNIEXPORT int JNICALL
-NET_InetAddressToSockaddr(JNIEnv *env, jobject iaObj, int port, struct sockaddr *him, int *len, jboolean v4MappedAddress);
+NET_InetAddressToSockaddr(JNIEnv *env, jobject iaObj, int port, struct sockaddr *him, socklen_t *len, jboolean v4MappedAddress);
 
 JNIEXPORT jobject JNICALL
 NET_SockaddrToInetAddress(JNIEnv *env, struct sockaddr *him, int *port);
@@ -171,13 +171,13 @@ NET_IsZeroAddr(jbyte* caddr);
  */
 
 JNIEXPORT int JNICALL
-NET_GetSockOpt(int fd, int level, int opt, void *result, int *len);
+NET_GetSockOpt(int fd, int level, int opt, void *result, socklen_t *len);
 
 JNIEXPORT int JNICALL
-NET_SetSockOpt(int fd, int level, int opt, const void *arg, int len);
+NET_SetSockOpt(int fd, int level, int opt, const void *arg, socklen_t len);
 
 JNIEXPORT int JNICALL
-NET_Bind(int fd, struct sockaddr *him, int len);
+NET_Bind(int fd, struct sockaddr *him, socklen_t len);
 
 JNIEXPORT int JNICALL
 NET_MapSocketOption(jint cmd, int *level, int *optname);

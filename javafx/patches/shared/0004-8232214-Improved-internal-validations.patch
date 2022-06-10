@@ -1,0 +1,35 @@
+From b182fedd892cd08c796997fcfd6dbc034d91e237 Mon Sep 17 00:00:00 2001
+From: David Alvarez <alvdavi@amazon.com>
+Date: Tue, 7 Jan 2020 23:34:30 +0000
+Subject: [PATCH 4/4] 8232214: Improved internal validations
+
+---
+ .../web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c   | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c b/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
+index b42077bb..38eb9c86 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
++++ b/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
+@@ -101783,7 +101783,9 @@ static void decodeIntArray(
+       if( sqlite3_strglob("unordered*", z)==0 ){
+         pIndex->bUnordered = 1;
+       }else if( sqlite3_strglob("sz=[0-9]*", z)==0 ){
+-        pIndex->szIdxRow = sqlite3LogEst(sqlite3Atoi(z+3));
++        int sz = sqlite3Atoi(z+3);
++        if( sz<2 ) sz = 2;
++        pIndex->szIdxRow = sqlite3LogEst(sz);
+       }else if( sqlite3_strglob("noskipscan*", z)==0 ){
+         pIndex->noSkipScan = 1;
+       }
+@@ -137100,6 +137102,7 @@ static int whereLoopAddBtreeIndex(
+     ** it to pNew->rRun, which is currently set to the cost of the index
+     ** seek only. Then, if this is a non-covering index, add the cost of
+     ** visiting the rows in the main table.  */
++    assert( pSrc->pTab->szTabRow>0 );
+     rCostIdx = pNew->nOut + 1 + (15*pProbe->szIdxRow)/pSrc->pTab->szTabRow;
+     pNew->rRun = sqlite3LogEstAdd(rLogSize, rCostIdx);
+     if( (pNew->wsFlags & (WHERE_IDX_ONLY|WHERE_IPK))==0 ){
+-- 
+2.17.2
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -733,7 +733,7 @@ void unpacker::read_file_header() {
       abort("impossible archive size");  // bad input data
       return;
     }
-    if (archive_size < header_size_1) {
+    if (archive_size < (size_t)header_size_1) {
       abort("too much read-ahead");  // somehow we pre-fetched too much?
       return;
     }
@@ -985,7 +985,7 @@ void cpool::init(unpacker* u_, int counts[CONSTANT_Limit]) {
   }
 
   // Initialize *all* our entries once
-  for (int i = 0 ; i < maxentries ; i++)
+  for (uint i = 0 ; i < maxentries ; i++)
     entries[i].outputIndex = REQUESTED_NONE;
 
   initGroupIndexes();
@@ -1795,6 +1795,7 @@ unpacker::attr_definitions::parseLayout(const char* lp, band** &res,
     case 'B': case 'H': case 'I': case 'V': // unsigned_int
     case 'S': // signed_int
       --lp; // reparse
+      // Falls through.
     case 'F':
       lp = parseIntLayout(lp, b, EK_INT);
       break;
@@ -3699,7 +3700,7 @@ char* entry::string() {
   case CONSTANT_Signature:
     if (value.b.ptr == null)
       return ref(0)->string();
-    // else fall through:
+    // Falls through.
   case CONSTANT_Utf8:
     buf = value.b;
     break;
@@ -4202,8 +4203,8 @@ void unpacker::write_bc_ops() {
         switch (bc - _invokeinit_op) {
         case _invokeinit_self_option:   classRef = thisClass;  break;
         case _invokeinit_super_option:  classRef = superClass; break;
-        default: assert(bc == _invokeinit_op+_invokeinit_new_option);
         case _invokeinit_new_option:    classRef = newClass;   break;
+        default: assert(bc == _invokeinit_op+_invokeinit_new_option);
         }
         wp[-1] = origBC;  // overwrite with origBC
         int coding = bc_initref.getInt();

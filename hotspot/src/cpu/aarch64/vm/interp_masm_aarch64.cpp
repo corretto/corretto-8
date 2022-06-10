@@ -163,7 +163,7 @@ void InterpreterMacroAssembler::get_unsigned_2_byte_index_at_bcp(
 }
 
 void InterpreterMacroAssembler::get_dispatch() {
-  unsigned long offset;
+  uint64_t offset;
   adrp(rdispatch, ExternalAddress((address)Interpreter::dispatch_table()), offset);
   lea(rdispatch, Address(rdispatch, offset));
 }
@@ -705,7 +705,7 @@ void InterpreterMacroAssembler::lock_object(Register lock_reg)
     // copy
     mov(rscratch1, sp);
     sub(swap_reg, swap_reg, rscratch1);
-    ands(swap_reg, swap_reg, (unsigned long)(7 - os::vm_page_size()));
+    ands(swap_reg, swap_reg, (uint64_t)(7 - os::vm_page_size()));
 
     // Save the test result, for recursive case, the result is zero
     str(swap_reg, Address(lock_reg, mark_offset));

@@ -1,0 +1,149 @@
+/*
+* Copyright (c) 2018, 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+configurations {
+    javafx
+}
+
+dependencies {
+    javafx project(path: ':javafx', configuration: 'archives')
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-image"
+
+/**
+ * Create a local copy of the source tree in our
+ * build root -- this is required since OpenJDK's
+ * build wants to occur inside the source tree,
+ * and we don't want to tamper with someone
+ * else's tree.
+ */
+task copySource(type: Exec) {
+    if (!file(buildRoot).exists()) {
+        file(buildRoot).mkdirs()
+    }
+    workingDir '/usr/bin'
+    commandLine 'rsync', '-am',
+            '--exclude=pre-build',
+            '--exclude=installers',
+            '--exclude=src/corretto-build',
+            "${project.rootDir}/", buildRoot
+}
+
+task createJavafxOverlay(type: Copy) {
+    dependsOn project.configurations.javafx
+    from tarTree(project.configurations.javafx.singleFile)
+    into "$buildDir/javafx"
+    eachFile {
+        if (it.path.startsWith('rt/')) {
+            it.path = it.path.replace('rt/', 'jre/')
+        }
+    }
+}
+
+task configureBuild(type: Exec) {
+    dependsOn project.configurations.compile
+    dependsOn copySource
+    workingDir "$buildRoot/src"
+    // Platform specific flags
+    def command = ['bash', 'configure',
+            'LIBCXX=-static-libstdc++ -static-libgcc']
+    // Common flags
+    command += project.correttoCommonFlags
+    commandLine command.flatten()
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make', 'images'
+    outputs.dir jdkResultingImage
+}
+
+task importAmazonCacerts(type: Exec) {
+    dependsOn executeBuild
+    workingDir jdkResultingImage
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'bin/keytool', '-importkeystore', '-noprompt',
+                '-srckeystore', "${buildRoot}/amazon-cacerts",
+                '-srcstorepass', keystore_password,
+                '-destkeystore', 'jre/lib/security/cacerts',
+                '-deststorepass', keystore_password
+}
+
+task copyBuildResults() {
+    description 'Copy the JDK image and puts the results in build/.'
+    dependsOn executeBuild
+    dependsOn importAmazonCacerts
+    if (project.correttoArch == 'x64') {
+        dependsOn createJavafxOverlay
+    }
+
+    doLast {
+        def destination = "${buildDir}/${project.correttoJdkArchiveName}"
+        copy {
+            from(buildRoot) {
+                include 'ASSEMBLY_EXCEPTION'
+                include 'LICENSE'
+                include 'THIRD_PARTY_README'
+                include 'commitId.txt'
+                include 'version.txt'
+            }
+            into destination
+        }
+        exec {
+            workingDir jdkResultingImage
+            commandLine 'cp', '-Rf', '--parents', 'bin', 'include', 'jre', 'lib', 'man/man1', 'src.zip', destination
+        }
+
+        if (project.correttoArch == 'x64') {
+            exec {
+                workingDir createJavafxOverlay.destinationDir
+                commandLine 'cp', '-Rf', '--parents', 'bin', 'jre', 'lib', 'man/man1', 'javafx-src.zip', destination
+            }
+        }
+    }
+}
+
+task packageDebugSymbols(type: Exec) {
+    description 'Package the JDK debug symbols and puts the results in build/distributions.'
+    dependsOn copyBuildResults
+    String tarFile = "${distributionDir}/${project.correttoDebugSymbolsArchiveName}.tar.gz"
+    outputs.file tarFile
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar -czf ${tarFile} \$(find ${project.correttoJdkArchiveName} -name \"*.diz\")"
+}
+
+task packageBuildResults(type: Exec) {
+    description 'Package the JDK image and puts the results in build/distributions.'
+    dependsOn packageDebugSymbols
+    String tarFile = "${distributionDir}/${project.correttoJdkArchiveName}.tar.gz"
+    outputs.file tarFile
+    workingDir buildDir
+    commandLine 'bash', '-c',
+        "tar --exclude=*.diz -czf ${tarFile} ${project.correttoJdkArchiveName}"
+}
+
+artifacts {
+    archives file: packageBuildResults.outputs.getFiles().getSingleFile(), builtBy: packageBuildResults
+}

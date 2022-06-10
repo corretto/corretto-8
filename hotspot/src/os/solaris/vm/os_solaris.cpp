@@ -2686,7 +2686,7 @@ bool os::pd_create_stack_guard_pages(char* addr, size_t size) {
 }
 
 bool os::remove_stack_guard_pages(char* addr, size_t size) {
-  return os::uncommit_memory(addr, size);
+  return os::uncommit_memory(addr, size, !ExecMem);
 }
 
 // Change the page size in a given range.
@@ -2877,7 +2877,7 @@ char *os::scan_pages(char *start, char* end, page_info* page_expected, page_info
   return end;
 }
 
-bool os::pd_uncommit_memory(char* addr, size_t bytes) {
+bool os::pd_uncommit_memory(char* addr, size_t bytes, bool exec) {
   size_t size = bytes;
   // Map uncommitted pages PROT_NONE so we fail early if we touch an
   // uncommitted page. Otherwise, the read/write might succeed if we
@@ -2916,7 +2916,8 @@ char* os::Solaris::anon_mmap(char* requested_addr, size_t bytes, size_t alignmen
   return mmap_chunk(addr, bytes, flags, PROT_NONE);
 }
 
-char* os::pd_reserve_memory(size_t bytes, char* requested_addr, size_t alignment_hint) {
+char* os::pd_reserve_memory(size_t bytes, char* requested_addr,
+                            size_t alignment_hint, bool executable) {
   char* addr = Solaris::anon_mmap(requested_addr, bytes, alignment_hint, (requested_addr != NULL));
 
   guarantee(requested_addr == NULL || requested_addr == addr,

@@ -1,3 +1,5 @@
+corretto-build
+commitId.txt
 /build/
 /dist/
 /.idea/

@@ -116,6 +116,15 @@ ifeq ($(ARCH), arm)
   HS_ARCH          = arm
 endif
 
+# arm64/aarch64
+ifeq ($(ARCH), arm64)
+  ARCH_DATA_MODEL  = 64
+  PLATFORM         = bsd-aarch64
+  VM_PLATFORM      = bsd_aarch64
+  HS_ARCH          = aarch64
+  ARCH             = aarch64
+endif
+
 # PPC
 ifeq ($(ARCH), ppc)
   ARCH_DATA_MODEL  = 32
@@ -340,6 +349,8 @@ ifeq ($(ENABLE_FULL_DEBUG_SYMBOLS),1)
   endif
 endif
 
+ADD_SA_BINARIES/aarch64 = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \
+                          $(EXPORT_LIB_DIR)/sa-jdi.jar
 ADD_SA_BINARIES/sparc = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \
                         $(EXPORT_LIB_DIR)/sa-jdi.jar
 ADD_SA_BINARIES/universal = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \

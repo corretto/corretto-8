@@ -95,7 +95,9 @@
 # include <string.h>
 # include <syscall.h>
 # include <sys/sysinfo.h>
+#ifndef MUSL_LIBC
 # include <gnu/libc-version.h>
+#endif
 # include <sys/ipc.h>
 # include <sys/shm.h>
 # include <link.h>
@@ -126,6 +128,17 @@ PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC
 // for timer info max values which include all bits
 #define ALL_64_BITS CONST64(0xFFFFFFFFFFFFFFFF)
 
+#ifdef MUSL_LIBC
+// dlvsym is not a part of POSIX
+// and musl libc doesn't implement it.
+static void *dlvsym(void *handle,
+                    const char *symbol,
+                    const char *version) {
+   // load the latest version of symbol
+   return dlsym(handle, symbol);
+}
+#endif
+
 #define LARGEPAGES_BIT (1 << 6)
 ////////////////////////////////////////////////////////////////////////////////
 // global variables
@@ -144,7 +157,7 @@ const int os::Linux::_vm_default_page_size = (8 * K);
 bool os::Linux::_is_floating_stack = false;
 bool os::Linux::_is_NPTL = false;
 bool os::Linux::_supports_fast_thread_cpu_time = false;
-const char * os::Linux::_glibc_version = NULL;
+const char * os::Linux::_libc_version = NULL;
 const char * os::Linux::_libpthread_version = NULL;
 pthread_condattr_t os::Linux::_condattr[1];
 
@@ -592,17 +605,26 @@ void os::Linux::libpthread_init() {
 # define _CS_GNU_LIBPTHREAD_VERSION 3
 # endif
 
+#ifdef MUSL_LIBC
+  // confstr() from musl libc returns EINVAL for
+  // _CS_GNU_LIBC_VERSION and _CS_GNU_LIBPTHREAD_VERSION
+  os::Linux::set_libc_version("musl - unknown");
+  os::Linux::set_libpthread_version("musl - unknown");
+  os::Linux::set_is_NPTL();
+  os::Linux::set_is_floating_stack();
+#else
+
   size_t n = confstr(_CS_GNU_LIBC_VERSION, NULL, 0);
   if (n > 0) {
      char *str = (char *)malloc(n, mtInternal);
      confstr(_CS_GNU_LIBC_VERSION, str, n);
-     os::Linux::set_glibc_version(str);
+     os::Linux::set_libc_version(str);
   } else {
      // _CS_GNU_LIBC_VERSION is not supported, try gnu_get_libc_version()
      static char _gnu_libc_version[32];
      jio_snprintf(_gnu_libc_version, sizeof(_gnu_libc_version),
               "glibc %s %s", gnu_get_libc_version(), gnu_get_libc_release());
-     os::Linux::set_glibc_version(_gnu_libc_version);
+     os::Linux::set_libc_version(_gnu_libc_version);
   }
 
   n = confstr(_CS_GNU_LIBPTHREAD_VERSION, NULL, 0);
@@ -615,7 +637,7 @@ void os::Linux::libpthread_init() {
      // So sysconf(_SC_THREAD_THREADS_MAX) will return a positive value.
      // On the other hand, NPTL does not have such a limit, sysconf()
      // will return -1 and errno is not changed. Check if it is really NPTL.
-     if (strcmp(os::Linux::glibc_version(), "glibc 2.3.2") == 0 &&
+     if (strcmp(os::Linux::libc_version(), "glibc 2.3.2") == 0 &&
          strstr(str, "NPTL") &&
          sysconf(_SC_THREAD_THREADS_MAX) > 0) {
        free(str);
@@ -639,6 +661,7 @@ void os::Linux::libpthread_init() {
   if (os::Linux::is_NPTL() || os::Linux::supports_variable_stack_size()) {
      os::Linux::set_is_floating_stack();
   }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2269,7 +2292,7 @@ void os::Linux::print_distro_info(outputStream* st) {
 void os::Linux::print_libversion_info(outputStream* st) {
   // libc, pthread
   st->print("libc:");
-  st->print("%s ", os::Linux::glibc_version());
+  st->print("%s ", os::Linux::libc_version());
   st->print("%s ", os::Linux::libpthread_version());
   if (os::Linux::is_LinuxThreads()) {
      st->print("(%s stack)", os::Linux::is_floating_stack() ? "floating" : "fixed");
@@ -3025,8 +3048,10 @@ bool os::Linux::libnuma_init() {
 
       if (numa_available() != -1) {
         set_numa_all_nodes((unsigned long*)libnuma_dlsym(handle, "numa_all_nodes"));
-        set_numa_all_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr"));
-        set_numa_nodes_ptr((struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr"));
+        struct bitmask** numa_all_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_all_nodes_ptr");
+        set_numa_all_nodes_ptr(numa_all_nodes_ptr);
+        struct bitmask** numa_nodes_ptr = (struct bitmask **)libnuma_dlsym(handle, "numa_nodes_ptr");
+        set_numa_nodes_ptr(numa_nodes_ptr == NULL ? numa_all_nodes_ptr : numa_nodes_ptr);
         // Create an index -> node mapping, since nodes are not always consecutive
         _nindex_to_node = new (ResourceObj::C_HEAP, mtInternal) GrowableArray<int>(0, true);
         rebuild_nindex_to_node_map();
@@ -3143,7 +3168,7 @@ unsigned long* os::Linux::_numa_all_nodes;
 struct bitmask* os::Linux::_numa_all_nodes_ptr;
 struct bitmask* os::Linux::_numa_nodes_ptr;
 
-bool os::pd_uncommit_memory(char* addr, size_t size) {
+bool os::pd_uncommit_memory(char* addr, size_t size, bool exec) {
   uintptr_t res = (uintptr_t) ::mmap(addr, size, PROT_NONE,
                 MAP_PRIVATE|MAP_FIXED|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
   return res  != (uintptr_t) MAP_FAILED;
@@ -3261,7 +3286,7 @@ bool os::remove_stack_guard_pages(char* addr, size_t size) {
     return ::munmap(addr, size) == 0;
   }
 
-  return os::uncommit_memory(addr, size);
+  return os::uncommit_memory(addr, size, !ExecMem);
 }
 
 static address _highest_vm_reserved_address = NULL;
@@ -3352,7 +3377,8 @@ static int anon_munmap(char * addr, size_t size) {
 }
 
 char* os::pd_reserve_memory(size_t bytes, char* requested_addr,
-                         size_t alignment_hint) {
+                         size_t alignment_hint,
+                         bool executable) {
   return anon_mmap(requested_addr, bytes, (requested_addr != NULL));
 }
 
@@ -4996,7 +5022,10 @@ void os::Linux::check_signal_handler(int sig) {
   }
 
   if (thisHandler != jvmHandler) {
+PRAGMA_DIAG_PUSH
+PRAGMA_FORMAT_OVERFLOW_IGNORED
     tty->print("Warning: %s handler ", exception_name(sig, buf, O_BUFLEN));
+PRAGMA_DIAG_POP
     tty->print("expected:%s", get_signal_handler_name(jvmHandler, buf, O_BUFLEN));
     tty->print_cr("  found:%s", get_signal_handler_name(thisHandler, buf, O_BUFLEN));
     // No need to check this sig any longer
@@ -5179,14 +5208,14 @@ jint os::init_2(void)
 
   Linux::capture_initial_stack(JavaThread::stack_size_at_create());
 
-#if defined(IA32) && !defined(ZERO)
+#if defined(IA32)
   workaround_expand_exec_shield_cs_limit();
 #endif
 
   Linux::libpthread_init();
   if (PrintMiscellaneous && (Verbose || WizardMode)) {
      tty->print_cr("[HotSpot is running with %s, %s(%s)]\n",
-          Linux::glibc_version(), Linux::libpthread_version(),
+          Linux::libc_version(), Linux::libpthread_version(),
           Linux::is_floating_stack() ? "floating stack" : "fixed stack");
   }
 

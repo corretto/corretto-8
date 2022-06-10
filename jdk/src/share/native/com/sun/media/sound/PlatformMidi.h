@@ -26,6 +26,7 @@
 #ifndef PLATFORM_MIDI_INCLUDED
 #define PLATFORM_MIDI_INCLUDED
 
+#include <stdlib.h>
 
 #include "SoundDefs.h"
 #include "Configure.h" // put flags for debug msgs etc. here

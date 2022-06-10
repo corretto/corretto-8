@@ -227,6 +227,8 @@ static char cpu_arch[] = "i386";
 static char cpu_arch[] = "amd64";
 #elif defined(ARM)
 static char cpu_arch[] = "arm";
+#elif defined(AARCH64)
+static char cpu_arch[] = "aarch64";
 #elif defined(PPC32)
 static char cpu_arch[] = "ppc";
 #elif defined(SPARC)
@@ -2216,8 +2218,12 @@ static void warn_fail_commit_memory(char* addr, size_t size, bool exec,
 //       problem.
 bool os::pd_commit_memory(char* addr, size_t size, bool exec) {
   int prot = exec ? PROT_READ|PROT_WRITE|PROT_EXEC : PROT_READ|PROT_WRITE;
-#ifdef __OpenBSD__
+#if defined( __OpenBSD__)
   // XXX: Work-around mmap/MAP_FIXED bug temporarily on OpenBSD
+  if (::mprotect(addr, size, prot) == 0) {
+    return true;
+  }
+#elif defined(__APPLE__)
   if (::mprotect(addr, size, prot) == 0) {
     return true;
   }
@@ -2299,10 +2305,21 @@ char *os::scan_pages(char *start, char* end, page_info* page_expected, page_info
 }
 
 
-bool os::pd_uncommit_memory(char* addr, size_t size) {
-#ifdef __OpenBSD__
+bool os::pd_uncommit_memory(char* addr, size_t size, bool exec) {
+#if defined(__OpenBSD__)
   // XXX: Work-around mmap/MAP_FIXED bug temporarily on OpenBSD
   return ::mprotect(addr, size, PROT_NONE) == 0;
+#elif defined(__APPLE__)
+  if (exec) {
+    if (::madvise(addr, size, MADV_FREE) != 0) {
+      return false;
+    }
+    return ::mprotect(addr, size, PROT_NONE) == 0;
+  } else {
+    uintptr_t res = (uintptr_t) ::mmap(addr, size, PROT_NONE,
+        MAP_PRIVATE|MAP_FIXED|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
+    return res  != (uintptr_t) MAP_FAILED;
+  }
 #else
   uintptr_t res = (uintptr_t) ::mmap(addr, size, PROT_NONE,
                 MAP_PRIVATE|MAP_FIXED|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
@@ -2317,7 +2334,7 @@ bool os::pd_create_stack_guard_pages(char* addr, size_t size) {
 // If this is a growable mapping, remove the guard pages entirely by
 // munmap()ping them.  If not, just call uncommit_memory().
 bool os::remove_stack_guard_pages(char* addr, size_t size) {
-  return os::uncommit_memory(addr, size);
+  return os::uncommit_memory(addr, size, !ExecMem);
 }
 
 static address _highest_vm_reserved_address = NULL;
@@ -2328,11 +2345,17 @@ static address _highest_vm_reserved_address = NULL;
 // 'requested_addr' is only treated as a hint, the return value may or
 // may not start from the requested address. Unlike Bsd mmap(), this
 // function returns NULL to indicate failure.
-static char* anon_mmap(char* requested_addr, size_t bytes, bool fixed) {
+static char* anon_mmap(char* requested_addr, size_t bytes, bool fixed, bool executable) {
   char * addr;
   int flags;
 
   flags = MAP_PRIVATE | MAP_NORESERVE | MAP_ANONYMOUS;
+#ifdef __APPLE__
+  if (executable) {
+    guarantee(!fixed, "MAP_JIT (for execute) is incompatible with MAP_FIXED");
+    flags |= MAP_JIT;
+  }
+#endif
   if (fixed) {
     assert((uintptr_t)requested_addr % os::Bsd::page_size() == 0, "unaligned address");
     flags |= MAP_FIXED;
@@ -2366,8 +2389,9 @@ static int anon_munmap(char * addr, size_t size) {
 }
 
 char* os::pd_reserve_memory(size_t bytes, char* requested_addr,
-                         size_t alignment_hint) {
-  return anon_mmap(requested_addr, bytes, (requested_addr != NULL));
+                         size_t alignment_hint,
+                         bool executable) {
+  return anon_mmap(requested_addr, bytes, (requested_addr != NULL), executable);
 }
 
 bool os::pd_release_memory(char* addr, size_t size) {
@@ -2547,7 +2571,7 @@ char* os::pd_attempt_reserve_memory_at(size_t bytes, char* requested_addr) {
 
   // Bsd mmap allows caller to pass an address as hint; give it a try first,
   // if kernel honors the hint then we can return immediately.
-  char * addr = anon_mmap(requested_addr, bytes, false);
+  char * addr = anon_mmap(requested_addr, bytes, false/*fixed*/, false/*executable*/);
   if (addr == requested_addr) {
      return requested_addr;
   }
@@ -3667,16 +3691,6 @@ void os::init(void) {
 
   Bsd::clock_init();
   initial_time_count = javaTimeNanos();
-
-#ifdef __APPLE__
-  // XXXDARWIN
-  // Work around the unaligned VM callbacks in hotspot's
-  // sharedRuntime. The callbacks don't use SSE2 instructions, and work on
-  // Linux, Solaris, and FreeBSD. On Mac OS X, dyld (rightly so) enforces
-  // alignment when doing symbol lookup. To work around this, we force early
-  // binding of all symbols now, thus binding when alignment is known-good.
-  _dyld_bind_fully_image_containing_address((const void *) &os::init);
-#endif
 }
 
 // To install functions for atexit system call
