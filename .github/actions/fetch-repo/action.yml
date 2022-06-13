@@ -1,0 +1,21 @@
+name: 'Fetch upstream repository'
+description: 'Fetch the upstream openjdk repository and update the corresponding branches'
+
+inputs: 
+    upstream:
+        description: 'Upstream repository https git url'
+        required: true
+    local-branch:
+        description: 'Local branch tracking the remote upstream'
+        required: true
+outputs:
+    status:
+        description: 'Status of the upstream fetch and merge'
+runs:
+    using: "composite"
+    steps:
+        - run: $GITHUB_ACTION_PATH/refresh.sh ${{ inputs.upstream }} ${{ inputs.local-branch }}
+          shell: bash
+          id: fetch-and-update-repo
+
+    
