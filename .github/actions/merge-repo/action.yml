@@ -1,0 +1,19 @@
+name: 'Merge Upstream branch'
+description: 'Merge Upstream branch to Develop branch.'
+
+inputs: 
+    upstream:
+        description: 'Upstream branch in repository'
+        required: true
+    merge-branch:
+        description: 'Merge branch in local repository'
+        required: true
+outputs:
+    status:
+        description: 'Status of the upstream fetch and merge'
+runs:
+    using: "composite"
+    steps:
+        - run: $GITHUB_ACTION_PATH/merge.sh ${{ inputs.upstream }} ${{ inputs.merge-branch }}
+          shell: bash
+          id: merge-upstream-to-develop
