@@ -72,9 +72,8 @@ task copySourceTar(type: Tar) {
         into '/'
     }
     from("$buildDir/distributions/javafx") {
-        into "src/javafx"
+        into "javafx"
     }
-
 }
 
 task rpmBuild(type: Exec) {

@@ -144,7 +144,7 @@ Provides: java-%{javaver}-devel = %{epoch}:%{version}-%{release}
 Amazon Corretto's packaging of the OpenJDK 8 code.
 
 %prep
-%setup -q -n src
+%setup -q -n src -c
 
 %build
 bash ./configure \
