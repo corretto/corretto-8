@@ -4475,7 +4475,7 @@ apt_help() {
     pulse)
       PKGHANDLER_COMMAND="sudo apt-get install libpulse-dev" ;;
     x11)
-      PKGHANDLER_COMMAND="sudo apt-get install libX11-dev libxext-dev libxrender-dev libxtst-dev libxt-dev" ;;
+      PKGHANDLER_COMMAND="sudo apt-get install libx11-dev libxext-dev libxrender-dev libxtst-dev libxt-dev" ;;
     ccache)
       PKGHANDLER_COMMAND="sudo apt-get install ccache" ;;
   esac
@@ -4875,7 +4875,7 @@ TOOLCHAIN_DESCRIPTION_xlc="IBM XL C/C++"
 
 
 #
-# Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -4901,7 +4901,7 @@ TOOLCHAIN_DESCRIPTION_xlc="IBM XL C/C++"
 
 ################################################################################
 # The order of these defines the priority by which we try to find them.
-VALID_VS_VERSIONS="2010 2012 2013 2015 2017"
+VALID_VS_VERSIONS="2010 2012 2013 2015 2017 2019"
 
 VS_DESCRIPTION_2010="Microsoft Visual Studio 2010"
 VS_VERSION_INTERNAL_2010=100
@@ -4959,6 +4959,20 @@ VS_SDK_INSTALLDIR_2017=
 VS_VS_PLATFORM_NAME_2017="v141"
 VS_SDK_PLATFORM_NAME_2017=
 
+VS_DESCRIPTION_2019="Microsoft Visual Studio 2019"
+VS_VERSION_INTERNAL_2019=141
+VS_MSVCR_2019=vcruntime140.dll
+VS_MSVCP_2019=msvcp140.dll
+VS_ENVVAR_2019="VS160COMNTOOLS"
+VS_USE_UCRT_2019="true"
+VS_VS_INSTALLDIR_2019="Microsoft Visual Studio/2019"
+VS_EDITIONS_2019="BuildTools Community Professional Enterprise"
+VS_SDK_INSTALLDIR_2019=
+VS_VS_PLATFORM_NAME_2019="v142"
+VS_SDK_PLATFORM_NAME_2019=
+VS_SUPPORTED_2019=false
+VS_TOOLSET_SUPPORTED_2019=false
+
 ################################################################################
 
 
@@ -5000,7 +5014,7 @@ VS_SDK_PLATFORM_NAME_2017=
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1639134107
+DATE_WHEN_GENERATED=1652838310
 
 ###############################################################################
 #
@@ -27550,7 +27564,7 @@ printf "%s\n" "$as_me: Valid Visual Studio versions: $VALID_VS_VERSIONS." >&6;}
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27607,7 +27621,7 @@ printf "%s\n" "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio i
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27680,7 +27694,7 @@ printf "%s\n" "$as_me: directory within the Visual Studio installation" >&6;}
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27739,7 +27753,7 @@ printf "%s\n" "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio i
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27800,7 +27814,7 @@ printf "%s\n" "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio i
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27858,7 +27872,7 @@ printf "%s\n" "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio i
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -27915,7 +27929,7 @@ printf "%s\n" "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio i
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017, the default installation is in a subdir named after the edition.
+    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -52684,7 +52698,7 @@ printf "%s\n" "$as_me: The path of CYGWIN_VC_INSTALL_DIR, which resolves as \"$p
           POSSIBLE_MSVC_DLL="$CYGWIN_VC_INSTALL_DIR/redist/x86/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME"
         fi
       else
-        # Probe: Using well-known location from VS 2017
+        # Probe: Using well-known location from VS 2017 and VS 2019
         if test "x$OPENJDK_TARGET_CPU_BITS" = x64; then
           POSSIBLE_MSVC_DLL="`ls $CYGWIN_VC_INSTALL_DIR/Redist/MSVC/*/x64/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME`"
         else
@@ -54088,7 +54102,7 @@ printf "%s\n" "$as_me: The path of CYGWIN_VC_INSTALL_DIR, which resolves as \"$p
           POSSIBLE_MSVC_DLL="$CYGWIN_VC_INSTALL_DIR/redist/x86/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME"
         fi
       else
-        # Probe: Using well-known location from VS 2017
+        # Probe: Using well-known location from VS 2017 and VS 2019
         if test "x$OPENJDK_TARGET_CPU_BITS" = x64; then
           POSSIBLE_MSVC_DLL="`ls $CYGWIN_VC_INSTALL_DIR/Redist/MSVC/*/x64/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME`"
         else

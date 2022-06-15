@@ -53,19 +53,19 @@ class WinNTFileSystem extends FileSystem {
     private final char slash;
     private final char altSlash;
     private final char semicolon;
+    private final String userDir;
 
     // Whether to enable alternative data streams (ADS) by suppressing
     // checking the path for invalid characters, in particular ":".
-    // ADS support will be enabled if and only if the property is set and
-    // is the empty string or is equal, ignoring case, to the string "true".
-    // By default ADS support is disabled.
+    // By default, ADS support is enabled and will be disabled if and
+    // only if the property is set, ignoring case, to the string "false".
     private static final boolean ENABLE_ADS;
     static {
         String enableADS = GetPropertyAction.privilegedGetProperty("jdk.io.File.enableADS");
         if (enableADS != null) {
-            ENABLE_ADS = "".equals(enableADS) || Boolean.parseBoolean(enableADS);
+            ENABLE_ADS = !enableADS.equalsIgnoreCase(Boolean.FALSE.toString());
         } else {
-            ENABLE_ADS = false;
+            ENABLE_ADS = true;
         }
     }
 
@@ -75,6 +75,8 @@ class WinNTFileSystem extends FileSystem {
         semicolon = AccessController.doPrivileged(
             new GetPropertyAction("path.separator")).charAt(0);
         altSlash = (this.slash == '\\') ? '/' : '\\';
+        userDir = AccessController.doPrivileged(
+            new GetPropertyAction("user.dir"));
     }
 
     private boolean isSlash(char c) {
@@ -401,7 +403,11 @@ class WinNTFileSystem extends FileSystem {
     private String getUserPath() {
         /* For both compatibility and security,
            we must look this up every time */
-        return normalize(System.getProperty("user.dir"));
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPropertyAccess("user.dir");
+        }
+        return normalize(userDir);
     }
 
     private String getDrive(String path) {
