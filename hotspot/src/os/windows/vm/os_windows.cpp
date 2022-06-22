@@ -1807,7 +1807,7 @@ void os::win32::print_windows_version(outputStream* st) {
     }
     break;
 
-  case 6004:
+  case 10000:
     if (is_workstation) {
       st->print("10");
     } else {
