@@ -693,15 +693,6 @@ static uint64_t locate_unique_thread_id(mach_port_t mach_thread_port) {
 
 // Thread start routine for all newly created threads
 static void *java_start(Thread *thread) {
-  // Try to randomize the cache line index of hot stack frames.
-  // This helps when threads of the same stack traces evict each other's
-  // cache lines. The threads can be either from the same JVM instance, or
-  // from different JVM instances. The benefit is especially true for
-  // processors with hyperthreading technology.
-  static int counter = 0;
-  int pid = os::current_process_id();
-  alloca(((pid ^ counter++) & 7) * 128);
-
   ThreadLocalStorage::set_thread(thread);
 
   OSThread* osthread = thread->osthread();
