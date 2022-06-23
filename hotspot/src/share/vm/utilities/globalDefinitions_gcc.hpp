@@ -302,6 +302,15 @@ inline int wcslen(const jchar* x) { return wcslen((const wchar_t*)x); }
 #define PRAGMA_FORMAT_NONLITERAL_IGNORED_INTERNAL
 #endif
 
+// Disable -Wstringop-overflow which is introduced in GCC 10.
+// https://gcc.gnu.org/gcc-10/changes.html
+#if !defined(__clang_major__) && (__GNUC__ >= 10)
+#define PRAGMA_STRINGOP_OVERFLOW_IGNORED PRAGMA_DISABLE_GCC_WARNING("-Wstringop-overflow")
+#else
+#define PRAGMA_STRINGOP_OVERFLOW_IGNORED
+#endif
+
+
 #ifndef __clang_major__
 #define PRAGMA_FORMAT_MUTE_WARNINGS_FOR_GCC _Pragma("GCC diagnostic ignored \"-Wformat\"") _Pragma("GCC diagnostic error \"-Wformat-nonliteral\"") _Pragma("GCC diagnostic error \"-Wformat-security\"")
 #endif
