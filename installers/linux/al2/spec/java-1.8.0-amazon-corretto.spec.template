@@ -17,7 +17,6 @@
 # 2 along with this work; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
 %global javaver 1.8.0
 %global java_update @update@
 %global buildver b@build@
@@ -44,13 +43,19 @@
 %global script 'use File::Spec; print File::Spec->abs2rel($ARGV[0], $ARGV[1])'
 %global abs2rel %{__perl} -e %{script}
 
+# Filter out private libraries so RPM does not list them as provided/required
+%global _privatelibs libjli[.]so.*|libattach[.]so.*|libawt[.]so.*|libawt_headless[.]so.*|libawt_xawt[.]so.*|libdt_socket[.]so.*|libfontmanager[.]so.*|libhprof[.]so.*|libinstrument[.]so.*|libj2gss[.]so.*|libj2pcsc[.]so.*|libj2pkcs11[.]so.*|libjaas_unix[.]so.*|libjava_crw_demo[.]so.*|libjdwp[.]so.*|libjpeg[.]so.*|libjsdt[.]so.*|libjsig[.]so.*|libjsound[.]so.*|libjsoundalsa[.]so.*|liblcms[.]so.*|libmanagement[.]so.*|libmlib_image[.]so.*|libnet[.]so.*|libnio[.]so.*|libnpt[.]so.*|libsaproc[.]so.*|libsctp[.]so.*|libsplashscreen[.]so.*|libsunec[.]so.*|libunpack[.]so.*|libzip[.]so.*|lib[.]so\\(SUNWprivate.*
+%global _publiclibs libjawt[.]so.*|libjava[.]so.*|libjsig[.]so.*|libjvm[.]so.*|libverify[.]so.*
+%global __provides_exclude ^(%{_privatelibs}|%{_publiclibs})$
+%global __requires_exclude ^(%{_privatelibs}|%{_publiclibs})$
+
 # By default install a bootstrap jdk. If one is already available,
 # this can be skipped using --without bootjdk
 %bcond_without bootjdk
 
 # By default bundle OpenJFX on x86_64. To skip bundling, use --without bundlejfx
 %bcond_without bundlejfx
-%if %{_arch} == "x86_64" && %{with bundlejfx}
+%if "%{_arch}" == "x86_64" && %{with bundlejfx}
 %global perform_openjfx_overlay 1
 %else
 %global perform_openjfx_overlay 0
@@ -77,10 +82,11 @@ Url: https://github.com/corretto/corretto-8
 Source0: %{name}.tar.gz
 ExclusiveArch: x86_64 aarch64
 
-# jpackage-utils is required for both build and runtime.
-# For build, it provides the jvmdir macro. For runtime,
-# it provides the /usr/lib/jvm directory.
+%if "%{dist}" == ".amzn2"
 BuildRequires: jpackage-utils
+%else
+BuildRequires: javapackages-filesystem
+%endif
 BuildRequires: autoconf
 BuildRequires: automake
 BuildRequires: alsa-lib-devel
@@ -102,9 +108,8 @@ BuildRequires: libXtst-devel
 BuildRequires: pkgconfig
 BuildRequires: xorg-x11-proto-devel
 
-%{!?al_ver: %define al_ver 2}
-
-%if %{al_ver} >= 2022
+# Use dist instead of al_ver to allow building the src.rpm on al2
+%if "%{dist}" != ".amzn2"
 BuildRequires: libXxf86vm-devel
 BuildRequires: mesa-libGL-devel
 %endif
@@ -112,7 +117,12 @@ BuildRequires: mesa-libGL-devel
 %if %{with bootjdk}
 BuildRequires: java-1.8.0-devel
 %endif
-Requires: jpackage-utils
+
+%if "%{dist}" == ".amzn2"
+BuildRequires: jpackage-utils
+%else
+Requires: javapackages-filesystem
+%endif
 
 Requires: dejavu-sans-fonts
 Requires: dejavu-serif-fonts
@@ -120,9 +130,12 @@ Requires: dejavu-sans-mono-fonts
 Requires: ca-certificates
 Requires: zlib
 Requires: giflib
-Requires: log4j-cve-2021-44228-cve-mitigations
 Requires(post): chkconfig
 Requires(postun): chkconfig
+%if "%{dist}" == ".amzn2"
+Requires: log4j-cve-2021-44228-cve-mitigations
+%endif
+
 
 Provides: java = %{epoch}:%{javaver}
 Provides: java-%{javaver} = %{epoch}:%{version}-%{release}
@@ -276,5 +289,11 @@ fi
 %{java_home}/jre/lib
 
 %changelog
+* Wed Jun 9 2022 Dan Lutker <lutkerd@amazon.com>
+- Update libs for provides/requires exclusion
+
+* Tue Feb 8 2022 Dan Lutker <lutkerd@amazon.com>
+- Fixes for AL2022
+
 * Thu Dec 16 2021 Clive Verghese <verghese@amazon.com>
 - Add requires for log4j CVE-2021-44228 static mitigation
