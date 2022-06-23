@@ -138,10 +138,10 @@ void GuardedMemory::test_guarded_memory() {
   do {
     void* p = os::malloc(GuardedMemory::get_total_size(sz), mtInternal);
     void* up = guarded.wrap_with_guards(p, sz, (void*)1);
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+    PRAGMA_DIAG_PUSH
+    PRAGMA_STRINGOP_OVERFLOW_IGNORED
     memset(up, 0, sz + 1); // Buffer-overwrite (within guard)
-    #pragma GCC diagnostic pop
+    PRAGMA_DIAG_POP
     assert(!guarded.verify_guards(), "Guard was not broken as expected");
     os::free(guarded.release_for_freeing());
     sz = (sz << 4) + 1;
@@ -163,4 +163,3 @@ void GuardedMemory::test_guarded_memory() {
 }
 
 #endif // !PRODUCT
-
