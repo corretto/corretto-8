@@ -82,7 +82,7 @@ Url: https://github.com/corretto/corretto-8
 Source0: %{name}.tar.gz
 ExclusiveArch: x86_64 aarch64
 
-%if "%{dist}" == ".amzn2"
+%if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
 BuildRequires: jpackage-utils
 %else
 BuildRequires: javapackages-filesystem
@@ -118,7 +118,7 @@ BuildRequires: mesa-libGL-devel
 BuildRequires: java-1.8.0-devel
 %endif
 
-%if "%{dist}" == ".amzn2"
+%if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
 BuildRequires: jpackage-utils
 %else
 Requires: javapackages-filesystem
@@ -198,6 +198,10 @@ popd
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \
                --slave %{_jvmdir}/java java_sdk %{java_home} \
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
+               --slave %{_jvmdir}/java java %{java_home} \\
+               --slave %{_jvmdir}/java-%{java_major_version} java-%{java_major_version} %{java_home} \\
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java-%{java_major_version}-openjdk %{java_home} \\
                --slave %{_bindir}/appletviewer appletviewer %{java_home}/bin/appletviewer \
                --slave %{_bindir}/extcheck extcheck %{java_home}/bin/extcheck \
                --slave %{_bindir}/idlj idlj %{java_home}/bin/idlj \
@@ -237,6 +241,8 @@ fi
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
                --slave %{_jvmdir}/jre jre %{java_home}/jre \
+               --slave %{_jvmdir}/jre-%{java_major_version} jre-%{java_major_version} %{java_home}/jre \\
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre-%{java_major_version}-openjdk %{java_home}/jre \\
                --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
                --slave %{_bindir}/keytool keytool %{java_home}/jre/bin/keytool \
                --slave %{_bindir}/orbd orbd %{java_home}/jre/bin/orbd \
@@ -289,6 +295,9 @@ fi
 %{java_home}/jre/lib
 
 %changelog
+* Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
+- Fixup java/jre symlinks
+
 * Wed Jun 9 2022 Dan Lutker <lutkerd@amazon.com>
 - Update libs for provides/requires exclusion
 
