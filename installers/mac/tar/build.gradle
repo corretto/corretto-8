@@ -60,6 +60,9 @@ task configureBuild(type: Exec) {
     def command = ['bash', 'configure',
             "--with-toolchain-type=clang",
             '--with-x']
+    if (project.correttoArch == "aarch64") {
+        command += "--with-zlib=bundled"
+    }
     // Common flags
     command += project.correttoCommonFlags
     commandLine command.flatten()
