@@ -18,6 +18,7 @@
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 
 %global javaver 1.8.0
+%global java_major_version  %{javaver}
 %global java_update @update@
 %global buildver b@build@
 %global corretto_revision @revision@
@@ -82,7 +83,10 @@ Url: https://github.com/corretto/corretto-8
 Source0: %{name}.tar.gz
 ExclusiveArch: x86_64 aarch64
 
-%if "%{dist}" == ".amzn2"
+# jpackage-utils/javapackages-filesystem is required for both build and runtime.
+# For build, it provides the jvmdir macro. For runtime,
+# it provides the /usr/lib/jvm directory.
+%if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
 BuildRequires: jpackage-utils
 %else
 BuildRequires: javapackages-filesystem
@@ -118,7 +122,10 @@ BuildRequires: mesa-libGL-devel
 BuildRequires: java-1.8.0-devel
 %endif
 
-%if "%{dist}" == ".amzn2"
+# jpackage-utils/javapackages-filesystem is required for both build and runtime.
+# For build, it provides the jvmdir macro. For runtime,
+# it provides the /usr/lib/jvm directory.
+%if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
 BuildRequires: jpackage-utils
 %else
 Requires: javapackages-filesystem
@@ -198,6 +205,7 @@ popd
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \
                --slave %{_jvmdir}/java java_sdk %{java_home} \
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \
                --slave %{_bindir}/appletviewer appletviewer %{java_home}/bin/appletviewer \
                --slave %{_bindir}/extcheck extcheck %{java_home}/bin/extcheck \
                --slave %{_bindir}/idlj idlj %{java_home}/bin/idlj \
@@ -226,17 +234,22 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/wsgen wsgen %{java_home}/bin/wsgen \
                --slave %{_bindir}/wsimport wsimport %{java_home}/bin/wsimport \
                --slave %{_bindir}/xjc xjc %{java_home}/bin/xjc
+
+  alternatives --install %{_jvmdir}/java-%{java_major_version} java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java_sdk_%{java_major_version}_openjdk %{java_home}
 fi
 
 %postun devel
 if [ $1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
+  alternatives --remove java_sdk_%{java_major_version} %{java_home}
 fi
 
 %post
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
                --slave %{_jvmdir}/jre jre %{java_home}/jre \
+               --slave %{_jvmdir}/jre-openjdk jre_openjdk %{java_home}/jre \
                --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
                --slave %{_bindir}/keytool keytool %{java_home}/jre/bin/keytool \
                --slave %{_bindir}/orbd orbd %{java_home}/jre/bin/orbd \
@@ -247,11 +260,17 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/servertool servertool %{java_home}/jre/bin/servertool \
                --slave %{_bindir}/tnameserv tnameserv %{java_home}/jre/bin/tnameserv \
                --slave %{_bindir}/unpack200 unpack200 %{java_home}/jre/bin/unpack200
+
+  # Need to setup the jre alternatives separately when there is a higher priority jre java these don't get created above.
+  alternatives --install %{_jvmdir}/jre-%{java_major_version} jre_%{java_major_version} %{java_home}/jre %{alternatives_priority} \
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}/jre
+
 fi
 
 %postun
 if [ $1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/jre/bin/java
+  alternatives --remove jre_%{java_major_version} %{java_home}/jre
 fi
 
 %files devel
@@ -281,14 +300,19 @@ fi
 %config(noreplace) %{java_home}/jre/lib/security/blacklisted.certs
 %config(noreplace) %{java_home}/jre/lib/security/java.policy
 %config(noreplace) %{java_home}/jre/lib/security/java.security
+%dir %{java_home}
+%dir %{java_home}/jre
 %{java_home}/jre/ASSEMBLY_EXCEPTION
 %{java_home}/jre/LICENSE
 %{java_home}/jre/THIRD_PARTY_README
-
 %{java_home}/jre/bin
 %{java_home}/jre/lib
 
+
 %changelog
+* Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
+- Fixup java/jre symlinks
+
 * Wed Jun 9 2022 Dan Lutker <lutkerd@amazon.com>
 - Update libs for provides/requires exclusion
 
