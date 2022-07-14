@@ -19,7 +19,7 @@
 # Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
 # or visit www.oracle.com if you need additional information or have any
 # questions.
-#  
+#
 #
 
 #------------------------------------------------------------------------
@@ -220,6 +220,16 @@ endif
 WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wunused-value -Wformat=2 -Wreturn-type
 
 ifeq ($(USE_CLANG),)
+  # AL2022 has GCC 11.3.1 and also has stricter checks. Disabling until code fixes can be backported.
+  # gcc -dumpversion is only reporting "11" with no minor version.
+  ifeq "$(shell expr \( $(CC_VER_MAJOR) \>= 11 \))" "1"
+    WARNINGS_ARE_ERRORS += -Wno-char-subscripts -Wno-reorder -Wno-parentheses -Wno-unused-variable
+    WARNINGS_ARE_ERRORS += -Wno-nonnull-compare -Wno-format-overflow -Wno-maybe-uninitialized -Wno-comment
+    WARNINGS_ARE_ERRORS += -Wno-class-memaccess -Wno-unused-but-set-variable -Wno-stringop-truncation
+    WARNINGS_ARE_ERRORS += -Wno-c++11-compat -Wno-switch -Wno-delete-non-virtual-dtor -Wno-uninitialized
+    WARNINGS_ARE_ERRORS += -Wno-misleading-indentation -Wno-address
+  endif
+
   # Since GCC 4.3, -Wconversion has changed its meanings to warn these implicit
   # conversions which might affect the values. Only enable it in earlier versions.
   ifeq "$(shell expr \( $(CC_VER_MAJOR) \> 4 \) \| \( \( $(CC_VER_MAJOR) = 4 \) \& \( $(CC_VER_MINOR) \>= 3 \) \))" "0"
@@ -232,7 +242,7 @@ WARNING_FLAGS += -Wno-deprecated-declarations
 
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases
-CFLAGS_WARN/BYFILE = $(CFLAGS_WARN/$@)$(CFLAGS_WARN/DEFAULT$(CFLAGS_WARN/$@)) 
+CFLAGS_WARN/BYFILE = $(CFLAGS_WARN/$@)$(CFLAGS_WARN/DEFAULT$(CFLAGS_WARN/$@))
 
 # On newer GCCs, the compiler complains about null being passed
 # to the %s format specifier. The warning appears only on 8u,
@@ -253,7 +263,7 @@ OPT_CFLAGS/SPEED=-O3
 # Hotspot uses very unstrict aliasing turn this optimization off
 # This option is added to CFLAGS rather than OPT_CFLAGS
 # so that OPT_CFLAGS overrides get this option too.
-CFLAGS += -fno-strict-aliasing 
+CFLAGS += -fno-strict-aliasing
 
 OPT_CFLAGS_DEFAULT ?= SPEED
 
@@ -265,7 +275,7 @@ endif
 
 OPT_CFLAGS = $(OPT_CFLAGS/$(OPT_CFLAGS_DEFAULT)) $(OPT_EXTRAS)
 
-# The gcc compiler segv's on ia64 when compiling bytecodeInterpreter.cpp 
+# The gcc compiler segv's on ia64 when compiling bytecodeInterpreter.cpp
 # if we use expensive-optimizations
 ifeq ($(BUILDARCH), ia64)
 OPT_CFLAGS += -fno-expensive-optimizations
@@ -362,13 +372,13 @@ else
   ifeq ($(DEBUG_CFLAGS/$(BUILDARCH)),)
     DEBUG_CFLAGS += -g
   endif
-  
+
   ifeq ($(ENABLE_FULL_DEBUG_SYMBOLS),1)
     FASTDEBUG_CFLAGS += $(FASTDEBUG_CFLAGS/$(BUILDARCH))
     ifeq ($(FASTDEBUG_CFLAGS/$(BUILDARCH)),)
       FASTDEBUG_CFLAGS/$(BUILDARCH) = -g
     endif
-  
+
     OPT_CFLAGS += $(OPT_CFLAGS/$(BUILDARCH))
     ifeq ($(OPT_CFLAGS/$(BUILDARCH)),)
       OPT_CFLAGS/$(BUILDARCH) = -g
