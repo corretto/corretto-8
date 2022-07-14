@@ -1,0 +1,57 @@
+--- a/buildSrc/linux.gradle
++++ b/buildSrc/linux.gradle
+@@ -66,6 +66,7 @@
+ def gtk3CCFlags = [ "-Wno-deprecated-declarations" ];
+ def gtk2LinkFlags = [ ];
+ def gtk3LinkFlags = [ ];
++LINUX.buildGTK2 = true
+ LINUX.buildGTK3 = true
+
+ // Create $buildDir/linux_tools.properties file and load props from it
+@@ -75,6 +76,7 @@
+         exec {
+             commandLine("pkg-config", "--cflags", "gtk+-2.0", "gthread-2.0", "xtst")
+             setStandardOutput(results1);
++            ignoreExitValue(true)
+         }
+         propFile << "cflagsGTK2=" << results1.toString().trim() << "\n";
+
+@@ -82,12 +84,20 @@
+         exec {
+             commandLine("pkg-config", "--libs", "gtk+-2.0", "gthread-2.0", "xtst")
+             setStandardOutput(results3);
++            ignoreExitValue(true)
+         }
+         propFile << "libsGTK2=" << results3.toString().trim()  << "\n";
+     },
+     { properties ->
+-        gtk2CCFlags.addAll(properties.getProperty("cflagsGTK2").split(" "))
+-        gtk2LinkFlags.addAll(properties.getProperty("libsGTK2").split(" "))
++        String ccflags =  properties.getProperty("cflagsGTK2")
++        String ldflags =  properties.getProperty("libsGTK2")
++        if (ccflags != null && ! ccflags.equals("")) {
++            gtk2CCFlags.addAll(properties.getProperty("cflagsGTK2").split(" "))
++            gtk2LinkFlags.addAll(properties.getProperty("libsGTK2").split(" "))
++        } else {
++            logger.info("Warning: GTK2 development packages not found, not building GTK2 support");
++            LINUX.buildGTK2 = false
++        }
+     }
+ )
+
+@@ -176,7 +186,14 @@
+ def linker = IS_COMPILE_PARFAIT ? "parfait-g++" : "g++";
+
+ LINUX.glass = [:]
+-LINUX.glass.variants = ["glass", "glassgtk2"]
++LINUX.glass.variants = ["glass"]
++if (LINUX.buildGTK2) {
++    logger.info("Building libglassgtk2")
++    LINUX.glass.variants += "glassgtk2"
++} else {
++    logger.warn("NOT Building libglassgtk2")
++}
++
+ if (LINUX.buildGTK3) {
+     logger.info("Building libglassgtk3")
+     LINUX.glass.variants += "glassgtk3"
