@@ -71,12 +71,12 @@ task setupDirectories {
     doLast {
         exec {
             workingDir buildRoot
-            commandLine "mkdir", "-p", "pkgroot/Library/Java/JavaVirtualMachines"
+            commandLine "mkdir", "-p", "pkgroot/"
         }
 
         exec {
             workingDir buildRoot
-            commandLine "cp", "-Rf", "amazon-corretto-${project.version.major}.jdk", "pkgroot/Library/Java/JavaVirtualMachines/"
+            commandLine "cp", "-Rf", "amazon-corretto-${project.version.major}.jdk", "pkgroot/"
         }
 
         exec {
@@ -102,7 +102,7 @@ task generateInstaller {
                 "--version", project.version.full,
                 "--ownership", "recommended",
                 "--scripts", "resources",
-                "--install-location", "/Library/Java/JavaVirtualMachines/amazon-corretto-${project.version.major}.jdk",
+                "--install-location", "/Library/Java/JavaVirtualMachines/",
                 "build/components/amazon-corretto-${project.version.major}.jdk.pkg"
         }
 
