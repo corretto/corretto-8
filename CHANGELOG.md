@@ -3,6 +3,22 @@
 The following sections describe the changes for each release of Amazon Corretto 8.
 
 ## Corretto version: 8.342.07.2
+ 
+Release Date: July 19, 2022
+ 
+**Target Platforms**
+ 
++ Amazon Linux 2022, x86_64
++ Amazon Linux 2022, aarch64
+ 
+The following issues are addressed in 8.342.07.2
+ 
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Disable LinkTimeOptimization | Amazon Linux 2022 | Additional fixes for Amazon Linux 2022 | | 
+ 
+
+## Corretto version: 8.342.07.1
 
 Release Date: July 19, 2022
 
@@ -18,7 +34,7 @@ Release Date: July 19, 2022
 + macOS 10.15 and later, x86_64
 + macOS 11.0 and later, aarch64
 
-The following issues are addressed in 8.342.07.2
+The following issues are addressed in 8.342.07.1
 
 | Issue Name          | Platform | Description                           | Link |
 |---------------------| --- |---------------------------------------| --- |
@@ -31,7 +47,7 @@ The following issues are addressed in 8.342.07.2
 | Enable bundled zlib library via Gradle           | macOS       | Updates to use bundled (not the system) version of the zlib library on macOS aarch64 | [PR #404](https://github.com/corretto/corretto-8/pull/404) |
 | AL2022 updates                                   | AL2, AL2022 | Updates to support Corretto in Amazon Linux 2022                                     | [PR #394](https://github.com/corretto/corretto-8/pull/394) [PR #398](https://github.com/corretto/corretto-8/pull/398) [PR #407](https://github.com/corretto/corretto-8/pull/407) |
 
-The following CVEs are addressed in 8.342.07.2
+The following CVEs are addressed in 8.342.07.1
 
 | CVE            | CVSS | Component        |
 |----------------|------|------------------|
