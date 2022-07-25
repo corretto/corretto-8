@@ -32,6 +32,9 @@
 # Instruct rpmbuild to copy jars rather than de-compress and re-compress.
 %global __jar_repack 0
 
+# Disable LinkTimeOptimization which causes issues with OpenJDK8
+%global _lto_cflags %{nil}
+
 # Disable checking of build-id headers.
 # OpenJDK's build system was producing binaries with the
 # same build-ids, but different md5 checksums.

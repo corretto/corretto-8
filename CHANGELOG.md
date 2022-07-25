@@ -2,6 +2,45 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.342.07.3
+
+Release Date: July 22, 2022
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+The following issues are addressed in 8.342.07.3
+
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Revert JDK-8194154 | All | Revert "8194154: System property user.dir should not be changed" | [JDK-8290832](https://bugs.openjdk.org/browse/JDK-8290832) / [JDK-8194154](https://bugs.openjdk.org/browse/JDK-8194154) |
+| Fix macOS packaging | macOS | Update macos packaging logic to avoid duplicate paths after installation | [#409](https://github.com/corretto/corretto-8/pull/409) |
+
+## Corretto version: 8.342.07.2
+ 
+Release Date: July 19, 2022
+ 
+**Target Platforms**
+ 
++ Amazon Linux 2022, x86_64
++ Amazon Linux 2022, aarch64
+ 
+The following issues are addressed in 8.342.07.2
+ 
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Disable LinkTimeOptimization | Amazon Linux 2022 | Additional fixes for Amazon Linux 2022 | | 
+ 
+
 ## Corretto version: 8.342.07.1
 
 Release Date: July 19, 2022
