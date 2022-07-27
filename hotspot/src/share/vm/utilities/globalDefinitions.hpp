@@ -85,6 +85,9 @@
 #ifndef ATTRIBUTE_PRINTF
 #define ATTRIBUTE_PRINTF(fmt, vargs)
 #endif
+#ifndef REGISTER
+#define REGISTER register
+#endif
 
 
 #include "utilities/macros.hpp"
