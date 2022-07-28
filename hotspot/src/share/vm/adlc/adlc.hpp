@@ -75,6 +75,17 @@ typedef unsigned int uintptr_t;
 #define uint32 unsigned int
 #define uint   unsigned int
 
+// register keyword is no longer supported in c++17, but causes issues if removed
+// see also:
+// https://github.com/openjdk/jdk8u-dev/pull/11
+// https://bugs.openjdk.org/browse/JDK-8281098
+// https://github.com/corretto/corretto-8/issues/411
+#if defined(__cplusplus) && __cplusplus>=201703L
+#define REGISTER
+#else
+#define REGISTER register
+#endif
+
 // VM components
 #include "opto/opcodes.hpp"
 

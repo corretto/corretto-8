@@ -348,4 +348,14 @@ inline int wcslen(const jchar* x) { return wcslen((const wchar_t*)x); }
 #define NOINLINE     __attribute__ ((noinline))
 #define ALWAYSINLINE inline __attribute__ ((always_inline))
 
+// register keyword is no longer supported in c++17, but causes issues if removed
+// We define to nothing here and the default define to 'register' is in globalDefinitions.hpp
+// See also:
+// https://github.com/openjdk/jdk8u-dev/pull/11
+// https://bugs.openjdk.org/browse/JDK-8281098
+// https://github.com/corretto/corretto-8/issues/411
+#if defined(__cplusplus) && __cplusplus>=201703L
+#define REGISTER
+#endif
+
 #endif // SHARE_VM_UTILITIES_GLOBALDEFINITIONS_GCC_HPP

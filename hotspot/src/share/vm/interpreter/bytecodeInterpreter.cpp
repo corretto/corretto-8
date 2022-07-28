@@ -508,13 +508,13 @@ BytecodeInterpreter::run(interpreterState istate) {
   interpreterState orig = istate;
 #endif
 
-  intptr_t*        topOfStack = (intptr_t *)istate->stack(); /* access with STACK macros */
-  address          pc = istate->bcp();
-  jubyte opcode;
-  intptr_t*        locals = istate->locals();
-  ConstantPoolCache*    cp = istate->constants(); // method()->constants()->cache()
+  REGISTER intptr_t*        topOfStack = (intptr_t *)istate->stack(); /* access with STACK macros */
+  REGISTER address          pc = istate->bcp();
+  REGISTER jubyte opcode;
+  REGISTER intptr_t*        locals = istate->locals();
+  REGISTER ConstantPoolCache*    cp = istate->constants(); // method()->constants()->cache()
 #ifdef LOTS_OF_REGS
-  JavaThread*      THREAD = istate->thread();
+  REGISTER JavaThread*      THREAD = istate->thread();
 #else
 #undef THREAD
 #define THREAD istate->thread()
@@ -603,7 +603,7 @@ BytecodeInterpreter::run(interpreterState istate) {
 /* 0xF8 */ &&opc_default,     &&opc_default,        &&opc_default,      &&opc_default,
 /* 0xFC */ &&opc_default,     &&opc_default,        &&opc_default,      &&opc_default
   };
-  uintptr_t *dispatch_table = (uintptr_t*)&opclabels_data[0];
+  REGISTER uintptr_t *dispatch_table = (uintptr_t*)&opclabels_data[0];
 #endif /* USELABELS */
 
 #ifdef ASSERT

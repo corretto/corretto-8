@@ -73,7 +73,7 @@ char *Set::setstr() const
   uint len = 128;               // Total string space
   char *buf = NEW_C_HEAP_ARRAY(char,len, mtCompiler);// Some initial string space
 
-  char *s = buf;       // Current working string pointer
+  REGISTER char *s = buf;       // Current working string pointer
   *s++ = '{';
   *s = '\0';
 
@@ -125,8 +125,8 @@ void Set::print() const
 // Set.  Return the amount of text parsed in "len", or zero in "len".
 int Set::parse(const char *s)
 {
-  char c;              // Parse character
-  const char *t = s;   // Save the starting position of s.
+  REGISTER char c;              // Parse character
+  REGISTER const char *t = s;   // Save the starting position of s.
   do c = *s++;                  // Skip characters
   while( c && (c <= ' ') );     // Till no more whitespace or EOS
   if( c != '{' ) return 0;      // Oops, not a Set openner
