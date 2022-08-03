@@ -2,6 +2,25 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.342.07.4
+
+Release Date: July 27, 2022
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Alpine-based Linux, x86_64
+
+The following issues are addressed in 8.342.07.4
+
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Segmentation Fault with -XX:NativeMemoryTracking=detail | Linux | | [#411](https://github.com/corretto/corretto-8/issues/411) |
+
 ## Corretto version: 8.342.07.3
 
 Release Date: July 22, 2022
