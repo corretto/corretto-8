@@ -42,6 +42,7 @@ task inflateRpmSpec(type: Copy) {
         project.version.each {
             prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
         }
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ debug_level: correttoDebugLevel])
     }
     into buildRoot
 }

@@ -184,6 +184,7 @@ bash ./configure \
   --with-vendor-url="https://aws.amazon.com/corretto/" \
   --with-vendor-bug-url="https://github.com/corretto/corretto-8/issues/" \
   --with-vendor-vm-bug-url="https://github.com/corretto/corretto-8/issues/" \
+  --with-debug-level=@debug_level@ \
   %{platform_flags}
 
 make images
@@ -191,7 +192,7 @@ make images
 %install
 rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{java_home}
-cp -a build/linux-%{_arch}-normal-server-release/images/j2sdk-image/* %{buildroot}%{java_home}
+cp -a build/linux-%{_arch}-normal-server-@debug_level@/images/j2sdk-image/* %{buildroot}%{java_home}
 
 %if %{perform_openjfx_overlay}
 cp -a -v javafx/* %{buildroot}%{java_home}
@@ -313,6 +314,9 @@ fi
 
 
 %changelog
+* Thu Aug 18 2022 Dan Lutker <lutkerd@amazon.com>
+- Add ability to set debug_level
+
 * Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
 - Fixup java/jre symlinks
 
