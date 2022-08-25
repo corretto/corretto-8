@@ -1,0 +1,15 @@
+#!/bin/bash
+JDK_INSTALL_PATH="/Library/Java/JavaVirtualMachines"
+CORRETTO_BUNDLE="amazon-corretto-@major@.jdk"
+MKDIR="$(which mkdir)"
+RM="$(which rm)"
+
+if [[ ! -d "${JDK_INSTALL_PATH}" ]]; then
+    ${MKDIR} -p "${JDK_INSTALL_PATH}"
+fi
+
+if [[ -d "${JDK_INSTALL_PATH}/${CORRETTO_BUNDLE}" ]]; then
+    ${RM} -r "${JDK_INSTALL_PATH}/${CORRETTO_BUNDLE}"
+fi
+
+exit 0

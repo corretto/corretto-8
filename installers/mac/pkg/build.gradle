@@ -62,6 +62,14 @@ task inflatePkgTemplate {
             }
             into "${buildRoot}/resources"
         }
+
+        copy {
+            from('templates/preinstall.template') {
+                rename { file -> file.replace('.template', '') }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+            }
+            into "${buildRoot}/resources"
+        }
     }
     
 }
