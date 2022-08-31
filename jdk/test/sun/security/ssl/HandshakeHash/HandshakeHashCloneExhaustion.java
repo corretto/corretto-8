@@ -34,8 +34,8 @@
  * @summary Increase the number of clones in the CloneableDigest
  * @library /javax/net/ssl/templates
  * @compile DigestBase.java
- * @run main/othervm -Djdk.tls.client.protocols="TLSv1.3,TLSv1.2,TLSv1.1,TLSv1,SSLv3"
- *     HandshakeHashCloneExhaustion TLSv1.3 TLS_AES_128_GCM_SHA256
+ * @run main/othervm HandshakeHashCloneExhaustion
+ *     TLSv1.3 TLS_AES_128_GCM_SHA256
  * @run main/othervm HandshakeHashCloneExhaustion
  *     TLSv1.2 TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
  * @run main/othervm HandshakeHashCloneExhaustion
