@@ -83,7 +83,7 @@ The following issues are addressed in 8.342.07.1
 | Import jdk8u342-b07 | All | Updates Corretto baseline to OpenJDK 8u342-b07 | [jdk8u342-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u342-b07)
 | Update CACerts      | All | Pull in the latest CA Certificates from Amazon Linux | [PR #403](https://github.com/corretto/corretto-8/pull/403) |
 | Fix builds on Alpine 3.13 | Alpine Linux 3.13 | Backport [JDK-8263718](https://bugs.openjdk.org/browse/JDK-8263718) to fix builds on alpine-3.13 | [PR #397](https://github.com/corretto/corretto-8/pull/397) |
-| Alpine package missing "provides" variable | Alpine Linux | Add `provides java-jdk` for Corretto apline packages | [Issues #391](https://github.com/corretto/corretto-8/issues/391) |
+| Alpine package missing "provides" variable | Alpine Linux | Add `provides java-jdk` for Corretto alpine packages | [Issues #391](https://github.com/corretto/corretto-8/issues/391) |
 | Update OS detection code to recognize Windows 10/11 | Windows 10/11 | Backport [JDK-8071530](https://bugs.openjdk.org/browse/JDK-8071530) to recognize Windows 10 and [JDK-8274840](https://bugs.openjdk.org/browse/JDK-8274840) to recognize Windows 11 when calling `System.getProperty("os.name")` | [Issues #396](https://github.com/corretto/corretto-8/issues/396) |
 | Migrate pkg builds to productbuild from packages | macOS       | Updates to macos packaging                                                           | [PR #390](https://github.com/corretto/corretto-8/pull/390) |
 | Enable bundled zlib library via Gradle           | macOS       | Updates to use bundled (not the system) version of the zlib library on macOS aarch64 | [PR #404](https://github.com/corretto/corretto-8/pull/404) |
