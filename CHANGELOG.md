@@ -2,6 +2,43 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.352.08.1
+
+Release Date: October 18, 2022
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.352.08.1:
+
+| Issue Name                    | Platform | Description                                               | Link |
+|------------------------------------------|-----------------------------------------------------------|------|
+| Import jdk8u352-b08           | All      | Updates Corretto baseline to OpenJDK 8u352-b08            | [jdk8u352-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u352-b08) |
+| JSR 337 MR4 Changes           | All      | All JSR 337 Maintenance Release 4 related release changes | [JSR 337 MR4](https://jcp.org/aboutJava/communityprocess/maintenance/jsr337/jsr337-mr4-changes.html) |
+| Update Timezone Data to 2022e | All      | All tzdata updates up to 2022e                            | [#426](https://github.com/corretto/corretto-8/pull/426) [#427](https://github.com/corretto/corretto-8/pull/427) |
+| Update amazon cacerts         | All      | Update amazon cacerts file from amazonlinux               | |
+
+The following CVEs are addressed in 8.352.08.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2022-21626 | 5.3  | security-libs/java.security |
+| CVE-2022-21628 | 5.3  | core-libs/java.net          |
+| CVE-2022-21619 | 3.7  | security-libs/java.security |
+| CVE-2022-21624 | 3.7  | core-libs/javax.naming      |
+
+
 ## Corretto version: 8.342.07.4
 
 Release Date: July 27, 2022
@@ -12,7 +49,6 @@ Release Date: July 27, 2022
 + Debian-based Linux using glibc 2.12 or later, x86_64
 + RPM-based Linux using glibc 2.17 or later, aarch64
 + Debian-based Linux using glibc 2.17 or later, aarch64
-+ Linux using glibc 2.25 or later, Arm
 + Alpine-based Linux, x86_64
 
 The following issues are addressed in 8.342.07.4
@@ -31,7 +67,6 @@ Release Date: July 22, 2022
 + Debian-based Linux using glibc 2.12 or later, x86_64
 + RPM-based Linux using glibc 2.17 or later, aarch64
 + Debian-based Linux using glibc 2.17 or later, aarch64
-+ Linux using glibc 2.25 or later, Arm
 + Alpine-based Linux, x86_64
 + Windows 7 or later, x86, x86_64
 + macOS 10.15 and later, x86_64
@@ -70,7 +105,6 @@ Release Date: July 19, 2022
 + Debian-based Linux using glibc 2.12 or later, x86_64
 + RPM-based Linux using glibc 2.17 or later, aarch64
 + Debian-based Linux using glibc 2.17 or later, aarch64
-+ Linux using glibc 2.25 or later, Arm
 + Alpine-based Linux, x86_64
 + Windows 7 or later, x86, x86_64
 + macOS 10.15 and later, x86_64
@@ -107,7 +141,6 @@ Release Date: April 19, 2022
 + Debian-based Linux using glibc 2.12 or later, x86_64
 + RPM-based Linux using glibc 2.17 or later, aarch64
 + Debian-based Linux using glibc 2.17 or later, aarch64
-+ Linux using glibc 2.25 or later, Arm
 + Alpine-based Linux, x86_64
 + Windows 7 or later, x86, x86_64
 + macOS 10.13 and later, x86_64
