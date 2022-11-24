@@ -23,7 +23,7 @@ in the Amazon Corretto FAQ for supported platforms
 The following issues are addressed in 8.352.08.1:
 
 | Issue Name                    | Platform | Description                                               | Link |
-|------------------------------------------|-----------------------------------------------------------|------|
+|-------------------------------|----------|-----------------------------------------------------------|------|
 | Import jdk8u352-b08           | All      | Updates Corretto baseline to OpenJDK 8u352-b08            | [jdk8u352-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u352-b08) |
 | JSR 337 MR4 Changes           | All      | All JSR 337 Maintenance Release 4 related release changes | [JSR 337 MR4](https://jcp.org/aboutJava/communityprocess/maintenance/jsr337/jsr337-mr4-changes.html) |
 | Update Timezone Data to 2022e | All      | All tzdata updates up to 2022e                            | [#426](https://github.com/corretto/corretto-8/pull/426) [#427](https://github.com/corretto/corretto-8/pull/427) |
