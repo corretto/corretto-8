@@ -209,7 +209,6 @@ popd
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \
                --slave %{_jvmdir}/java java_sdk %{java_home} \
-               --slave %{_jvmdir}/%{name} %{name} %{java_home} \
                --slave %{_bindir}/appletviewer appletviewer %{java_home}/bin/appletviewer \
                --slave %{_bindir}/extcheck extcheck %{java_home}/bin/extcheck \
                --slave %{_bindir}/idlj idlj %{java_home}/bin/idlj \
@@ -252,6 +251,7 @@ fi
 %post
 if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \
                --slave %{_jvmdir}/jre jre %{java_home}/jre \
                --slave %{_jvmdir}/jre-openjdk jre_openjdk %{java_home}/jre \
                --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
