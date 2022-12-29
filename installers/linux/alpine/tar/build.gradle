@@ -30,6 +30,9 @@ ext {
         case 'x86_64':
             arch_alias = 'x64'
             break;
+        case 'aarch64':
+            arch_alias = arch
+            break;
         default:
             throw new GradleException("${arch} is not suported")
     }
