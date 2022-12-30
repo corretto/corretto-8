@@ -53,6 +53,7 @@
 #include "utilities/vmError.hpp"
 
 // put OS-includes here
+# include <linux/types.h>
 # include <sys/types.h>
 # include <sys/mman.h>
 # include <pthread.h>
@@ -72,7 +73,6 @@
 # include <pwd.h>
 # include <poll.h>
 # include <ucontext.h>
-# include <fpu_control.h>
 
 #define REG_FP 29
 
