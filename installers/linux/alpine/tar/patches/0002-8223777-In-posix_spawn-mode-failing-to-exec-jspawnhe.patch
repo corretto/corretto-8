@@ -1,0 +1,114 @@
+From d01a64b7463f54c1f2fc17c36c34856e3fe55c4d Mon Sep 17 00:00:00 2001
+From: Thomas Stuefe <stuefe@openjdk.org>
+Date: Wed, 5 Jun 2019 09:12:45 +0200
+Subject: [PATCH] 8223777: In posix_spawn mode, failing to exec() jspawnhelper
+ does not result in an error
+
+Reviewed-by: rriggs, martin, fweimer
+---
+ .../solaris/native/java/lang/UNIXProcess_md.c | 36 +++++++++++++++++++
+ jdk/src/solaris/native/java/lang/childproc.c  |  7 ++++
+ jdk/src/solaris/native/java/lang/childproc.h  |  8 +++++
+ 3 files changed, 51 insertions(+)
+
+diff --git a/jdk/src/solaris/native/java/lang/UNIXProcess_md.c b/jdk/src/solaris/native/java/lang/UNIXProcess_md.c
+index 9b510ad3a96..253ce7f6de6 100644
+--- a/jdk/src/solaris/native/java/lang/UNIXProcess_md.c
++++ b/jdk/src/solaris/native/java/lang/UNIXProcess_md.c
+@@ -643,6 +643,18 @@ Java_java_lang_UNIXProcess_forkAndExec(JNIEnv *env,
+     c->redirectErrorStream = redirectErrorStream;
+     c->mode = mode;
+ 
++    /* In posix_spawn mode, require the child process to signal aliveness
++     * right after it comes up. This is because there are implementations of
++     * posix_spawn() which do not report failed exec()s back to the caller
++     * (e.g. glibc, see JDK-8223777). In those cases, the fork() will have
++     * worked and successfully started the child process, but the exec() will
++     * have failed. There is no way for us to distinguish this from a target
++     * binary just exiting right after start.
++     *
++     * Note that we could do this additional handshake in all modes but for
++     * prudence only do it when it is needed (in posix_spawn mode). */
++    c->sendAlivePing = (mode == MODE_POSIX_SPAWN) ? 1 : 0;
++
+     resultPid = startChild(env, process, c, phelperpath);
+     assert(resultPid != 0);
+ 
+@@ -662,6 +674,30 @@ Java_java_lang_UNIXProcess_forkAndExec(JNIEnv *env,
+     }
+     close(fail[1]); fail[1] = -1; /* See: WhyCantJohnnyExec  (childproc.c)  */
+ 
++    /* If we expect the child to ping aliveness, wait for it. */
++    if (c->sendAlivePing) {
++        switch(readFully(fail[0], &errnum, sizeof(errnum))) {
++        case 0: /* First exec failed; */
++            waitpid(resultPid, NULL, 0);
++            throwIOException(env, 0, "Failed to exec spawn helper.");
++            goto Catch;
++        case sizeof(errnum):
++            assert(errnum == CHILD_IS_ALIVE);
++            if (errnum != CHILD_IS_ALIVE) {
++                /* Should never happen since the first thing the spawn
++                 * helper should do is to send an alive ping to the parent,
++                 * before doing any subsequent work. */
++                throwIOException(env, 0, "Bad code from spawn helper "
++                                         "(Failed to exec spawn helper.");
++                goto Catch;
++            }
++            break;
++        default:
++            throwIOException(env, errno, "Read failed");
++            goto Catch;
++        }
++    }
++
+     switch (readFully(fail[0], &errnum, sizeof(errnum))) {
+     case 0: break; /* Exec succeeded */
+     case sizeof(errnum):
+diff --git a/jdk/src/solaris/native/java/lang/childproc.c b/jdk/src/solaris/native/java/lang/childproc.c
+index 4ca92b8718b..c298c2fe327 100644
+--- a/jdk/src/solaris/native/java/lang/childproc.c
++++ b/jdk/src/solaris/native/java/lang/childproc.c
+@@ -315,6 +315,13 @@ childProcess(void *arg)
+ {
+     const ChildStuff* p = (const ChildStuff*) arg;
+ 
++    if (p->sendAlivePing) {
++        /* Child shall signal aliveness to parent at the very first
++         * moment. */
++        int code = CHILD_IS_ALIVE;
++        restartableWrite(fail_pipe_fd, &code, sizeof(code));
++    }
++
+     /* Close the parent sides of the pipes.
+        Closing pipe fds here is redundant, since closeDescriptors()
+        would do it anyways, but a little paranoia is a good thing. */
+diff --git a/jdk/src/solaris/native/java/lang/childproc.h b/jdk/src/solaris/native/java/lang/childproc.h
+index 415d3df0702..b18b7da2c1e 100644
+--- a/jdk/src/solaris/native/java/lang/childproc.h
++++ b/jdk/src/solaris/native/java/lang/childproc.h
+@@ -102,6 +102,7 @@ typedef struct _ChildStuff
+     const char *pdir;
+     int redirectErrorStream;
+     void *clone_stack;
++    int sendAlivePing;
+ } ChildStuff;
+ 
+ /* following used in addition when mode is SPAWN */
+@@ -115,6 +116,13 @@ typedef struct _SpawnInfo {
+     int parentPathvBytes; /* total number of bytes in parentPathv array */
+ } SpawnInfo;
+ 
++/* If ChildStuff.sendAlivePing is true, child shall signal aliveness to
++ * the parent the moment it gains consciousness, before any subsequent
++ * pre-exec errors could happen.
++ * This code must fit into an int and not be a valid errno value on any of
++ * our platforms. */
++#define CHILD_IS_ALIVE      65535
++
+ /**
+  * The cached and split version of the JDK's effective PATH.
+  * (We don't support putenv("PATH=...") in native code)
+-- 
+2.39.0
+
