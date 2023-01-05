@@ -56,8 +56,23 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-task configureBuild(type: Exec) {
+/**
+ * Scan the patches folder for any .patch that needs
+ * to be applied before start building.
+ */
+task applyPatches() {
     dependsOn copySource
+    doLast {
+        fileTree('patches').matching {
+            include '*.patch'
+        }.each { f ->
+            ant.patch(patchfile: f, dir: "$buildRoot", strip: 1)
+        }
+    }
+}
+
+task configureBuild(type: Exec) {
+    dependsOn applyPatches
     workingDir "$buildRoot"
 
     def milestone = project.findProperty("corretto.milestone") ?: "fcs"

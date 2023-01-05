@@ -1,0 +1,52 @@
+From 7fa6705cb3c8652215f8471eb7d37575ff7e4984 Mon Sep 17 00:00:00 2001
+From: Thomas Stuefe <stuefe@openjdk.org>
+Date: Wed, 5 Jun 2019 08:59:17 +0200
+Subject: [PATCH] 8224181: On child process spawn, child may write to random
+ file descriptor instead of the fail pipe
+
+Reviewed-by: rriggs, martin
+---
+ jdk/src/solaris/native/java/lang/childproc.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/jdk/src/solaris/native/java/lang/childproc.c b/jdk/src/solaris/native/java/lang/childproc.c
+index 8a91987df0b..c048e5a6fd1 100644
+--- a/jdk/src/solaris/native/java/lang/childproc.c
++++ b/jdk/src/solaris/native/java/lang/childproc.c
+@@ -313,6 +313,7 @@ int
+ childProcess(void *arg)
+ {
+     const ChildStuff* p = (const ChildStuff*) arg;
++    int fail_pipe_fd = p->fail[1];
+ 
+     /* Close the parent sides of the pipes.
+        Closing pipe fds here is redundant, since closeDescriptors()
+@@ -343,9 +344,12 @@ childProcess(void *arg)
+             goto WhyCantJohnnyExec;
+     }
+ 
+-    if (moveDescriptor(p->fail[1], FAIL_FILENO) == -1)
++    if (moveDescriptor(fail_pipe_fd, FAIL_FILENO) == -1)
+         goto WhyCantJohnnyExec;
+ 
++    /* We moved the fail pipe fd */
++    fail_pipe_fd = FAIL_FILENO;
++
+     /* close everything */
+     if (closeDescriptors() == 0) { /* failed,  close the old way */
+         int max_fd = (int)sysconf(_SC_OPEN_MAX);
+@@ -377,9 +381,9 @@ childProcess(void *arg)
+      */
+     {
+         int errnum = errno;
+-        restartableWrite(FAIL_FILENO, &errnum, sizeof(errnum));
++        restartableWrite(fail_pipe_fd, &errnum, sizeof(errnum));
+     }
+-    close(FAIL_FILENO);
++    close(fail_pipe_fd);
+     _exit(-1);
+     return 0;  /* Suppress warning "no return value from function" */
+ }
+-- 
+2.39.0
+
