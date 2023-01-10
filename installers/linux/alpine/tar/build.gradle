@@ -58,6 +58,7 @@ task configureBuild(type: Exec) {
     workingDir "$buildRoot"
 
     def milestone = project.findProperty("corretto.milestone") ?: "fcs"
+    environment("LD_LIBRARY_PATH","")
     def configureCmd = [
         'bash',
         'configure',
@@ -71,6 +72,7 @@ task configureBuild(type: Exec) {
 task executeBuild(type: Exec) {
     dependsOn configureBuild
     workingDir "$buildRoot"
+    environment("LD_LIBRARY_PATH","")
     commandLine 'make','images'
     outputs.dir jdkResultingImage
 }
@@ -80,6 +82,7 @@ task importAmazonCacerts(type: Exec) {
     workingDir jdkResultingImage
     // Default password for JSSE key store
     def keystore_password = "changeit"
+    environment("LD_LIBRARY_PATH","")
     commandLine 'bin/keytool', '-importkeystore', '-noprompt',
                 '-srckeystore', "${buildRoot}/amazon-cacerts",
                 '-srcstorepass', keystore_password,
