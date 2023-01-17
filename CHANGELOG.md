@@ -2,6 +2,42 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.362.08.1
+Release Date: January 17, 2023
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 10 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.362.08.1:
+
+| Issue Name                                        | Platform | Description                                                                | Link                                                                       |
+|---------------------------------------------------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| Import jdk8u362-b08                               | All      | Updates Corretto baseline to OpenJDK 8u362-b08                             | [jdk8u362-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u362-b08) |
+| Fix gradle setting LD_LIBRARY_PATH and configure  | All      | Fix gradle setting LD_LIBRARY_PATH and configure                           | [#437](https://github.com/corretto/corretto-8/pull/437)                    |
+| Fix java_home alternative                         | Linux    | Alternative dir without architecture should be created on headless package | [#436](https://github.com/corretto/corretto-8/pull/436)                    |                                                                                                                 |
+| Relax VerifyCACerts                               | All      | Relax VerifyCACerts expiry condition                                       | [#428](https://github.com/corretto/corretto-8/pull/428)                    |                                                                                                                 |
+| Update amazon cacerts                             | All      | Update amazon cacerts file from amazonlinux                                |                                                                            |
+
+The following CVEs are addressed in 8.362.08.1:
+
+| CVE            | CVSS    | Component |
+|----------------|---------|-----------|
+| CVE-2023-21835 | 8287411 | 5.3       |
+| CVE-2023-21830 | 8285021 | 5.3       |
+| CVE-2023-21843 | 8293742 | 3.7       |
+
+
 ## Corretto version: 8.352.08.1
 
 Release Date: October 18, 2022
