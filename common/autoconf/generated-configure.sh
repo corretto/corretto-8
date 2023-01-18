@@ -4439,7 +4439,7 @@ VS_TOOLSET_SUPPORTED_2019=false
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1674087093
+DATE_WHEN_GENERATED=1674088880
 
 ###############################################################################
 #
@@ -43059,13 +43059,18 @@ $as_echo "$supports" >&6; }
       # newer than the given OS version and makes the linked binaries compatible
       # even if built on a newer version of the OS.
       # The expected format is X.Y.Z
-      MACOSX_VERSION_MIN=10.9.0
+      if test "x$OPENJDK_TARGET_CPU_ARCH" = "xx86" || test "x$OPENJDK_TARGET_CPU_ARCH" = "xx86_64"; then
+        MACOSX_VERSION_MIN=10.9.0
 
+      else
+        MACOSX_VERSION_MIN=11.00.00
+
+      fi
 
       # The macro takes the version with no dots, ex: 1070
       # Let the flags variables get resolved in make for easier override on make
       # command line.
-      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MIN_REQUIRED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
       LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
     fi
   fi
