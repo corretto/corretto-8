@@ -260,7 +260,8 @@ Thread::Thread() {
   omInUseList = NULL ;
   omInUseCount = 0 ;
 
-#ifdef ASSERT
+#if defined(ASSERT) && defined(__APPLE__) && defined(AARCH64)
+
   _visited_for_critical_count = false;
   _wx_init = false;
 #endif
@@ -3925,7 +3926,7 @@ JavaThread* Threads::find_java_thread_from_java_tid(jlong java_tid) {
   // assumption that java tids are globally unique at any given point in time.
   // I.e., there is a global 1-1 mapping between java tids and active JavaThreads.
   JavaThread* java_thread = ThreadService::get_java_thread(java_tid);
-  
+
   // Return directly if java_thread found in _tid_java_map is valid.
   // If java_thread not exist in _tid_java_map or not valid, do a sequential search.
   // The special case is primordial thread (tid=1), which doesn't include an oop,

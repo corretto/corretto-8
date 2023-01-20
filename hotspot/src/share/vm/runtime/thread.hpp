@@ -663,7 +663,7 @@ protected:
   static void muxRelease  (volatile intptr_t * Lock) ;
 
 private:
-#ifdef ASSERT
+#if defined(ASSERT) && defined(__APPLE__) && defined(AARCH64)
   bool _wx_init;
   WXMode _wx_state;
   static inline void verify_wx_init(WXMode state) {
@@ -1997,7 +1997,7 @@ class Threads: AllStatic {
 #endif
 
  private:
-  // Used by find_java_thread_from_tid 
+  // Used by find_java_thread_from_tid
   static bool is_valid_java_thread(jlong java_tid, JavaThread* jt);
 
  public:
