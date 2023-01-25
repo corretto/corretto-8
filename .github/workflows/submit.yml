@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - develop
+      - nightly
   workflow_dispatch:
     inputs:
       platforms:
