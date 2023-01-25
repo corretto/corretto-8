@@ -61,6 +61,8 @@
 #  JDK_MICRO_VERSION          Micro number for version (e.g. 0)
 #
 
+SOMEVALUE=1
+
 # Default is build both product fastdebug and create export area
 
 # Allow to build HotSpot in local directory from sources specified by GAMMADIR.
