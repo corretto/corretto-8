@@ -1,0 +1,36 @@
+name: "Refresh from Upstream"
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+    refresh-jdk8:
+        runs-on: ubuntu-latest
+        name: "Update Corretto-8"
+        if: github.repository_owner == 'corretto'
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: "Fetch Corretto-8 upstream"
+              uses: ./.github/actions/fetch-repo
+              with:
+                upstream: 'https://github.com/openjdk/jdk8u.git'
+                local-branch: 'upstream'
+            - name: "Merge Corretto-8"
+              uses: ./.github/actions/merge-repo
+              with:
+                upstream: 'upstream'
+                merge-branch: 'develop'
+            - name: "Update Corretto version"
+              uses: ./.github/actions/update-version
+              with:
+                upstream: 'upstream'
+                version-branch: 'develop'
+            - name: "Merge Corretto-8 develop to nightly"
+              uses: ./.github/actions/merge-repo
+              with:
+                upstream: 'develop'
+                merge-branch: 'nightly'

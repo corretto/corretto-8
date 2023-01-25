@@ -154,12 +154,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to CUP Parser Generator for 
-Java 0.10k, which may be included with JRE 8, JDK 8, and OpenJDK 8.
+%% This notice is provided with respect to CUP Parser Generator for
+Java 0.11b, which may be included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
 
-Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian
+Copyright 1996-2015 by Scott Hudson, Frank Flannery, C. Scott Ananian, Michael Petter
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, provided
@@ -1643,7 +1643,7 @@ July 15, 2018
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to GIFLIB 5.1.8 & libungif 4.1.3, 
+%% This notice is provided with respect to GIFLIB 5.2.1 & libungif 4.1.3, 
 which may be included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
@@ -1672,13 +1672,13 @@ THE SOFTWARE.
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to Little CMS 2.9, which may be
+%% This notice is provided with respect to Little CMS 2.11, which may be
 included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
 
 Little CMS
-Copyright (c) 1998-2011 Marti Maria Saguer
+Copyright (c) 1998-2020 Marti Maria Saguer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2240,7 +2240,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to PC/SC Lite v1.8.24,
+%% This notice is provided with respect to PC/SC Lite v1.8.26,
 which may be included with JRE 8, JDK 8, and OpenJDK 8 on Linux and Solaris.
 
 --- begin of LICENSE ---
@@ -2898,23 +2898,21 @@ to do so,subject to the following conditions:
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to X Window System 6.8.2, which may be 
+%% This notice is provided with respect to xwd v1.0.7, which may be
 included with JRE 8, JDK 8, and OpenJDK 8 on Linux and Solaris.
+
+xwd utility
 
 --- begin of LICENSE ---
 
-This is the copyright for the files in src/solaris/native/sun/awt: list.h, 
-multiVis.h, wsutils.h, list.c, multiVis.c
-Copyright (c) 1994 Hewlett-Packard Co.
-Copyright (c) 1996 X Consortium
+Copyright 1994 Hewlett-Packard Co.
+Copyright 1996, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -2922,15 +2920,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 --- end of LICENSE ---
 _____________________________
@@ -3030,8 +3028,7 @@ included with JRE 8, JDK 8, and OpenJDK 8.
   Apache Commons Math 3.2
   Apache Derby 10.11.1.2
   Apache Jakarta BCEL 5.1 
-  Apache Jakarta Regexp 1.4 
-  Apache Santuario XML Security for Java 1.5.4
+  Apache Santuario XML Security for Java 2.1.3
   Apache Xalan-Java 2.7.2
   Apache Xerces Java 2.10.0 
   Apache XML Resolver 1.1 
@@ -3244,6 +3241,7 @@ included with JRE 8, JDK 8, and OpenJDK 8.
 --- end of LICENSE ---
 
 -------------------------------------------------------------------------------
+
 %% This notice is provided with respect to Java Native Foundation 
 Framework v80, which may be included with JRE 8, and JDK 8, and 
 OpenJDK 8.
@@ -3277,6 +3275,81 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+--- end of LICENSE ---
+
+-------------------------------------------------------------------------------
+
+%% This notice is provided with respect to OASIS PKCS #11 Cryptographic Token
+Interface v3.0,  which may be included with JRE 8, JDK 8, and OpenJDK 8.
+
+--- begin of LICENSE ---
+
+Copyright © OASIS Open 2020. All Rights Reserved.
+
+    All capitalized terms in the following text have the meanings
+assigned to them in the OASIS Intellectual Property Rights Policy (the
+"OASIS IPR Policy"). The full Policy may be found at the OASIS website:
+[http://www.oasis-open.org/policies-guidelines/ipr]
+
+    This document and translations of it may be copied and furnished to
+others, and derivative works that comment on or otherwise explain it or
+assist in its implementation may be prepared, copied, published, and
+distributed, in whole or in part, without restriction of any kind,
+provided that the above copyright notice and this section are included
+on all such copies and derivative works. However, this document itself
+may not be modified in any way, including by removing the copyright
+notice or references to OASIS, except as needed for the purpose of
+developing any document or deliverable produced by an OASIS Technical
+Committee (in which case the rules applicable to copyrights, as set
+forth in the OASIS IPR Policy, must be followed) or as required to
+translate it into languages other than English.
+
+    The limited permissions granted above are perpetual and will not be
+revoked by OASIS or its successors or assigns.
+
+    This document and the information contained herein is provided on an
+"AS IS" basis and OASIS DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+INFORMATION HEREIN WILL NOT INFRINGE ANY OWNERSHIP RIGHTS OR ANY IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. OASIS
+AND ITS MEMBERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR
+CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THIS DOCUMENT OR ANY
+PART THEREOF.
+
+    [OASIS requests that any OASIS Party or any other party that
+believes it has patent claims that would necessarily be infringed by
+implementations of this OASIS Standards Final Deliverable, to notify
+OASIS TC Administrator and provide an indication of its willingness to
+grant patent licenses to such patent claims in a manner consistent with
+the IPR Mode of the OASIS Technical Committee that produced this
+deliverable.]
+
+    [OASIS invites any party to contact the OASIS TC Administrator if it
+is aware of a claim of ownership of any patent claims that would
+necessarily be infringed by implementations of this OASIS Standards
+Final Deliverable by a patent holder that is not willing to provide a
+license to such patent claims in a manner consistent with the IPR Mode
+of the OASIS Technical Committee that produced this OASIS Standards
+Final Deliverable. OASIS may include such claims on its website, but
+disclaims any obligation to do so.]
+
+    [OASIS takes no position regarding the validity or scope of any
+intellectual property or other rights that might be claimed to pertain
+to the implementation or use of the technology described in this OASIS
+Standards Final Deliverable or the extent to which any license under
+such rights might or might not be available; neither does it represent
+that it has made any effort to identify any such rights. Information on
+OASIS' procedures with respect to rights in any document or deliverable
+produced by an OASIS Technical Committee can be found on the OASIS
+website. Copies of claims of rights made available for publication and
+any assurances of licenses to be made available, or the result of an
+attempt made to obtain a general license or permission for the use of
+such proprietary rights by implementers or users of this OASIS Standards
+Final Deliverable, can be obtained from the OASIS TC Administrator.
+OASIS makes no representation that any information or list of
+intellectual property rights will at any time be complete, or that any
+claims in such list are, in fact, Essential Claims.]
 
 --- end of LICENSE ---
 

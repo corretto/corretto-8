@@ -1,0 +1,32 @@
+From 395cbb87c99f2058a9bfa6272ed447e73a6e9011 Mon Sep 17 00:00:00 2001
+From: Sergey Bylokhov <bylokhov@amazon.com>
+Date: Tue, 31 May 2022 19:44:31 -0700
+Subject: [PATCH] Disable webkit and media modules
+
+We use IS_COMPILE_WEBKIT and IS_COMPILE_MEDIA to disable compilation of that modules, but in fact these options means: skip compilation and copy it from other location(which is a boot jdk in our case). This patch disables both modules completely.
+---
+ build.gradle | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index df82f630..a5a811f4 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -3117,7 +3117,7 @@ compileTargets { t ->
+                 }
+                 if (IS_COMPILE_WEBKIT) {
+                     from ("modules/web/build/libs/${t.name}/${library('jfxwebkit')}")
+-                } else {
++                } else if (false) {
+                     if (t.name != "android" && t.name != "ios" && t.name != "dalvik") {
+                         from ("$LIBRARY_STUB/${library('jfxwebkit')}")
+                     }
+@@ -3135,7 +3135,7 @@ compileTargets { t ->
+                     } else if (t.name == "linux") {
+                         from("modules/media/build/native/${t.name}/${mediaBuildType}") { include "libavplugin*.so" }
+                     }
+-                } else {
++                } else if (false) {
+                     if (t.name != "android" && t.name != "dalvik" ) {
+                         [ "fxplugins", "glib-lite", "gstreamer-lite", "jfxmedia" ].each { name ->
+                             from ("$LIBRARY_STUB/${library(name)}") }

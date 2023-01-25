@@ -35,7 +35,7 @@ ext {
     }
 }
 
-def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/j2sdk-image"
+def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/j2sdk-image"
 def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 def debugArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
@@ -55,9 +55,10 @@ task copySource(type: Copy) {
 
 task configureBuild(type: Exec) {
     dependsOn copySource
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
 
     def milestone = project.findProperty("corretto.milestone") ?: "fcs"
+    environment("LD_LIBRARY_PATH","")
     def configureCmd = [
         'bash',
         'configure',
@@ -70,7 +71,8 @@ task configureBuild(type: Exec) {
 
 task executeBuild(type: Exec) {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
+    environment("LD_LIBRARY_PATH","")
     commandLine 'make','images'
     outputs.dir jdkResultingImage
 }
@@ -80,6 +82,7 @@ task importAmazonCacerts(type: Exec) {
     workingDir jdkResultingImage
     // Default password for JSSE key store
     def keystore_password = "changeit"
+    environment("LD_LIBRARY_PATH","")
     commandLine 'bin/keytool', '-importkeystore', '-noprompt',
                 '-srckeystore', "${buildRoot}/amazon-cacerts",
                 '-srcstorepass', keystore_password,

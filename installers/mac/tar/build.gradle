@@ -30,7 +30,7 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-bundle"
+def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-bundle"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
 
 /**
@@ -48,18 +48,21 @@ task copySource(type: Exec) {
     commandLine 'rsync', '-am',
             '--exclude=pre-build',
             '--exclude=installers',
-            '--exclude=src/corretto-build',
+            '--exclude=corretto-build',
             "${project.rootDir}/", buildRoot
 }
 
 task configureBuild(type: Exec) {
     dependsOn project.configurations.compile
     dependsOn copySource
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     // Platform specific flags
     def command = ['bash', 'configure',
             "--with-toolchain-type=clang",
             '--with-x']
+    if (project.correttoArch == "aarch64") {
+        command += "--with-zlib=bundled"
+    }
     // Common flags
     command += project.correttoCommonFlags
     commandLine command.flatten()
@@ -67,7 +70,7 @@ task configureBuild(type: Exec) {
 
 task executeBuild(type: Exec) {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make', 'images'
     outputs.dir jdkResultingImage
 }

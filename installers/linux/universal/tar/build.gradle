@@ -27,7 +27,7 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-def jdkResultingImage = "$buildRoot/src/build/${project.jdkImageName}/images/j2sdk-image"
+def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-image"
 
 /**
  * Create a local copy of the source tree in our
@@ -44,7 +44,7 @@ task copySource(type: Exec) {
     commandLine 'rsync', '-am',
             '--exclude=pre-build',
             '--exclude=installers',
-            '--exclude=src/corretto-build',
+            '--exclude=corretto-build',
             "${project.rootDir}/", buildRoot
 }
 
@@ -62,7 +62,7 @@ task createJavafxOverlay(type: Copy) {
 task configureBuild(type: Exec) {
     dependsOn project.configurations.compile
     dependsOn copySource
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     // Platform specific flags
     def command = ['bash', 'configure',
             'LIBCXX=-static-libstdc++ -static-libgcc']
@@ -73,7 +73,7 @@ task configureBuild(type: Exec) {
 
 task executeBuild(type: Exec) {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make', 'images'
     outputs.dir jdkResultingImage
 }

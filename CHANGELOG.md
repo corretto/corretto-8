@@ -2,6 +2,171 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.362.08.1
+Release Date: January 17, 2023
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 10 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.362.08.1:
+
+| Issue Name                                        | Platform | Description                                                                | Link                                                                       |
+|---------------------------------------------------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| Import jdk8u362-b08                               | All      | Updates Corretto baseline to OpenJDK 8u362-b08                             | [jdk8u362-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u362-b08) |
+| Fix gradle setting LD_LIBRARY_PATH and configure  | All      | Fix gradle setting LD_LIBRARY_PATH and configure                           | [#437](https://github.com/corretto/corretto-8/pull/437)                    |
+| Fix java_home alternative                         | Linux    | Alternative dir without architecture should be created on headless package | [#436](https://github.com/corretto/corretto-8/pull/436)                    |                                                                                                                 |
+| Relax VerifyCACerts                               | All      | Relax VerifyCACerts expiry condition                                       | [#428](https://github.com/corretto/corretto-8/pull/428)                    |                                                                                                                 |
+| Update amazon cacerts                             | All      | Update amazon cacerts file from amazonlinux                                |                                                                            |
+
+The following CVEs are addressed in 8.362.08.1:
+
+| CVE            | CVSS    | Component |
+|----------------|---------|-----------|
+| CVE-2023-21835 | 8287411 | 5.3       |
+| CVE-2023-21830 | 8285021 | 5.3       |
+| CVE-2023-21843 | 8293742 | 3.7       |
+
+
+## Corretto version: 8.352.08.1
+
+Release Date: October 18, 2022
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.352.08.1:
+
+| Issue Name                    | Platform | Description                                               | Link |
+|-------------------------------|----------|-----------------------------------------------------------|------|
+| Import jdk8u352-b08           | All      | Updates Corretto baseline to OpenJDK 8u352-b08            | [jdk8u352-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u352-b08) |
+| JSR 337 MR4 Changes           | All      | All JSR 337 Maintenance Release 4 related release changes | [JSR 337 MR4](https://jcp.org/aboutJava/communityprocess/maintenance/jsr337/jsr337-mr4-changes.html) |
+| Update Timezone Data to 2022e | All      | All tzdata updates up to 2022e                            | [#426](https://github.com/corretto/corretto-8/pull/426) [#427](https://github.com/corretto/corretto-8/pull/427) |
+| Update amazon cacerts         | All      | Update amazon cacerts file from amazonlinux               | |
+
+The following CVEs are addressed in 8.352.08.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2022-21626 | 5.3  | security-libs/java.security |
+| CVE-2022-21628 | 5.3  | core-libs/java.net          |
+| CVE-2022-21619 | 3.7  | security-libs/java.security |
+| CVE-2022-21624 | 3.7  | core-libs/javax.naming      |
+
+
+## Corretto version: 8.342.07.4
+
+Release Date: July 27, 2022
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
+
+The following issues are addressed in 8.342.07.4
+
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Segmentation Fault with -XX:NativeMemoryTracking=detail | Linux | | [#411](https://github.com/corretto/corretto-8/issues/411) |
+
+## Corretto version: 8.342.07.3
+
+Release Date: July 22, 2022
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+The following issues are addressed in 8.342.07.3
+
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Revert JDK-8194154 | All | Revert "8194154: System property user.dir should not be changed" | [JDK-8290832](https://bugs.openjdk.org/browse/JDK-8290832) / [JDK-8194154](https://bugs.openjdk.org/browse/JDK-8194154) |
+| Fix macOS packaging | macOS | Update macos packaging logic to avoid duplicate paths after installation | [#409](https://github.com/corretto/corretto-8/pull/409) |
+
+## Corretto version: 8.342.07.2
+ 
+Release Date: July 19, 2022
+ 
+**Target Platforms**
+ 
++ Amazon Linux 2022, x86_64
++ Amazon Linux 2022, aarch64
+ 
+The following issues are addressed in 8.342.07.2
+ 
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Disable LinkTimeOptimization | Amazon Linux 2022 | Additional fixes for Amazon Linux 2022 | | 
+ 
+
+## Corretto version: 8.342.07.1
+
+Release Date: July 19, 2022
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86, x86_64
++ macOS 10.15 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+The following issues are addressed in 8.342.07.1
+
+| Issue Name          | Platform | Description                           | Link |
+|---------------------| --- |---------------------------------------| --- |
+| Import jdk8u342-b07 | All | Updates Corretto baseline to OpenJDK 8u342-b07 | [jdk8u342-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u342-b07)
+| Update CACerts      | All | Pull in the latest CA Certificates from Amazon Linux | [PR #403](https://github.com/corretto/corretto-8/pull/403) |
+| Fix builds on Alpine 3.13 | Alpine Linux 3.13 | Backport [JDK-8263718](https://bugs.openjdk.org/browse/JDK-8263718) to fix builds on alpine-3.13 | [PR #397](https://github.com/corretto/corretto-8/pull/397) |
+| Alpine package missing "provides" variable | Alpine Linux | Add `provides java-jdk` for Corretto alpine packages | [Issues #391](https://github.com/corretto/corretto-8/issues/391) |
+| Update OS detection code to recognize Windows 10/11 | Windows 10/11 | Backport [JDK-8071530](https://bugs.openjdk.org/browse/JDK-8071530) to recognize Windows 10 and [JDK-8274840](https://bugs.openjdk.org/browse/JDK-8274840) to recognize Windows 11 when calling `System.getProperty("os.name")` | [Issues #396](https://github.com/corretto/corretto-8/issues/396) |
+| Migrate pkg builds to productbuild from packages | macOS       | Updates to macos packaging                                                           | [PR #390](https://github.com/corretto/corretto-8/pull/390) |
+| Enable bundled zlib library via Gradle           | macOS       | Updates to use bundled (not the system) version of the zlib library on macOS aarch64 | [PR #404](https://github.com/corretto/corretto-8/pull/404) |
+| AL2022 updates                                   | AL2, AL2022 | Updates to support Corretto in Amazon Linux 2022                                     | [PR #394](https://github.com/corretto/corretto-8/pull/394) [PR #398](https://github.com/corretto/corretto-8/pull/398) [PR #407](https://github.com/corretto/corretto-8/pull/407) |
+
+The following CVEs are addressed in 8.342.07.1
+
+| CVE            | CVSS | Component        |
+|----------------|------|------------------|
+| CVE-2022-34169 | 7.5  | xml/jaxp         |
+| CVE-2022-21541 | 5.9  | hotspot/runtime  |
+| CVE-2022-21540 | 5.3  | hotspot/compiler |
+
 ## Corretto version: 8.332.08.1
 
 Release Date: April 19, 2022
@@ -12,7 +177,6 @@ Release Date: April 19, 2022
 + Debian-based Linux using glibc 2.12 or later, x86_64
 + RPM-based Linux using glibc 2.17 or later, aarch64
 + Debian-based Linux using glibc 2.17 or later, aarch64
-+ Linux using glibc 2.25 or later, Arm
 + Alpine-based Linux, x86_64
 + Windows 7 or later, x86, x86_64
 + macOS 10.13 and later, x86_64

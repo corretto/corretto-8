@@ -22,4 +22,4 @@ if (Os.isFamily(Os.FAMILY_MAC)) {
 subProjects += [':javafx']
 include subProjects as String[]
 
-project(':openjdksrc').projectDir = file('src')
+project(':openjdksrc').projectDir = file('source')
