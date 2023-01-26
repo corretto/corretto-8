@@ -1,0 +1,27 @@
+From 8712019ad8d1483d094d45a8f0dd247464b1eeb5 Mon Sep 17 00:00:00 2001
+From: Ben Taylor <benty@amazon.com>
+Date: Fri, 6 Jan 2023 16:41:18 -0800
+Subject: [PATCH] Don't use -m64 when linking jspawnhelper
+
+---
+ jdk/make/CompileLaunchers.gmk | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/jdk/make/CompileLaunchers.gmk b/jdk/make/CompileLaunchers.gmk
+index 1f414e2e05d..abd3e167fe9 100644
+--- a/jdk/make/CompileLaunchers.gmk
++++ b/jdk/make/CompileLaunchers.gmk
+@@ -682,10 +682,6 @@ ifeq ($(OPENJDK_TARGET_OS), macosx)
+   BUILD_JSPAWNHELPER_DST_DIR := $(JDK_OUTPUTDIR)/lib
+ endif
+ 
+-ifeq ($(OPENJDK_TARGET_CPU_BITS), 64)
+-  LINK_JSPAWNHELPER_FLAGS += $(COMPILER_TARGET_BITS_FLAG)64
+-endif
+-
+ ifeq ($(BUILD_JSPAWNHELPER), 1)
+   $(eval $(call SetupNativeCompilation,BUILD_JSPAWNHELPER, \
+       SRC := $(BUILD_JSPAWNHELPER_SRC), \
+-- 
+2.39.0
+
