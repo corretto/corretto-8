@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Red Hat Inc.
+ * Copyright (c) 2020, 2022, Red Hat Inc.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -50,11 +50,11 @@ import jdk.testlibrary.FileUtils;
 
 /*
  * @test
- * @bug 8293540
+ * @bug 8293540 8287107
  * @requires os.family == "linux"
  * @modules java.base/jdk.internal.platform
  * @library /lib/testlibrary
- * @run junit/othervm TestCgroupSubsystemFactory
+ * @run junit/othervm -esa TestCgroupSubsystemFactory
  */
 public class TestCgroupSubsystemFactory {
 
@@ -78,6 +78,9 @@ public class TestCgroupSubsystemFactory {
     private Path cgroupv1CgroupsOnlyCPUCtrl;
     private Path cgroupv1SelfCgroupsOnlyCPUCtrl;
     private Path cgroupv1MountInfoCgroupsOnlyCPUCtrl;
+    private Path cgroupv2CgInfoNoZeroHierarchyOnlyFreezer;
+    private Path cgroupv2MntInfoNoZeroHierarchyOnlyFreezer;
+    private Path cgroupv2SelfNoZeroHierarchyOnlyFreezer;
     private String mntInfoEmpty = "";
     private String cgroupsNonZeroJoinControllers =
             "#subsys_name hierarchy num_cgroups enabled\n" +
@@ -222,6 +225,30 @@ public class TestCgroupSubsystemFactory {
             "0::/user.slice/user-1000.slice/user@1000.service/apps.slice/apps-org.gnome.Terminal.slice/vte-spawn-3c00b338-5b65-439f-8e97-135e183d135d.scope\n";
     private String cgroupv2SelfCgroupContent = "0::/user.slice/user-1000.slice/session-2.scope";
 
+    // We have a mix of V1 and V2 controllers, but none of the V1 controllers
+    // are used by Java, so the JDK should start in V2 mode.
+    private String cgroupsNonZeroHierarchyOnlyFreezer =
+            "#subsys_name hierarchy  num_cgroups  enabled\n" +
+            "cpuset  0  171  1\n" +
+            "cpu  0  171  1\n" +
+            "cpuacct  0  171  1\n" +
+            "blkio  0  171  1\n" +
+            "memory  0  171  1\n" +
+            "devices  0  171  1\n" +
+            "freezer  1  1  1\n" +
+            "net_cls  0  171  1\n" +
+            "perf_event  0  171  1\n" +
+            "net_prio  0  171  1\n" +
+            "hugetlb  0  171  1\n" +
+            "pids  0  171  1\n" +
+            "rdma  0  171  1\n" +
+            "misc  0  171  1\n";
+    private String cgroupv1SelfOnlyFreezerContent = "1:freezer:/\n" +
+            "0::/user.slice/user-1000.slice/session-2.scope";
+    private String mntInfoOnlyFreezerInV1 =
+            "32 23 0:27 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime shared:9 - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot\n" +
+            "911 32 0:47 / /sys/fs/cgroup/freezer rw,relatime shared:476 - cgroup freezer rw,freezer\n";
+
     @Before
     public void setup() {
         try {
@@ -231,55 +258,64 @@ public class TestCgroupSubsystemFactory {
             cgroupv1CgInfoZeroHierarchy = cgroupsZero;
             cgroupv2CgInfoZeroHierarchy = cgroupsZero;
             cgroupv1MntInfoZeroHierarchy = Paths.get(existingDirectory.toString(), "mountinfo_empty");
-            Files.write(cgroupv1MntInfoZeroHierarchy, mntInfoEmpty.getBytes());
+            Files.write(cgroupv1MntInfoZeroHierarchy, mntInfoEmpty.getBytes(StandardCharsets.UTF_8));
 
             cgroupv2MntInfoZeroHierarchy = Paths.get(existingDirectory.toString(), "mountinfo_cgroupv2");
-            Files.write(cgroupv2MntInfoZeroHierarchy, mntInfoCgroupsV2Only.getBytes());
+            Files.write(cgroupv2MntInfoZeroHierarchy, mntInfoCgroupsV2Only.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1CgInfoNonZeroHierarchy = Paths.get(existingDirectory.toString(), "cgroups_non_zero");
-            Files.write(cgroupv1CgInfoNonZeroHierarchy, cgroupsNonZeroHierarchy.getBytes());
+            Files.write(cgroupv1CgInfoNonZeroHierarchy, cgroupsNonZeroHierarchy.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MntInfoNonZeroHierarchy = Paths.get(existingDirectory.toString(), "mountinfo_non_zero");
-            Files.write(cgroupv1MntInfoNonZeroHierarchy, mntInfoHybrid.getBytes());
+            Files.write(cgroupv1MntInfoNonZeroHierarchy, mntInfoHybrid.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MntInfoSystemdOnly = Paths.get(existingDirectory.toString(), "mountinfo_cgroupv1_systemd_only");
-            Files.write(cgroupv1MntInfoSystemdOnly, mntInfoCgroupsV1SystemdOnly.getBytes());
+            Files.write(cgroupv1MntInfoSystemdOnly, mntInfoCgroupsV1SystemdOnly.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MntInfoDoubleControllers = Paths.get(existingDirectory.toString(), "mountinfo_cgroupv1_double_controllers");
-            Files.write(cgroupv1MntInfoDoubleControllers, mntInfoCgroupsV1DoubleControllers.getBytes());
+            Files.write(cgroupv1MntInfoDoubleControllers, mntInfoCgroupsV1DoubleControllers.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MntInfoDoubleControllers2 = Paths.get(existingDirectory.toString(), "mountinfo_cgroupv1_double_controllers2");
-            Files.write(cgroupv1MntInfoDoubleControllers2, mntInfoCgroupsV1DoubleControllers2.getBytes());
+            Files.write(cgroupv1MntInfoDoubleControllers2, mntInfoCgroupsV1DoubleControllers2.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1CgroupsJoinControllers = Paths.get(existingDirectory.toString(), "cgroups_cgv1_join_controllers");
-            Files.write(cgroupv1CgroupsJoinControllers, cgroupsNonZeroJoinControllers.getBytes());
+            Files.write(cgroupv1CgroupsJoinControllers, cgroupsNonZeroJoinControllers.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MountInfoJoinControllers = Paths.get(existingDirectory.toString(), "mntinfo_cgv1_join_controllers");
-            Files.write(cgroupv1MountInfoJoinControllers, mntInfoCgroupv1JoinControllers.getBytes());
+            Files.write(cgroupv1MountInfoJoinControllers, mntInfoCgroupv1JoinControllers.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MntInfoColonsHierarchy = Paths.get(existingDirectory.toString(), "mountinfo_colons");
-            Files.write(cgroupv1MntInfoColonsHierarchy, mntInfoColons.getBytes());
+            Files.write(cgroupv1MntInfoColonsHierarchy, mntInfoColons.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1SelfCgroup = Paths.get(existingDirectory.toString(), "self_cgroup_cgv1");
-            Files.write(cgroupv1SelfCgroup, cgroupv1SelfCgroupContent.getBytes());
+            Files.write(cgroupv1SelfCgroup, cgroupv1SelfCgroupContent.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1SelfColons = Paths.get(existingDirectory.toString(), "self_colons_cgv1");
-            Files.write(cgroupv1SelfColons, cgroupv1SelfColonsContent.getBytes());
+            Files.write(cgroupv1SelfColons, cgroupv1SelfColonsContent.getBytes(StandardCharsets.UTF_8));
 
             cgroupv2SelfCgroup = Paths.get(existingDirectory.toString(), "self_cgroup_cgv2");
-            Files.write(cgroupv2SelfCgroup, cgroupv2SelfCgroupContent.getBytes());
+            Files.write(cgroupv2SelfCgroup, cgroupv2SelfCgroupContent.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1SelfCgroupJoinCtrl = Paths.get(existingDirectory.toString(), "self_cgroup_cgv1_join_controllers");
-            Files.write(cgroupv1SelfCgroupJoinCtrl, selfCgroupNonZeroJoinControllers.getBytes());
+            Files.write(cgroupv1SelfCgroupJoinCtrl, selfCgroupNonZeroJoinControllers.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1CgroupsOnlyCPUCtrl = Paths.get(existingDirectory.toString(), "cgroups_cpu_only_controller");
-            Files.write(cgroupv1CgroupsOnlyCPUCtrl, cgroupsNonZeroCpuControllerOnly.getBytes());
+            Files.write(cgroupv1CgroupsOnlyCPUCtrl, cgroupsNonZeroCpuControllerOnly.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1SelfCgroupsOnlyCPUCtrl = Paths.get(existingDirectory.toString(), "self_cgroup_cpu_only_controller");
-            Files.write(cgroupv1SelfCgroupsOnlyCPUCtrl, selfCgroupNonZeroCpuControllerOnly.getBytes());
+            Files.write(cgroupv1SelfCgroupsOnlyCPUCtrl, selfCgroupNonZeroCpuControllerOnly.getBytes(StandardCharsets.UTF_8));
 
             cgroupv1MountInfoCgroupsOnlyCPUCtrl = Paths.get(existingDirectory.toString(), "self_mountinfo_cpu_only_controller");
-            Files.write(cgroupv1MountInfoCgroupsOnlyCPUCtrl, mntInfoCpuOnly.getBytes());
+            Files.write(cgroupv1MountInfoCgroupsOnlyCPUCtrl, mntInfoCpuOnly.getBytes(StandardCharsets.UTF_8));
+
+            cgroupv2CgInfoNoZeroHierarchyOnlyFreezer = Paths.get(existingDirectory.toString(), "cgroups_cgv2_non_zero_only_freezer");
+            Files.write(cgroupv2CgInfoNoZeroHierarchyOnlyFreezer, cgroupsNonZeroHierarchyOnlyFreezer.getBytes(StandardCharsets.UTF_8));
+
+            cgroupv2SelfNoZeroHierarchyOnlyFreezer = Paths.get(existingDirectory.toString(), "self_cgroup_non_zero_only_freezer");
+            Files.write(cgroupv2SelfNoZeroHierarchyOnlyFreezer, cgroupv1SelfOnlyFreezerContent.getBytes(StandardCharsets.UTF_8));
+
+            cgroupv2MntInfoNoZeroHierarchyOnlyFreezer = Paths.get(existingDirectory.toString(), "self_mountinfo_cgv2_non_zero_only_freezer");
+            Files.write(cgroupv2MntInfoNoZeroHierarchyOnlyFreezer, mntInfoOnlyFreezerInV1.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -411,6 +447,26 @@ public class TestCgroupSubsystemFactory {
         Optional<CgroupTypeResult> result = CgroupSubsystemFactory.determineType(mountInfo, cgroups, selfCgroup);
 
         assertTrue("zero hierarchy ids with no mounted controllers => empty result", Optional.empty().equals(result));
+    }
+
+    @Test
+    public void testNonZeroHierarchyOnlyFreezer() throws IOException {
+        String cgroups = cgroupv2CgInfoNoZeroHierarchyOnlyFreezer.toString();
+        String mountInfo = cgroupv2MntInfoNoZeroHierarchyOnlyFreezer.toString();
+        String selfCgroup = cgroupv2SelfNoZeroHierarchyOnlyFreezer.toString();
+        Optional<CgroupTypeResult> result = CgroupSubsystemFactory.determineType(mountInfo, cgroups, selfCgroup);
+
+        assertTrue("Expected non-empty cgroup result", result.isPresent());
+        CgroupTypeResult res = result.get();
+
+        assertTrue("if all mounted v1 controllers are ignored, we should user cgroups v2", res.isCgroupV2());
+        CgroupInfo memoryInfo = res.getInfos().get("memory");
+        assertEquals("/user.slice/user-1000.slice/session-2.scope", memoryInfo.getCgroupPath());
+        CgroupInfo cpuInfo = res.getInfos().get("cpu");
+        assertEquals(memoryInfo.getCgroupPath(), cpuInfo.getCgroupPath());
+        assertEquals(memoryInfo.getMountPoint(), cpuInfo.getMountPoint());
+        assertEquals(memoryInfo.getMountRoot(), cpuInfo.getMountRoot());
+        assertEquals("/sys/fs/cgroup", cpuInfo.getMountPoint());
     }
 
     @Test
