@@ -2,6 +2,21 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.362.10.1
+Release Date: February 2, 2023
+
+**Target Platforms <sup>1</sup>**
+
++ Alpine-based Linux, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.362.10.1:
+
+| Issue Name                | Platform | Description                                                                | Link                                                                            |
+|---------------------------|----------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| Support for musl libc on aarch64     | Alpine Linux aarch64      | Add support for musl-based aarch64, such as Alpine Linux                             | [corretto-docker#46](https://github.com/corretto/corretto-docker/issues/46) |
 ## Corretto version: 8.362.08.1
 Release Date: January 17, 2023
 
