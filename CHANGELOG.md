@@ -46,11 +46,10 @@ The following issues are addressed in 8.362.08.1:
 
 The following CVEs are addressed in 8.362.08.1:
 
-| CVE            | CVSS    | Component |
-|----------------|---------|-----------|
-| CVE-2023-21835 | 8287411 | 5.3       |
-| CVE-2023-21830 | 8285021 | 5.3       |
-| CVE-2023-21843 | 8293742 | 3.7       |
+| CVE            | CVSS | Component               |
+|----------------|------|-------------------------|
+| CVE-2023-21830 | 5.3  | other-libs              |
+| CVE-2023-21843 | 3.7  | client-libs/javax.sound |
 
 
 ## Corretto version: 8.352.08.1
