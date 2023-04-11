@@ -53,7 +53,7 @@ public class VerifyCACerts {
             + File.separator + "security" + File.separator + "cacerts";
 
     // The numbers of certs now.
-    private static final int COUNT = 164;
+    private static final int COUNT = 144;
 
     // SHA-256 of cacerts, can be generated with
     // shasum -a 256 cacerts | sed -e 's/../&:/g' | tr '[:lower:]' '[:upper:]' | cut -c1-95
@@ -78,14 +78,8 @@ public class VerifyCACerts {
                     "F3:56:BE:A2:44:B7:A9:1E:B3:5D:53:CA:9A:D7:86:4A:CE:01:8E:2D:35:D5:F8:F9:6D:DF:68:A6:F4:1A:A4:74");
             put("autoridaddecertificacionfirmaprofesionalcifa62634068",
                     "04:04:80:28:BF:1F:28:64:D4:8F:9A:D4:D8:32:94:36:6A:82:88:56:55:3F:3B:14:30:3F:90:14:7F:5D:40:EF");
-            put("autoridaddecertificacionfirmaprofesionalcifa626340681",
-                    "57:DE:05:83:EF:D2:B2:6E:03:61:DA:99:DA:9D:F4:64:8D:EF:7E:E8:44:1C:3B:72:8A:FA:9B:CD:E0:F9:B2:6A");
             put("cadisigrootr2",
                     "E2:3D:4A:03:6D:7B:70:E9:F5:95:B1:42:20:79:D2:B9:1E:DF:BB:1F:B6:51:A0:63:3E:AA:8A:9D:C5:F8:07:03");
-            put("certainlyroote1",
-                    "B4:58:5F:22:E4:AC:75:6A:4E:86:12:A1:36:1C:5D:9D:03:1A:93:FD:84:FE:BB:77:8F:A3:06:8B:0F:C4:2D:C2");
-            put("certainlyrootr1",
-                    "77:B8:2C:D8:64:4C:43:05:F7:AC:C5:CB:15:6B:45:67:50:04:03:3D:51:C6:0C:62:02:A8:E0:C3:34:67:D3:A0");
             put("certignarootca",
                     "D4:8D:3D:23:EE:DB:50:A4:59:E5:51:97:60:1C:27:77:4B:9D:7B:18:C9:4D:5A:05:95:11:A1:02:50:B9:31:68");
             put("certsignrootca",
@@ -102,22 +96,10 @@ public class VerifyCACerts {
                     "5C:C3:D7:8E:4E:1D:5E:45:54:7A:04:E6:87:3E:64:F9:0C:F9:53:6D:1C:CC:2E:F8:00:F3:55:C4:C5:FD:70:FD");
             put("comodocertificationauthority",
                     "0C:2C:D6:3D:F7:80:6F:A3:99:ED:E8:09:11:6B:57:5B:F8:79:89:F0:65:18:F9:80:8C:86:05:03:17:8B:AF:66");
-            put("d-trustbrrootca12020",
-                    "E5:9A:AA:81:60:09:C2:2B:FF:5B:25:BA:D3:7D:F3:06:F0:49:79:7C:1F:81:D8:5A:B0:89:E6:57:BD:8F:00:44");
-            put("d-trustevrootca12020",
-                    "08:17:0D:1A:A3:64:53:90:1A:2F:95:92:45:E3:47:DB:0C:8D:37:AB:AA:BC:56:B8:1A:A1:00:DC:95:89:70:DB");
-            put("digicerttlseccp384rootg5",
-                    "01:8E:13:F0:77:25:32:CF:80:9B:D1:B1:72:81:86:72:83:FC:48:C6:E1:3B:E9:C6:98:12:85:4A:49:0C:1B:05");
-            put("digicerttlsrsa4096rootg5",
-                    "37:1A:00:DC:05:33:B3:72:1A:7E:EB:40:E8:41:9E:70:79:9D:2B:0A:0F:2C:1D:80:69:31:65:F7:CE:C4:AD:75");
             put("e-szignorootca2017",
                     "BE:B0:0B:30:83:9B:9B:C3:2C:32:E4:44:79:05:95:06:41:F2:64:21:B1:5E:D0:89:19:8B:51:8A:E2:EA:1B:99");
             put("e-tugracertificationauthority",
                     "B0:BF:D5:2B:B0:D7:D9:BD:92:BF:5D:4D:C1:3D:A2:55:C0:2C:54:2F:37:83:65:EA:89:39:11:F5:5E:55:F2:3C");
-            put("e-tugraglobalrootcaeccv3",
-                    "87:3F:46:85:FA:7F:56:36:25:25:2E:6D:36:BC:D7:F1:6F:C2:49:51:F2:64:E4:7E:1B:95:4F:49:08:CD:CA:13");
-            put("e-tugraglobalrootcarsav3",
-                    "EF:66:B0:B1:0A:3C:DB:9F:2E:36:48:C7:6B:D2:AF:18:EA:D2:BF:E6:F1:17:65:5E:28:C4:06:0D:A1:A3:F4:C2");
             put("emsigneccrootca-c3",
                     "BC:4D:80:9B:15:18:9D:78:DB:3E:1D:8C:F4:F9:72:6A:79:5D:A1:64:3C:A5:F1:35:8E:1D:DB:0E:DC:0D:7E:B3");
             put("emsigneccrootca-g3",
@@ -126,8 +108,6 @@ public class VerifyCACerts {
                     "12:56:09:AA:30:1D:A0:A2:49:B9:7A:82:39:CB:6A:34:21:6F:44:DC:AC:9F:39:54:B1:42:92:F2:E8:C8:60:8F");
             put("emsignrootca-g1",
                     "40:F6:AF:03:46:A9:9A:A1:CD:1D:55:5A:4E:9C:CE:62:C7:F9:63:46:03:EE:40:66:15:83:3D:C8:C8:D0:03:67");
-            put("fnmt-rcm",
-                    "4D:9E:BB:28:82:5C:96:43:AB:15:D5:4E:5F:96:14:F1:3C:B3:E9:5D:E3:CF:4E:AC:97:13:01:F3:20:F9:22:6E");
             put("gdcatrustauthr5root",
                     "BF:FF:8F:D0:44:33:48:7D:6A:8A:A6:0C:1A:29:76:7A:9F:C2:BB:B0:5E:42:0F:71:3A:13:B9:92:89:1D:38:93");
             put("globalsignroote46",
@@ -144,18 +124,10 @@ public class VerifyCACerts {
                     "34:D8:A7:3E:E2:08:D9:BC:DB:0D:95:65:20:93:4B:4E:40:E6:94:82:59:6E:8B:6F:73:C8:42:6B:01:0A:6F:48");
             put("gtsrootr4",
                     "34:9D:FA:40:58:C5:E2:63:12:3B:39:8A:E7:95:57:3C:4E:13:13:C8:3F:E6:8F:93:55:6C:D5:E8:03:1B:3C:7D");
-            put("haricatlseccrootca2021",
-                    "3F:99:CC:47:4A:CF:CE:4D:FE:D5:87:94:66:5E:47:8D:15:47:73:9F:2E:78:0F:1B:B4:CA:9B:13:30:97:D4:01");
-            put("haricatlsrsarootca2021",
-                    "D9:5D:0E:8E:DA:79:52:5B:F9:BE:B1:1B:14:D2:10:0D:32:94:98:5F:0C:62:D9:FA:BD:9C:D9:99:EC:CB:7B:1D");
-            put("hipkirootca-g1",
-                    "F0:15:CE:3C:C2:39:BF:EF:06:4B:E9:F1:D2:C4:17:E1:A0:26:4A:0A:94:BE:1F:0C:8D:12:18:64:EB:69:49:CC");
             put("hongkongpostrootca1",
                     "F9:E6:7D:33:6C:51:00:2A:C0:54:C6:32:02:2D:66:DD:A2:E7:E3:FF:F1:0A:D0:61:ED:31:D8:BB:B4:10:CF:B2");
             put("hongkongpostrootca3",
                     "5A:2F:C0:3F:0C:83:B0:90:BB:FA:40:60:4B:09:88:44:6C:76:36:18:3D:F9:84:6E:17:10:1A:44:7F:B8:EF:D6");
-            put("isrgrootx2",
-                    "69:72:9B:8E:15:A8:6E:FC:17:7A:57:AF:B7:17:1D:FC:64:AD:D2:8C:2F:CA:8C:F1:50:7E:34:45:3C:CB:14:70");
             put("izenpe.com",
                     "25:30:CC:8E:98:32:15:02:BA:D9:6F:9B:1F:BA:1B:09:9E:2D:29:9E:0F:45:48:BB:91:4F:36:3B:C0:D4:53:1F");
             put("microsece-szignorootca2009",
@@ -176,16 +148,10 @@ public class VerifyCACerts {
                     "42:00:F5:04:3A:C8:59:0E:BB:52:7D:20:9E:D1:50:30:29:FB:CB:D4:1C:A1:B5:06:EC:27:F1:5A:DE:7D:AC:69");
             put("securesignrootca11",
                     "BF:0F:EE:FB:9E:3A:58:1A:D5:F9:E9:DB:75:89:98:57:43:D2:61:08:5C:4D:31:4F:6F:5D:72:59:AA:42:16:12");
-            put("securitycommunicationeccrootca1",
-                    "E7:4F:BD:A5:5B:D5:64:C4:73:A3:6B:44:1A:A7:99:C8:A6:8E:07:74:40:E8:28:8B:9F:A1:E5:0E:4B:BA:CA:11");
-            put("securitycommunicationrootca3",
-                    "24:A5:5C:2A:B0:51:44:2D:06:17:76:65:41:23:9A:4A:D0:32:D7:C5:51:75:AA:34:FF:DE:2F:BC:4F:5C:52:94");
             put("ssl.comevrootcertificationauthorityecc",
                     "22:A2:C1:F7:BD:ED:70:4C:C1:E7:01:B5:F4:08:C3:10:88:0F:E9:56:B5:DE:2A:4A:44:F9:9C:87:3A:25:A7:C8");
             put("szafirrootca2",
                     "A1:33:9D:33:28:1A:0B:56:E5:57:D3:D3:2B:1C:E7:F9:36:7E:B0:94:BD:5F:A7:2A:7E:50:04:C8:DE:D7:CA:FE");
-            put("teliarootcav2",
-                    "24:2B:69:74:2F:CB:1E:5B:2A:BF:98:89:8B:94:57:21:87:54:4E:5B:4D:99:11:78:65:73:62:1F:6A:74:B8:2C");
             put("trustcoreca-1",
                     "5A:88:5D:B1:9C:01:D9:12:C5:75:93:88:93:8C:AF:BB:DF:03:1A:B2:D4:8E:91:EE:15:58:9B:42:97:1D:03:9C");
             put("trustcorrootcertca-1",
@@ -200,8 +166,6 @@ public class VerifyCACerts {
                     "55:90:38:59:C8:C0:C3:EB:B8:75:9E:CE:4E:25:57:22:5F:F5:75:8B:BD:38:EB:D4:82:76:60:1E:1B:D5:80:97");
             put("tubitakkamusmsslkoksertifikasi-surum1",
                     "46:ED:C3:68:90:46:D5:3A:45:3F:B3:10:4A:B8:0D:CA:EC:65:8B:26:60:EA:16:29:DD:7E:86:79:90:64:87:16");
-            put("tuntrustrootca",
-                    "2E:44:10:2A:B5:8C:B8:54:19:45:1C:8E:19:D9:AC:F3:66:2C:AF:BC:61:4B:6A:53:96:0A:30:F7:D0:E2:EB:41");
             put("twcaglobalrootca",
                     "59:76:90:07:F7:68:5D:0F:CD:50:87:2F:9F:95:D5:75:5A:5B:2B:45:7D:81:F3:69:2B:61:0A:98:67:2F:0E:1B");
             put("twcarootcertificationauthority",
@@ -210,10 +174,6 @@ public class VerifyCACerts {
                     "D4:3A:F9:B3:54:73:75:5C:96:84:FC:06:D7:D8:CB:70:EE:5C:28:E7:73:FB:29:4E:B4:1E:E7:17:22:92:4D:24");
             put("ucaglobalg2root",
                     "9B:EA:11:C9:76:FE:01:47:64:C1:BE:56:A6:F9:14:B5:A5:60:31:7A:BD:99:88:39:33:82:E5:16:1A:A0:49:3C");
-            put("vtruseccrootca",
-                    "30:FB:BA:2C:32:23:8E:2A:98:54:7A:F9:79:31:E5:50:42:8B:9B:3F:1C:8E:EB:66:33:DC:FA:86:C5:B2:7D:D3");
-            put("vtrusrootca",
-                    "8A:71:DE:65:59:33:6F:42:6C:26:E5:38:80:D0:0D:88:A1:8D:A4:C6:A9:1F:0D:CB:61:94:E2:06:C5:C9:63:87");
             // JDK certs
             put("actalisauthenticationrootca [jdk]",
                     "55:92:60:84:EC:96:3A:64:B9:6E:2A:BE:01:CE:0B:A8:6A:64:FB:FE:BC:C7:AA:B5:AF:C1:55:B3:7F:D7:60:66");
