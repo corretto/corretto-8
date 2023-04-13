@@ -608,33 +608,16 @@ public final class ZoneInfoFile {
                 params[9] = toSTZTime[endRule.timeDefinition];
                 dstSavings = (startRule.offsetAfter - startRule.offsetBefore) * 1000;
 
-                // Note: known mismatching -> Asia/Amman
+                // Note: known mismatching -> Africa/Cairo
                 // ZoneInfo :      startDayOfWeek=5     <= Thursday
-                //                 startTime=86400000   <= 24 hours
-                // This:           startDayOfWeek=6
-                //                 startTime=0
-                // Similar workaround needs to be applied to Africa/Cairo and
-                // its endDayOfWeek and endTime
-                // Below is the workarounds, it probably slows down everyone a little
-                if (params[2] == 6 && params[3] == 0 &&
-                    (zoneId.equals("Asia/Amman"))) {
-                    params[2] = 5;
-                    params[3] = 86400000;
+                //                 startTime=86400000   <= 24:00
+                // This:           startDayOfWeek=6     <= Friday
+                //                 startTime=0          <= 0:00
+                if (zoneId.equals("Africa/Cairo") &&
+                        params[7] == Calendar.FRIDAY && params[8] == 0) {
+                    params[7] = Calendar.THURSDAY;
+                    params[8] = SECONDS_PER_DAY * 1000;
                 }
-                // Additional check for startDayOfWeek=6 and starTime=86400000
-                // is needed for Asia/Amman;
-                if (params[2] == 7 && params[3] == 0 &&
-                     (zoneId.equals("Asia/Amman"))) {
-                    params[2] = 6;        // Friday
-                    params[3] = 86400000; // 24h
-                }
-                //endDayOfWeek and endTime workaround
-                if (params[7] == 6 && params[8] == 0 &&
-                    (zoneId.equals("Africa/Cairo"))) {
-                    params[7] = 5;
-                    params[8] = 86400000;
-                }
-
             } else if (nTrans > 0) {  // only do this if there is something in table already
                 if (lastyear < LASTYEAR) {
                     // ZoneInfo has an ending entry for 2037
