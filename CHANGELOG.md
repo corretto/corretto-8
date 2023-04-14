@@ -2,6 +2,47 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.372.07.1
+Release Date: April 18, 2023
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 11.0 and later, x86_64
++ macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.372.07.1:
+
+| Issue Name                                        | Platform | Description                                                                | Link                                                                       |
+|---------------------------------------------------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| Import jdk8u372-b07                               | All                | Updates Corretto baseline to OpenJDK 8u372-b07                             | [jdk8u372-b07](https://github.com/openjdk/jdk8u/releases/tag/jdk8u372-b07) |
+| (tz) Update Timezone Data to 2023c                | All                | Update Timezone Data to 2023c                                              | [#459](https://github.com/corretto/corretto-8/pull/459) |
+| Update amazon cacerts                             | All                | Update amazon cacerts file from amazonlinux                                | [#456](https://github.com/corretto/corretto-8/pull/456) [#457](https://github.com/corretto/corretto-8/pull/457) [#458](https://github.com/corretto/corretto-8/pull/458) |
+| Backport 8262896                                  | macOS aarch64      | Fix crash in rash in jni_fast_GetLongField                                 | [8262896](https://bugs.openjdk.org/browse/JDK-8262896) |
+| Backport 8285515                                  | macOS              | Fix DatagramChannel.disconnect fails with "Invalid argument" on macOS 12.4 | [8285515](https://bugs.openjdk.org/browse/JDK-8285515) |
+
+The following CVEs are addressed in 8.372.07.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2023-21930 | 7.4  | security-libs/javax.net.ssl |
+| CVE-2023-21954 | 5.9  | hotspot/gc                  |
+| CVE-2023-21967 | 5.9  | security-libs/javax.net.ssl |
+| CVE-2023-21939 | 5.3  | client-libs/javax.swing     |
+| CVE-2023-21938 | 3.7  | core-libs/java.lang         |
+| CVE-2023-21937 | 3.7  | core-libs/java.net          |
+| CVE-2023-21968 | 3.7  | core-libs/java.nio          |
+
+
 ## Corretto version: 8.362.10.1
 Release Date: February 2, 2023
 
