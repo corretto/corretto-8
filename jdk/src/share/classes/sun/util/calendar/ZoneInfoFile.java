@@ -628,13 +628,6 @@ public final class ZoneInfoFile {
                     params[2] = 6;        // Friday
                     params[3] = 86400000; // 24h
                 }
-                //endDayOfWeek and endTime workaround
-                if (params[7] == 6 && params[8] == 0 &&
-                    (zoneId.equals("Africa/Cairo"))) {
-                    params[7] = 5;
-                    params[8] = 86400000;
-                }
-
                 // Note: known mismatching -> Africa/Cairo
                 // ZoneInfo :      startDayOfWeek=5     <= Thursday
                 //                 startTime=86400000   <= 24:00
@@ -917,7 +910,6 @@ public final class ZoneInfoFile {
             this.dow = dowByte == 0 ? -1 : dowByte;
             this.secondOfDay = timeByte == 31 ? in.readInt() : timeByte * 3600;
             this.timeDefinition = (data & (3 << 12)) >>> 12;
-
             this.standardOffset = stdByte == 255 ? in.readInt() : (stdByte - 128) * 900;
             this.offsetBefore = beforeByte == 3 ? in.readInt() : standardOffset + beforeByte * 1800;
             this.offsetAfter = afterByte == 3 ? in.readInt() : standardOffset + afterByte * 1800;
