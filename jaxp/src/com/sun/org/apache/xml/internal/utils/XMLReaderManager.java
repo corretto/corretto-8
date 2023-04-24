@@ -16,9 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * $Id: XMLReaderManager.java,v 1.2.4.1 2005/09/15 08:16:02 suresh_emailid Exp $
- */
 package com.sun.org.apache.xml.internal.utils;
 
 import com.sun.org.apache.xalan.internal.XalanConstants;
@@ -36,6 +33,8 @@ import org.xml.sax.XMLReader;
 /**
  * Creates XMLReader objects and caches them for re-use.
  * This class follows the singleton pattern.
+ *
+ * @LastModified: Jan 2023
  */
 public class XMLReaderManager {
 
