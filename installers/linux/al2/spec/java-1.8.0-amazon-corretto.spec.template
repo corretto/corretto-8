@@ -24,6 +24,7 @@
 %global corretto_revision @revision@
 %global java_home %{_jvmdir}/%{name}.%{_arch}
 %global experimental_feature     @experimental_feature@
+%global additional_configure_options     @additional_configure_options@
 
 # The experimental_feature macro gets set to %nil by the template, but that is still defined and
 # the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
@@ -32,6 +33,9 @@
 %undefine experimental_feature
 %endif
 
+%if 0%{?additional_configure_options:1} == 1 && "%{additional_configure_options}" == "%{nil}"
+%undefine additional_configure_options
+%endif
 # Higher numbers win for the alternatives program.
 # AL2 has chosen java-1.7.0-openjdk to be default (priority 17000)
 # with java-1.8.0-openjdk as second (priority 1800)
@@ -179,12 +183,15 @@ Amazon Corretto's packaging of the OpenJDK 8 code.
 
 %build
 bash ./configure \
+%if 0%{?additional_configure_options:1}
+    %{additional_configure_options} \
+%endif
   --with-zlib=system \
   --with-giflib=system \
   --with-update-version="%{java_update}" \
   --with-build-number="%{buildver}" \
   --with-corretto-revision="%{corretto_revision}" \
-  --with-milestone="fcs" \
+  --with-milestone=%{?experimental_feature:%experimental_feature}%{!?experimental_feature:fcs} \
   --disable-debug-symbols \
   --disable-zip-debug-info \
   --enable-jfr \
