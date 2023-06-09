@@ -23,6 +23,14 @@
 %global buildver b@build@
 %global corretto_revision @revision@
 %global java_home %{_jvmdir}/%{name}.%{_arch}
+%global experimental_feature     @experimental_feature@
+
+# The experimental_feature macro gets set to %nil by the template, but that is still defined and
+# the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
+# work with
+%if 0%{?experimental_feature:1} && "%{experimental_feature}" == "%{nil}"
+%undefine experimental_feature
+%endif
 
 # Higher numbers win for the alternatives program.
 # AL2 has chosen java-1.7.0-openjdk to be default (priority 17000)
@@ -72,7 +80,7 @@
 %endif
 
 Summary: Amazon Corretto runtime environment
-Name: java-1.8.0-amazon-corretto
+Name: java-1.8.0-amazon-corretto%{?experimental_feature:-%{experimental_feature}}
 # Matches the 'full version' from Java's release notes:
 # https://www.oracle.com/technetwork/java/javase/8u181-relnotes-4479407.html
 # Eg: 1.8.0_181-b13
@@ -83,7 +91,7 @@ Group: Development/Languages
 License: ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.
 Vendor: Amazon
 Url: https://github.com/corretto/corretto-8
-Source0: %{name}.tar.gz
+Source0: java-1.8.0-amazon-corretto.tar.gz
 ExclusiveArch: x86_64 aarch64
 
 # jpackage-utils/javapackages-filesystem is required for both build and runtime.
