@@ -46,7 +46,7 @@ task inflateRpmSpec(type: Copy) {
         filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ experimental_feature: project.findProperty("corretto.experimental_feature") ?: "%{nil}" ])
         filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ additional_configure_options: project.findProperty("corretto.additional_configure_options") ?: "%{nil}"])
         filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ zlib_option: project.findProperty("corretto.zlib_option") ?: "system"])
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ use_gcc_ver: project.findProperty("corretto.use_gcc_ver") ?: ""])
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ use_gcc_ver: project.findProperty("corretto.use_gcc_ver") ?: "%{nil}"])
     }
     into buildRoot
 }
