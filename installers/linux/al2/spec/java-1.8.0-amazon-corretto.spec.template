@@ -38,6 +38,10 @@
 %if 0%{?additional_configure_options:1} == 1 && "%{additional_configure_options}" == "%{nil}"
 %undefine additional_configure_options
 %endif
+
+%if 0%{?use_gcc_ver:1} == 1 && "%{use_gcc_ver}" == "%{nil}"
+%undefine use_gcc_ver
+%endif
 # Higher numbers win for the alternatives program.
 # AL2 has chosen java-1.7.0-openjdk to be default (priority 17000)
 # with java-1.8.0-openjdk as second (priority 1800)
