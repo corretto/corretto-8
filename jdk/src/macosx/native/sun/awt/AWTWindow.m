@@ -203,13 +203,13 @@ AWT_NS_WINDOW_IMPLEMENTATION
     if (IS(styleBits, DECORATED)) {
         type |= NSTitledWindowMask;
         if (IS(styleBits, CLOSEABLE))            type |= NSClosableWindowMask;
-        if (IS(styleBits, MINIMIZABLE))          type |= NSMiniaturizableWindowMask;
         if (IS(styleBits, RESIZABLE))            type |= NSResizableWindowMask;
         if (IS(styleBits, FULL_WINDOW_CONTENT))  type |= NSFullSizeContentViewWindowMask;
     } else {
         type |= NSBorderlessWindowMask;
     }
 
+    if (IS(styleBits, MINIMIZABLE))   type |= NSMiniaturizableWindowMask;
     if (IS(styleBits, TEXTURED))      type |= NSTexturedBackgroundWindowMask;
     if (IS(styleBits, UNIFIED))       type |= NSUnifiedTitleAndToolbarWindowMask;
     if (IS(styleBits, UTILITY))       type |= NSUtilityWindowMask;
@@ -320,7 +320,7 @@ AWT_ASSERT_APPKIT_THREAD;
     [self setPropertiesForStyleBits:styleBits mask:MASK(_METHOD_PROP_BITMASK)];
 
     if (IS(self.styleBits, IS_POPUP)) {
-        [self.nsWindow setCollectionBehavior:(1 << 8) /*NSWindowCollectionBehaviorFullScreenAuxiliary*/]; 
+        [self.nsWindow setCollectionBehavior:(1 << 8) /*NSWindowCollectionBehaviorFullScreenAuxiliary*/];
     }
 
     return self;
@@ -469,7 +469,7 @@ AWT_ASSERT_APPKIT_THREAD;
 // Tests whether window is blocked by modal dialog/window
 - (BOOL) isBlocked {
     BOOL isBlocked = NO;
-    
+
     JNIEnv *env = [ThreadUtilities getJNIEnv];
     jobject platformWindow = [self.javaPlatformWindow jObjectWithEnv:env];
     if (platformWindow != NULL) {
@@ -477,7 +477,7 @@ AWT_ASSERT_APPKIT_THREAD;
         isBlocked = JNFCallBooleanMethod(env, platformWindow, jm_isBlocked) == JNI_TRUE ? YES : NO;
         (*env)->DeleteLocalRef(env, platformWindow);
     }
-    
+
     return isBlocked;
 }
 
@@ -498,18 +498,18 @@ AWT_ASSERT_APPKIT_THREAD;
 // Tests whether the corresponding Java platform window is visible or not
 + (BOOL) isJavaPlatformWindowVisible:(NSWindow *)window {
     BOOL isVisible = NO;
-    
+
     if ([AWTWindow isAWTWindow:window] && [window delegate] != nil) {
         AWTWindow *awtWindow = (AWTWindow *)[window delegate];
         [AWTToolkit eventCountPlusPlus];
-        
+
         JNIEnv *env = [ThreadUtilities getJNIEnv];
         jobject platformWindow = [awtWindow.javaPlatformWindow jObjectWithEnv:env];
         if (platformWindow != NULL) {
             static JNF_MEMBER_CACHE(jm_isVisible, jc_CPlatformWindow, "isVisible", "()Z");
             isVisible = JNFCallBooleanMethod(env, platformWindow, jm_isVisible) == JNI_TRUE ? YES : NO;
             (*env)->DeleteLocalRef(env, platformWindow);
-            
+
         }
     }
     return isVisible;
@@ -1411,7 +1411,7 @@ JNF_COCOA_ENTER(env);
     } else {
         [JNFException raise:env as:kIllegalArgumentException reason:"unknown event type"];
     }
-    
+
 JNF_COCOA_EXIT(env);
 }
 
@@ -1521,7 +1521,7 @@ JNF_COCOA_ENTER(env);
 
         if (CGDisplayRelease(aID) == kCGErrorSuccess) {
             NSUInteger styleMask = [AWTWindow styleMaskForStyleBits:window.styleBits];
-            [nsWindow setStyleMask:styleMask]; 
+            [nsWindow setStyleMask:styleMask];
             [nsWindow setLevel: window.preFullScreenLevel];
 
             // GraphicsDevice takes care of restoring pre full screen bounds

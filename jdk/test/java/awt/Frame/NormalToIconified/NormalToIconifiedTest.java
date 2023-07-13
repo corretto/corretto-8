@@ -40,12 +40,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import test.java.awt.regtesthelpers.Util;
 
 public class NormalToIconifiedTest {
-    private static final AtomicBoolean listenerNotified = new AtomicBoolean(false);
 
     public static void main(String[] args) {
+        test(false);
+        test(true);
+    }
+
+    private static void test(final boolean undecorated) {
+        AtomicBoolean listenerNotified = new AtomicBoolean(false);
+
         Robot robot = Util.createRobot();
 
         Frame testFrame = new Frame("Test Frame");
+        testFrame.setUndecorated(undecorated);
         testFrame.setSize(200, 200);
         testFrame.addWindowStateListener(new WindowStateListener() {
             @Override
@@ -102,4 +109,3 @@ public class NormalToIconifiedTest {
         }
     }
 }
-
