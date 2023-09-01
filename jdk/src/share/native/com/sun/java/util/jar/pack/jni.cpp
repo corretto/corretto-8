@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -312,7 +312,7 @@ Java_com_sun_java_util_jar_pack_NativeUnpack_finish(JNIEnv *env, jobject pObj) {
   // There's no need to create a new unpacker here if we don't already have one
   // just to immediatly free it afterwards.
   unpacker* uPtr = get_unpacker(env, pObj, /* noCreate= */ true);
-  CHECK_EXCEPTION_RETURN_VALUE(uPtr, 0);
+  CHECK_EXCEPTION_RETURN_VALUE(uPtr, NULL);
   size_t consumed = uPtr->input_consumed();
   // free_unpacker() will set the unpacker field on 'pObj' to null
   free_unpacker(env, pObj, uPtr);
