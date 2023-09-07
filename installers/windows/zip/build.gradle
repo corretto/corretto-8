@@ -18,10 +18,14 @@
 * 2 along with this work; if not, write to the Free Software Foundation,
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+configurations {
+    javafx
+}
 
 import java.nio.file.Paths
 
 dependencies {
+    javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -32,6 +36,18 @@ task copySource(type: Copy) {
     dependsOn project.configurations.compile
     from tarTree(project.configurations.compile.singleFile)
     into buildRoot
+}
+
+task createJavafxOverlay(type: Copy) {
+    dependsOn project.configurations.javafx
+    from tarTree(project.configurations.javafx.singleFile)
+    into "$buildDir/javafx"
+    eachFile {
+        if (it.path.startsWith('rt/')) {
+            it.path = it.path.replace('rt/', 'jre/')
+        }
+    }
+    includeEmptyDirs = false
 }
 
 task configureBuild(type: Exec) {
@@ -53,7 +69,33 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'clean', 'images'
 }
 
+task applyJavafxOverlay() {
+    dependsOn createJavafxOverlay
+    outputs.dir(packagingDir)
+    doLast {
+        copy {
+            from createJavafxOverlay.destinationDir
+            include 'jre/**'
+            into "$imagesDir/j2re-image"
+			eachFile {
+				if (it.path.startsWith('jre/')) {
+					it.path = it.path.replace('jre/', '')
+				}
+			}
+        }
+        copy {
+            from createJavafxOverlay.destinationDir
+            include 'bin/**'
+			include 'lib/**'
+            include 'jre/**'
+			include 'javafx-src.zip'
+            into "$imagesDir/j2re-image"
+        }
+    }
+}
+
 task copyImages() {
+    dependsOn createJavafxOverlay
     dependsOn executeBuild
     outputs.dir(packagingDir)
     doLast {
@@ -96,8 +138,6 @@ task copyCacerts(type: Copy) {
     from file("$packagingDir/jdk/jre/lib/security/cacerts")
     into file("$packagingDir/jre/lib/security")
 }
-
-
 
 task fixPermissions() {
     dependsOn copyCacerts
