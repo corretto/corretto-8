@@ -50,7 +50,7 @@ public class ChoiceCallback implements Callback, java.io.Serializable {
      * @serial the list of choices
      * @since 1.4
      */
-    private final String[] choices;
+    private String[] choices;
     /**
      * @serial the choice to be used as the default choice
      * @since 1.4

@@ -148,7 +148,7 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
      * @serial
      * @since 1.4
      */
-    private final String[] options;
+    private String[] options;
     /**
      * @serial
      * @since 1.4
