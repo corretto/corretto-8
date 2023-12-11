@@ -28,6 +28,9 @@
 %global zlib_option @zlib_option@
 %global use_gcc_ver @use_gcc_ver@
 
+# Disable build_id links as they can collide between versions of Corretto
+%global _build_id_links none
+
 # The experimental_feature macro gets set to %nil by the template, but that is still defined and
 # the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
 # work with
