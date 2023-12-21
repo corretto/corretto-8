@@ -277,7 +277,6 @@ public class VerifyCACerts {
                     "86:A1:EC:BA:08:9C:4A:8D:3B:BE:27:34:C6:12:BA:34:1D:81:3E:04:3C:F9:E8:A8:62:CD:5C:57:A3:6B:BE:6B");
             put("emsignrootcag2 [jdk]",
                     "1A:A0:C2:70:9E:83:1B:D6:E3:B5:12:9A:00:BA:41:F7:EE:EF:02:08:72:F1:E6:50:4B:F0:F6:C3:F2:4F:3A:F3");
->>>>>>> 31162fb2760d01e1fd4a84bcb796400d95c82506
         }
     };
 
