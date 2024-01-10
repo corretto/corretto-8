@@ -1,0 +1,58 @@
+From 59d886375e7ecff42e3ee089c0d8a73ae7d5d2c6 Mon Sep 17 00:00:00 2001
+From: Dan Lutker <lutkerd@amazon.com>
+Date: Wed, 10 Jan 2024 23:18:38 +0000
+Subject: [PATCH] Fix paths for VS tools
+
+---
+ buildSrc/genVSproperties.bat | 15 +++++++++------
+ buildSrc/win.gradle          |  2 +-
+ 2 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/buildSrc/genVSproperties.bat b/buildSrc/genVSproperties.bat
+index 003d0ca3..07ea8650 100644
+--- a/buildSrc/genVSproperties.bat
++++ b/buildSrc/genVSproperties.bat
+@@ -36,13 +36,17 @@ REM Handling of 11.0 and 14.0 is excluded here.
+ REM The previous officially supported VS version was 12.0
+ REM So, the search order is 150, then 120, then 100
+ set VSVER=150
+-set "VSVARS32FILE=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvars32.bat"
+-if not "%VS150COMNTOOLS%"=="" (
+-    set "VS150COMNTOOLS=%VS150COMNTOOLS%"
++set "VSVARS32FILE=C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars32.bat"
++if exist "%VSVARS32FILE%" (
++  set "VSVARSDIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build"
+ ) else (
+-  if exist "%VSVARS32FILE%" set "VS150COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build"
++  if not "%VS150COMNTOOLS%"=="" (
++    set "VS150COMNTOOLS=%VS150COMNTOOLS%"
++    set "VSVARSDIR=%VS150COMNTOOLS%"
++  )
+ )
+-set VSVARSDIR=%VS150COMNTOOLS%
++
++
+ if "%VSVARSDIR%"=="" set VSVER=120
+ if "%VSVARSDIR%"=="" set VSVARSDIR=%VS120COMNTOOLS%
+ if "%VSVARSDIR%"=="" set VSVER=100
+@@ -97,4 +101,3 @@ echo windows.vs.VER=%VSVER%@@ENDOFLINE@@
+ echo WINDOWS_SDK_DIR=%WindowsSdkDir%@@ENDOFLINE@@
+ echo WINDOWS_SDK_VERSION=%WindowsSDKVersion%@@ENDOFLINE@@
+ echo ############################################################
+-
+diff --git a/buildSrc/win.gradle b/buildSrc/win.gradle
+index 6ca4c7bd..1421b908 100644
+--- a/buildSrc/win.gradle
++++ b/buildSrc/win.gradle
+@@ -131,7 +131,7 @@ ext.WINDOWS_NATIVE_COMPILE_ENVIRONMENT = [
+         "LIBPATH"              : WINDOWS_VS_LIBPATH,
+         "DXSDK_DIR"            : WINDOWS_DXSDK_DIR
+ ];
+-def msvcVer = System.getenv("MSVC_VER") ?: "14.10.25017"
++def msvcVer = System.getenv("MSVC_VER") ?: "14.16.27023"
+ def msvcBinDir = ""
+ if (winVsVer == 150) {
+     msvcBinDir = (IS_64
+-- 
+2.40.1
+
