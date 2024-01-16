@@ -38,6 +38,9 @@ The following CVEs are addressed in 8.402.06.1:
 | CVE-2024-20919 | 5.9  | hotspot/runtime                |
 | CVE-2024-20921 | 5.9  | hotspot/compiler               |
 | CVE-2024-20945 | 4.7  | security-libs/javax.xml.crypto |
+| CVE-2024-20925 | 3.1  | javafx/media                   |
+| CVE-2024-20923 | 3.1  | javafx/graphics                |
+| CVE-2024-20922 | 2.5  | javafx/window-toolkit          |
 
 ## Corretto version: 8.392.08.1
 Release Date: October 17, 2023
