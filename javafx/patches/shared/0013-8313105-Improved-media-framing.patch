@@ -1,0 +1,1062 @@
+From 0a52a4cf1d1226e7a3c6d73313fde02e7f36fb11 Mon Sep 17 00:00:00 2001
+From: Alexander Matveev <almatvee@openjdk.org>
+Date: Thu, 7 Sep 2023 20:55:04 +0000
+Subject: [PATCH] 8313105: Improved media framing
+
+Reviewed-by: arapte, rhalade, kcr
+---
+ .../PipelineManagement/VideoFrame.cpp         | 135 +++++++---
+ .../jfxmedia/PipelineManagement/VideoFrame.h  |  59 +++--
+ .../native/jfxmedia/jni/NativeVideoBuffer.cpp |   6 +-
+ .../platform/gstreamer/GstVideoFrame.cpp      | 242 +++++++++++-------
+ .../jfxmedia/platform/osx/CVVideoFrame.h      |   7 +-
+ .../jfxmedia/platform/osx/CVVideoFrame.mm     | 101 +++++---
+ .../platform/osx/avf/AVFMediaPlayer.mm        |   6 +-
+ 7 files changed, 364 insertions(+), 192 deletions(-)
+
+diff --git a/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.cpp b/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.cpp
+index 1b1097f7..7bcab5d0 100644
+--- a/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.cpp
++++ b/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -23,6 +23,10 @@
+  * questions.
+  */
+
++// For UINT_MAX, we cannot use GLib here, since it is shared code between
++// GStreamer and AVFoundation.
++#include <limits.h>
++
+ #include "VideoFrame.h"
+ #include <Common/VSMemory.h>
+
+@@ -30,43 +34,40 @@
+ //********** class CVideoFrame
+ //*************************************************************************************************
+ CVideoFrame::CVideoFrame()
+-:   m_iWidth(0),
+-    m_iHeight(0),
+-    m_iEncodedWidth(0),
+-    m_iEncodedHeight(0),
++:   m_uiWidth(0),
++    m_uiHeight(0),
++    m_uiEncodedWidth(0),
++    m_uiEncodedHeight(0),
+     m_typeFrame(UNKNOWN),
+     m_bHasAlpha(false),
+     m_dTime(0.0),
+-    m_FrameDirty(false),
+-    m_iPlaneCount(1)
++    m_FrameDirty(false)
+ {
+-    m_piPlaneStrides[0] = m_piPlaneStrides[1] = m_piPlaneStrides[2] = m_piPlaneStrides[3] = 0;
+-    m_pulPlaneSize[0] = m_pulPlaneSize[1] = m_pulPlaneSize[2] = m_pulPlaneSize[3] = 0;
+-    m_pvPlaneData[0] = m_pvPlaneData[1] = m_pvPlaneData[2] = m_pvPlaneData[3] = NULL;
++    Reset();
+ }
+
+ CVideoFrame::~CVideoFrame()
+ {
+ }
+
+-int CVideoFrame::GetWidth()
++unsigned int CVideoFrame::GetWidth()
+ {
+-    return m_iWidth;
++    return m_uiWidth;
+ }
+
+-int CVideoFrame::GetHeight()
++unsigned int CVideoFrame::GetHeight()
+ {
+-    return m_iHeight;
++    return m_uiHeight;
+ }
+
+-int CVideoFrame::GetEncodedWidth()
++unsigned int CVideoFrame::GetEncodedWidth()
+ {
+-    return m_iEncodedWidth;
++    return m_uiEncodedWidth;
+ }
+
+-int CVideoFrame::GetEncodedHeight()
++unsigned int CVideoFrame::GetEncodedHeight()
+ {
+-    return m_iEncodedHeight;
++    return m_uiEncodedHeight;
+ }
+
+ CVideoFrame::FrameType CVideoFrame::GetType()
+@@ -84,31 +85,41 @@ double CVideoFrame::GetTime()
+     return m_dTime;
+ }
+
+-int CVideoFrame::GetPlaneCount()
++unsigned int CVideoFrame::GetPlaneCount()
+ {
+-    return m_iPlaneCount;
++    return m_uiPlaneCount;
++}
++
++void CVideoFrame::SetPlaneCount(unsigned int count)
++{
++    if (count <= MAX_PLANE_COUNT) {
++        m_uiPlaneCount = count;
++    } else {
++        // Should never happen
++        m_uiPlaneCount = MAX_PLANE_COUNT;
++    }
+ }
+
+-void* CVideoFrame::GetDataForPlane(int planeIndex)
++void* CVideoFrame::GetDataForPlane(unsigned int planeIndex)
+ {
+-    if (planeIndex < 4 && planeIndex >= 0) {
++    if (planeIndex < MAX_PLANE_COUNT) {
+         return m_pvPlaneData[planeIndex];
+     }
+     return NULL;
+ }
+
+-unsigned long CVideoFrame::GetSizeForPlane(int planeIndex)
++unsigned long CVideoFrame::GetSizeForPlane(unsigned int planeIndex)
+ {
+-    if (planeIndex < 4 && planeIndex >= 0) {
++    if (planeIndex < MAX_PLANE_COUNT) {
+         return m_pulPlaneSize[planeIndex];
+     }
+     return 0;
+ }
+
+-int CVideoFrame::GetStrideForPlane(int planeIndex)
++unsigned int CVideoFrame::GetStrideForPlane(unsigned int planeIndex)
+ {
+-    if (planeIndex < 4 && planeIndex >= 0) {
+-        return m_piPlaneStrides[planeIndex];
++    if (planeIndex < MAX_PLANE_COUNT) {
++        return m_puiPlaneStrides[planeIndex];
+     }
+     return 0;
+ }
+@@ -118,12 +129,22 @@ CVideoFrame *CVideoFrame::ConvertToFormat(FrameType type)
+     return NULL;
+ }
+
+-void CVideoFrame::SwapPlanes(int aa, int bb)
++void CVideoFrame::Reset()
++{
++    m_uiPlaneCount = 0;
++    for (int i = 0; i < MAX_PLANE_COUNT; i++) {
++        m_puiPlaneStrides[i] = 0;
++        m_pulPlaneSize[i] = 0;
++        m_pvPlaneData[i] = NULL;
++    }
++}
++
++void CVideoFrame::SwapPlanes(unsigned int aa, unsigned int bb)
+ {
+-    if (aa != bb && aa >= 0 && aa < m_iPlaneCount && bb >= 0 && bb < m_iPlaneCount) {
+-        int stride = m_piPlaneStrides[aa];
+-        m_piPlaneStrides[aa] = m_piPlaneStrides[bb];
+-        m_piPlaneStrides[bb] = stride;
++    if (aa != bb && aa < m_uiPlaneCount && bb < m_uiPlaneCount) {
++        unsigned int stride = m_puiPlaneStrides[aa];
++        m_puiPlaneStrides[aa] = m_puiPlaneStrides[bb];
++        m_puiPlaneStrides[bb] = stride;
+
+         unsigned long size = m_pulPlaneSize[aa];
+         m_pulPlaneSize[aa] = m_pulPlaneSize[bb];
+@@ -134,3 +155,53 @@ void CVideoFrame::SwapPlanes(int aa, int bb)
+         m_pvPlaneData[bb] = vptr;
+     }
+ }
++
++unsigned long CVideoFrame::CalcSize(unsigned int a, unsigned int b, bool *pbValid)
++{
++    if (pbValid == NULL || *(pbValid) == false) {
++        return 0;
++    }
++
++    if (b > 0 && a <= (UINT_MAX / b)) {
++        return (a * b);
++    }
++
++    *(pbValid) = false;
++    return 0;
++}
++
++unsigned long CVideoFrame::AddSize(unsigned long a, unsigned long b, bool *pbValid)
++{
++    if (pbValid == NULL || *(pbValid) == false) {
++        return 0;
++    }
++
++    // unsigned long can be 32-bit or 64-bit, make sure it is no more then UINT_MAX
++    if (a <= UINT_MAX && b <= UINT_MAX && a <= (UINT_MAX - b)) {
++        return (a + b);
++    }
++
++    *(pbValid) = false;
++    return 0;
++}
++
++void* CVideoFrame::CalcPlanePointer(intptr_t baseAddress, unsigned int offset,
++                                    unsigned long planeSize, unsigned long baseSize,
++                                    bool *pbValid)
++{
++    if (pbValid == NULL || *(pbValid) == false) {
++        return NULL;
++    }
++
++    // We will read planeSize bytes from baseAddress starting with offset, so
++    // make sure we do not read pass baseSize.
++    unsigned long endOfPlane = AddSize(offset, planeSize, pbValid);
++    if (*(pbValid)) { // Make sure AddSize() did not failed.
++        if (endOfPlane <= baseSize) {
++            return (void*)(baseAddress + offset);
++        }
++    }
++
++    *(pbValid) = false;
++    return NULL;
++}
+diff --git a/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.h b/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.h
+index 6a476b4a..82db78eb 100644
+--- a/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.h
++++ b/modules/media/src/main/native/jfxmedia/PipelineManagement/VideoFrame.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -27,6 +27,9 @@
+ #define _VIDEO_FRAME_H_
+
+ #include <stdlib.h>
++#include <stdint.h>
++
++#define MAX_PLANE_COUNT 4
+
+ /**
+  * class CVideoFrame
+@@ -56,18 +59,19 @@ public:
+
+     double              GetTime();
+
+-    int                 GetWidth();
+-    int                 GetHeight();
+-    int                 GetEncodedWidth();
+-    int                 GetEncodedHeight();
++    unsigned int        GetWidth();
++    unsigned int        GetHeight();
++    unsigned int        GetEncodedWidth();
++    unsigned int        GetEncodedHeight();
+
+     FrameType           GetType();
+     bool                HasAlpha();
+
+-    int                 GetPlaneCount();
+-    void*               GetDataForPlane(int planeIndex);
+-    unsigned long       GetSizeForPlane(int planeIndex);
+-    int                 GetStrideForPlane(int planeIndex);
++    unsigned int        GetPlaneCount();
++    void                SetPlaneCount(unsigned int count);
++    void*               GetDataForPlane(unsigned int planeIndex);
++    unsigned long       GetSizeForPlane(unsigned int planeIndex);
++    unsigned int        GetStrideForPlane(unsigned int planeIndex);
+
+     virtual CVideoFrame *ConvertToFormat(FrameType type);
+
+@@ -75,22 +79,41 @@ public:
+     void                SetFrameDirty(bool dirty) { m_FrameDirty = dirty; }
+
+ protected:
+-    int                 m_iWidth;
+-    int                 m_iHeight;
+-    int                 m_iEncodedWidth;
+-    int                 m_iEncodedHeight;
++    unsigned int        m_uiWidth;
++    unsigned int        m_uiHeight;
++    unsigned int        m_uiEncodedWidth;
++    unsigned int        m_uiEncodedHeight;
+     FrameType           m_typeFrame;
+     bool                m_bHasAlpha;
+     double              m_dTime;
+     bool                m_FrameDirty;
+
+     // frame data buffers
+-    int                 m_iPlaneCount;
+-    void*               m_pvPlaneData[4];
+-    unsigned long       m_pulPlaneSize[4];
+-    int                 m_piPlaneStrides[4];
++    void*               m_pvPlaneData[MAX_PLANE_COUNT];
++    unsigned long       m_pulPlaneSize[MAX_PLANE_COUNT];
++    unsigned int        m_puiPlaneStrides[MAX_PLANE_COUNT];
++
++    void Reset();
++    void SwapPlanes(unsigned int aa, unsigned int bb);
++
++    // CalcSize(), AddSize(), CalcPlanePointer() requires bValid to be set to
++    // true initially, if bValid is false these functions do nothing. It is
++    // implemented this way, so all these functions can be chain called without
++    // checking bValid after each call. bValid will be set to false only if
++    // calculation failed and will never be set to true.
++    // Multiplies a and b, bValid set to false if integer overflow detected.
++    unsigned long CalcSize(unsigned int a, unsigned int b, bool *pbValid);
++    // Adds a and b, bValid set to false if integer overflow detected.
++    unsigned long AddSize(unsigned long a, unsigned long b, bool *pbValid);
++    // Calculates plane pointer (baseAddress + offset) and checks that calculated
++    // pointer within buffer. Returns NULL and sets bValid to false if calculated
++    // pointer is invalid.
++    void* CalcPlanePointer(intptr_t baseAddress, unsigned int offset,
++                           unsigned long planeSize, unsigned long baseSize,
++                           bool *pbValid);
+
+-    void SwapPlanes(int aa, int bb);
++private:
++    unsigned int        m_uiPlaneCount;
+ };
+
+ #endif  //_VIDEO_FRAME_H_
+diff --git a/modules/media/src/main/native/jfxmedia/jni/NativeVideoBuffer.cpp b/modules/media/src/main/native/jfxmedia/jni/NativeVideoBuffer.cpp
+index 4ca7c8e3..c7ba82d7 100644
+--- a/modules/media/src/main/native/jfxmedia/jni/NativeVideoBuffer.cpp
++++ b/modules/media/src/main/native/jfxmedia/jni/NativeVideoBuffer.cpp
+@@ -71,8 +71,8 @@ JNIEXPORT jobject JNICALL Java_com_sun_media_jfxmediaimpl_NativeVideoBuffer_nati
+ {
+     CVideoFrame *frame = (CVideoFrame*)jlong_to_ptr(nativeHandle);
+     if (frame) {
+-        void *dataPtr = frame->GetDataForPlane((int)plane);
+-        jlong capacity = (jlong)frame->GetSizeForPlane((int)plane);
++        void *dataPtr = frame->GetDataForPlane((unsigned int)plane);
++        jlong capacity = (jlong)frame->GetSizeForPlane((unsigned int)plane);
+         return env->NewDirectByteBuffer(dataPtr, capacity);
+     }
+     return NULL;
+@@ -203,7 +203,7 @@ JNIEXPORT jintArray JNICALL Java_com_sun_media_jfxmediaimpl_NativeVideoBuffer_na
+         jintArray strides = env->NewIntArray(count);
+         jint *strideArray = new jint[count];
+
+-        for (int ii=0; ii < count; ii++) {
++        for (unsigned int ii=0; ii < count; ii++) {
+             strideArray[ii] = frame->GetStrideForPlane(ii);
+         }
+
+diff --git a/modules/media/src/main/native/jfxmedia/platform/gstreamer/GstVideoFrame.cpp b/modules/media/src/main/native/jfxmedia/platform/gstreamer/GstVideoFrame.cpp
+index 3f73cf0f..0c03a6a6 100644
+--- a/modules/media/src/main/native/jfxmedia/platform/gstreamer/GstVideoFrame.cpp
++++ b/modules/media/src/main/native/jfxmedia/platform/gstreamer/GstVideoFrame.cpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -56,7 +56,12 @@ static GstBuffer *alloc_aligned_buffer(guint size)
+
+     // allocate a buffer large enough to accommodate 16 byte alignment
+     alignedSize = size;
+-    size += 16;
++    if (size <= (G_MAXUINT - 16)) {
++        size += 16;
++    } else {
++        return NULL;
++    }
++
+     newData = (guint8*)g_try_malloc(size);
+     if (NULL == newData) {
+         return NULL;
+@@ -64,10 +69,10 @@ static GstBuffer *alloc_aligned_buffer(guint size)
+
+     alignedData = (guint8*)(((intptr_t)newData + 15) & ~15);
+
+-    return gst_buffer_new_wrapped_full((GstMemoryFlags)0, alignedData, alignedSize, 0, 0, newData, free_aligned_buffer);
++    return gst_buffer_new_wrapped_full((GstMemoryFlags)0, alignedData, alignedSize, 0, alignedSize, newData, free_aligned_buffer);
+ }
+
+-GstCaps *create_RGB_caps(CVideoFrame::FrameType type, gint width, gint height, gint encodedWidth, gint encodedHeight, gint stride)
++GstCaps *create_RGB_caps(CVideoFrame::FrameType type, guint width, guint height, guint encodedWidth, guint encodedHeight, guint stride)
+ {
+     gint red_mask, green_mask, blue_mask, alpha_mask;
+     GstCaps *newCaps;
+@@ -160,7 +165,8 @@ void CGstVideoFrame::SetFrameCaps(GstCaps *newCaps)
+     const GstStructure* str = gst_caps_get_structure(newCaps, 0);
+     const gchar* sFormatFourCC = gst_structure_get_string(str, "format");
+
+-    // default to success
++    // We should always start with success. See CalcSize(), AddSize() and
++    // CalcPlanePointer() on how this flag is being used.
+     m_bIsValid = true;
+
+     // FIXME: make format type strings conformant with constant types
+@@ -209,83 +215,79 @@ void CGstVideoFrame::SetFrameCaps(GstCaps *newCaps)
+         m_bIsValid = false;
+     }
+
+-    if(!gst_structure_get_int(str, "width", &m_iWidth))
++    if (!gst_structure_get_int(str, "width", (int*)&m_uiWidth))
+     {
+ #if JFXMEDIA_DEBUG
+         g_warning("width could not be retrieved from GstBuffer\n");
+ #endif
+-        m_iWidth = 0;
++        m_uiWidth = 0;
+         m_bIsValid = false;
+     }
+-    if(!gst_structure_get_int(str, "height", &m_iHeight))
++    if (!gst_structure_get_int(str, "height", (int*)&m_uiHeight))
+     {
+ #if JFXMEDIA_DEBUG
+         g_warning("height could not be retrieved from GstBuffer\n");
+ #endif
+-        m_iHeight = 0;
++        m_uiHeight = 0;
+         m_bIsValid = false;
+     }
+
+-    if (!gst_structure_get_int(str, "encoded-width", &m_iEncodedWidth)) {
+-        m_iEncodedWidth = m_iWidth;
++    if (!gst_structure_get_int(str, "encoded-width", (int*)&m_uiEncodedWidth)) {
++        m_uiEncodedWidth = m_uiWidth;
+     }
+-    if (!gst_structure_get_int(str, "encoded-height", &m_iEncodedHeight)) {
+-        m_iEncodedHeight = m_iHeight;
++    if (!gst_structure_get_int(str, "encoded-height", (int*)&m_uiEncodedHeight)) {
++        m_uiEncodedHeight = m_uiHeight;
+     }
+
+-    m_pvPlaneData[0] = m_pvPlaneData[1] = m_pvPlaneData[2] = m_pvPlaneData[3] = NULL;
+-    m_pulPlaneSize[0] = m_pulPlaneSize[1] = m_pulPlaneSize[2] = m_pulPlaneSize[3] = 0;
+-    m_piPlaneStrides[0] = m_piPlaneStrides[1] = m_piPlaneStrides[2] = m_piPlaneStrides[3] = 0;
++    Reset();
+
+-    unsigned long expectedSize = 0;
+     switch (m_typeFrame) {
+         case YCbCr_420p: {
+-            int offset;
+-            m_iPlaneCount = 3;
++            unsigned int offset = 0;
++            SetPlaneCount(3);
+
+-            if (!gst_structure_get_int(str, "stride-y", &m_piPlaneStrides[0])) {
+-                m_piPlaneStrides[0] = m_iEncodedWidth;
++            if (!gst_structure_get_int(str, "stride-y", (int*)&m_puiPlaneStrides[0])) {
++                m_puiPlaneStrides[0] = m_uiEncodedWidth;
+             }
+-            if (!gst_structure_get_int(str, "stride-v", &m_piPlaneStrides[1])) {
+-                m_piPlaneStrides[1] = m_iEncodedWidth/2;
++            if (!gst_structure_get_int(str, "stride-v", (int*)&m_puiPlaneStrides[1])) {
++                m_puiPlaneStrides[1] = m_uiEncodedWidth/2;
+             }
+-            if (!gst_structure_get_int(str, "stride-u", &m_piPlaneStrides[2])) {
+-                m_piPlaneStrides[2] = m_piPlaneStrides[1];
++            if (!gst_structure_get_int(str, "stride-u", (int*)&m_puiPlaneStrides[2])) {
++                m_puiPlaneStrides[2] = m_puiPlaneStrides[1];
+             }
+
+-            offset = 0;
+-            gst_structure_get_int(str, "offset-y", &offset);
+-            m_pulPlaneSize[0] = m_piPlaneStrides[0] * m_iEncodedHeight;
+-            m_pvPlaneData[0] = (void*)((intptr_t)m_pvBufferBaseAddress + offset);
+-            expectedSize += m_pulPlaneSize[0];
++            gst_structure_get_int(str, "offset-y", (int*)&offset);
++            m_pulPlaneSize[0] = CalcSize(m_puiPlaneStrides[0], m_uiEncodedHeight, &m_bIsValid);
++            m_pvPlaneData[0] = CalcPlanePointer((intptr_t)m_pvBufferBaseAddress, offset,
++                                                m_pulPlaneSize[0], m_ulBufferSize, &m_bIsValid);
+
+             //
+             // Chroma offsets assume YV12 ordering
+             //
+             offset += m_pulPlaneSize[0];
+-            gst_structure_get_int(str, "offset-v", &offset);
+-            m_pulPlaneSize[1] = m_piPlaneStrides[1] * (m_iEncodedHeight/2);
+-            m_pvPlaneData[1] = (void*)((intptr_t)m_pvBufferBaseAddress + offset);
+-            expectedSize += m_pulPlaneSize[1];
++            gst_structure_get_int(str, "offset-v", (int*)&offset);
++            m_pulPlaneSize[1] = CalcSize(m_puiPlaneStrides[1], (m_uiEncodedHeight/2), &m_bIsValid);
++            m_pvPlaneData[1] = CalcPlanePointer((intptr_t)m_pvBufferBaseAddress, offset,
++                                                m_pulPlaneSize[1], m_ulBufferSize, &m_bIsValid);
+
+             offset += m_pulPlaneSize[1];
+-            gst_structure_get_int(str, "offset-u", &offset);
+-            m_pulPlaneSize[2] = m_piPlaneStrides[2] * (m_iEncodedHeight/2);
+-            m_pvPlaneData[2] = (void*)((intptr_t)m_pvBufferBaseAddress + offset);
+-            expectedSize += m_pulPlaneSize[2];
++            gst_structure_get_int(str, "offset-u", (int*)&offset);
++            m_pulPlaneSize[2] = CalcSize(m_puiPlaneStrides[2], (m_uiEncodedHeight/2), &m_bIsValid);
++            m_pvPlaneData[2] = CalcPlanePointer((intptr_t)m_pvBufferBaseAddress, offset,
++                                                m_pulPlaneSize[2], m_ulBufferSize, &m_bIsValid);
+
+             // process alpha channel (before we potentially swap Cb/Cr)
+             if (m_bHasAlpha) {
+-                m_iPlaneCount++;
+-                if (!gst_structure_get_int(str, "stride-a", &m_piPlaneStrides[3])) {
+-                    m_piPlaneStrides[3] = m_piPlaneStrides[0];
++                SetPlaneCount(GetPlaneCount() + 1);
++                if (!gst_structure_get_int(str, "stride-a", (int*)&m_puiPlaneStrides[3])) {
++                    m_puiPlaneStrides[3] = m_puiPlaneStrides[0];
+                 }
+
+                 offset += m_pulPlaneSize[2];
+-                gst_structure_get_int(str, "offset-a", &offset);
+-                m_pulPlaneSize[3] = m_piPlaneStrides[3] * m_iEncodedHeight;
+-                m_pvPlaneData[3] = (void*)((intptr_t)m_pvBufferBaseAddress + offset);
+-                expectedSize += m_pulPlaneSize[3];
++                gst_structure_get_int(str, "offset-a", (int*)&offset);
++                m_pulPlaneSize[3] = CalcSize(m_puiPlaneStrides[3], m_uiEncodedHeight, &m_bIsValid);
++                m_pvPlaneData[3] = CalcPlanePointer((intptr_t)m_pvBufferBaseAddress, offset,
++                                                m_pulPlaneSize[3], m_ulBufferSize, &m_bIsValid);
+             }
+
+             //
+@@ -299,22 +301,20 @@ void CGstVideoFrame::SetFrameCaps(GstCaps *newCaps)
+         }
+
+         default:
+-            m_iPlaneCount = 1;
+-            if (!gst_structure_get_int(str, "line_stride", &m_piPlaneStrides[0])) {
++            SetPlaneCount(1);
++            if (!gst_structure_get_int(str, "line_stride", (int*)&m_puiPlaneStrides[0])) {
+                 if (m_typeFrame == YCbCr_422) {
+-                    m_piPlaneStrides[0] = m_iEncodedWidth * 2; // 16 bpp
++                    m_puiPlaneStrides[0] = m_uiEncodedWidth * 2; // 16 bpp
+                 } else {
+-                    m_piPlaneStrides[0] = m_iEncodedWidth * 4; // 32 bpp
++                    m_puiPlaneStrides[0] = m_uiEncodedWidth * 4; // 32 bpp
+                 }
+             }
+-            m_pulPlaneSize[0] = m_piPlaneStrides[0] * m_iEncodedHeight;
+-            m_pvPlaneData[0] = m_pvBufferBaseAddress;
+-            expectedSize += m_pulPlaneSize[0];
++            m_pulPlaneSize[0] = CalcSize(m_puiPlaneStrides[0], m_uiEncodedHeight, &m_bIsValid);
++            m_pvPlaneData[0] = CalcPlanePointer((intptr_t)m_pvBufferBaseAddress, 0,
++                                                m_pulPlaneSize[0], m_ulBufferSize, &m_bIsValid);
+             break;
+     }
+-
+-    m_bIsValid = m_bIsValid && (expectedSize <= m_ulBufferSize);
+-    }
++}
+
+ bool CGstVideoFrame::IsValid()
+ {
+@@ -381,9 +381,10 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr420p(FrameType destType)
+     GstBuffer *destBuffer = NULL;
+     GstCaps *destCaps = NULL;
+     GstMapInfo info;
+-    gint stride = m_iEncodedWidth * 4;
+-    int u_index, v_index;
+-    int status;
++    guint stride = 0;
++    guint alloc_size = 0;
++    unsigned int u_index, v_index = 0;
++    int status = 0;
+
+     if (m_bIsI420) {
+         u_index = 1;
+@@ -393,8 +394,26 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr420p(FrameType destType)
+         v_index = 1;
+     }
+
+-    stride = ((stride + 15) & ~15); // round up to multiple of 16 bytes
+-    destBuffer = alloc_aligned_buffer(stride * m_iEncodedHeight);
++    // Make sure we do not have an integer overflow
++    if (m_uiEncodedWidth <= (G_MAXUINT / 4)) {
++        stride = m_uiEncodedWidth * 4;
++    } else {
++        return NULL;
++    }
++
++    if (stride <= (G_MAXUINT - 16)) {
++        stride = ((stride + 15) & ~15); // round up to multiple of 16 bytes
++    } else {
++        return NULL;
++    }
++
++    if (m_uiEncodedHeight > 0 && stride <= (G_MAXUINT / m_uiEncodedHeight)) {
++        alloc_size = stride * m_uiEncodedHeight;
++    } else {
++        return NULL;
++    }
++
++    destBuffer = alloc_aligned_buffer(alloc_size);
+     if (!destBuffer) {
+         return NULL;
+     }
+@@ -415,49 +434,49 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr420p(FrameType destType)
+         if (m_bHasAlpha) {
+             status = ColorConvert_YCbCr420p_to_ARGB32(
+                         info.data, stride,
+-                        m_iEncodedWidth, m_iEncodedHeight,
++                        m_uiEncodedWidth, m_uiEncodedHeight,
+                         (const uint8_t*)m_pvPlaneData[0],
+                         (const uint8_t*)m_pvPlaneData[v_index],
+                         (const uint8_t*)m_pvPlaneData[u_index],
+                         (const uint8_t*)m_pvPlaneData[3],
+-                        m_piPlaneStrides[0], m_piPlaneStrides[v_index],
+-                        m_piPlaneStrides[u_index], m_piPlaneStrides[3]);
++                        m_puiPlaneStrides[0], m_puiPlaneStrides[v_index],
++                        m_puiPlaneStrides[u_index], m_puiPlaneStrides[3]);
+         } else {
+             status = ColorConvert_YCbCr420p_to_ARGB32_no_alpha(
+                         info.data, stride,
+-                        m_iEncodedWidth, m_iEncodedHeight,
++                        m_uiEncodedWidth, m_uiEncodedHeight,
+                         (const uint8_t*)m_pvPlaneData[0],
+                         (const uint8_t*)m_pvPlaneData[v_index],
+                         (const uint8_t*)m_pvPlaneData[u_index],
+-                        m_piPlaneStrides[0], m_piPlaneStrides[v_index],
+-                        m_piPlaneStrides[u_index]);
++                        m_puiPlaneStrides[0], m_puiPlaneStrides[v_index],
++                        m_puiPlaneStrides[u_index]);
+         }
+     } else {
+         if (m_bHasAlpha) {
+             status = ColorConvert_YCbCr420p_to_BGRA32(
+                         info.data, stride,
+-                        m_iEncodedWidth, m_iEncodedHeight,
++                        m_uiEncodedWidth, m_uiEncodedHeight,
+                         (const uint8_t*)m_pvPlaneData[0],
+                         (const uint8_t*)m_pvPlaneData[v_index],
+                         (const uint8_t*)m_pvPlaneData[u_index],
+                         (const uint8_t*)m_pvPlaneData[3],
+-                        m_piPlaneStrides[0], m_piPlaneStrides[v_index],
+-                        m_piPlaneStrides[u_index], m_piPlaneStrides[3]);
++                        m_puiPlaneStrides[0], m_puiPlaneStrides[v_index],
++                        m_puiPlaneStrides[u_index], m_puiPlaneStrides[3]);
+         } else {
+             status = ColorConvert_YCbCr420p_to_BGRA32_no_alpha(
+                         info.data, stride,
+-                        m_iEncodedWidth, m_iEncodedHeight,
++                        m_uiEncodedWidth, m_uiEncodedHeight,
+                         (const uint8_t*)m_pvPlaneData[0],
+                         (const uint8_t*)m_pvPlaneData[v_index],
+                         (const uint8_t*)m_pvPlaneData[u_index],
+-                        m_piPlaneStrides[0], m_piPlaneStrides[v_index],
+-                        m_piPlaneStrides[u_index]);
++                        m_puiPlaneStrides[0], m_puiPlaneStrides[v_index],
++                        m_puiPlaneStrides[u_index]);
+         }
+     }
+
+     gst_buffer_unmap(destBuffer, &info);
+
+-    destCaps = create_RGB_caps(destType, m_iWidth, m_iHeight, m_iEncodedWidth, m_iEncodedHeight, stride);
++    destCaps = create_RGB_caps(destType, m_uiWidth, m_uiHeight, m_uiEncodedWidth, m_uiEncodedHeight, stride);
+     if (!destCaps) {
+ // INLINE - gst_buffer_unref()
+         gst_buffer_unref(destBuffer);
+@@ -476,12 +495,16 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr420p(FrameType destType)
+
+     if (0 == status && destSample) {
+         CGstVideoFrame *newFrame = new CGstVideoFrame();
+-        bool result = newFrame->Init(destSample);
++        bool result = newFrame->Init(destSample) && newFrame->IsValid();
+         // INLINE - gst_sample_unref()
+         gst_buffer_unref(destBuffer); // else we'll have a massive memory leak!
+         // INLINE - gst_sample_unref()
+         gst_sample_unref(destSample); // else we'll have a massive memory leak!
+-        return result ? newFrame : NULL;
++        if (result) {
++            return newFrame;
++        } else {
++            delete newFrame;
++        }
+     }
+
+     return NULL;
+@@ -493,16 +516,35 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr422(FrameType destType)
+     GstBuffer *destBuffer;
+     GstCaps *destCaps;
+     GstMapInfo info;
+-    gint stride = m_iEncodedWidth * 4;
+-    int status = 1;
++    guint stride = 0;
++    guint alloc_size = 0;
++    int status = 0;
+
+     // Not handling alpha ...
+     if (m_bHasAlpha) {
+         return NULL;
+     }
+
+-    stride = ((stride + 15) & ~15); // round up to multiple of 16 bytes
+-    destBuffer = alloc_aligned_buffer(stride * m_iEncodedHeight);
++    // Make sure we do not have an integer overflow
++    if (m_uiEncodedWidth <= (G_MAXUINT / 4)) {
++        stride = m_uiEncodedWidth * 4;
++    } else {
++        return NULL;
++    }
++
++    if (stride <= (G_MAXUINT - 16)) {
++        stride = ((stride + 15) & ~15); // round up to multiple of 16 bytes
++    } else {
++        return NULL;
++    }
++
++    if (m_uiEncodedHeight > 0 && stride <= (G_MAXUINT / m_uiEncodedHeight)) {
++        alloc_size = stride * m_uiEncodedHeight;
++    } else {
++        return NULL;
++    }
++
++    destBuffer = alloc_aligned_buffer(alloc_size);
+     if (!destBuffer) {
+         return NULL;
+     }
+@@ -521,23 +563,23 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr422(FrameType destType)
+     // now do the conversion
+     if (destType == ARGB) {
+         status = ColorConvert_YCbCr422p_to_ARGB32_no_alpha(info.data, stride,
+-                                                           m_iEncodedWidth, m_iEncodedHeight,
++                                                           m_uiEncodedWidth, m_uiEncodedHeight,
+                                                            (uint8_t*)m_pvPlaneData[0] + 1,
+                                                            (uint8_t*)m_pvPlaneData[0] + 2,
+                                                            (uint8_t*)m_pvPlaneData[0],
+-                                                           m_piPlaneStrides[0], m_piPlaneStrides[0]);
++                                                           m_puiPlaneStrides[0], m_puiPlaneStrides[0]);
+     } else {
+         status = ColorConvert_YCbCr422p_to_BGRA32_no_alpha(info.data, stride,
+-                                                           m_iEncodedWidth, m_iEncodedHeight,
++                                                           m_uiEncodedWidth, m_uiEncodedHeight,
+                                                            (uint8_t*)m_pvPlaneData[0] + 1,
+                                                            (uint8_t*)m_pvPlaneData[0] + 2,
+                                                            (uint8_t*)m_pvPlaneData[0],
+-                                                           m_piPlaneStrides[0], m_piPlaneStrides[0]);
++                                                           m_puiPlaneStrides[0], m_puiPlaneStrides[0]);
+     }
+
+     gst_buffer_unmap(destBuffer, &info);
+
+-    destCaps = create_RGB_caps(destType, m_iWidth, m_iHeight, m_iEncodedWidth, m_iEncodedHeight, stride);
++    destCaps = create_RGB_caps(destType, m_uiWidth, m_uiHeight, m_uiEncodedWidth, m_uiEncodedHeight, stride);
+     if (!destCaps) {
+         // INLINE - gst_buffer_unref()
+         gst_buffer_unref(destBuffer);
+@@ -556,12 +598,16 @@ CGstVideoFrame *CGstVideoFrame::ConvertFromYCbCr422(FrameType destType)
+
+     if (0 == status && destBuffer) {
+         CGstVideoFrame *newFrame = new CGstVideoFrame();
+-        bool result = newFrame->Init(destSample);
++        bool result = newFrame->Init(destSample) && newFrame->IsValid();
+         // INLINE - gst_buffer_unref()
+         gst_buffer_unref(destBuffer); // else we'll have a massive memory leak!
+         // INLINE - gst_sample_unref()
+         gst_sample_unref(destSample); // else we'll have a massive memory leak!
+-        return result ? newFrame : NULL;
++        if (result) {
++            return newFrame;
++        } else {
++            delete newFrame;
++        }
+     }
+
+     return NULL;
+@@ -574,7 +620,7 @@ CGstVideoFrame *CGstVideoFrame::ConvertSwapRGB(FrameType destType)
+     GstCaps *srcCaps, *dstCaps;
+     GstMapInfo srcInfo, destInfo;
+     GstStructure* str;
+-    gint xx, yy, size;
++    guint xx, yy, size;
+     guint32 *srcData, *dstData;
+
+     size = gst_buffer_get_size(m_pBuffer);
+@@ -610,7 +656,7 @@ CGstVideoFrame *CGstVideoFrame::ConvertSwapRGB(FrameType destType)
+             break;
+         default:
+             // shouldn't have gotten this far...
+-// INLINE - gst_buffer_unref()
++            // INLINE - gst_buffer_unref()
+             gst_buffer_unref(destBuffer);
+             gst_caps_unref(dstCaps);
+             return NULL;
+@@ -646,18 +692,18 @@ CGstVideoFrame *CGstVideoFrame::ConvertSwapRGB(FrameType destType)
+     // Now copy data from src to dest, byteswapping as we copy
+     srcData = (guint32*)srcInfo.data;
+     dstData = (guint32*)destInfo.data;
+-    if (!(m_piPlaneStrides[0] & 3)) {
++    if (!(m_puiPlaneStrides[0] & 3)) {
+         // four byte alignment on the entire buffer, we can just loop once
+         for (xx = 0; xx < size; xx += 4) {
+             *dstData++ = swap_uint32(*srcData++); // NOTE: SSE could be used here instead
+         }
+     } else {
+-        for (yy = 0; yy < m_iHeight; yy++) {
+-            for (xx = 0; xx < m_iWidth; xx++) {
++        for (yy = 0; yy < m_uiHeight; yy++) {
++            for (xx = 0; xx < m_uiWidth; xx++) {
+                 dstData[xx] = swap_uint32(srcData[xx]); // NOTE: SSE could be used here instead
+             }
+-            dstData += m_piPlaneStrides[0];
+-            srcData += m_piPlaneStrides[0];
++            dstData += m_puiPlaneStrides[0];
++            srcData += m_puiPlaneStrides[0];
+         }
+     }
+
+@@ -666,12 +712,16 @@ CGstVideoFrame *CGstVideoFrame::ConvertSwapRGB(FrameType destType)
+
+     if (destBuffer) {
+         CGstVideoFrame *newFrame = new CGstVideoFrame();
+-        bool result = newFrame->Init(destSample);
+-// INLINE - gst_buffer_unref()
++        bool result = newFrame->Init(destSample) && newFrame->IsValid();
++        // INLINE - gst_buffer_unref()
+         gst_buffer_unref(destBuffer); // else we'll have a massive memory leak!
+         // INLINE - gst_sample_unref()
+         gst_sample_unref(destSample); // else we'll have a massive memory leak!
+-        return result ? newFrame : NULL;
++        if (result) {
++            return newFrame;
++        } else {
++            delete newFrame;
++        }
+     }
+     return NULL;
+ }
+diff --git a/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.h b/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.h
+index 9f2ac70d..ffc7da13 100644
+--- a/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.h
++++ b/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -40,8 +40,9 @@ public:
+     virtual CVideoFrame *ConvertToFormat(FrameType type);
+
+ private:
+-    CVPixelBufferRef pixelBuffer;
+-    uint64_t frameHostTime;
++    bool m_bDisposePixelBuffer;
++    CVPixelBufferRef m_pixelBuffer;
++    uint64_t m_frameHostTime;
+
+     void PrepareChunky();
+     void PreparePlanar();
+diff --git a/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.mm b/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.mm
+index 9ef00d9e..a99f085c 100644
+--- a/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.mm
++++ b/modules/media/src/main/native/jfxmedia/platform/osx/CVVideoFrame.mm
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2010, 2023, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -39,32 +39,43 @@ bool CVVideoFrame::IsFormatSupported(OSType format) {
+     return false;
+ }
+
+-CVVideoFrame::CVVideoFrame(CVPixelBufferRef buf, double frameTime, uint64_t frameHostTime)
++CVVideoFrame::CVVideoFrame(CVPixelBufferRef pixelBuffer, double frameTime, uint64_t frameHostTime)
+ :
+-  pixelBuffer(buf),
+-  frameHostTime(frameHostTime)
++  m_bDisposePixelBuffer(false),
++  m_pixelBuffer(pixelBuffer)
+ {
+     // We can assume that buf is retained at least for the duration of this ctor
+     // So postpone retaining it until we're absolutely sure we'll use it
+
+     // fail fast
+-    OSType type = CVPixelBufferGetPixelFormatType(buf);
++    OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
+     if (!IsFormatSupported(type)) {
+         throw "CVVideoFrame: Invalid PixelFormat";
+     }
+
+     m_dTime = frameTime;
+-    m_iWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+-    m_iHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
++    m_frameHostTime = frameHostTime;
++    m_uiWidth = (unsigned int)CVPixelBufferGetWidth(pixelBuffer);
++    m_uiHeight = (unsigned int)CVPixelBufferGetHeight(pixelBuffer);
+
+     size_t extLeft, extRight, extTop, extBottom;
+     CVPixelBufferGetExtendedPixels(pixelBuffer, &extLeft, &extRight, &extTop, &extBottom);
+-    m_iEncodedWidth = m_iWidth + (int)extLeft + (int)extRight;
+-    m_iEncodedHeight = m_iHeight + (int)extBottom; // ignore top, since 0,0 is where base addr starts
+
+-    m_pvPlaneData[0] = m_pvPlaneData[1] = m_pvPlaneData[2] = m_pvPlaneData[3] = NULL;
+-    m_piPlaneStrides[0] = m_piPlaneStrides[1] = m_piPlaneStrides[2] = m_piPlaneStrides[3] = 0;
+-    m_pulPlaneSize[0] = m_pulPlaneSize[1] = m_pulPlaneSize[2] = m_pulPlaneSize[3] = 0;
++    if (m_uiWidth <= (UINT_MAX - (unsigned int)extLeft) &&
++          (m_uiWidth + (unsigned int)extLeft) <= (UINT_MAX - (unsigned int)extRight)) {
++        m_uiEncodedWidth = m_uiWidth + (unsigned int)extLeft + (unsigned int)extRight;
++    } else {
++        throw "CVVideoFrame: Invalid frame size";
++    }
++
++    if (m_uiHeight <= (UINT_MAX - (unsigned int)extBottom)) {
++        // ignore top, since 0,0 is where base addr starts
++        m_uiEncodedHeight = m_uiHeight + (unsigned int)extBottom;
++    } else {
++        throw "CVVideoFrame: Invalid frame size";
++    }
++
++    Reset();
+     m_FrameDirty = false;
+
+     if (type != gLastFormat) {
+@@ -95,7 +106,8 @@ CVVideoFrame::CVVideoFrame(CVPixelBufferRef buf, double frameTime, uint64_t fram
+     }
+
+     // Now retain the pixelBuffer so it doesn't go away
+-    CVPixelBufferRetain(pixelBuffer);
++    m_bDisposePixelBuffer = true;
++    CVPixelBufferRetain(m_pixelBuffer);
+ }
+
+ CVVideoFrame::~CVVideoFrame()
+@@ -105,39 +117,49 @@ CVVideoFrame::~CVVideoFrame()
+
+ void CVVideoFrame::PrepareChunky()
+ {
+-    m_iPlaneCount = 1;
+-    m_iWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+-    m_iHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
++    SetPlaneCount(1);
++    m_uiWidth = (unsigned int)CVPixelBufferGetWidth(m_pixelBuffer);
++    m_uiHeight = (unsigned int)CVPixelBufferGetHeight(m_pixelBuffer);
+     m_bHasAlpha = (m_typeFrame == BGRA_PRE);
+
+     // We MUST lock the base address during the lifetime of this object
+     // or else we could cause a crash
+-    CVReturn cr = CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
++    CVReturn cr = CVPixelBufferLockBaseAddress(m_pixelBuffer, kCVPixelBufferLock_ReadOnly);
+     if (kCVReturnSuccess != cr) {
+         throw "CVVideoFrame: Unable to lock PixelBuffer base address";
+     }
+
+-    m_pvPlaneData[0] = CVPixelBufferGetBaseAddress(pixelBuffer);
+-    m_piPlaneStrides[0] = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+-    m_pulPlaneSize[0] = m_piPlaneStrides[0] * m_iEncodedHeight;
++    m_pvPlaneData[0] = CVPixelBufferGetBaseAddress(m_pixelBuffer);
++    m_puiPlaneStrides[0] = (int)CVPixelBufferGetBytesPerRow(m_pixelBuffer);
++
++    bool bValid = true; // CalcSize() requires bValid to be true when called
++    m_pulPlaneSize[0] = CalcSize(m_puiPlaneStrides[0], m_uiEncodedHeight, &bValid);
++    if (!bValid) {
++        throw "CVVideoFrame: Invalid frame size";
++    }
+ }
+
+ void CVVideoFrame::PreparePlanar()
+ {
+-    m_iPlaneCount = (int)CVPixelBufferGetPlaneCount(pixelBuffer);
++    SetPlaneCount((unsigned int)CVPixelBufferGetPlaneCount(m_pixelBuffer));
+     m_bHasAlpha = false;
+
+     // We MUST lock the base address during the lifetime of this object
+     // or else we could cause a crash
+-    CVReturn cr = CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
++    CVReturn cr = CVPixelBufferLockBaseAddress(m_pixelBuffer, kCVPixelBufferLock_ReadOnly);
+     if (kCVReturnSuccess != cr) {
+         throw "CVVideoFrame: Unable to lock PixelBuffer base address";
+     }
+
+-    for (int index = 0; index < m_iPlaneCount; index++) {
+-        m_piPlaneStrides[index] = (int)CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, index);
+-        m_pulPlaneSize[index] = CVPixelBufferGetHeightOfPlane(pixelBuffer, index) * m_piPlaneStrides[index];
+-        m_pvPlaneData[index] = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, index);
++    bool bValid = true; // CalcSize() requires bValid to be true when called
++    for (int index = 0; index < GetPlaneCount(); index++) {
++        m_puiPlaneStrides[index] = (unsigned int)CVPixelBufferGetBytesPerRowOfPlane(m_pixelBuffer, index);
++        unsigned long ulHeightOfPlane = (unsigned long)CVPixelBufferGetHeightOfPlane(m_pixelBuffer, index);
++        m_pulPlaneSize[index] = CalcSize(ulHeightOfPlane, m_puiPlaneStrides[index], &bValid);
++        if (!bValid) {
++            throw "CVVideoFrame: Invalid frame size";
++        }
++        m_pvPlaneData[index] = CVPixelBufferGetBaseAddressOfPlane(m_pixelBuffer, index);
+     }
+
+     if (m_typeFrame == YCbCr_420p) {
+@@ -148,34 +170,35 @@ void CVVideoFrame::PreparePlanar()
+
+ void CVVideoFrame::Dispose()
+ {
+-    if (pixelBuffer) {
+-        CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+-        CVPixelBufferRelease(pixelBuffer);
+-        pixelBuffer = 0;
++    if (m_bDisposePixelBuffer) {
++        CVPixelBufferUnlockBaseAddress(m_pixelBuffer, kCVPixelBufferLock_ReadOnly);
++        CVPixelBufferRelease(m_pixelBuffer);
++        m_pixelBuffer = NULL;
++        m_bDisposePixelBuffer = false;
+     }
+ }
+
+ CVideoFrame *CVVideoFrame::ConvertToFormat(FrameType type)
+ {
+-    if(YCbCr_422 == m_typeFrame && BGRA_PRE == type) {
++    if (YCbCr_422 == m_typeFrame && BGRA_PRE == type) {
+         CVPixelBufferRef destPixelBuffer = NULL;
+-        if(kCVReturnSuccess == CVPixelBufferCreate(NULL, m_iEncodedWidth, m_iEncodedHeight,
++        if (kCVReturnSuccess == CVPixelBufferCreate(NULL, m_uiEncodedWidth, m_uiEncodedHeight,
+                                                    k32BGRAPixelFormat, NULL, &destPixelBuffer)) {
+-            if(kCVReturnSuccess == CVPixelBufferLockBaseAddress(destPixelBuffer, 0)) {
++            if (kCVReturnSuccess == CVPixelBufferLockBaseAddress(destPixelBuffer, 0)) {
+                 uint8_t* bgra = (uint8_t*)CVPixelBufferGetBaseAddress(destPixelBuffer);
+                 int32_t bgraStride = (int32_t)CVPixelBufferGetBytesPerRow(destPixelBuffer);
+                 uint8_t* srcData = (uint8_t*)m_pvPlaneData[0];
+
+-                if(0 == ColorConvert_YCbCr422p_to_BGRA32_no_alpha(bgra,
++                if (0 == ColorConvert_YCbCr422p_to_BGRA32_no_alpha(bgra,
+                                                                   bgraStride,
+-                                                                  m_iEncodedWidth,
+-                                                                  m_iEncodedHeight,
++                                                                  m_uiEncodedWidth,
++                                                                  m_uiEncodedHeight,
+                                                                   srcData + 1,
+                                                                   srcData + 2,
+                                                                   srcData,
+-                                                                  m_piPlaneStrides[0],
+-                                                                  m_piPlaneStrides[0])) {
+-                    return new CVVideoFrame(destPixelBuffer, m_dTime, frameHostTime);
++                                                                  m_puiPlaneStrides[0],
++                                                                  m_puiPlaneStrides[0])) {
++                    return new CVVideoFrame(destPixelBuffer, m_dTime, m_frameHostTime);
+                 }
+             }
+         }
+diff --git a/modules/media/src/main/native/jfxmedia/platform/osx/avf/AVFMediaPlayer.mm b/modules/media/src/main/native/jfxmedia/platform/osx/avf/AVFMediaPlayer.mm
+index 4c266d58..28ec6670 100644
+--- a/modules/media/src/main/native/jfxmedia/platform/osx/avf/AVFMediaPlayer.mm
++++ b/modules/media/src/main/native/jfxmedia/platform/osx/avf/AVFMediaPlayer.mm
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
++ * Copyright (c) 2014, 2013, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+  * This code is free software; you can redistribute it and/or modify it
+@@ -640,6 +640,10 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink,
+         return;
+     }
+
++    if (frame == NULL) {
++        return;
++    }
++
+     if (previousWidth < 0 || previousHeight < 0
+         || previousWidth != frame->GetWidth() || previousHeight != frame->GetHeight())
+     {
+--
+2.40.1

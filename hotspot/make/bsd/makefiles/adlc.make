@@ -156,6 +156,11 @@ else
 ADLCFLAGS += -U_LP64
 endif
 
+# Make sure ADLC knows we are compiling for MacOS.
+ifeq ($(OS_VENDOR), Darwin)
+ADLCFLAGS += -D__APPLE__
+endif
+
 #
 # adlc_updater is a simple sh script, under sccs control. It is
 # used to selectively update generated adlc files. This should

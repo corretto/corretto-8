@@ -1,0 +1,899 @@
+From c7a1af739489bcdc7b22b109c8c4796103f5c09c Mon Sep 17 00:00:00 2001
+From: Kevin Rushforth <kcr@openjdk.org>
+Date: Fri, 1 Sep 2023 13:26:26 +0000
+Subject: [PATCH] 8313056: General enhancements of Glass
+
+Reviewed-by: lkostyra, arapte, rhalade
+
+---
+ modules/base/.project                         |  11 ++
+ modules/builders/.project                     |  11 ++
+ modules/controls/.project                     |  11 ++
+ modules/fxml/.project                         |  11 ++
+ modules/fxpackager/.project                   |  11 ++
+ modules/graphics/.project                     |  11 ++
+ .../main/java/com/sun/glass/ui/Pixels.java    |  29 +++--
+ .../java/com/sun/glass/ui/gtk/GtkPixels.java  |  15 +--
+ .../java/com/sun/glass/ui/mac/MacPixels.java  |  25 ++--
+ .../java/com/sun/glass/ui/mac/MacView.java    |   7 +-
+ .../src/main/native-glass/gtk/GlassPixels.cpp |  67 ++++++----
+ .../src/main/native-glass/gtk/GlassView.cpp   |  35 +++++-
+ .../src/main/native-glass/mac/GlassPixels.m   | 117 +++++++++++-------
+ .../src/main/native-glass/mac/GlassView.m     |  69 +++++------
+ .../src/main/native-glass/win/Pixels.cpp      |  23 +++-
+ modules/jmx/.project                          |  11 ++
+ modules/media/.project                        |  11 ++
+ modules/swing/.project                        |  11 ++
+ modules/swt/.project                          |  11 ++
+ modules/web/.project                          |  11 ++
+ 20 files changed, 354 insertions(+), 154 deletions(-)
+
+diff --git a/modules/base/.project b/modules/base/.project
+index 8dcdf63a..d10ca0c6 100644
+--- a/modules/base/.project
++++ b/modules/base/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716211</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/builders/.project b/modules/builders/.project
+index 713c9a20..98ee6802 100644
+--- a/modules/builders/.project
++++ b/modules/builders/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716212</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/controls/.project b/modules/controls/.project
+index 7b6be82a..67ab24fa 100644
+--- a/modules/controls/.project
++++ b/modules/controls/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716213</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/fxml/.project b/modules/fxml/.project
+index 60c67b56..4e75f72c 100644
+--- a/modules/fxml/.project
++++ b/modules/fxml/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716334</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/fxpackager/.project b/modules/fxpackager/.project
+index e40a4510..3e386b1f 100644
+--- a/modules/fxpackager/.project
++++ b/modules/fxpackager/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716335</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/graphics/.project b/modules/graphics/.project
+index 44096089..c46b6826 100644
+--- a/modules/graphics/.project
++++ b/modules/graphics/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716336</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/Pixels.java b/modules/graphics/src/main/java/com/sun/glass/ui/Pixels.java
+index 36c6c3e5..f53eb8b5 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/Pixels.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/Pixels.java
+@@ -91,21 +91,21 @@ public abstract class Pixels {
+             throw new IllegalArgumentException("Too small byte buffer size "+this.width+"x"+this.height+" ["+(this.width*this.height*4)+"] > "+this.bytes.capacity());
+         }
+
++        if (this.width <= 0 || this.height <= 0 ||
++                this.width > ((Integer.MAX_VALUE / 4) / this.height)) {
++            throw new IllegalArgumentException("Invalid width*height");
++        }
++
++        if ((this.width * this.height * 4) > this.bytes.capacity()) {
++                throw new IllegalArgumentException("Too small byte buffer size "+this.width+"x"+this.height+" ["+(this.width*this.height*4)+"] > "+this.bytes.capacity());
++        }
++
+         this.ints = null;
+         this.scale = 1.0f;
+     }
+
+     protected Pixels(final int width, final int height, IntBuffer pixels) {
+-        this.width = width;
+-        this.height = height;
+-        this.bytesPerComponent = 4;
+-        this.ints = pixels.slice();
+-        if ((this.width <= 0) || (this.height <= 0) || ((this.width * this.height) > this.ints.capacity())) {
+-            throw new IllegalArgumentException("Too small int buffer size "+this.width+"x"+this.height+" ["+(this.width*this.height)+"] > "+this.ints.capacity());
+-        }
+-
+-        this.bytes = null;
+-        this.scale = 1.0f;
++        this(width, height, pixels, 1.0f);
+     }
+
+     protected Pixels(final int width, final int height, IntBuffer pixels, float scale) {
+@@ -113,7 +113,13 @@ public abstract class Pixels {
+         this.height = height;
+         this.bytesPerComponent = 4;
+         this.ints = pixels.slice();
+-        if ((this.width <= 0) || (this.height <= 0) || ((this.width * this.height) > this.ints.capacity())) {
++
++        if (this.width <= 0 || this.height <= 0 ||
++                this.width > ((Integer.MAX_VALUE / 4) / this.height)) {
++            throw new IllegalArgumentException("Invalid width*height");
++        }
++
++        if ((this.width * this.height) > this.ints.capacity()) {
+             throw new IllegalArgumentException("Too small int buffer size "+this.width+"x"+this.height+" ["+(this.width*this.height)+"] > "+this.ints.capacity());
+         }
+
+@@ -192,6 +198,7 @@ public abstract class Pixels {
+             throw new RuntimeException("Too small buffer.");
+         }
+         _fillDirectByteBuffer(bb);
++        bb.rewind();
+     }
+
+     // This method is called from the native code to reduce the number of JNI up-calls.
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkPixels.java b/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkPixels.java
+index 9aacb514..55458447 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkPixels.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkPixels.java
+@@ -48,31 +48,22 @@ final class GtkPixels extends Pixels {
+         // Taken from MacPixels
+         if (this.bytes != null) {
+             this.bytes.rewind();
+-            if (this.bytes.isDirect()) {
+-                _copyPixels(bb, this.bytes, getWidth()*getHeight());
+-            } else {
+-                bb.put(this.bytes);
+-            }
++            bb.put(this.bytes);
+             this.bytes.rewind();
+         } else {
+             this.ints.rewind();
+-            if (this.ints.isDirect()) {
+-                _copyPixels(bb, this.ints, getWidth()*getHeight());
+-            } else {
+-                for (int i=0; i<this.ints.capacity(); i++) {
++            for (int i=0; i<this.ints.capacity(); i++) {
+                     int data = this.ints.get();
+                     bb.put((byte)((data)&0xff));
+                     bb.put((byte)((data>>8)&0xff));
+                     bb.put((byte)((data>>16)&0xff));
+                     bb.put((byte)((data>>24)&0xff));
+-                }
++
+             }
+             this.ints.rewind();
+         }
+     }
+
+-    protected native void _copyPixels(Buffer dst, Buffer src, int size);
+-
+     @Override
+     protected native void _attachInt(long ptr, int w, int h, IntBuffer ints, int[] array, int offset);
+
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacPixels.java b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacPixels.java
+index d4b150e8..3b9ba7d9 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacPixels.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacPixels.java
+@@ -24,7 +24,6 @@
+  */
+ package com.sun.glass.ui.mac;
+
+-import java.nio.Buffer;
+ import java.nio.ByteBuffer;
+ import java.nio.IntBuffer;
+
+@@ -65,29 +64,21 @@ final class MacPixels extends Pixels {
+     protected void _fillDirectByteBuffer(ByteBuffer bb) {
+         if (this.bytes != null) {
+             this.bytes.rewind();
+-            if (this.bytes.isDirect() == true) {
+-                _copyPixels(bb, this.bytes, getWidth()*getHeight());
+-            } else {
+-                bb.put(this.bytes);
+-            }
++            bb.put(this.bytes);
+             this.bytes.rewind();
+         } else {
+             this.ints.rewind();
+-            if (this.ints.isDirect() == true) {
+-                _copyPixels(bb, this.ints, getWidth()*getHeight());
+-            } else {
+-                for (int i=0; i<this.ints.capacity(); i++) {
+-                    int data = this.ints.get();
+-                    bb.put((byte)((data>>0)&0xff));
+-                    bb.put((byte)((data>>8)&0xff));
+-                    bb.put((byte)((data>>16)&0xff));
+-                    bb.put((byte)((data>>24)&0xff));
+-                }
++            for (int i=0; i<this.ints.capacity(); i++) {
++                int data = this.ints.get();
++                bb.put((byte)((data>>0)&0xff));
++                bb.put((byte)((data>>8)&0xff));
++                bb.put((byte)((data>>16)&0xff));
++                bb.put((byte)((data>>24)&0xff));
+             }
+             this.ints.rewind();
+         }
+     }
+-    native protected void _copyPixels(Buffer src, Buffer dst, int size);
++
+     @Override native protected void _attachInt(long ptr, int w, int h, IntBuffer ints, int[] array, int offset);
+     @Override native protected void _attachByte(long ptr, int w, int h, ByteBuffer bytes, byte[] array, int offset);
+
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacView.java b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacView.java
+index d9141f7b..fc8ebd0c 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacView.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacView.java
+@@ -98,9 +98,9 @@ final class MacView extends View {
+                                 pixels.getWidth(), pixels.getHeight(), pixels.getScale());
+         }
+     }
+-    native void _uploadPixelsDirect(long viewPtr, Buffer pixels, int width, int height, float scale);
+-    native void _uploadPixelsByteArray(long viewPtr, byte[] pixels, int offset, int width, int height, float scale);
+-    native void _uploadPixelsIntArray(long viewPtr, int[] pixels, int offset, int width, int height, float scale);
++    private native void _uploadPixelsDirect(long viewPtr, Buffer pixels, int width, int height, float scale);
++    private native void _uploadPixelsByteArray(long viewPtr, byte[] pixels, int offset, int width, int height, float scale);
++    private native void _uploadPixelsIntArray(long viewPtr, int[] pixels, int offset, int width, int height, float scale);
+
+     @Override protected long _getNativeView(long ptr) {
+         return ptr;
+@@ -168,4 +168,3 @@ final class MacView extends View {
+         }
+     }
+ }
+-
+diff --git a/modules/graphics/src/main/native-glass/gtk/GlassPixels.cpp b/modules/graphics/src/main/native-glass/gtk/GlassPixels.cpp
+index 354f3c60..6d2890c0 100644
+--- a/modules/graphics/src/main/native-glass/gtk/GlassPixels.cpp
++++ b/modules/graphics/src/main/native-glass/gtk/GlassPixels.cpp
+@@ -40,25 +40,6 @@ static void my_free(guchar *pixels, gpointer data) {
+
+ extern "C" {
+
+-/*
+- * Class:     com_sun_glass_ui_gtk_GtkPixels
+- * Method:    _copyPixels
+- * Signature: (Ljava/nio/Buffer;Ljava/nio/Buffer;I)V
+- */
+-JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkPixels__1copyPixels
+-  (JNIEnv *env, jobject obj, jobject jDst, jobject jSrc, jint jSize)
+-{
+-    (void)obj;
+-
+-    //Taken from MacPixels (and fixed)
+-    void *src = env->GetDirectBufferAddress(jSrc);
+-    void *dst = env->GetDirectBufferAddress(jDst);
+-    if ((src != NULL) && (dst != NULL) && (jSize > 0))
+-    {
+-        memcpy(dst, src, jSize * 4);
+-    }
+-}
+-
+ /*
+  * Class:     com_sun_glass_ui_gtk_GtkPixels
+  * Method:    _attachInt
+@@ -69,15 +50,35 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkPixels__1attachInt
+ {
+     (void)obj;
+
++    if (!ptr) return;
++    if (!array && !ints) return;
++    if (offset < 0) return;
++    if (w <= 0 || h <= 0) return;
++
++    if (w > (((INT_MAX - offset) / 4) / h))
++    {
++        return;
++    }
++
+     jint *data;
+     GdkPixbuf **pixbuf;
+     guint8 *dataRGBA;
+
++    jsize numElem;
++    if (array == NULL) {
++        numElem = env->GetDirectBufferCapacity(ints);
++    } else {
++        numElem = env->GetArrayLength(array);
++    }
++
++    if ((w * h + offset) > numElem)
++    {
++        return;
++    }
++
+     if (array == NULL) {
+         data = (jint*) env->GetDirectBufferAddress(ints);
+-        assert((w*h*4 + offset * 4) == env->GetDirectBufferCapacity(ints));
+     } else {
+-        assert((w*h + offset) == env->GetArrayLength(array));
+         data = (jint*) env->GetPrimitiveArrayCritical(array, 0);
+     }
+
+@@ -101,15 +102,35 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkPixels__1attachByte
+ {
+     (void)obj;
+
++    if (!ptr) return;
++    if (!array && !bytes) return;
++    if (offset < 0) return;
++    if (w <= 0 || h <= 0) return;
++
++    if (w > (((INT_MAX - offset) / 4) / h))
++    {
++        return;
++    }
++
+     jbyte *data;
+     GdkPixbuf **pixbuf;
+     guint8 *dataRGBA;
+
++    jsize numElem;
++    if (array == NULL) {
++        numElem = env->GetDirectBufferCapacity(bytes);
++    } else {
++        numElem = env->GetArrayLength(array);
++    }
++
++    if ((w * h * 4 + offset) > numElem)
++    {
++        return;
++    }
++
+     if (array == NULL) {
+         data = (jbyte*) env->GetDirectBufferAddress(bytes);
+-        assert((w*h*4 + offset) == env->GetDirectBufferCapacity(bytes));
+     } else {
+-        assert((w*h*4 + offset) == env->GetArrayLength(array));
+         data = (jbyte*) env->GetPrimitiveArrayCritical(array, 0);
+     }
+
+diff --git a/modules/graphics/src/main/native-glass/gtk/GlassView.cpp b/modules/graphics/src/main/native-glass/gtk/GlassView.cpp
+index d9a6c8e9..94f0087b 100644
+--- a/modules/graphics/src/main/native-glass/gtk/GlassView.cpp
++++ b/modules/graphics/src/main/native-glass/gtk/GlassView.cpp
+@@ -185,6 +185,9 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkView__1uploadPixelsDirect
+ {
+     (void)jView;
+
++    if (!ptr) return;
++    if (!buffer) return;
++
+     GlassView* view = JLONG_TO_GLASSVIEW(ptr);
+     if (view->current_window) {
+         void *data = env->GetDirectBufferAddress(buffer);
+@@ -203,10 +206,24 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkView__1uploadPixelsIntArray
+ {
+     (void)obj;
+
++    if (!ptr) return;
++    if (!array) return;
++    if (offset < 0) return;
++    if (width <= 0 || height <= 0) return;
++
++    if (width > ((INT_MAX - offset) / height))
++    {
++        return;
++    }
++
++    if ((width * height + offset) > env->GetArrayLength(array))
++    {
++        return;
++    }
++
+     GlassView* view = JLONG_TO_GLASSVIEW(ptr);
+     if (view->current_window) {
+         int *data = NULL;
+-        assert((width*height + offset) == env->GetArrayLength(array));
+         data = (int*)env->GetPrimitiveArrayCritical(array, 0);
+
+         view->current_window->paint(data + offset, width, height);
+@@ -225,11 +242,25 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_gtk_GtkView__1uploadPixelsByteArray
+ {
+     (void)obj;
+
++    if (!ptr) return;
++    if (!array) return;
++    if (offset < 0) return;
++    if (width <= 0 || height <= 0) return;
++
++    if (width > (((INT_MAX - offset) / 4) / height))
++    {
++        return;
++    }
++
++    if ((4 * width * height + offset) > env->GetArrayLength(array))
++    {
++        return;
++    }
++
+     GlassView* view = JLONG_TO_GLASSVIEW(ptr);
+     if (view->current_window) {
+         unsigned char *data = NULL;
+
+-        assert((4*width*height + offset) == env->GetArrayLength(array));
+         data = (unsigned char*)env->GetPrimitiveArrayCritical(array, 0);
+
+         view->current_window->paint(data + offset, width, height);
+diff --git a/modules/graphics/src/main/native-glass/mac/GlassPixels.m b/modules/graphics/src/main/native-glass/mac/GlassPixels.m
+index 27c75531..762ecf7b 100644
+--- a/modules/graphics/src/main/native-glass/mac/GlassPixels.m
++++ b/modules/graphics/src/main/native-glass/mac/GlassPixels.m
+@@ -57,40 +57,6 @@ JNIEXPORT jint JNICALL Java_com_sun_glass_ui_mac_MacPixels__1initIDs
+     return com_sun_glass_ui_Pixels_Format_BYTE_BGRA_PRE;
+ }
+
+-/*
+- * Class:     com_sun_glass_ui_mac_MacPixels
+- * Method:    _copyPixels
+- * Signature: (Ljava/nio/Buffer;Ljava/nio/Buffer;I)V
+- */
+-JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1copyPixels
+-(JNIEnv *env, jobject jPixels, jobject jSrc, jobject jDst, jint jSize)
+-{
+-    LOG("Java_com_sun_glass_ui_mac_MacPixels__1copyPixels");
+-
+-    GLASS_ASSERT_MAIN_JAVA_THREAD(env);
+-
+-    void *src = (*env)->GetDirectBufferAddress(env, jSrc);
+-    void *dst = (*env)->GetDirectBufferAddress(env, jDst);
+-    if ((src != NULL) && (src != NULL) && (jSize > 0))
+-    {
+-        memcpy(src, dst, jSize);
+-    }
+-    GLASS_CHECK_EXCEPTION(env);
+-}
+-
+-/*
+- * Class:     com_sun_glass_ui_mac_MacPixels
+- * Method:    _attachInt
+- * Signature: (JIILjava/nio/IntBuffer;[II)V
+- */
+-JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1attachInt
+-(JNIEnv *env, jobject jPixels, jlong jPtr, jint jWidth, jint jHeight, jobject jBuffer, jintArray jArray, jint jOffset)
+-{
+-    LOG("Java_com_sun_glass_ui_mac_MacPixels__1attachInt");
+-
+-    Java_com_sun_glass_ui_mac_MacPixels__1attachByte(env, jPixels, jPtr, jWidth, jHeight, jBuffer, jArray, 4*jOffset);
+-}
+-
+ NSImage* getImage(u_int8_t* data, int jWidth, int jHeight, int jOffset) {
+     NSImage* image = NULL;
+     CGImageRef cgImage = NULL;
+@@ -120,16 +86,9 @@ NSImage* getImage(u_int8_t* data, int jWidth, int jHeight, int jOffset) {
+     return image;
+ }
+
+-/*
+- * Class:     com_sun_glass_ui_mac_MacPixels
+- * Method:    _attachByte
+- * Signature: (JIILjava/nio/ByteBuffer;[BI)V
+- */
+-JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1attachByte
++void attachCommon
+ (JNIEnv *env, jobject jPixels, jlong jPtr, jint jWidth, jint jHeight, jobject jBuffer, jbyteArray jArray, jint jOffset)
+ {
+-    LOG("Java_com_sun_glass_ui_mac_MacPixels__1attachByte");
+-
+     GLASS_ASSERT_MAIN_JAVA_THREAD(env);
+     {
+         u_int8_t *data = NULL;
+@@ -153,3 +112,77 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1attachByte
+     }
+     GLASS_CHECK_EXCEPTION(env);
+ }
++
++/*
++ * Class:     com_sun_glass_ui_mac_MacPixels
++ * Method:    _attachInt
++ * Signature: (JIILjava/nio/IntBuffer;[II)V
++ */
++JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1attachInt
++(JNIEnv *env, jobject jPixels, jlong jPtr, jint jWidth, jint jHeight, jobject jBuffer, jintArray jArray, jint jOffset)
++{
++    LOG("Java_com_sun_glass_ui_mac_MacPixels__1attachInt");
++
++    if (!jPtr) return;
++    if (!(jArray || jBuffer)) return;
++    if (jOffset < 0) return;
++    if (jWidth <= 0 || jHeight <= 0) return;
++
++    if (jOffset > (INT_MAX / 4)) {
++        return;
++    }
++
++    if (jWidth > (((INT_MAX - 4 * jOffset) / 4) / jHeight))
++    {
++        return;
++    }
++
++    jsize numElem;
++    if (jArray != NULL) {
++        numElem = (*env)->GetArrayLength(env, jArray);
++    } else {
++        numElem = (*env)->GetDirectBufferCapacity(env, jBuffer);
++    }
++
++    if ((jWidth * jHeight + jOffset) > numElem)
++    {
++        return;
++    }
++
++    attachCommon(env, jPixels, jPtr, jWidth, jHeight, jBuffer, jArray, 4 * jOffset);
++}
++
++/*
++ * Class:     com_sun_glass_ui_mac_MacPixels
++ * Method:    _attachByte
++ * Signature: (JIILjava/nio/ByteBuffer;[BI)V
++ */
++JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacPixels__1attachByte
++(JNIEnv *env, jobject jPixels, jlong jPtr, jint jWidth, jint jHeight, jobject jBuffer, jbyteArray jArray, jint jOffset)
++{
++    LOG("Java_com_sun_glass_ui_mac_MacPixels__1attachByte");
++
++    if (!jPtr) return;
++    if (!(jArray || jBuffer)) return;
++    if (jOffset < 0) return;
++    if (jWidth <= 0 || jHeight <= 0) return;
++
++    if (jWidth > (((INT_MAX - jOffset) / 4) / jHeight))
++    {
++        return;
++    }
++
++    jsize numElem;
++    if (jArray != NULL) {
++        numElem = (*env)->GetArrayLength(env, jArray);
++    } else {
++        numElem = (*env)->GetDirectBufferCapacity(env, jBuffer);
++    }
++
++    if ((4 * jWidth * jHeight + jOffset) > numElem)
++    {
++        return;
++    }
++
++    attachCommon(env, jPixels, jPtr, jWidth, jHeight, jBuffer, jArray, jOffset);
++}
+diff --git a/modules/graphics/src/main/native-glass/mac/GlassView.m b/modules/graphics/src/main/native-glass/mac/GlassView.m
+index c9474bd8..af7a5fab 100644
+--- a/modules/graphics/src/main/native-glass/mac/GlassView.m
++++ b/modules/graphics/src/main/native-glass/mac/GlassView.m
+@@ -43,23 +43,6 @@
+     #define LOG(MSG, ...) GLASS_LOG(MSG, ## __VA_ARGS__);
+ #endif
+
+-//#define FORCE_NOISE
+-#ifdef FORCE_NOISE
+-static inline void *_GenerateNoise(int width, int height)
+-{
+-    static int *pixels = NULL;
+-    pixels = realloc(pixels, width*height*4);
+-
+-    int *src = pixels;
+-    for (int i=0; i<width*height; i++)
+-    {
+-        *src++ = random();
+-    }
+-
+-    return (void*)pixels;
+-}
+-#endif
+-
+ static inline NSView<GlassView>* getGlassView(JNIEnv *env, jlong jPtr)
+ {
+     assert(jPtr != 0L);
+@@ -663,15 +646,12 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacView__1uploadPixelsDirect
+ {
+     LOG("Java_com_sun_glass_ui_mac_MacView__1uploadPixelsDirect");
+     if (!jPtr) return;
++    if (!jBuffer) return;
+
+     GLASS_ASSERT_MAIN_JAVA_THREAD(env);
+     NSView<GlassView> *view = getGlassView(env, jPtr);
+
+-#ifndef FORCE_NOISE
+     void *pixels = (*env)->GetDirectBufferAddress(env, jBuffer);
+-#else
+-    void *pixels = _GenerateNoise(jWidth, jHeight);
+-#endif
+
+     // must be in the middle of begin/end
+     if ((jWidth > 0) && (jHeight > 0))
+@@ -690,27 +670,31 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacView__1uploadPixelsByteArray
+ {
+     LOG("Java_com_sun_glass_ui_mac_MacView__1uploadPixelsByteArray");
+     if (!jPtr) return;
++    if (!jArray) return;
++    if (jOffset < 0) return;
++    if (jWidth <= 0 || jHeight <= 0) return;
++
++    if (jWidth > (((INT_MAX - jOffset) / 4) / jHeight))
++    {
++        return;
++    }
+
+     GLASS_ASSERT_MAIN_JAVA_THREAD(env);
+
++    if ((4 * jWidth * jHeight + jOffset) > (*env)->GetArrayLength(env, jArray))
++    {
++        return;
++    }
++
+     jboolean isCopy = JNI_FALSE;
+     u_int8_t *data = (*env)->GetPrimitiveArrayCritical(env, jArray, &isCopy);
+     {
+-        assert((4*jWidth*jHeight + jOffset) == (*env)->GetArrayLength(env, jArray));
+-
+         NSView<GlassView> *view = getGlassView(env, jPtr);
+
+-#ifndef FORCE_NOISE
+         void *pixels = (data+jOffset);
+-#else
+-        void *pixels = _GenerateNoise(jWidth, jHeight);
+-#endif
+
+         // must be in the middle of begin/end
+-        if ((jWidth > 0) && (jHeight > 0))
+-        {
+-            [view pushPixels:pixels withWidth:(GLuint)jWidth withHeight:(GLuint)jHeight withScale:(GLfloat)jScale withEnv:env];
+-        }
++        [view pushPixels:pixels withWidth:(GLuint)jWidth withHeight:(GLuint)jHeight withScale:(GLfloat)jScale withEnv:env];
+     }
+     (*env)->ReleasePrimitiveArrayCritical(env, jArray, data, JNI_ABORT);
+ }
+@@ -725,27 +709,32 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_mac_MacView__1uploadPixelsIntArray
+ {
+     LOG("Java_com_sun_glass_ui_mac_MacView__1uploadPixelsIntArray");
+     if (!jPtr) return;
++    if (!jArray) return;
++    if (jOffset < 0) return;
++    if (jWidth <= 0 || jHeight <= 0) return;
++
++    if (jWidth > ((INT_MAX - jOffset) / jHeight))
++    {
++        return;
++    }
+
+     GLASS_ASSERT_MAIN_JAVA_THREAD(env);
+
++    if ((jWidth * jHeight + jOffset) > (*env)->GetArrayLength(env, jArray))
++    {
++        return;
++    }
++
+     jboolean isCopy = JNI_FALSE;
+     u_int32_t *data = (*env)->GetPrimitiveArrayCritical(env, jArray, &isCopy);
+     {
+-        assert((jWidth*jHeight + jOffset) == (*env)->GetArrayLength(env, jArray));
+
+         NSView<GlassView> *view = getGlassView(env, jPtr);
+
+-#ifndef FORCE_NOISE
+         void *pixels = (data+jOffset);
+-#else
+-        void *pixels = _GenerateNoise(jWidth, jHeight);
+-#endif
+
+         // must be in the middle of begin/end
+-        if ((jWidth > 0) && (jHeight > 0))
+-        {
+-            [view pushPixels:pixels withWidth:(GLuint)jWidth withHeight:(GLuint)jHeight withScale:(GLfloat)jScale withEnv:env];
+-        }
++       [view pushPixels:pixels withWidth:(GLuint)jWidth withHeight:(GLuint)jHeight withScale:(GLfloat)jScale withEnv:env];
+     }
+     (*env)->ReleasePrimitiveArrayCritical(env, jArray, data, JNI_ABORT);
+ }
+diff --git a/modules/graphics/src/main/native-glass/win/Pixels.cpp b/modules/graphics/src/main/native-glass/win/Pixels.cpp
+index cc2532f4..6c7bd784 100644
+--- a/modules/graphics/src/main/native-glass/win/Pixels.cpp
++++ b/modules/graphics/src/main/native-glass/win/Pixels.cpp
+@@ -248,9 +248,26 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_win_WinPixels__1fillDirectByteBuffe
+ {
+     Pixels pixels(env, jPixels);
+
+-    memcpy(env->GetDirectBufferAddress(bb), pixels.GetBits(),
+-            pixels.GetWidth() * pixels.GetHeight() * 4);
++    if (bb == NULL) {
++        return;
++    }
++
++    const int width = pixels.GetWidth();
++    const int height = pixels.GetHeight();
++    if (width <= 0 || height <= 0 || width > ((INT_MAX / 4) / height)) {
++        return;
++    }
++    const int size = width * height * 4;
++    const int bbCapacity = env->GetDirectBufferCapacity(bb);
++    if (bbCapacity < size) {
++        return;
++    }
++
++    void *bbAddr = env->GetDirectBufferAddress(bb);
++    if (bbAddr == NULL) {
++        return;
++    }
++    memcpy(bbAddr, pixels.GetBits(), size);
+ }
+
+ } // extern "C"
+-
+diff --git a/modules/jmx/.project b/modules/jmx/.project
+index 2442c319..05154ced 100644
+--- a/modules/jmx/.project
++++ b/modules/jmx/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716337</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/media/.project b/modules/media/.project
+index ea7071fd..82301ab9 100644
+--- a/modules/media/.project
++++ b/modules/media/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716338</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/swing/.project b/modules/swing/.project
+index 35c54648..b557749c 100644
+--- a/modules/swing/.project
++++ b/modules/swing/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716339</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/swt/.project b/modules/swt/.project
+index 06e2789e..6f1df37b 100644
+--- a/modules/swt/.project
++++ b/modules/swt/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716340</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+diff --git a/modules/web/.project b/modules/web/.project
+index 9de255ec..9e6b16c9 100644
+--- a/modules/web/.project
++++ b/modules/web/.project
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1705005716341</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
+--
+2.40.1

@@ -2,6 +2,107 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.402.08.1
+Release Date: January 19, 2024
+ 
+**Target Platforms <sup>1</sup>**
+ 
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
+ 
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+ 
+The following CVEs are addressed in 8.402.08.1:
+ 
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-20952 | 7.4  | security-libs/java.security    |
+
+## Corretto version: 8.402.07.1
+Release Date: January 16, 2024
+
+**Target Platforms <sup>1</sup>**
+
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.402.07.1:
+
+| Issue Name                         | Platform                                     | Description                                    | Link                                                                                           |
+|------------------------------------|----------------------------------------------|------------------------------------------------|------------------------------------------------------------------------------------------------|
+| Import jdk8u402-b06                | All | Updates Corretto baseline to OpenJDK 8u402-b06 | [jdk8u402-b06](https://github.com/openjdk/jdk8u/releases/tag/jdk8u402-b06)                     |
+| (tz) Update Timezone Data to 2023d | All | Update Timezone Data to 2023d                  | [483](https://github.com/corretto/corretto-8/commit/719dd760e071e7fd2ba1be552af5502f422259b9)  |
+| NPE in PKCS7.parseOldSignedData    | All | fixes exception PKCS7.parseOldSignedDat        | [JDK-8315042](https://bugs.openjdk.org/browse/JDK-8315042)                                     |
+| Disable build-ids in AL RPMs       | AL2023  | Build-ids can conflict across versions     | N/A                                                                                            |
+| Add __APPLE__ to ADCLFlags         | MacOS aarch64 | Add __APPLE__ define and exclude R18 from usable registers | N/A                                                                       |
+| On the latest macOS+XCode the Robot API may report wrong colors | MacOS all | Xcode 14+ and MacOS 13+ cause some tests to fail | [JDK-8298887](https://bugs.openjdk.org/browse/JDK-8298887) |
+| macOS Monterey does not have the font Times needed by Serif | MacOS all | macOS Monterey does not have the font Times needed by Serif | [JDK-8273358](https://bugs.openjdk.org/browse/JDK-8273358) |
+
+The following CVEs are addressed in 8.402.07.1:
+
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-20918 | 7.4  | hotspot/compiler               |
+| CVE-2024-20952 | 7.4  | security-libs/java.security    |
+| CVE-2024-20926 | 5.9  | core-libs/javax.script         |
+| CVE-2024-20919 | 5.9  | hotspot/runtime                |
+| CVE-2024-20921 | 5.9  | hotspot/compiler               |
+| CVE-2024-20945 | 4.7  | security-libs/javax.xml.crypto |
+| CVE-2024-20925 | 3.1  | javafx/media                   |
+| CVE-2024-20923 | 3.1  | javafx/graphics                |
+| CVE-2024-20922 | 2.5  | javafx/window-toolkit          |
+
+## Corretto version: 8.402.06.1
+Release Date: January 16, 2024
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.402.06.1:
+
+| Issue Name                         | Platform                                     | Description                                    | Link                                                                                           |
+|------------------------------------|----------------------------------------------|------------------------------------------------|------------------------------------------------------------------------------------------------|
+| Import jdk8u402-b06                | All | Updates Corretto baseline to OpenJDK 8u402-b06 | [jdk8u402-b05](https://github.com/openjdk/jdk8u/releases/tag/jdk8u402-b06)                     |
+| (tz) Update Timezone Data to 2023d | All | Update Timezone Data to 2023d                  | [483](https://github.com/corretto/corretto-8/commit/719dd760e071e7fd2ba1be552af5502f422259b9)  |
+| NPE in PKCS7.parseOldSignedData    | All | fixes exception PKCS7.parseOldSignedDat        | [JDK-8315042](https://bugs.openjdk.org/browse/JDK-8315042)                                   |
+| Disable build-ids in AL RPMs       | AL2023  | Build-ids can conflict across versions     | N/A                                                                                            |
+
+
+The following CVEs are addressed in 8.402.06.1:
+
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-20918 | 7.4  | hotspot/compiler               |
+| CVE-2024-20952 | 7.4  | security-libs/java.security    |
+| CVE-2024-20926 | 5.9  | core-libs/javax.script         |
+| CVE-2024-20919 | 5.9  | hotspot/runtime                |
+| CVE-2024-20921 | 5.9  | hotspot/compiler               |
+| CVE-2024-20945 | 4.7  | security-libs/javax.xml.crypto |
+| CVE-2024-20925 | 3.1  | javafx/media                   |
+| CVE-2024-20923 | 3.1  | javafx/graphics                |
+| CVE-2024-20922 | 2.5  | javafx/window-toolkit          |
+
 ## Corretto version: 8.392.08.1
 Release Date: October 17, 2023
 

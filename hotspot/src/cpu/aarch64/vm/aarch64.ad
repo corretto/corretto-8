@@ -377,7 +377,9 @@ alloc_class chunk0(
     R26, R26_H,
     
     // non-allocatable registers
-
+#ifdef __APPLE__
+    R18, R18_H,
+#endif
     R27, R27_H, // heapbase
     R28, R28_H, // thread
     R29, R29_H, // fp
