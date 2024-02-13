@@ -170,6 +170,7 @@ Requires: log4j-cve-2021-44228-cve-mitigations
 
 Provides: java = %{epoch}:%{javaver}
 Provides: java-%{javaver} = %{epoch}:%{version}-%{release}
+Provides: java-headless = %{epoch}:%{javaver}
 
 %description
 Amazon Corretto's packaging of the runtime core elements of the OpenJDK 8 code.
