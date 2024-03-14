@@ -273,7 +273,12 @@ ifeq ($(OPENJDK_TARGET_OS), windows)
       FILES := $(MSVCP_DLL), \
       MACRO := copy-and-chmod))
 
-  COPY_FILES += $(COPY_MSVCR) $(COPY_VCRUNTIME_1) $(COPY_MSVCP)
+  $(eval $(call SetupCopyFiles,COPY_CONCRT, \
+      DEST := $(JDK_OUTPUTDIR)/bin, \
+      FILES := $(CONCRT_DLL), \
+      MACRO := copy-and-chmod))
+
+  COPY_FILES += $(COPY_MSVCR) $(COPY_VCRUNTIME_1) $(COPY_MSVCP) $(COPY_CONCRT)
 
   ifneq ($(UCRT_DLL_DIR), )
     $(eval $(call SetupCopyFiles,COPY_UCRT_DLLS, \

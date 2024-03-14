@@ -42,6 +42,7 @@ VS_DESCRIPTION_2012="Microsoft Visual Studio 2012"
 VS_VERSION_INTERNAL_2012=110
 VS_MSVCR_2012=msvcr110.dll
 VS_MSVCP_2012=msvcp110.dll
+VS_CONCRT_2012=concrt110.dll
 VS_ENVVAR_2012="VS110COMNTOOLS"
 VS_VS_INSTALLDIR_2012="Microsoft Visual Studio 11.0"
 VS_SDK_INSTALLDIR_2012=
@@ -52,6 +53,7 @@ VS_DESCRIPTION_2013="Microsoft Visual Studio 2013"
 VS_VERSION_INTERNAL_2013=120
 VS_MSVCR_2013=msvcr120.dll
 VS_MSVCP_2013=msvcp120.dll
+VS_CONCER_2013=concrt120.dll
 VS_ENVVAR_2013="VS120COMNTOOLS"
 VS_VS_INSTALLDIR_2013="Microsoft Visual Studio 12.0"
 VS_SDK_INSTALLDIR_2013=
@@ -62,6 +64,7 @@ VS_DESCRIPTION_2015="Microsoft Visual Studio 2015 - CURRENTLY NOT WORKING"
 VS_VERSION_INTERNAL_2015=140
 VS_MSVCR_2015=vcruntime140.dll
 VS_MSVCP_2015=msvcp140.dll
+VS_CONCRT_2015=concrt140.dll
 VS_ENVVAR_2015="VS140COMNTOOLS"
 VS_VS_INSTALLDIR_2015="Microsoft Visual Studio 14.0"
 VS_SDK_INSTALLDIR_2015=
@@ -75,6 +78,7 @@ VS_DESCRIPTION_2017="Microsoft Visual Studio 2017 - CURRENTLY NOT WORKING"
 VS_VERSION_INTERNAL_2017=141
 VS_MSVCR_2017=vcruntime140.dll
 VS_MSVCP_2017=msvcp140.dll
+VS_CONCRT_2017=concrt140.dll
 VS_ENVVAR_2017="VS150COMNTOOLS"
 VS_USE_UCRT_2017="true"
 VS_VS_INSTALLDIR_2017="Microsoft Visual Studio/2017"
@@ -88,6 +92,7 @@ VS_VERSION_INTERNAL_2019=142
 VS_MSVCR_2019=vcruntime140.dll
 VS_VCRUNTIME_1_2019=vcruntime140_1.dll
 VS_MSVCP_2019=msvcp140.dll
+VS_CONCRT_2019=concrt140.dll
 VS_ENVVAR_2019="VS160COMNTOOLS"
 VS_USE_UCRT_2019="true"
 VS_VS_INSTALLDIR_2019="Microsoft Visual Studio/2019"
@@ -103,6 +108,7 @@ VS_VERSION_INTERNAL_2022=143
 VS_MSVCR_2022=vcruntime140.dll
 VS_VCRUNTIME_1_2022=vcruntime140_1.dll
 VS_MSVCP_2022=msvcp140.dll
+VS_CONCRT_2022=concrt140.dll
 VS_ENVVAR_2022="VS170COMNTOOLS"
 VS_USE_UCRT_2022="true"
 VS_VS_INSTALLDIR_2022="Microsoft Visual Studio/2022"
@@ -297,6 +303,7 @@ AC_DEFUN([TOOLCHAIN_FIND_VISUAL_STUDIO],
     eval MSVCR_NAME="\${VS_MSVCR_${VS_VERSION}}"
     eval VCRUNTIME_1_NAME="\${VS_VCRUNTIME_1_${VS_VERSION}}"
     eval MSVCP_NAME="\${VS_MSVCP_${VS_VERSION}}"
+    eval CONCRT_NAME="\${VS_CONCRT_${VS_VERSION}}"
     eval USE_UCRT="\${VS_USE_UCRT_${VS_VERSION}}"
     eval PLATFORM_TOOLSET="\${VS_VS_PLATFORM_NAME_${VS_VERSION}}"
     VS_PATH="$TOOLCHAIN_PATH:$PATH"
@@ -344,6 +351,7 @@ AC_DEFUN([TOOLCHAIN_FIND_VISUAL_STUDIO],
       eval MSVCR_NAME="\${VS_MSVCR_${VS_VERSION}}"
       eval VCRUNTIME_1_NAME="\${VS_VCRUNTIME_1_${VS_VERSION}}"
       eval MSVCP_NAME="\${VS_MSVCP_${VS_VERSION}}"
+      eval CONCRT_NAME="\${VS_CONCRT_${VS_VERSION}}"
       eval USE_UCRT="\${VS_USE_UCRT_${VS_VERSION}}"
       # The rest of the variables are already evaled while probing
       AC_MSG_NOTICE([Found $VS_DESCRIPTION])
@@ -676,6 +684,30 @@ AC_DEFUN([TOOLCHAIN_SETUP_VS_RUNTIME_DLLS],
       MSVCP_DLL="$MSVC_DLL"
     fi
     AC_SUBST(MSVCP_DLL)
+  fi
+
+  AC_ARG_WITH(concrt-dll, [AS_HELP_STRING([--with-concrt-dll],
+      [path to microsoft C++ runtime dll (concrt*.dll) (Windows only) @<:@probed@:>@])])
+
+  if test "x$CONCRT_NAME" != "x"; then
+    if test "x$with_concrt_dll" != x; then
+      # If given explicitely by user, do not probe. If not present, fail directly.
+      TOOLCHAIN_CHECK_POSSIBLE_MSVC_DLL($CONCRT_NAME, [$with_concrt_dll], [--with-concrt-dll])
+      if test "x$MSVC_DLL" = x; then
+        AC_MSG_ERROR([Could not find a proper $CONCRT_NAME as specified by --with-concrt-dll])
+      fi
+      CONCRT_DLL="$MSVC_DLL"
+    elif test "x$DEVKIT_CONCRT_DLL" != x; then
+      TOOLCHAIN_CHECK_POSSIBLE_MSVC_DLL($CONCRT_NAME, [$DEVKIT_CONCRT_DLL], [devkit])
+      if test "x$MSVC_DLL" = x; then
+        AC_MSG_ERROR([Could not find a proper $CONCRT_NAME as specified by devkit])
+      fi
+      CONCRT_DLL="$MSVC_DLL"
+    else
+      TOOLCHAIN_SETUP_MSVC_DLL([${CONCRT_NAME}])
+      CONCRT_DLL="$MSVC_DLL"
+    fi
+    AC_SUBST(CONCRT_DLL)
   fi
 
   AC_ARG_WITH(vcruntime-1-dll, [AS_HELP_STRING([--with-vcruntime-1-dll],

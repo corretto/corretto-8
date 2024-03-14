@@ -104,6 +104,7 @@ echo "Creating devkit in $DEVKIT_ROOT"
 MSVCR_DLL=${MSVC_DIR}/vcruntime${VS_DLL_VERSION}.dll
 VCRUNTIME_1_DLL=${MSVC_DIR}/vcruntime${VS_DLL_VERSION}_1.dll
 MSVCP_DLL=${MSVC_DIR}/msvcp${VS_DLL_VERSION}.dll
+CONCRT_DLL=${MSVC_DIR}/concrt${VS_DLL_VERSION}.dll
 
 ################################################################################
 # Copy Visual Studio files
@@ -137,8 +138,10 @@ cp -r "$VS_INSTALL_DIR/$REDIST_SUBDIR/x86" $DEVKIT_ROOT/VC/redist/
 # installed on the machine where the devkit will be used.
 cp $DEVKIT_ROOT/VC/redist/x86/$MSVCR_DLL $DEVKIT_ROOT/VC/bin/x86
 cp $DEVKIT_ROOT/VC/redist/x86/$MSVCP_DLL $DEVKIT_ROOT/VC/bin/x86
+cp $DEVKIT_ROOT/VC/redist/x86/$CONCRT_DLL $DEVKIT_ROOT/VC/bin/x86
 cp $DEVKIT_ROOT/VC/redist/x64/$MSVCR_DLL $DEVKIT_ROOT/VC/bin/x64
 cp $DEVKIT_ROOT/VC/redist/x64/$MSVCP_DLL $DEVKIT_ROOT/VC/bin/x64
+cp $DEVKIT_ROOT/VC/redist/x64/$CONCRT_DLL $DEVKIT_ROOT/VC/bin/x64
 
 ################################################################################
 # Copy SDK files
@@ -183,6 +186,7 @@ echo-info "DEVKIT_VS_INCLUDE_x86=\"\$DEVKIT_ROOT/VC/include;\$DEVKIT_ROOT/VC/atl
 echo-info "DEVKIT_VS_LIB_x86=\"\$DEVKIT_ROOT/VC/lib/x86;\$DEVKIT_ROOT/VC/atlmfc/lib/x86;\$DEVKIT_ROOT/$SDK_VERSION/lib/x86\""
 echo-info "DEVKIT_MSVCR_DLL_x86=\"\$DEVKIT_ROOT/VC/redist/x86/$MSVCR_DLL\""
 echo-info "DEVKIT_MSVCP_DLL_x86=\"\$DEVKIT_ROOT/VC/redist/x86/$MSVCP_DLL\""
+echo-info "DEVKIT_CONCRT_DLL_x86=\"\$DEVKIT_ROOT/VC/redist/x86/$CONCRT_DLL\""
 echo-info "DEVKIT_UCRT_DLL_DIR_x86=\"\$DEVKIT_ROOT/10/Redist/ucrt/DLLs/x86\""
 echo-info ""
 echo-info "DEVKIT_TOOLCHAIN_PATH_x86_64=\"\$DEVKIT_ROOT/VC/bin/x64:\$DEVKIT_ROOT/$SDK_VERSION/bin/x64:\$DEVKIT_ROOT/$SDK_VERSION/bin/x86\""
@@ -191,6 +195,7 @@ echo-info "DEVKIT_VS_LIB_x86_64=\"\$DEVKIT_ROOT/VC/lib/x64;\$DEVKIT_ROOT/VC/atlm
 echo-info "DEVKIT_MSVCR_DLL_x86_64=\"\$DEVKIT_ROOT/VC/redist/x64/$MSVCR_DLL\""
 echo-info "DEVKIT_VCRUNTIME_1_DLL_x86_64=\"\$DEVKIT_ROOT/VC/redist/x64/$VCRUNTIME_1_DLL\""
 echo-info "DEVKIT_MSVCP_DLL_x86_64=\"\$DEVKIT_ROOT/VC/redist/x64/$MSVCP_DLL\""
+echo-info "DEVKIT_CONCRT_DLL_x86_64=\"\$DEVKIT_ROOT/VC/redist/x64/$CONCRT_DLL\""
 echo-info "DEVKIT_UCRT_DLL_DIR_x86_64=\"\$DEVKIT_ROOT/10/Redist/ucrt/DLLs/x64\""
 echo-info ""
 echo-info "DEVKIT_TOOLS_VERSION=\"$TOOLS_VERSION\""
