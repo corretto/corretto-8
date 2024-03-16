@@ -80,6 +80,22 @@ task patchJfx {
             ant.patch(patchfile: f, 
                     dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true) 
         }
+
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            fileTree("patches/windows").matching {
+                include '*.patch'
+            }.files.sort().each { f ->
+                ant.patch(patchfile: f,
+                        dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+            }
+        } else {
+            fileTree("patches/${OS_NAME}").matching {
+                include '*.patch'
+            }.files.sort().each { f ->
+                ant.patch(patchfile: f,
+                        dir: "$buildRoot/rt-${openJfxVersion.getProperty('tag')}", strip: "1", failonerror: true)
+            }
+	    }
     }
 }
 

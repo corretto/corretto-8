@@ -75,20 +75,11 @@ task applyJavafxOverlay() {
     doLast {
         copy {
             from createJavafxOverlay.destinationDir
-            include 'jre/**'
-            into "$imagesDir/j2re-image"
-			eachFile {
-				if (it.path.startsWith('jre/')) {
-					it.path = it.path.replace('jre/', '')
-				}
-			}
+            into "$imagesDir/j2sdk-image"
         }
+
         copy {
-            from createJavafxOverlay.destinationDir
-            include 'bin/**'
-			include 'lib/**'
-            include 'jre/**'
-			include 'javafx-src.zip'
+            from "$createJavafxOverlay.destinationDir/jre"
             into "$imagesDir/j2re-image"
         }
     }
@@ -97,6 +88,8 @@ task applyJavafxOverlay() {
 task copyImages() {
     dependsOn createJavafxOverlay
     dependsOn executeBuild
+    dependsOn applyJavafxOverlay
+
     outputs.dir(packagingDir)
     doLast {
         // Copy jdk

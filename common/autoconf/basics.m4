@@ -503,6 +503,8 @@ AC_DEFUN_ONCE([BASIC_SETUP_DEVKIT],
       BASIC_EVAL_DEVKIT_VARIABLE([DEVKIT_VCRUNTIME_1_DLL])
       # Corresponds to --with-msvcp-dll
       BASIC_EVAL_DEVKIT_VARIABLE([DEVKIT_MSVCP_DLL])
+      # Corresponds to --with-concrt-dll
+      BASIC_EVAL_DEVKIT_VARIABLE([DEVKIT_CONCRT_DLL])
       # Corresponds to --with-ucrt-dll-dir
       BASIC_EVAL_DEVKIT_VARIABLE([DEVKIT_UCRT_DLL_DIR])
     fi
