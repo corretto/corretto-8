@@ -1,0 +1,49 @@
+From 380f02073cfcf46f09412cf6b4b5b6cf8b4d20cf Mon Sep 17 00:00:00 2001
+From: Kevin Rushforth <kcr@openjdk.org>
+Date: Fri, 3 Feb 2023 15:39:38 +0000
+Subject: [PATCH] 8296654: [macos] Crash when launching JavaFX app with JDK
+ that targets SDK 13
+
+Backport-of: 5b96d348ebcabb4b6d2e1d95937de3c82a1f6876
+---
+ .../src/main/native-glass/mac/GlassViewDelegate.m    | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/modules/graphics/src/main/native-glass/mac/GlassViewDelegate.m b/modules/graphics/src/main/native-glass/mac/GlassViewDelegate.m
+index d8f65685..b82f2864 100644
+--- a/modules/graphics/src/main/native-glass/mac/GlassViewDelegate.m
++++ b/modules/graphics/src/main/native-glass/mac/GlassViewDelegate.m
+@@ -257,7 +257,9 @@ - (void)setFrameSize:(NSSize)newSize
+     (*env)->CallVoidMethod(env, self->jView, jViewNotifyResize, (int)newSize.width, (int)newSize.height);
+     GLASS_CHECK_EXCEPTION(env);
+ 
+-    [self->nsView removeTrackingRect:self->trackingRect];
++    if (self->trackingRect) {
++        [self->nsView removeTrackingRect:self->trackingRect];
++    }
+     self->trackingRect = [self->nsView addTrackingRect:[self->nsView bounds] owner:self->nsView userData:nil assumeInside:NO];
+ }
+ 
+@@ -271,13 +273,17 @@ - (void)setFrame:(NSRect)frameRect
+     (*env)->CallVoidMethod(env, self->jView, jViewNotifyResize, (int)frameRect.size.width, (int)frameRect.size.height);
+     GLASS_CHECK_EXCEPTION(env);
+ 
+-    [self->nsView removeTrackingRect:self->trackingRect];
++    if (self->trackingRect) {
++        [self->nsView removeTrackingRect:self->trackingRect];
++    }
+     self->trackingRect = [self->nsView addTrackingRect:[self->nsView bounds] owner:self->nsView userData:nil assumeInside:NO];
+ }
+ 
+ - (void)updateTrackingAreas
+ {
+-    [self->nsView removeTrackingRect:self->trackingRect];
++    if (self->trackingRect) {
++        [self->nsView removeTrackingRect:self->trackingRect];
++    }
+     self->trackingRect = [self->nsView addTrackingRect:[self->nsView bounds] owner:self->nsView userData:nil assumeInside:NO];
+ }
+ 
+-- 
+2.39.2 (Apple Git-143)
+
