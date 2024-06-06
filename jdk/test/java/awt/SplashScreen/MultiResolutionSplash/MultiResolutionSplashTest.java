@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -119,6 +119,7 @@ public class MultiResolutionSplashTest {
 
         System.out.println("Focus Test!");
         Robot robot = new Robot();
+        robot.setAutoWaitForIdle(true);
         robot.setAutoDelay(50);
 
         Frame frame = new Frame();
@@ -129,6 +130,7 @@ public class MultiResolutionSplashTest {
         frame.add(textField);
         frame.setVisible(true);
         robot.waitForIdle();
+        robot.delay(1000);
 
         robot.keyPress(KeyEvent.VK_A);
         robot.keyRelease(KeyEvent.VK_A);
