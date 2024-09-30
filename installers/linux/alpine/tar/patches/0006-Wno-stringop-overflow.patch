@@ -1,0 +1,25 @@
+From 71c980b23d113f61378a707d9f86ae738917e2fd Mon Sep 17 00:00:00 2001
+From: Elif Aslan <elifasln@amazon.com>
+Date: Mon, 30 Sep 2024 22:43:15 +0000
+Subject: [PATCH] -Wno-stringop-overflow
+
+---
+ hotspot/make/linux/makefiles/gcc.make | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hotspot/make/linux/makefiles/gcc.make b/hotspot/make/linux/makefiles/gcc.make
+index 9dcbe42100..82edf3bce4 100644
+--- a/hotspot/make/linux/makefiles/gcc.make
++++ b/hotspot/make/linux/makefiles/gcc.make
+@@ -217,7 +217,7 @@ ifeq ($(USE_CLANG), true)
+   WARNINGS_ARE_ERRORS += -Wno-return-type -Wno-empty-body
+ endif
+ 
+-WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wunused-value -Wformat=2 -Wreturn-type -Woverloaded-virtual
++WARNING_FLAGS = -Wpointer-arith -Wsign-compare -Wundef -Wunused-function -Wunused-value -Wformat=2 -Wreturn-type -Woverloaded-virtual -Wno-register -Wno-stringop-overflow
+ 
+ ifeq ($(USE_CLANG),)
+   # AL2022 has GCC 11.3.1 and also has stricter checks. Disabling until code fixes can be backported.
+-- 
+2.40.1
+
