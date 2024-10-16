@@ -2,6 +2,44 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.432.06.1
+Release Date: October 15, 2024
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.432.06.1:
+
+| Issue Name          | Platform | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Link                                                                       |
+|---------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| Import jdk8u432-b06 | All      | Updates Corretto baseline to OpenJDK 8u432-b06                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | [jdk8u432-b06](https://github.com/openjdk/jdk8u/releases/tag/jdk8u432-b06) |
+| JDK-8279164         | All      | The TLS_ECDH cipher suites do not preserve forward secrecy and are rarely used in practice. With this release, they are disabled by adding "ECDH" to the `jdk.tls.disabledAlgorithms` security property in the `java.security` configuration file. Attempts to use these suites with this release will result in a `SSLHandshakeException` being thrown. Note that ECDH cipher suites which use RC4 were already disabled prior to this change. Users can, *at their own risk*, remove this restriction by modifying the `java.security` configuration file (or override it by using the `java.security.properties` system property) so "ECDH" is no longer listed in the `jdk.tls.disabledAlgorithms` security property. This change has no effect on TLS_ECDHE cipher suites, which remain enabled by default. | [JDK-8279164](https://bugs.openjdk.org/browse/JDK-8279164)                 |
+| JDK-8341059         | All      | In accordance with similar plans recently announced by Google and Mozilla, the JDK will not trust Transport Layer Security (TLS) certificates issued after the 12th of November 2024 which are anchored by Entrust root certificates.  This includes certificates branded as AffirmTrust, which are managed by Entrust.   Certificates issued on or before November 12th, 2024 will continue to be trusted until they expire. If a server's certificate chain is anchored by an affected certificate, attempts to negotiate a TLS session will fail with an Exception that indicates the trust anchor is not trusted.                                                                                                                                                                                            | [JDK-8341059](https://bugs.openjdk.org/browse/JDK-8341059)                 |
+| JDK-8307779         | All      | This release of OpenJDK 8 updates to the latest maintenance release of the Java 8 specification. This relaxes the specification of three methods in the `java.awt.Robot` class - `mouseMove(int,int)`, `getPixelColor(int,int)` and `createScreenCapture(Rectangle)` - to allow these methods to fail when the desktop environment does not permit moving the mouse pointer or capturing screen content.                                                                                                                                                                                                                                                                                                                                                                                                         | [JDK-8307779](https://bugs.openjdk.org/browse/JDK-8307779)                 |
+| JDK-8290367         | All      | With this OpenJDK release, the JDK implementation of the LDAP provider no longer supports the deserialisation of Java objects by default. This is achieved by the system property `com.sun.jndi.ldap.object.trustSerialData` being set to `false` by default.  Note that this release also increases the scope of the `com.sun.jndi.ldap.object.trustSerialData` to cover the reconstruction of RMI remote objects from the `javaRemoteLocation` LDAP attribute. The result of this change is that transparent deserialisation of Java objects will require an explicit opt-in. Applications that wish to reconstruct Java objects and RMI stubs from LDAP attributes will need to set the `com.sun.jndi.ldap.object.trustSerialData` to `true`.                                                                 | [JDK-8290367](https://bugs.openjdk.org/browse/JDK-8290367)                 |
+| JDK-8328286         | All      | This OpenJDK release limits the maximum header field size accepted by the HTTP client within the JDK for all supported versions of the HTTP protocol. The header field size is computed as the sum of the size of the uncompressed header name, the size of the uncompressed header value and a overhead of 32 bytes for each field section line. If a peer sends a field section that exceeds this limit, a `java.net.ProtocolException` will be raised. This release also introduces a new system property, `jdk.http.maxHeaderSize`. This property can be used to alter the  maximum header field size (in bytes) or disable it by setting the  value to zero or a negative value. The default value is 393,216 bytes  or 384kB.                                                                              |                                                                            |
+
+The following CVEs are addressed in 8.432.06.1:
+
+| CVE            | CVSS | Component                       |
+|----------------|------|---------------------------------|
+| CVE-2024-21235 | 4.8  | hotspot/compiler                |
+| CVE-2024-21208 | 3.7  | core-libs/java.net              |
+| CVE-2024-21210 | 3.7  | hotspot/compiler                |
+| CVE-2024-21217 | 3.7  | core-libs/java.io:serialization |
+
 ## Corretto version: 8.422.05.1
 Release Date: July 16, 2024
 
