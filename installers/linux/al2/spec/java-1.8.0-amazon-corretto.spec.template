@@ -71,7 +71,12 @@
 # Filter out private libraries so RPM does not list them as provided/required
 %global _privatelibs libjli[.]so.*|libattach[.]so.*|libawt[.]so.*|libawt_headless[.]so.*|libawt_xawt[.]so.*|libdt_socket[.]so.*|libfontmanager[.]so.*|libhprof[.]so.*|libinstrument[.]so.*|libj2gss[.]so.*|libj2pcsc[.]so.*|libj2pkcs11[.]so.*|libjaas_unix[.]so.*|libjava_crw_demo[.]so.*|libjdwp[.]so.*|libjpeg[.]so.*|libjsdt[.]so.*|libjsig[.]so.*|libjsound[.]so.*|libjsoundalsa[.]so.*|liblcms[.]so.*|libmanagement[.]so.*|libmlib_image[.]so.*|libnet[.]so.*|libnio[.]so.*|libnpt[.]so.*|libsaproc[.]so.*|libsctp[.]so.*|libsplashscreen[.]so.*|libsunec[.]so.*|libunpack[.]so.*|libzip[.]so.*|lib[.]so\\(SUNWprivate.*
 %global _publiclibs libjawt[.]so.*|libjava[.]so.*|libjsig[.]so.*|libjvm[.]so.*|libverify[.]so.*
+%if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
+# On AL2 only we want to provide the public libs for compatibility and being able to replace the OpenJDK8 package.
+%global __provides_exclude ^(%{_privatelibs})$
+%else
 %global __provides_exclude ^(%{_privatelibs}|%{_publiclibs})$
+%endif
 %global __requires_exclude ^(%{_privatelibs}|%{_publiclibs})$
 
 # By default install a bootstrap jdk. If one is already available,
@@ -263,14 +268,14 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/wsimport wsimport %{java_home}/bin/wsimport \
                --slave %{_bindir}/xjc xjc %{java_home}/bin/xjc
 
-  alternatives --install %{_jvmdir}/java-%{java_major_version} java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
-               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java_sdk_%{java_major_version}_openjdk %{java_home}
+  alternatives --install %{_jvmdir}/java-%{java_major_version} corretto_java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk corretto_java_sdk_%{java_major_version}_openjdk %{java_home}
 fi
 
 %postun devel
 if [ $1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
-  alternatives --remove java_sdk_%{java_major_version} %{java_home}
+  alternatives --remove corretto_java_sdk_%{java_major_version} %{java_home}
 fi
 
 %post
@@ -278,7 +283,7 @@ if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
                --slave %{_jvmdir}/%{name} %{name} %{java_home} \
                --slave %{_jvmdir}/jre jre %{java_home}/jre \
-               --slave %{_jvmdir}/jre-openjdk jre_openjdk %{java_home}/jre \
+               --slave %{_jvmdir}/jre-openjdk corretto-jre_openjdk %{java_home}/jre \
                --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
                --slave %{_bindir}/keytool keytool %{java_home}/jre/bin/keytool \
                --slave %{_bindir}/orbd orbd %{java_home}/jre/bin/orbd \
@@ -291,15 +296,15 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/unpack200 unpack200 %{java_home}/jre/bin/unpack200
 
   # Need to setup the jre alternatives separately when there is a higher priority jre java these don't get created above.
-  alternatives --install %{_jvmdir}/jre-%{java_major_version} jre_%{java_major_version} %{java_home}/jre %{alternatives_priority} \
-               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}/jre
+  alternatives --install %{_jvmdir}/jre-%{java_major_version} corretto_jre_%{java_major_version} %{java_home}/jre %{alternatives_priority} \
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk corretto_jre_%{java_major_version}_openjdk %{java_home}/jre
 
 fi
 
 %postun
 if [ $1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/jre/bin/java
-  alternatives --remove jre_%{java_major_version} %{java_home}/jre
+  alternatives --remove corretto_jre_%{java_major_version} %{java_home}/jre
 fi
 
 %files devel
