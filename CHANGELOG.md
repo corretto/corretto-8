@@ -2,6 +2,37 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.442.06.1
+Release Date: January 21, 2025
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 13.0 and later, x86_64
++ macOS 13.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.442.06.1:
+
+
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk8u442-b06    | All      | Updates Corretto baseline to OpenJDK 8u442-b06 | [jdk8u442-b06](https://github.com/openjdk/jdk8u/releases/tag/jdk8u442-b06) |	
+| JDK-8339637            | All      | Update timezone data to 2024b.  | [JDK-8339637](https://bugs.openjdk.org/browse/JDK-8339637) |
+| JDK-8339632            | All      | Improve parsing of Day/Month in tzdata rules.  | [JDK-8339632](https://bugs.openjdk.org/browse/JDK-8341932) |
+| JDK-8341117            | All      | Change Entrust TLS distrust date to November 12, 2024  | [JDK-8341117](https://bugs.openjdk.org/browse/JDK-8341117) |
+| JDK-8341104            | All      | Add 2 SSL.com TLS roots.  | [JDK-8341104](https://bugs.openjdk.org/browse/JDK-8341104) |
+| JDK-8338166            | All      | Distrust TLS server certificates issued after Oct 2024 and anchored by Entrust Root CAs | [JDK-8338166](https://bugs.openjdk.org/browse/JDK-8338166) |
+
+
 ## Corretto version: 8.432.06.1
 Release Date: October 15, 2024
 
