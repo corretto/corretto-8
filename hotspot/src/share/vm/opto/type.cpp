@@ -2552,13 +2552,15 @@ TypeOopPtr::TypeOopPtr(TYPES t, PTR ptr, ciKlass* k, bool xk, ciObject* o, int o
         } else if (klass() == ciEnv::current()->Class_klass() &&
                    _offset >= InstanceMirrorKlass::offset_of_static_fields()) {
           // Static fields
-          assert(o != NULL, "must be constant");
-          ciInstanceKlass* k = o->as_instance()->java_lang_Class_klass()->as_instance_klass();
-          ciField* field = k->get_field_by_offset(_offset, true);
+          ciField* field = NULL;
+          if (const_oop() != NULL) {
+            ciInstanceKlass* k = const_oop()->as_instance()->java_lang_Class_klass()->as_instance_klass();
+            field = k->get_field_by_offset(_offset, true);
+          }
           if (field != NULL) {
             BasicType basic_elem_type = field->layout_type();
             _is_ptr_to_narrowoop = UseCompressedOops && (basic_elem_type == T_OBJECT ||
-                                                       basic_elem_type == T_ARRAY);
+                                                         basic_elem_type == T_ARRAY);
           } else {
             // unsafe access
             _is_ptr_to_narrowoop = UseCompressedOops;
