@@ -165,6 +165,13 @@ jint Unsafe_invocation_key_to_method_slot(jint key) {
 #define truncate_jfloat(x) (x)
 #define truncate_jdouble(x) (x)
 
+// Note that GET_FIELD and SET_FIELD cast the object field's C type to
+// volatile at the point of access. That is needed in order to ensure
+// that the C compiler does not reorder the object field access wrt to
+// preceding and succeeding volatile accesses to the thread flag field
+// (made by UnsafeWrapper) which safeguard the field access. See
+// JDK-8186787 for details.
+
 #define GET_FIELD(obj, offset, type_name, v) \
   oop p = JNIHandles::resolve(obj); \
   JavaThread* t = JavaThread::current(); \
