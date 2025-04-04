@@ -10,10 +10,10 @@ git config user.name "corretto-github-robot"
 
 git checkout ${VERSION_BRANCH}
 
-UPDATE=$(git ls-remote --tags ${UPSTREAM_REMOTE} |grep "jdk8u" |grep -vE "(-ga|{})$" |cut -d'u' -f2 |sort -nr |head -n1)
+source common/autoconf/version-numbers
+MINOR=${JDK_UPDATE_VERSION}
+BUILD=$(git ls-remote --tags ${UPSTREAM_REMOTE} |grep "jdk8u${MINOR}" |grep -vE "(-ga|{})$" |cut -d'-' -f2 |tr -d 'b' |sort -nr |head -n1)
 MAJOR=8
-MINOR=$(echo "${UPDATE}" |cut -d- -f1)
-BUILD=$(echo "${UPDATE}" |cut -db -f2)
 CURRENT_VERSION=$(cat version.txt)
 
 if [[ ${CURRENT_VERSION} == ${MAJOR}.${MINOR}.${BUILD}.* ]]; then
