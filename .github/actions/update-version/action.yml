@@ -14,6 +14,11 @@ outputs:
 runs:
     using: "composite"
     steps:
-        - run: $GITHUB_ACTION_PATH/update-version.sh ${{ inputs.upstream }} ${{ inputs.version-branch }}
-          shell: bash
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.13'
+        - name: Update the version.txt file as necessary
           id: update-version
+          shell: bash
+          run: python $GITHUB_ACTION_PATH/update_version.py ${{ inputs.upstream }} ${{ inputs.version-branch }}
