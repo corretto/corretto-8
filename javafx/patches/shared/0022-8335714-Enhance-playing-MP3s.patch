@@ -8,10 +8,10 @@ Subject: [PATCH] [PATCH] 8335714: Enhance playing MP3s
  .../platform/java/ID3MetadataParser.java      | 45 ++++++++++++++++++-
  2 files changed, 52 insertions(+), 3 deletions(-)
 
-diff --git a/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java b/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
+diff --git a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
 index a2c01df71b..6c36953576 100644
---- a/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
-+++ b/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
+--- a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
++++ b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
 @@ -1,5 +1,5 @@
  /*
 - * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -41,10 +41,10 @@ index a2c01df71b..6c36953576 100644
      protected void startRawMetadata(int sizeHint) {
          rawMetaBlob = ByteBuffer.allocate(sizeHint);
      }
-diff --git a/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java b/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
+diff --git a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
 index 7fee183570..260f2d4f4d 100644
---- a/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
-+++ b/modules/javafx.media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
+--- a/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
++++ b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/platform/java/ID3MetadataParser.java
 @@ -1,5 +1,5 @@
  /*
 - * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
