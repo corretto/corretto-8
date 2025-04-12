@@ -14,7 +14,7 @@ index a2c01df71b..6c36953576 100644
 +++ b/modules/media/src/main/java/com/sun/media/jfxmediaimpl/MetadataParserImpl.java
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+- * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
 + * Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
   * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
   *
