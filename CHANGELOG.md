@@ -26,6 +26,7 @@ The following issues are addressed in 8.452.09.1:
 |--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
 | Import jdk8u452-b09    | All      | Updates Corretto baseline to OpenJDK 8u452-b09 | [jdk8u452-b09](https://github.com/openjdk/jdk8u/releases/tag/jdk8u452-b09) |
 | JDK-8352716            | All      | Update Timezone Data to 2025b                  | [JDK-8352716](https://bugs.openjdk.org/browse/JDK-8352716)                 |
+| Internal               | Linux    | Fix alternatives to not conflict with OpenJDK8 package | [PR-520](https://github.com/corretto/corretto-8/pull/520)          |
 
 ## Corretto version: 8.442.06.1
 Release Date: January 21, 2025
