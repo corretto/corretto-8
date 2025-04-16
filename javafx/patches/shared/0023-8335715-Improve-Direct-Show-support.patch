@@ -7,10 +7,10 @@ Subject: [PATCH] 8335715: Improve Direct Show support
  .../plugins/dshowwrapper/dshowwrapper.cpp     | 41 +++++++++++++++----
  1 file changed, 34 insertions(+), 7 deletions(-)
 
-diff --git a/modules/javafx.media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp b/modules/javafx.media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
+diff --git a/modules/media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp b/modules/media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
 index eac5bff065..9a9773b6f3 100644
---- a/modules/javafx.media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
-+++ b/modules/javafx.media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
+--- a/modules/media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
++++ b/modules/media/src/main/native/gstreamer/plugins/dshowwrapper/dshowwrapper.cpp
 @@ -62,6 +62,7 @@ enum CODEC_ID
      CODEC_ID_AVC1, // MP4
  };
