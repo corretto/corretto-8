@@ -272,14 +272,14 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/wsimport wsimport %{java_home}/bin/wsimport \
                --slave %{_bindir}/xjc xjc %{java_home}/bin/xjc
 
-  alternatives --install %{_jvmdir}/java-%{java_major_version} corretto_java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
-               --slave %{_jvmdir}/java-%{java_major_version}-openjdk corretto_java_sdk_%{java_major_version}_openjdk %{java_home}
+  alternatives --install %{_jvmdir}/java-%{java_major_version} java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java_sdk_%{java_major_version}_openjdk %{java_home}
 fi
 
 %postun devel
 if [ $1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
-  alternatives --remove corretto_java_sdk_%{java_major_version} %{java_home}
+  alternatives --remove java_sdk_%{java_major_version} %{java_home}
 fi
 
 %post
@@ -287,7 +287,7 @@ if [ $1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/jre/bin/java %{alternatives_priority} \
                --slave %{_jvmdir}/%{name} %{name} %{java_home} \
                --slave %{_jvmdir}/jre jre %{java_home}/jre \
-               --slave %{_jvmdir}/jre-openjdk corretto-jre_openjdk %{java_home}/jre \
+               --slave %{_jvmdir}/jre-openjdk jre_openjdk %{java_home}/jre \
                --slave %{_bindir}/jjs jjs %{java_home}/jre/bin/jjs \
                --slave %{_bindir}/keytool keytool %{java_home}/jre/bin/keytool \
                --slave %{_bindir}/orbd orbd %{java_home}/jre/bin/orbd \
@@ -300,15 +300,15 @@ if [ $1 -eq 1 ] ; then
                --slave %{_bindir}/unpack200 unpack200 %{java_home}/jre/bin/unpack200
 
   # Need to setup the jre alternatives separately when there is a higher priority jre java these don't get created above.
-  alternatives --install %{_jvmdir}/jre-%{java_major_version} corretto_jre_%{java_major_version} %{java_home}/jre %{alternatives_priority} \
-               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk corretto_jre_%{java_major_version}_openjdk %{java_home}/jre
+  alternatives --install %{_jvmdir}/jre-%{java_major_version} jre_%{java_major_version} %{java_home}/jre %{alternatives_priority} \
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}/jre
 
 fi
 
 %postun
 if [ $1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/jre/bin/java
-  alternatives --remove corretto_jre_%{java_major_version} %{java_home}/jre
+  alternatives --remove jre_%{java_major_version} %{java_home}/jre
 fi
 
 %files devel
