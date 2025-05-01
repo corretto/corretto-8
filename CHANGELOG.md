@@ -2,6 +2,23 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.452.09.2
+Release Date: May 1, 2025
+ 
+**Target Platforms <sup>1</sup>**
+ 
++ Amazon Linux 2
++ Amazon Linux 2023
+ 
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+ 
+The following issues are addressed in 8.452.09.2:
+ 
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Rollback change to alternatives name | Amazon Linux      | Partially reverts the commit that changed alternatives install path for corretto | [commit](https://github.com/corretto/corretto-8/commit/3d0093710a3b44a6141aa2c2099ede33d462279b) |
+
 ## Corretto version: 8.452.09.1
 Release Date: April 15, 2025
 
