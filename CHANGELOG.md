@@ -17,7 +17,7 @@ The following issues are addressed in 8.452.09.2:
  
 | Issue Name                                 | Platform | Description                                                          | Link                                                                          |
 |--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| Rollback change to alternatives name | Amazon Linux      | Partially reverts the commit that changed alternatives install path for corretto | [commit](https://github.com/corretto/corretto-8/commit/3d0093710a3b44a6141aa2c2099ede33d462279b) |
+| Rollback change to alternatives name | Amazon Linux      | Partially reverts a change to the alternatives name and path for Corretto | [PR-529](https://github.com/corretto/corretto-8/issues/529) |
 
 ## Corretto version: 8.452.09.1
 Release Date: April 15, 2025
