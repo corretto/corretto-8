@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -446,14 +446,14 @@ AttachOperation* AttachListener::dequeue() {
 
 void AttachListener::vm_start() {
   char fn[UNIX_PATH_MAX];
-  struct stat64 st;
+  struct stat st;
   int ret;
 
   int n = snprintf(fn, UNIX_PATH_MAX, "%s/.java_pid%d",
            os::get_temp_directory(), os::current_process_id());
   assert(n < (int)UNIX_PATH_MAX, "java_pid file name buffer overflow");
 
-  RESTARTABLE(::stat64(fn, &st), ret);
+  RESTARTABLE(::stat(fn, &st), ret);
   if (ret == 0) {
     ret = ::unlink(fn);
     if (ret == -1) {
@@ -480,8 +480,8 @@ int AttachListener::pd_init() {
 
 bool AttachListener::check_socket_file() {
   int ret;
-  struct stat64 st;
-  ret = stat64(LinuxAttachListener::path(), &st);
+  struct stat st;
+  ret = stat(LinuxAttachListener::path(), &st);
   if (ret == -1) { // need to restart attach listener.
     debug_only(warning("Socket file %s does not exist - Restart Attach Listener",
                       LinuxAttachListener::path()));
@@ -521,12 +521,12 @@ bool AttachListener::is_init_trigger() {
   char fn[PATH_MAX+1];
   sprintf(fn, ".attach_pid%d", os::current_process_id());
   int ret;
-  struct stat64 st;
-  RESTARTABLE(::stat64(fn, &st), ret);
+  struct stat st;
+  RESTARTABLE(::stat(fn, &st), ret);
   if (ret == -1) {
     snprintf(fn, sizeof(fn), "%s/.attach_pid%d",
              os::get_temp_directory(), os::current_process_id());
-    RESTARTABLE(::stat64(fn, &st), ret);
+    RESTARTABLE(::stat(fn, &st), ret);
   }
   if (ret == 0) {
     // simple check to avoid starting the attach mechanism when
