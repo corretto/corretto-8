@@ -45,6 +45,14 @@ The following issues are addressed in 8.452.09.1:
 | JDK-8352716            | All      | Update Timezone Data to 2025b                  | [JDK-8352716](https://bugs.openjdk.org/browse/JDK-8352716)                 |
 | Internal               | Linux    | Fix alternatives to not conflict with OpenJDK8 package | [PR-520](https://github.com/corretto/corretto-8/pull/520)          |
 
+The following CVEs are addressed in 8.452.09.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2025-21587 | 7.4  | security-libs/javax.net.ssl |
+| CVE-2025-30698 | 5.6  | client-libs/2d              |
+| CVE-2025-30691 | 4.8  | hotspot/compiler            |
+
 ## Corretto version: 8.442.06.1
 Release Date: January 21, 2025
 
