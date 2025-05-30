@@ -88,7 +88,7 @@ inline void os::dll_unload(void *lib) {
 inline const int os::default_file_open_flags() { return 0;}
 
 inline jlong os::lseek(int fd, jlong offset, int whence) {
-  return (jlong) ::lseek64(fd, offset, whence);
+  return (jlong) ::lseek(fd, offset, whence);
 }
 
 inline int os::fsync(int fd) {
@@ -100,7 +100,7 @@ inline char* os::native_path(char *path) {
 }
 
 inline int os::ftruncate(int fd, jlong length) {
-  return ::ftruncate64(fd, length);
+  return ::ftruncate(fd, length);
 }
 
 // macros for restartable system calls
