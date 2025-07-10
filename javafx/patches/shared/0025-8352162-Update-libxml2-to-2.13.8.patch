@@ -1,1228 +1,903 @@
-From 60ec8fdeb4fef761a84f9c5b15761e61ea8aa9c7 Mon Sep 17 00:00:00 2001
+From 43ee50c98cd06423d52544efa17a3198a773cc80 Mon Sep 17 00:00:00 2001
 From: ianrichr <ianrichr@amazon.com>
-Date: Wed, 9 Jul 2025 23:56:24 +0000
-Subject: [PATCH] Adding errors to each file touched by JDK-8352162
+Date: Thu, 10 Jul 2025 00:19:03 +0000
+Subject: [PATCH] Adjust errors in patch file
 
 ---
- .../Source/ThirdParty/libxml/linux/config.h   |  7 ++++++
- .../libxml/linux/include/libxml/xmlversion.h  |  7 ++++++
- .../Source/ThirdParty/libxml/mac/config.h     |  7 ++++++
- .../libxml/mac/include/libxml/xmlversion.h    |  7 ++++++
- .../Source/ThirdParty/libxml/src/COPYING      |  3 +++
- .../Source/ThirdParty/libxml/src/Copyright    |  3 +++
- .../Source/ThirdParty/libxml/src/HTMLparser.c |  7 ++++++
- .../Source/ThirdParty/libxml/src/HTMLtree.c   |  7 ++++++
- .../Source/ThirdParty/libxml/src/Makefile.am  |  3 +++
- .../native/Source/ThirdParty/libxml/src/NEWS  |  3 +++
- .../Source/ThirdParty/libxml/src/README.tests |  3 +++
- .../Source/ThirdParty/libxml/src/SAX2.c       |  7 ++++++
- .../native/Source/ThirdParty/libxml/src/TODO  |  3 +++
- .../Source/ThirdParty/libxml/src/TODO_SCHEMAS |  3 +++
- .../native/Source/ThirdParty/libxml/src/buf.c |  7 ++++++
- .../Source/ThirdParty/libxml/src/chvalid.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/config.h.in  |  7 ++++++
- .../Source/ThirdParty/libxml/src/configure.ac |  3 +++
- .../Source/ThirdParty/libxml/src/dict.c       |  7 ++++++
- .../Source/ThirdParty/libxml/src/elfgcchack.h |  7 ++++++
- .../native/Source/ThirdParty/libxml/src/enc.h |  7 ++++++
- .../Source/ThirdParty/libxml/src/encoding.c   |  7 ++++++
- .../Source/ThirdParty/libxml/src/entities.c   |  7 ++++++
- .../Source/ThirdParty/libxml/src/error.c      |  7 ++++++
- .../Source/ThirdParty/libxml/src/globals.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/hash.c       |  7 ++++++
- .../libxml/src/include/libxml/DOCBparser.h    |  7 ++++++
- .../libxml/src/include/libxml/HTMLparser.h    |  7 ++++++
- .../libxml/src/include/libxml/HTMLtree.h      |  7 ++++++
- .../libxml/src/include/libxml/Makefile.am     |  3 +++
- .../libxml/src/include/libxml/SAX.h           |  7 ++++++
- .../libxml/src/include/libxml/SAX2.h          |  7 ++++++
- .../libxml/src/include/libxml/c14n.h          |  7 ++++++
- .../libxml/src/include/libxml/catalog.h       |  7 ++++++
- .../libxml/src/include/libxml/chvalid.h       |  7 ++++++
- .../libxml/src/include/libxml/debugXML.h      |  7 ++++++
- .../libxml/src/include/libxml/dict.h          |  7 ++++++
- .../libxml/src/include/libxml/encoding.h      |  7 ++++++
- .../libxml/src/include/libxml/entities.h      |  7 ++++++
- .../libxml/src/include/libxml/hash.h          |  7 ++++++
- .../libxml/src/include/libxml/list.h          |  7 ++++++
- .../libxml/src/include/libxml/nanoftp.h       |  7 ++++++
- .../libxml/src/include/libxml/nanohttp.h      |  7 ++++++
- .../libxml/src/include/libxml/parser.h        |  7 ++++++
- .../src/include/libxml/parserInternals.h      |  7 ++++++
- .../libxml/src/include/libxml/pattern.h       |  7 ++++++
- .../libxml/src/include/libxml/relaxng.h       |  7 ++++++
- .../src/include/libxml/schemasInternals.h     |  7 ++++++
- .../libxml/src/include/libxml/schematron.h    |  7 ++++++
- .../libxml/src/include/libxml/threads.h       |  7 ++++++
- .../libxml/src/include/libxml/tree.h          |  7 ++++++
- .../libxml/src/include/libxml/uri.h           |  7 ++++++
- .../libxml/src/include/libxml/valid.h         |  7 ++++++
- .../libxml/src/include/libxml/xinclude.h      |  7 ++++++
- .../libxml/src/include/libxml/xlink.h         |  7 ++++++
- .../libxml/src/include/libxml/xmlIO.h         |  7 ++++++
- .../libxml/src/include/libxml/xmlautomata.h   |  7 ++++++
- .../libxml/src/include/libxml/xmlerror.h      |  7 ++++++
- .../libxml/src/include/libxml/xmlexports.h    |  7 ++++++
- .../libxml/src/include/libxml/xmlmemory.h     |  7 ++++++
- .../libxml/src/include/libxml/xmlmodule.h     |  7 ++++++
- .../libxml/src/include/libxml/xmlreader.h     |  7 ++++++
- .../libxml/src/include/libxml/xmlregexp.h     |  7 ++++++
- .../libxml/src/include/libxml/xmlsave.h       |  7 ++++++
- .../libxml/src/include/libxml/xmlschemas.h    |  7 ++++++
- .../src/include/libxml/xmlschemastypes.h      |  7 ++++++
- .../libxml/src/include/libxml/xmlunicode.h    |  7 ++++++
- .../libxml/src/include/libxml/xmlversion.h.in |  7 ++++++
- .../libxml/src/include/libxml/xmlwriter.h     |  7 ++++++
- .../libxml/src/include/libxml/xpath.h         |  7 ++++++
- .../src/include/libxml/xpathInternals.h       |  7 ++++++
- .../libxml/src/include/libxml/xpointer.h      |  7 ++++++
+ .../Source/ThirdParty/libxml/linux/config.h   |  4 ++++
+ .../libxml/linux/include/libxml/xmlversion.h  |  4 ++++
+ .../Source/ThirdParty/libxml/mac/config.h     |  4 ++++
+ .../libxml/mac/include/libxml/xmlversion.h    |  4 ++++
+ .../Source/ThirdParty/libxml/src/HTMLparser.c |  4 ++++
+ .../Source/ThirdParty/libxml/src/HTMLtree.c   |  4 ++++
+ .../Source/ThirdParty/libxml/src/SAX2.c       |  4 ++++
+ .../native/Source/ThirdParty/libxml/src/buf.c |  4 ++++
+ .../Source/ThirdParty/libxml/src/chvalid.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/config.h.in  |  4 ++++
+ .../Source/ThirdParty/libxml/src/dict.c       |  4 ++++
+ .../Source/ThirdParty/libxml/src/elfgcchack.h |  4 ++++
+ .../native/Source/ThirdParty/libxml/src/enc.h |  4 ++++
+ .../Source/ThirdParty/libxml/src/encoding.c   |  4 ++++
+ .../Source/ThirdParty/libxml/src/entities.c   |  4 ++++
+ .../Source/ThirdParty/libxml/src/error.c      |  4 ++++
+ .../Source/ThirdParty/libxml/src/globals.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/hash.c       |  4 ++++
+ .../libxml/src/include/libxml/DOCBparser.h    |  4 ++++
+ .../libxml/src/include/libxml/HTMLparser.h    |  4 ++++
+ .../libxml/src/include/libxml/HTMLtree.h      |  4 ++++
+ .../libxml/src/include/libxml/SAX.h           |  4 ++++
+ .../libxml/src/include/libxml/SAX2.h          |  4 ++++
+ .../libxml/src/include/libxml/c14n.h          |  4 ++++
+ .../libxml/src/include/libxml/catalog.h       |  4 ++++
+ .../libxml/src/include/libxml/chvalid.h       |  4 ++++
+ .../libxml/src/include/libxml/debugXML.h      |  4 ++++
+ .../libxml/src/include/libxml/dict.h          |  4 ++++
+ .../libxml/src/include/libxml/encoding.h      |  4 ++++
+ .../libxml/src/include/libxml/entities.h      |  4 ++++
+ .../libxml/src/include/libxml/hash.h          |  4 ++++
+ .../libxml/src/include/libxml/list.h          |  4 ++++
+ .../libxml/src/include/libxml/nanoftp.h       |  4 ++++
+ .../libxml/src/include/libxml/nanohttp.h      |  4 ++++
+ .../libxml/src/include/libxml/parser.h        |  4 ++++
+ .../src/include/libxml/parserInternals.h      |  4 ++++
+ .../libxml/src/include/libxml/pattern.h       |  4 ++++
+ .../libxml/src/include/libxml/relaxng.h       |  4 ++++
+ .../src/include/libxml/schemasInternals.h     |  4 ++++
+ .../libxml/src/include/libxml/schematron.h    |  4 ++++
+ .../libxml/src/include/libxml/threads.h       |  4 ++++
+ .../libxml/src/include/libxml/tree.h          |  4 ++++
+ .../libxml/src/include/libxml/uri.h           |  4 ++++
+ .../libxml/src/include/libxml/valid.h         |  4 ++++
+ .../libxml/src/include/libxml/xinclude.h      |  4 ++++
+ .../libxml/src/include/libxml/xlink.h         |  4 ++++
+ .../libxml/src/include/libxml/xmlIO.h         |  4 ++++
+ .../libxml/src/include/libxml/xmlautomata.h   |  4 ++++
+ .../libxml/src/include/libxml/xmlerror.h      |  4 ++++
+ .../libxml/src/include/libxml/xmlexports.h    |  4 ++++
+ .../libxml/src/include/libxml/xmlmemory.h     |  4 ++++
+ .../libxml/src/include/libxml/xmlmodule.h     |  4 ++++
+ .../libxml/src/include/libxml/xmlreader.h     |  4 ++++
+ .../libxml/src/include/libxml/xmlregexp.h     |  4 ++++
+ .../libxml/src/include/libxml/xmlsave.h       |  4 ++++
+ .../libxml/src/include/libxml/xmlschemas.h    |  4 ++++
+ .../src/include/libxml/xmlschemastypes.h      |  4 ++++
+ .../libxml/src/include/libxml/xmlunicode.h    |  4 ++++
+ .../libxml/src/include/libxml/xmlversion.h.in |  4 ++++
+ .../libxml/src/include/libxml/xmlwriter.h     |  4 ++++
+ .../libxml/src/include/libxml/xpath.h         |  4 ++++
+ .../src/include/libxml/xpathInternals.h       |  4 ++++
+ .../libxml/src/include/libxml/xpointer.h      |  4 ++++
  .../libxml/src/include/private/regexp.h       | 23 +++++++++++++++++++
- .../libxml/src/libxml-2.0-uninstalled.pc.in   |  7 ++++++
- .../ThirdParty/libxml/src/libxml-2.0.pc.in    |  7 ++++++
- .../Source/ThirdParty/libxml/src/libxml.3     |  3 +++
- .../Source/ThirdParty/libxml/src/libxml.h     |  7 ++++++
- .../Source/ThirdParty/libxml/src/libxml.m4    |  3 +++
- .../ThirdParty/libxml/src/libxml.spec.in      |  7 ++++++
- .../libxml/src/libxml2-config.cmake.in        |  7 ++++++
- .../Source/ThirdParty/libxml/src/libxml2.spec |  3 +++
- .../Source/ThirdParty/libxml/src/libxml2.syms |  3 +++
- .../Source/ThirdParty/libxml/src/list.c       |  7 ++++++
- .../Source/ThirdParty/libxml/src/nanoftp.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/nanohttp.c   |  7 ++++++
- .../Source/ThirdParty/libxml/src/parser.c     |  7 ++++++
- .../ThirdParty/libxml/src/parserInternals.c   |  7 ++++++
- .../Source/ThirdParty/libxml/src/pattern.c    |  7 ++++++
- .../ThirdParty/libxml/src/regressions.xml     |  3 +++
- .../Source/ThirdParty/libxml/src/save.h       |  7 ++++++
- .../Source/ThirdParty/libxml/src/threads.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/tree.c       |  7 ++++++
- .../Source/ThirdParty/libxml/src/triodef.h    |  7 ++++++
- .../Source/ThirdParty/libxml/src/trionan.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/trionan.h    |  7 ++++++
- .../native/Source/ThirdParty/libxml/src/uri.c |  7 ++++++
- .../Source/ThirdParty/libxml/src/valid.c      |  7 ++++++
- .../ThirdParty/libxml/src/win32/Makefile.bcb  |  3 +++
- .../libxml/src/win32/Makefile.mingw           |  3 +++
- .../ThirdParty/libxml/src/win32/Makefile.msvc |  3 +++
- .../ThirdParty/libxml/src/win32/Readme.txt    |  3 +++
- .../libxml/src/win32/VC10/README.vc10         |  3 +++
- .../libxml/src/win32/VC10/RuleSet1.ruleset    |  3 +++
- .../src/win32/VC10/libxml2-focus.vcxproj      |  3 +++
- .../libxml/src/win32/VC10/libxml2.sln         |  3 +++
- .../libxml/src/win32/VC10/libxml2.vcxproj     |  3 +++
- .../src/win32/VC10/libxml2.vcxproj.filters    |  3 +++
- .../libxml/src/win32/VC10/runsuite.vcxproj    |  3 +++
- .../src/win32/VC10/runsuite.vcxproj.filters   |  3 +++
- .../ThirdParty/libxml/src/win32/configure.js  |  3 +++
- .../ThirdParty/libxml/src/win32/defgen.xsl    |  3 +++
- .../libxml/src/win32/libxml2.def.src          |  3 +++
- .../ThirdParty/libxml/src/xml2-config.1       |  3 +++
- .../ThirdParty/libxml/src/xml2Conf.sh.in      |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlIO.c      |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlmemory.c  |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlreader.c  |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlsave.c    |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlstring.c  |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlunicode.c |  7 ++++++
- .../Source/ThirdParty/libxml/src/xmlwriter.c  |  7 ++++++
- .../Source/ThirdParty/libxml/src/xpath.c      |  7 ++++++
- .../Source/ThirdParty/libxml/src/xzlib.h      |  7 ++++++
- .../Source/ThirdParty/libxslt/linux/config.h  |  7 ++++++
- .../Source/ThirdParty/libxslt/mac/config.h    |  7 ++++++
- .../Source/ThirdParty/libxslt/src/Makefile.am |  3 +++
- .../Source/ThirdParty/libxslt/src/config.h.in |  7 ++++++
- .../ThirdParty/libxslt/src/configure.ac       |  3 +++
- .../ThirdParty/libxslt/src/libexslt.pc.in     |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt.pc.in      |  7 ++++++
- .../libxslt/src/libxslt/Makefile.am           |  3 +++
- .../libxslt/src/libxslt/attributes.c          |  7 ++++++
- .../libxslt/src/libxslt/attributes.h          |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/attrvt.c   |  7 ++++++
- .../libxslt/src/libxslt/documents.c           |  7 ++++++
- .../libxslt/src/libxslt/documents.h           |  7 ++++++
- .../libxslt/src/libxslt/extensions.c          |  7 ++++++
- .../libxslt/src/libxslt/extensions.h          |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/extra.c    |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/extra.h    |  7 ++++++
- .../libxslt/src/libxslt/functions.c           |  7 ++++++
- .../libxslt/src/libxslt/functions.h           |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/imports.c  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/imports.h  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/keys.c     |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/keys.h     |  7 ++++++
- .../libxslt/src/libxslt/namespaces.c          |  7 ++++++
- .../libxslt/src/libxslt/namespaces.h          |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/numbers.c  |  7 ++++++
- .../libxslt/src/libxslt/numbersInternals.h    |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/pattern.c  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/pattern.h  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/preproc.c  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/preproc.h  |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/security.c |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/security.h |  7 ++++++
- .../libxslt/src/libxslt/templates.c           |  7 ++++++
- .../libxslt/src/libxslt/templates.h           |  7 ++++++
- .../libxslt/src/libxslt/transform.c           |  7 ++++++
- .../libxslt/src/libxslt/transform.h           |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/trio.h     |  7 ++++++
- .../libxslt/src/libxslt/variables.c           |  7 ++++++
- .../libxslt/src/libxslt/variables.h           |  7 ++++++
- .../libxslt/src/libxslt/win32config.h         |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/xslt.c     |  7 ++++++
- .../ThirdParty/libxslt/src/libxslt/xslt.h     |  7 ++++++
- .../libxslt/src/libxslt/xsltInternals.h       |  7 ++++++
- .../libxslt/src/libxslt/xsltconfig.h          |  7 ++++++
- .../libxslt/src/libxslt/xsltlocale.c          |  7 ++++++
- .../libxslt/src/libxslt/xsltlocale.h          |  7 ++++++
- .../libxslt/src/libxslt/xsltutils.c           |  7 ++++++
- .../libxslt/src/libxslt/xsltutils.h           |  7 ++++++
- .../libxslt/src/libxslt/xsltwin32config.h.in  |  7 ++++++
- .../ThirdParty/libxslt/src/win32/defgen.xsl   |  3 +++
- .../libxslt/src/win32/libexslt.def.src        |  3 +++
- .../libxslt/src/win32/libxslt.def.src         |  3 +++
- .../native/Source/cmake/OptionsMSVC.cmake     |  3 +++
- 177 files changed, 1107 insertions(+)
+ .../libxml/src/libxml-2.0-uninstalled.pc.in   |  4 ++++
+ .../ThirdParty/libxml/src/libxml-2.0.pc.in    |  4 ++++
+ .../Source/ThirdParty/libxml/src/libxml.h     |  4 ++++
+ .../ThirdParty/libxml/src/libxml.spec.in      |  4 ++++
+ .../libxml/src/libxml2-config.cmake.in        |  4 ++++
+ .../Source/ThirdParty/libxml/src/list.c       |  4 ++++
+ .../Source/ThirdParty/libxml/src/nanoftp.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/nanohttp.c   |  4 ++++
+ .../Source/ThirdParty/libxml/src/parser.c     |  4 ++++
+ .../ThirdParty/libxml/src/parserInternals.c   |  4 ++++
+ .../Source/ThirdParty/libxml/src/pattern.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/save.h       |  4 ++++
+ .../Source/ThirdParty/libxml/src/threads.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/tree.c       |  4 ++++
+ .../Source/ThirdParty/libxml/src/triodef.h    |  4 ++++
+ .../Source/ThirdParty/libxml/src/trionan.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/trionan.h    |  4 ++++
+ .../native/Source/ThirdParty/libxml/src/uri.c |  4 ++++
+ .../Source/ThirdParty/libxml/src/valid.c      |  4 ++++
+ .../ThirdParty/libxml/src/xml2Conf.sh.in      |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlIO.c      |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlmemory.c  |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlreader.c  |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlsave.c    |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlstring.c  |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlunicode.c |  4 ++++
+ .../Source/ThirdParty/libxml/src/xmlwriter.c  |  4 ++++
+ .../Source/ThirdParty/libxml/src/xpath.c      |  4 ++++
+ .../Source/ThirdParty/libxml/src/xzlib.h      |  4 ++++
+ .../Source/ThirdParty/libxslt/linux/config.h  |  4 ++++
+ .../Source/ThirdParty/libxslt/mac/config.h    |  4 ++++
+ .../Source/ThirdParty/libxslt/src/config.h.in |  4 ++++
+ .../ThirdParty/libxslt/src/libexslt.pc.in     |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt.pc.in      |  4 ++++
+ .../libxslt/src/libxslt/attributes.c          |  4 ++++
+ .../libxslt/src/libxslt/attributes.h          |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/attrvt.c   |  4 ++++
+ .../libxslt/src/libxslt/documents.c           |  4 ++++
+ .../libxslt/src/libxslt/documents.h           |  4 ++++
+ .../libxslt/src/libxslt/extensions.c          |  4 ++++
+ .../libxslt/src/libxslt/extensions.h          |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/extra.c    |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/extra.h    |  4 ++++
+ .../libxslt/src/libxslt/functions.c           |  4 ++++
+ .../libxslt/src/libxslt/functions.h           |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/imports.c  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/imports.h  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/keys.c     |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/keys.h     |  4 ++++
+ .../libxslt/src/libxslt/namespaces.c          |  4 ++++
+ .../libxslt/src/libxslt/namespaces.h          |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/numbers.c  |  4 ++++
+ .../libxslt/src/libxslt/numbersInternals.h    |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/pattern.c  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/pattern.h  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/preproc.c  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/preproc.h  |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/security.c |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/security.h |  4 ++++
+ .../libxslt/src/libxslt/templates.c           |  4 ++++
+ .../libxslt/src/libxslt/templates.h           |  4 ++++
+ .../libxslt/src/libxslt/transform.c           |  4 ++++
+ .../libxslt/src/libxslt/transform.h           |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/trio.h     |  4 ++++
+ .../libxslt/src/libxslt/variables.c           |  4 ++++
+ .../libxslt/src/libxslt/variables.h           |  4 ++++
+ .../libxslt/src/libxslt/win32config.h         |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/xslt.c     |  4 ++++
+ .../ThirdParty/libxslt/src/libxslt/xslt.h     |  4 ++++
+ .../libxslt/src/libxslt/xsltInternals.h       |  4 ++++
+ .../libxslt/src/libxslt/xsltconfig.h          |  4 ++++
+ .../libxslt/src/libxslt/xsltlocale.c          |  4 ++++
+ .../libxslt/src/libxslt/xsltlocale.h          |  4 ++++
+ .../libxslt/src/libxslt/xsltutils.c           |  4 ++++
+ .../libxslt/src/libxslt/xsltutils.h           |  4 ++++
+ .../libxslt/src/libxslt/xsltwin32config.h.in  |  4 ++++
+ 140 files changed, 579 insertions(+)
  create mode 100644 bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/private/regexp.h
 
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/config.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/config.h
-index 9a8a5775..bc688828 100644
+index 9a8a5775..2febd4f5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/config.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/config.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.  Generated from config.h.in by configure.  */
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/include/libxml/xmlversion.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/include/libxml/xmlversion.h
-index e3caf9eb..360b5b69 100644
+index e3caf9eb..edc00d46 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/include/libxml/xmlversion.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/linux/include/libxml/xmlversion.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: compile-time version informations
   * Description: compile-time version informations for the XML library
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/config.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/config.h
-index ba5bc552..c999fef8 100644
+index ba5bc552..274ef4fb 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/config.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/config.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.  Generated from config.h.in by configure.  */
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/include/libxml/xmlversion.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/include/libxml/xmlversion.h
-index e3caf9eb..360b5b69 100644
+index e3caf9eb..edc00d46 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/include/libxml/xmlversion.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/mac/include/libxml/xmlversion.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: compile-time version informations
   * Description: compile-time version informations for the XML library
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/COPYING b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/COPYING
-index d6131850..617bd7f6 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/COPYING
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/COPYING
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- Except where otherwise noted in the source code (e.g. the files hash.c,
- list.c and the trio files, which are covered by a similar licence but
- with different Copyright notices) all the files are:
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Copyright b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Copyright
-index d6131850..617bd7f6 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Copyright
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Copyright
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- Except where otherwise noted in the source code (e.g. the files hash.c,
- list.c and the trio files, which are covered by a similar licence but
- with different Copyright notices) all the files are:
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLparser.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLparser.c
-index bf32db8f..ab0fb55e 100644
+index bf32db8f..c326228d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLparser.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLparser.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * HTMLparser.c : an HTML 4.0 non-verifying parser
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLtree.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLtree.c
-index 992bdf5b..331a0e40 100644
+index 992bdf5b..5bc40b02 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLtree.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/HTMLtree.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * HTMLtree.c : implementation of access function for an HTML tree.
   *
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Makefile.am b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Makefile.am
-index 748dfc2a..0d5d145e 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Makefile.am
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/Makefile.am
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ## Process this file with automake to produce Makefile.in
-
- ACLOCAL_AMFLAGS = -I m4
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/NEWS b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/NEWS
-index 1ffceca6..9ca8a5f1 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/NEWS
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/NEWS
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
-
-         NEWS file for libxml2
-
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/README.tests b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/README.tests
-index 8d86f2a1..5532e91f 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/README.tests
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/README.tests
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
-                        README.tests
-
-    Instructions for standalone test regressions of libxml2
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/SAX2.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/SAX2.c
-index d02fa194..510d0f99 100644
+index d02fa194..3e426a16 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/SAX2.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/SAX2.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * SAX2.c : Default SAX2 handler to build a tree.
   *
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO
-index 9c322249..ce6479ce 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- 124907 HTML parse buffer problem when parsing larse in-memory docs
- 124110 DTD validation && wrong namespace
- 123564 xmllint --html --format
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO_SCHEMAS b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO_SCHEMAS
-index 145a4eda..4abb8e8b 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO_SCHEMAS
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/TODO_SCHEMAS
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- - implement counted transitions at the automata level
-
- - Unicode:
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.c
-index 18c72965..d7cc84c4 100644
+index 18c72965..dfa0d90d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * buf.c: memory buffers for libxml2
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/chvalid.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/chvalid.c
-index 326354bf..be7d741a 100644
+index 326354bf..3857a5e9 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/chvalid.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/chvalid.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * chvalid.c:   this module implements the character range
   *      validation APIs
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/config.h.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/config.h.in
-index 0b4aad67..68472f1e 100644
+index 0b4aad67..df4c05bd 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/config.h.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/config.h.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
  /* Type cast for the gethostbyname() argument */
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/configure.ac b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/configure.ac
-index 8dbc56c0..2a65719e 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/configure.ac
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/configure.ac
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- dnl Process this file with autoconf to produce a configure script.
- AC_PREREQ([2.63])
- AC_INIT
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/dict.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/dict.c
-index 422a33d3..0c27bf72 100644
+index 422a33d3..d3f3d6f3 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/dict.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/dict.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * dict.c: dictionary of reusable strings, just used to avoid allocation
   *         and freeing operations.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/elfgcchack.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/elfgcchack.h
-index 5ac93bfb..50c332ca 100644
+index 5ac93bfb..ebc6355c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/elfgcchack.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/elfgcchack.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * elfgcchack.h: hack by Arjan van de Ven <arjanv@redhat.com> to speed
   *               up the code when using gcc for call within the library.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/enc.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/enc.h
-index 057d206d..a037c2ea 100644
+index 057d206d..20454b98 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/enc.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/enc.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Internal Interfaces for encoding in libxml2
   * Description: this module describes a few interfaces which were
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/encoding.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/encoding.c
-index b014eb21..a340441a 100644
+index b014eb21..d5b73e50 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/encoding.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/encoding.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * encoding.c : implements the encoding conversion functions needed for XML
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/entities.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/entities.c
-index 18ed507b..4d700cec 100644
+index 18ed507b..ff2e40ba 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/entities.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/entities.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * entities.c : implementation for the XML entities handling
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/error.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/error.c
-index be255f10..491879c1 100644
+index be255f10..87340f97 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/error.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/error.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * error.c: module displaying/handling XML parser errors
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/globals.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/globals.c
-index d8ffd105..c1a523e4 100644
+index d8ffd105..a5d2b63c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/globals.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/globals.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * globals.c: definition and handling of the set of global variables
   *            of the library
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/hash.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/hash.c
-index 5e369b95..5202a52a 100644
+index 5e369b95..5eaa79d3 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/hash.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/hash.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * hash.c: chained hash tables
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/DOCBparser.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/DOCBparser.h
-index d7ed2bf7..c142419c 100644
+index d7ed2bf7..29afaa51 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/DOCBparser.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/DOCBparser.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: old DocBook SGML parser
   * Description: interface for a DocBook SGML non-verifying parser
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLparser.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLparser.h
-index b35c1021..575badf7 100644
+index b35c1021..ad110113 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLparser.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLparser.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for an HTML 4.0 non-verifying parser
   * Description: this module implements an HTML 4.0 non-verifying parser
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLtree.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLtree.h
-index 6b87e83d..e13cb70a 100644
+index 6b87e83d..fe9ec6e5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLtree.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/HTMLtree.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: specific APIs to process HTML tree, especially serialization
   * Description: this module implements a few function needed to process
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/Makefile.am b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/Makefile.am
-index cf9297aa..9b9e0e2b 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/Makefile.am
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/Makefile.am
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ## Process this file with automake to produce Makefile.in
-
- xmlincdir = $(includedir)/libxml2/libxml
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX.h
-index 3abc0b61..c4da126d 100644
+index 3abc0b61..326615c5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Old SAX version 1 handler, deprecated
   * Description: DEPRECATED set of SAX version 1 interfaces used to
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX2.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX2.h
-index 6a30e421..411d8808 100644
+index 6a30e421..4fda0450 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX2.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/SAX2.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: SAX2 parser interface used to build the DOM tree
   * Description: those are the default SAX2 interfaces used by
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/c14n.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/c14n.h
-index 5cdf6349..5203f684 100644
+index 5cdf6349..604d2b42 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/c14n.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/c14n.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Provide Canonical XML and Exclusive XML Canonicalization
   * Description: the c14n modules provides a
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/catalog.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/catalog.h
-index c515c802..cc0fca01 100644
+index c515c802..4d84ee0d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/catalog.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/catalog.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * Summary: interfaces to the Catalog handling system
   * Description: the catalog module implements the support for
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/chvalid.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/chvalid.h
-index 8d3df575..b40637ee 100644
+index 8d3df575..d1bb1681 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/chvalid.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/chvalid.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Unicode character range checking
   * Description: this module exports interfaces for the character
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/debugXML.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/debugXML.h
-index 1750b645..8eb8d2f3 100644
+index 1750b645..ba67282d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/debugXML.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/debugXML.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Tree debugging APIs
   * Description: Interfaces to a set of routines used for debugging the tree
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/dict.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/dict.h
-index 60033641..40e5ef26 100644
+index 60033641..02242dec 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/dict.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/dict.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: string dictionary
   * Description: dictionary of reusable strings, just used to avoid allocation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/encoding.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/encoding.h
-index 506bbb4d..2a5ef7f0 100644
+index 506bbb4d..a066de5d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/encoding.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/encoding.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the encoding conversion functions
   * Description: interface for the encoding conversion functions needed for
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/entities.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/entities.h
-index 4ba70391..af4e0091 100644
+index 4ba70391..d6322e76 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/entities.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/entities.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the XML entities handling
   * Description: this module provides some of the entity API needed
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/hash.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/hash.h
-index 90cf1af5..4b84c19e 100644
+index 90cf1af5..730800a3 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/hash.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/hash.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Chained hash tables
   * Description: This module implements the hash table support used in
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/list.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/list.h
-index 9cc6b0d6..590048b9 100644
+index 9cc6b0d6..363edfcd 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/list.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/list.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: lists interfaces
   * Description: this module implement the list support used in
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanoftp.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanoftp.h
-index b7d80388..f243251b 100644
+index b7d80388..b13a7bb1 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanoftp.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanoftp.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: minimal FTP implementation
   * Description: minimal FTP implementation allowing to fetch resources
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanohttp.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanohttp.h
-index 4f16851a..f5864ac2 100644
+index 4f16851a..60d9680e 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanohttp.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/nanohttp.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: minimal HTTP implementation
   * Description: minimal HTTP implementation allowing to fetch resources
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parser.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parser.h
-index 557dfc13..c1c39aac 100644
+index 557dfc13..b6123571 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parser.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parser.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: the core parser module
   * Description: Interfaces, constants and types related to the XML parser
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parserInternals.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parserInternals.h
-index 5e08bc48..c5132188 100644
+index 5e08bc48..9629e88a 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parserInternals.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/parserInternals.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: internals routines and limits exported by the parser.
   * Description: this module exports a number of internal parsing routines
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/pattern.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/pattern.h
-index d24b49af..10326e9f 100644
+index d24b49af..2b73417f 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/pattern.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/pattern.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: pattern expression handling
   * Description: allows to compile and test pattern expressions for nodes
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/relaxng.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/relaxng.h
-index 3d5bd80a..96054ed0 100644
+index 3d5bd80a..23fa1943 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/relaxng.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/relaxng.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: implementation of the Relax-NG validation
   * Description: implementation of the Relax-NG validation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schemasInternals.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schemasInternals.h
-index 7d59eb15..e4d50a75 100644
+index 7d59eb15..937a642c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schemasInternals.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schemasInternals.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: internal interfaces for XML Schemas
   * Description: internal interfaces for the XML Schemas handling
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schematron.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schematron.h
-index de76eb76..fb653faf 100644
+index de76eb76..d3dcdb29 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schematron.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/schematron.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: XML Schemastron implementation
   * Description: interface to the XML Schematron validity checking.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/threads.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/threads.h
-index 9cb9f8a5..a161c2b6 100644
+index 9cb9f8a5..5035e3e4 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/threads.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/threads.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * Summary: interfaces for thread handling
   * Description: set of generic threading related routines
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/tree.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/tree.h
-index 7fe05067..44c6aafa 100644
+index 7fe05067..df4160d7 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/tree.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/tree.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interfaces for tree manipulation
   * Description: this module describes the structures found in an tree resulting
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/uri.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/uri.h
-index b96352a5..80f5e8c2 100644
+index b96352a5..94fa176f 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/uri.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/uri.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * Summary: library of generic URI related routines
   * Description: library of generic URI related routines
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/valid.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/valid.h
-index 4cb788a6..e6cde858 100644
+index 4cb788a6..3ca79e59 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/valid.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/valid.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: The DTD validation
   * Description: API for the DTD handling and the validity checking
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xinclude.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xinclude.h
-index e3e4ac91..09d3faca 100644
+index e3e4ac91..1c758266 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xinclude.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xinclude.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: implementation of XInclude
   * Description: API to handle XInclude processing,
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xlink.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xlink.h
-index 7f86f3d9..5abd1972 100644
+index 7f86f3d9..b1a735bc 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xlink.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xlink.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: unfinished XLink detection module
   * Description: unfinished XLink detection module
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlIO.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlIO.h
-index 10c6ea26..98109a46 100644
+index 10c6ea26..46ae7813 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlIO.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlIO.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the I/O interfaces used by the parser
   * Description: interface for the I/O interfaces used by the parser
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlautomata.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlautomata.h
-index 2925b767..c4933374 100644
+index 2925b767..70525f3e 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlautomata.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlautomata.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: API to build regexp automata
   * Description: the API to build regexp automata
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlerror.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlerror.h
-index 04434a45..cdde69f7 100644
+index 04434a45..682efe4d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlerror.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlerror.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: error handling
   * Description: the API used to report errors
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlexports.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlexports.h
-index 2c79f814..12110995 100644
+index 2c79f814..b69d79d8 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlexports.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlexports.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: macros for marking symbols as exportable/importable.
   * Description: macros for marking symbols as exportable/importable.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmemory.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmemory.h
-index 7e073028..e03f1860 100644
+index 7e073028..0c1a2654 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmemory.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmemory.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the memory allocator
   * Description: provides interfaces for the memory allocator,
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmodule.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmodule.h
-index 1c72a7d2..ec689090 100644
+index 1c72a7d2..c76393a4 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmodule.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlmodule.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: dynamic module loading
   * Description: basic API for dynamic module loading, used by
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlreader.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlreader.h
-index ae4c166d..5b7e0bbe 100644
+index ae4c166d..6fb310e3 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlreader.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlreader.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: the XMLReader implementation
   * Description: API of the XML streaming API based on C# interfaces.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlregexp.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlregexp.h
-index 933c0cc1..d3a9f902 100644
+index 933c0cc1..b01ab2ef 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlregexp.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlregexp.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: regular expressions handling
   * Description: basic API for libxml regular expressions handling used
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlsave.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlsave.h
-index e7ed8700..fe3e4871 100644
+index e7ed8700..f0caef9b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlsave.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlsave.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: the XML document serializer
   * Description: API to save document or subtree of document
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemas.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemas.h
-index 4d9fc1bd..d7f915de 100644
+index 4d9fc1bd..41aecf0a 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemas.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemas.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: incomplete XML Schemas structure implementation
   * Description: interface to the XML Schemas handling and schema validity
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemastypes.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemastypes.h
-index 53e2377c..32e5157b 100644
+index 53e2377c..903fb351 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemastypes.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlschemastypes.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: implementation of XML Schema Datatypes
   * Description: module providing the XML Schema Datatypes implementation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlunicode.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlunicode.h
-index e77ea39a..43029737 100644
+index e77ea39a..5a877f44 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlunicode.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlunicode.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Unicode character APIs
   * Description: API for the Unicode character APIs
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlversion.h.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlversion.h.in
-index b173be9e..f3395e22 100644
+index b173be9e..0483cbc0 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlversion.h.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlversion.h.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: compile-time version informations
   * Description: compile-time version informations for the XML library
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlwriter.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlwriter.h
-index a31cfac4..f9952cda 100644
+index a31cfac4..f1607092 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlwriter.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xmlwriter.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: text writing API for XML
   * Description: text writing API for XML
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpath.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpath.h
-index a80a9f18..5858f0f0 100644
+index a80a9f18..99ace34b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpath.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpath.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: XML Path Language implementation
   * Description: API for the XML Path Language implementation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpathInternals.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpathInternals.h
-index 36cc18f6..4b9d8ba7 100644
+index 36cc18f6..e02d351f 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpathInternals.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpathInternals.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: internal interfaces for XML Path Language implementation
   * Description: internal interfaces for XML Path Language implementation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpointer.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpointer.h
-index 7cc45efa..d05e75e0 100644
+index 7cc45efa..ff984756 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpointer.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/xpointer.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
@@ -1258,637 +933,324 @@ index 00000000..b55c932b
 +
 +#endif /* XML_REGEXP_H_PRIVATE__ */
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0-uninstalled.pc.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0-uninstalled.pc.in
-index 60b886b3..8552c2b6 100644
+index 60b886b3..9ae39fbb 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0-uninstalled.pc.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0-uninstalled.pc.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  prefix=
  exec_prefix=
  libdir=${pcfiledir}
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0.pc.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0.pc.in
-index 2653a7c5..4c237ad5 100644
+index 2653a7c5..7649d820 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0.pc.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml-2.0.pc.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  prefix=@prefix@
  exec_prefix=@exec_prefix@
  libdir=@libdir@
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.3 b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.3
-index b3e9fef0..5a00f057 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.3
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.3
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- .TH libxml 3 "12 April 2000"
- .SH NAME
- libxml \- library used to parse XML files
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.h
-index 4fe56d21..a18c8c51 100644
+index 4fe56d21..976d9a4b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * libxml.h: internal header only used during the compilation of libxml
   *
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.m4 b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.m4
-index 2d7a6f53..22297a4a 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.m4
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.m4
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- # Configure paths for LIBXML2
- # Mike Hommey 2004-06-19
- # use CPPFLAGS instead of CFLAGS
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.spec.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.spec.in
-index 1996ccc4..6a58871f 100644
+index 1996ccc4..d89ac6a1 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.spec.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml.spec.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  %global with_python3 1
 
  Summary: Library providing XML and HTML support
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2-config.cmake.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2-config.cmake.in
-index 6b16fc2e..750bdff4 100644
+index 6b16fc2e..deb3bd00 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2-config.cmake.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2-config.cmake.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  # libxml2-config.cmake
  # --------------------
  #
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.spec b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.spec
-index a7c2ef82..8ad2c745 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.spec
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.spec
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- %global with_python3 1
-
- Summary: Library providing XML and HTML support
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.syms b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.syms
-index 370dcf17..63824940 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.syms
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/libxml2.syms
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- #
- # Officially exported symbols, for which header
- # file definitions are installed in /usr/include/libxml2
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/list.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/list.c
-index 72a0e1c1..f9961f4b 100644
+index 72a0e1c1..53b6516c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/list.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/list.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * list.c: lists handling implementation
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanoftp.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanoftp.c
-index cac81965..ca6d2426 100644
+index cac81965..543ccea0 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanoftp.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanoftp.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * nanoftp.c: basic FTP client support
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanohttp.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanohttp.c
-index ff64c461..c0c1f9b5 100644
+index ff64c461..e1a59bbc 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanohttp.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/nanohttp.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * nanohttp.c: minimalist HTTP GET implementation to fetch external subsets.
   *             focuses on size, streamability, reentrancy and portability
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parser.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parser.c
-index c4e3ffff..d46b8c9b 100644
+index c4e3ffff..6d0e2e29 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parser.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parser.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * parser.c : an XML 1.0 parser, namespaces and validity support are mostly
   *            implemented on top of the SAX interfaces
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parserInternals.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parserInternals.c
-index 77787340..394c7a33 100644
+index 77787340..8b1d5aed 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parserInternals.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/parserInternals.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * parserInternals.c : Internal routines (and obsolete ones) needed for the
   *                     XML and HTML parsers.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/pattern.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/pattern.c
-index 6ebd88ac..326570ca 100644
+index 6ebd88ac..163da577 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/pattern.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/pattern.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * pattern.c: Implemetation of selectors for nodes
   *
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/regressions.xml b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/regressions.xml
-index c78838ac..109d1353 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/regressions.xml
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/regressions.xml
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- <RegressionTests>
- <!--
-   Within the following test descriptions the possible elements are:
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/save.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/save.h
-index 2c32a103..71a258f9 100644
+index 2c32a103..35855b35 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/save.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/save.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Internal Interfaces for saving in libxml2
   * Description: this module describes a few interfaces which were
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/threads.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/threads.c
-index b443e1f3..bbbfb9f8 100644
+index b443e1f3..4da1a9e8 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/threads.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/threads.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * threads.c: set of generic threading related routines
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/tree.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/tree.c
-index 57d071d9..fda970bb 100644
+index 57d071d9..328ddbff 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/tree.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/tree.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * tree.c : implementation of access function for an XML tree.
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/triodef.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/triodef.h
-index 46772ee2..4c4690e7 100644
+index 46772ee2..e059947e 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/triodef.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/triodef.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*************************************************************************
   *
   * $Id$
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.c
-index d5216aff..886c980a 100644
+index d5216aff..bde6ec59 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*************************************************************************
   *
   * $Id$
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.h
-index 670075df..cfd836e6 100644
+index 670075df..d1c7e6a2 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/trionan.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*************************************************************************
   *
   * $Id$
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/uri.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/uri.c
-index 4cf4088c..4da46712 100644
+index 4cf4088c..18ac2d24 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/uri.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/uri.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * uri.c: set of generic URI related routines
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/valid.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/valid.c
-index c9671f06..006f695e 100644
+index c9671f06..61aa277a 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/valid.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/valid.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * valid.c : part of the code use to do the DTD handling and the validity
   *           checking
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.bcb b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.bcb
-index 7129c617..f338aec3 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.bcb
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.bcb
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- # Makefile for libxml2, specific for Windows, BCB6 and Borland make.
- #
- # Take a look at the beginning and modify the variables to suit your
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.mingw b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.mingw
-index f579923a..c656bb56 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.mingw
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.mingw
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- # Makefile for libxml2, specific for Windows, GCC (mingw) and GNU make.
- #
- # Take a look at the beginning and modify the variables to suit your
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.msvc b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.msvc
-index 115a4517..21ee223d 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.msvc
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Makefile.msvc
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- # Makefile for libxml2, specific for Windows, MSVC and NMAKE.
- #
- # Take a look at the beginning and modify the variables to suit your
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Readme.txt b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Readme.txt
-index 6b3edddb..7216990f 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Readme.txt
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/Readme.txt
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
-
-                              Windows port
-                              ============
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/README.vc10 b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/README.vc10
-index 4805bdc8..82cb8719 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/README.vc10
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/README.vc10
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
-
- README file for VC10 project files for libxml2
- ----------------------------------------------
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/RuleSet1.ruleset b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/RuleSet1.ruleset
-index 9985a6c6..44d51a43 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/RuleSet1.ruleset
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/RuleSet1.ruleset
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <RuleSet Name="New Rule Set" Description=" " ToolsVersion="10.0">
- </RuleSet>
-\ No newline at end of file
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2-focus.vcxproj b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2-focus.vcxproj
-index 914ce251..72d2c4f8 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2-focus.vcxproj
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2-focus.vcxproj
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <ItemGroup Label="ProjectConfigurations">
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.sln b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.sln
-index 8485751e..5e2ec339 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.sln
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.sln
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿
- Microsoft Visual Studio Solution File, Format Version 11.00
- # Visual Studio 2010
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj
-index 0588fa69..4ba455d9 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <ItemGroup Label="ProjectConfigurations">
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj.filters b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj.filters
-index e8e7af3e..3aaba85b 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj.filters
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/libxml2.vcxproj.filters
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <ItemGroup>
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj
-index 83cc991a..6668ec00 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <ItemGroup Label="ProjectConfigurations">
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj.filters b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj.filters
-index d7dce007..a58e78d4 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj.filters
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/VC10/runsuite.vcxproj.filters
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- ﻿<?xml version="1.0" encoding="utf-8"?>
- <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <ItemGroup>
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/configure.js b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/configure.js
-index 92b9ba05..edaa6084 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/configure.js
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/configure.js
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- /* Configure script for libxml, specific for Windows with Scripting Host.
-  *
-  * This script will configure the libxml build process and create necessary files.
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/defgen.xsl b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/defgen.xsl
-index a598ff19..461168f1 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/defgen.xsl
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/defgen.xsl
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- <?xml version="1.0"?>
- <!--
- 	win32/defgen.xsl
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/libxml2.def.src b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/libxml2.def.src
-index 1bdbed93..287b06bd 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/libxml2.def.src
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/win32/libxml2.def.src
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- #define LIBXML2_COMPILING_MSCCDEF
- #include "../include/libxml/xmlversion.h"
- LIBRARY libxml2
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2-config.1 b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2-config.1
-index 8cf9858b..4ab0612f 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2-config.1
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2-config.1
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- .TH GNOME-XML 1 "3 July 1999" Version 1.1.0
- .SH NAME
- xml-config - script to get information about the installed version of GNOME-XML
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2Conf.sh.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2Conf.sh.in
-index 08cb2334..389d65b1 100644
+index 08cb2334..f5e41230 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2Conf.sh.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xml2Conf.sh.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  #
  # Configuration file for using the XML library in GNOME applications
  #
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlIO.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlIO.c
-index 4974d5fe..a17cd110 100644
+index 4974d5fe..03c9717d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlIO.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlIO.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xmlIO.c : implementation of the I/O interfaces used by the parser
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlmemory.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlmemory.c
-index e21cfd68..470e9bbc 100644
+index e21cfd68..5e823f97 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlmemory.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlmemory.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xmlmemory.c:  libxml memory allocator wrapper.
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlreader.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlreader.c
-index f37d256e..266b0e1c 100644
+index f37d256e..92eb947f 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlreader.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlreader.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xmlreader.c: implements the xmlTextReader streaming node API
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlsave.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlsave.c
-index 3594e5d8..b102c4a1 100644
+index 3594e5d8..e0f24cfc 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlsave.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlsave.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xmlsave.c: Implemetation of the document serializer
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlstring.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlstring.c
-index 54e1ac41..e7fb97f2 100644
+index 54e1ac41..e35f7620 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlstring.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlstring.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * string.c : an XML string utilities module
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlunicode.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlunicode.c
-index 47553262..74b663ea 100644
+index 47553262..6e830087 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlunicode.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlunicode.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xmlunicode.c: this module implements the Unicode character APIs
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlwriter.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlwriter.c
-index db0de06d..da68eeae 100644
+index db0de06d..193a1306 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlwriter.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xmlwriter.c
-@@ -1,4 +1,11 @@
+@@ -1,4 +1,8 @@
 
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
 +
@@ -1896,817 +1258,593 @@ index db0de06d..da68eeae 100644
   * xmlwriter.c: XML text writer implementation
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xpath.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xpath.c
-index 2f8e4c1b..49d13a7d 100644
+index 2f8e4c1b..13ca9983 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xpath.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xpath.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xpath.c: XML Path Language implementation
   *          XPath is a language for addressing parts of an XML document,
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xzlib.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xzlib.h
-index 29ba55e7..a06f3090 100644
+index 29ba55e7..885d430b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xzlib.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxml/src/xzlib.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /**
   * xzlib.h: header for the front end for the transparent suport of lzma
   *          compression at the I/O layer
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/linux/config.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/linux/config.h
-index bd44c163..ca1e3496 100644
+index bd44c163..8ce59d6e 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/linux/config.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/linux/config.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.  Generated from config.h.in by configure.  */
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/mac/config.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/mac/config.h
-index 65045345..e221c911 100644
+index 65045345..2630e2dc 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/mac/config.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/mac/config.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.  Generated from config.h.in by configure.  */
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/Makefile.am b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/Makefile.am
-index ff10f574..4d957f7d 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/Makefile.am
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/Makefile.am
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- SUBDIRS = \
- 	libxslt \
- 	libexslt \
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/config.h.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/config.h.in
-index 085354e9..397be1e8 100644
+index 085354e9..7547cae6 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/config.h.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/config.h.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /* config.h.in.  Generated from configure.ac by autoheader.  */
 
  /* Define to 1 if you have the <ansidecl.h> header file. */
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/configure.ac b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/configure.ac
-index 9f40d9aa..c8741bb0 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/configure.ac
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/configure.ac
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- dnl Process this file with autoconf to produce a configuration script.
- AC_PREREQ(2.63)
-
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libexslt.pc.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libexslt.pc.in
-index 16676ff6..7aa0fb4b 100644
+index 16676ff6..556dc978 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libexslt.pc.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libexslt.pc.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  prefix=@prefix@
  exec_prefix=@exec_prefix@
  libdir=@libdir@
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt.pc.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt.pc.in
-index 082d64cd..56628ecb 100644
+index 082d64cd..59a62f11 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt.pc.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt.pc.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  prefix=@prefix@
  exec_prefix=@exec_prefix@
  libdir=@libdir@
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/Makefile.am b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/Makefile.am
-index ef2de24e..f0b754d7 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/Makefile.am
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/Makefile.am
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/libxslt
-
- AM_CFLAGS = $(LIBXML_CFLAGS)
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.c
-index fa5f3d9d..17e00029 100644
+index fa5f3d9d..eb35c355 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * attributes.c: Implementation of the XSLT attributes handling
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.h
-index 9b261ed0..c2c7e4c5 100644
+index 9b261ed0..1b608c70 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attributes.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the XSLT attribute handling
   * Description: this module handles the specificities of attribute
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attrvt.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attrvt.c
-index ca832e4b..d1765904 100644
+index ca832e4b..2c1590c9 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attrvt.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/attrvt.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * attrvt.c: Implementation of the XSL Transformation 1.0 engine
   *           attribute value template handling part.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.c
-index 6a7c954a..d273f2a9 100644
+index 6a7c954a..ca7730d8 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * documents.c: Implementation of the documents handling
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.h
-index a8aa3a6f..89dd3f81 100644
+index a8aa3a6f..bc0c8d97 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/documents.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the document handling
   * Description: implements document loading and cache (multiple
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.c
-index f8b01626..6a8d8913 100644
+index f8b01626..1d583d08 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * extensions.c: Implemetation of the extensions support
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.h
-index d60145a5..1a23c06f 100644
+index d60145a5..0bf133bf 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extensions.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the extension support
   * Description: This provide the API needed for simple and module
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.c
-index 5c3c6ff9..7ab31737 100644
+index 5c3c6ff9..a7e64bd0 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * extra.c: Implementation of non-standard features
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.h
-index ce97d170..bbfad101 100644
+index ce97d170..ac0ea9ca 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/extra.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the non-standard features
   * Description: implement some extension outside the XSLT namespace
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.c
-index 3886684f..d56a7577 100644
+index 3886684f..37d2c5d7 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * functions.c: Implementation of the XSLT extra functions
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.h
-index 02938781..859d858e 100644
+index 02938781..17e8174b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/functions.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the XSLT functions not from XPath
   * Description: a set of extra functions coming from XSLT but not in XPath
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.c
-index 61d323b7..8904c693 100644
+index 61d323b7..df4550af 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * imports.c: Implementation of the XSLT imports
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.h
-index 89a1b940..05d17521 100644
+index 89a1b940..e9a71c7d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/imports.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the XSLT import support
   * Description: macros and fuctions needed to implement and
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.c
-index fe027b47..717db54f 100644
+index fe027b47..269fc5e9 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * keys.c: Implemetation of the keys support
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.h
-index 4b2d7b69..d7a67393 100644
+index 4b2d7b69..eba2f24c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/keys.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary:  interface for the key matching used in key() and template matches.
   * Description: implementation of the key mechanims.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.c
-index b7fd56fd..d4cd6af1 100644
+index b7fd56fd..631d82b5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * namespaces.c: Implementation of the XSLT namespaces handling
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.h
-index e2633c6c..f9d684a5 100644
+index e2633c6c..15260a83 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/namespaces.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the XSLT namespace handling
   * Description: set of function easing the processing and generation
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
-index 5e15920b..f432e14e 100644
+index 5e15920b..a3b6dde1 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbers.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * numbers.c: Implementation of the XSLT number functions
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbersInternals.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbersInternals.h
-index 613c1397..582f30d6 100644
+index 613c1397..184e0de4 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbersInternals.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/numbersInternals.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Implementation of the XSLT number functions
   * Description: Implementation of the XSLT number functions
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.c
-index 6ad651f9..0de51086 100644
+index 6ad651f9..0cc1f056 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * pattern.c: Implemetation of the template match compilation and lookup
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.h
-index d8ddfa22..6d73a239 100644
+index d8ddfa22..16b735a7 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/pattern.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the pattern matching used in template matches.
   * Description: the implementation of the lookup of the right template
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.c
-index e9388de1..bf0c0ece 100644
+index e9388de1..58e9e20c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * preproc.c: Preprocessing of style operations
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.h
-index 919a094b..0abf7ed4 100644
+index 919a094b..58af6295 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/preproc.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: precomputing stylesheets
   * Description: this is the compilation phase, where most of the
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.c
-index 13d477e2..e84802fc 100644
+index 13d477e2..958dcf12 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * security.c: Implementation of the XSLT security framework
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.h
-index 724bb19b..a4fe20c9 100644
+index 724bb19b..bbc049b5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/security.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the libxslt security framework
   * Description: the libxslt security framework allow to restrict
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.c
-index 882d757e..f3fa1945 100644
+index 882d757e..e00c6b45 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * templates.c: Implementation of the template processing
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.h
-index 04e72702..67234240 100644
+index 04e72702..c18dfeeb 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/templates.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the template processing
   * Description: This set of routine encapsulates XPath calls
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.c
-index eb051c5a..67b9af97 100644
+index eb051c5a..b60c3bd6 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * transform.c: Implementation of the XSL Transformation 1.0 engine
   *              transform part, i.e. applying a Stylesheet to a document
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.h
-index 2ea1d7d3..ce9aeaa5 100644
+index 2ea1d7d3..aeb11b2c 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/transform.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: the XSLT engine transformation part.
   * Description: This module implements the bulk of the actual
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/trio.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/trio.h
-index 8b5ebd4d..26860c0d 100644
+index 8b5ebd4d..9ff215c5 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/trio.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/trio.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*************************************************************************
   *
   * $Id$
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.c
-index 4c89d127..3319a83e 100644
+index 4c89d127..aacf10b8 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * variables.c: Implementation of the variable storage and lookup
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.h
-index 8f1837fe..961bbc27 100644
+index 8f1837fe..a7223f80 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/variables.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: interface for the variable matching and lookup.
   * Description: interface for the variable matching and lookup.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/win32config.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/win32config.h
-index 487962a6..b2ed1a56 100644
+index 487962a6..c25ba111 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/win32config.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/win32config.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Windows configuration header
   * Description: Windows configuration header
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.c
-index 8f5addfd..2e295792 100644
+index 8f5addfd..8b77e568 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xslt.c: Implemetation of an XSL Transformation 1.0 engine
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.h
-index e8191c9b..3d737bec 100644
+index e8191c9b..855a3242 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xslt.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Interfaces, constants and types related to the XSLT engine
   * Description: Interfaces, constants and types related to the XSLT engine
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltInternals.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltInternals.h
-index 20f34fc6..8b6f23a8 100644
+index 20f34fc6..146f3510 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltInternals.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltInternals.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: internal data structures, constants and functions
   * Description: Internal data structures, constants and functions used
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltconfig.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltconfig.h
-index 3980eb13..42b3b0db 100644
+index 3980eb13..1246425d 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltconfig.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltconfig.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: compile-time version informations for the XSLT engine
   * Description: compile-time version informations for the XSLT engine
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.c
-index 63fbaa66..7171c695 100644
+index 63fbaa66..e1ef2e91 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xsltlocale.c: locale handling
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.h
-index 5253de72..183eefe2 100644
+index 5253de72..d2ad564b 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltlocale.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: Locale handling
   * Description: Interfaces for locale handling. Needed for language dependent
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.c
-index 840f2959..d9b68f18 100644
+index 840f2959..772d00b4 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.c
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.c
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * xsltutils.c: Utilities for the XSL Transformation 1.0 engine
   *
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.h b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.h
-index c94e51b8..7b4712b8 100644
+index c94e51b8..ddec1179 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.h
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltutils.h
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: set of utilities for the XSLT engine
   * Description: interfaces for the utilities module of the XSLT engine.
 diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltwin32config.h.in b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltwin32config.h.in
-index cceeb6b2..dec6d6c5 100644
+index cceeb6b2..18c7ad3e 100644
 --- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltwin32config.h.in
 +++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/libxslt/xsltwin32config.h.in
-@@ -1,3 +1,10 @@
+@@ -1,3 +1,7 @@
 +
 +#error "this file is unused"
-+
-+
-+#error "testing if this file is disabled in our build of javafx"
 +
 +
  /*
   * Summary: compile-time version informations for the XSLT engine
   *          when compiled on windows
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/defgen.xsl b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/defgen.xsl
-index 6a295374..ecdf483e 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/defgen.xsl
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/defgen.xsl
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- <?xml version="1.0"?>
- <!--
- 	win32/defgen.xsl
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libexslt.def.src b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libexslt.def.src
-index cb02e028..3f6d2df5 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libexslt.def.src
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libexslt.def.src
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- LIBRARY libexslt
- EXPORTS
- exsltLibexsltVersion DATA
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libxslt.def.src b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libxslt.def.src
-index fe7e767c..3b7781dd 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libxslt.def.src
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/libxslt/src/win32/libxslt.def.src
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- LIBRARY libxslt
- EXPORTS
- xslDebugStatus DATA
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/cmake/OptionsMSVC.cmake b/bin/rt-8u202-ga/modules/web/src/main/native/Source/cmake/OptionsMSVC.cmake
-index 7f378ff8..63d72c42 100644
---- a/bin/rt-8u202-ga/modules/web/src/main/native/Source/cmake/OptionsMSVC.cmake
-+++ b/bin/rt-8u202-ga/modules/web/src/main/native/Source/cmake/OptionsMSVC.cmake
-@@ -1,3 +1,6 @@
-+#error "testing if this file is disabled in our build of javafx"
-+
-+
- add_compile_options(
-     /wd4018 /wd4068 /wd4099 /wd4100 /wd4127 /wd4138 /wd4146 /wd4180 /wd4189
-     /wd4201 /wd4206 /wd4244 /wd4251 /wd4267 /wd4275 /wd4288 /wd4291 /wd4305
 -- 
 2.47.1
 
