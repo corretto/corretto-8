@@ -1,4 +1,4 @@
-diff --git a/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c b/bin/rt-8u202-ga/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
+diff --git a/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c b/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
 index b42077bb..e6b1974f 100644
 --- a/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
 +++ b/modules/web/src/main/native/Source/ThirdParty/sqlite/sqlite3.c
