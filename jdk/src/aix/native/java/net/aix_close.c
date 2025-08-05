@@ -54,7 +54,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <sys/poll.h>
+#include <poll.h>
 #include "jvm.h"
 
 /*
@@ -425,7 +425,7 @@ int NET_WriteV(int s, const struct iovec * vector, int count) {
 }
 
 int NET_SendTo(int s, const void *msg, int len,  unsigned  int
-       flags, const struct sockaddr *to, int tolen) {
+       flags, const struct sockaddr *to, socklen_t tolen) {
     BLOCKING_IO_RETURN_INT( s, sendto(s, msg, len, flags, to, tolen), JNI_TRUE );
 }
 
