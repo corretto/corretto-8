@@ -3084,7 +3084,9 @@ included with JRE 8, JDK 8, and OpenJDK 8.
   Apache Santuario XML Security for Java 2.1.3
   Apache Xalan-Java 2.7.2
   Apache Xerces Java 2.7.1
-  Apache XML Resolver 1.1 
+  Apache XML Resolver 1.1
+
+%% Async-Profiler is licensed under Apache 2.0 and may be included as a separate work from the JDK.
 
 
 --- begin of LICENSE ---
