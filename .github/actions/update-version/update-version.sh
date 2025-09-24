@@ -12,7 +12,8 @@ git checkout ${VERSION_BRANCH}
 
 source common/autoconf/version-numbers
 MINOR=${JDK_UPDATE_VERSION}
-BUILD=$(git ls-remote --tags ${UPSTREAM_REMOTE} |grep "jdk8u${MINOR}" |grep -vE "(-ga|{})$" |cut -d'-' -f2 |tr -d 'b' |sort -nr |head -n1 || echo "0")
+BUILD=$(git ls-remote --tags ${UPSTREAM_REMOTE} |grep "jdk8u${MINOR}" |grep -vE "(-ga|{})$" |cut -d'-' -f2 |tr -d 'b' |sort -nr |head -n1)
+BUILD=${BUILD:-"0"}
 MAJOR=8
 CURRENT_VERSION=$(cat version.txt)
 
