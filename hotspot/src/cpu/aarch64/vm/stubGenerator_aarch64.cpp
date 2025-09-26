@@ -2137,11 +2137,7 @@ class StubGenerator: public StubCodeGenerator {
     const Register dst_pos    = c_rarg3;  // destination position
     const Register length     = c_rarg4;
 
-
-    // Registers used as temps
-    const Register dst_klass  = c_rarg5;
-
-    __ align(CodeEntryAlignment);
+   __ align(CodeEntryAlignment);
     // Registers used as temps
     const Register dst_klass  = c_rarg5;
 
