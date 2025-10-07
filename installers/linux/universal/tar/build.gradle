@@ -28,7 +28,6 @@ dependencies {
 }
 
 def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-image"
-def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
 
 /**
  * Create a local copy of the source tree in our

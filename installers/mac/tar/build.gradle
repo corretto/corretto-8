@@ -32,7 +32,6 @@ dependencies {
 
 def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-bundle"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
-def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
 
 /**
  * Create a local copy of the source tree in our
