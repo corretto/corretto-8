@@ -256,6 +256,18 @@ JvmtiEnv::RetransformClasses(jint class_count, const jclass* classes) {
 
     instanceKlassHandle ikh(current_thread, k_oop);
     if (ikh->get_cached_class_file_bytes() == NULL) {
+      // Link the class to avoid races with the rewriter. This will call the verifier also
+      // on the class. Linking is also done in VM_RedefineClasses below, but we need
+      // to keep that for other VM_RedefineClasses callers.
+      JavaThread* THREAD = current_thread;
+      ikh->link_class(THREAD);
+      if (HAS_PENDING_EXCEPTION) {
+        // Retransform/JVMTI swallows error messages. Using this class will rerun the verifier in a context
+        // that propagates the VerifyError, if thrown.
+        CLEAR_PENDING_EXCEPTION;
+        return JVMTI_ERROR_INVALID_CLASS;
+      }
+
       // Not cached, we need to reconstitute the class file from the
       // VM representation. We don't attach the reconstituted class
       // bytes to the InstanceKlass here because they have not been
@@ -2901,6 +2913,13 @@ JvmtiEnv::GetBytecodes(Method* method_oop, jint* bytecode_count_ptr, unsigned ch
 
   (*bytecode_count_ptr) = size;
   // get byte codes
+  // Make sure the class is verified and rewritten first.
+  JavaThread* THREAD = JavaThread::current();
+  method->method_holder()->link_class(THREAD);
+  if (HAS_PENDING_EXCEPTION) {
+    CLEAR_PENDING_EXCEPTION;
+    return JVMTI_ERROR_INVALID_CLASS;
+  }
   JvmtiClassFileReconstituter::copy_bytecodes(method, *bytecodes_ptr);
 
   return JVMTI_ERROR_NONE;
