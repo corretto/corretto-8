@@ -82,7 +82,7 @@ task copySourceTar(type: Tar) {
 }
 
 task rpmBuild(type: Exec) {
-  dependsOn copySourceTar
+    dependsOn copySourceTar
     workingDir "$buildDir"
     executable = '/usr/bin/rpmbuild'
     args  = ['-vv',

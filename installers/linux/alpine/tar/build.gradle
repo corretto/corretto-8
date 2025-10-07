@@ -95,6 +95,23 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
+task bundleThirdPartyBinaries {
+    dependsOn executeBuild
+    doLast {
+        // If property set, copy async profiler binaries to bundle
+        if (project.asyncProfilerBinariesPath != "") {
+            if (!file(project.asyncProfilerBinariesPath).isDirectory()) {
+                throw new GradleException("asyncProfilerBinariesPath is not a valid directory: ${project.asyncProfilerBinariesPath}")
+            }
+            copy {
+                from project.asyncProfilerBinariesPath
+                include 'bin/**', 'lib/**'
+                into jdkResultingImage
+            }
+        }
+    }
+}
+
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
     workingDir jdkResultingImage
@@ -111,6 +128,7 @@ task importAmazonCacerts(type: Exec) {
 task copyBuildResults() {
     description 'Copy the JDK image and puts the results in build/.'
     dependsOn executeBuild
+    dependsOn bundleThirdPartyBinaries
     dependsOn importAmazonCacerts
 
     doLast {
