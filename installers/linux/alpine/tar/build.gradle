@@ -42,6 +42,8 @@ def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/im
 def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 def debugArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
+def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
+def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
@@ -95,6 +97,24 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
+task bundleThirdPartyBinaries {
+    dependsOn executeBuild
+    doLast {
+        // Copy pre-populated third party binaries if present
+        if (file(thirdPartyBinaries).exists()) {
+            copy {
+                from thirdPartyBinaries
+                include 'bin/**', 'lib/**'
+                into jdkResultingImage
+            }
+            copy {
+                from thirdPartyLegal
+                into "${jdkResultingImage}/legal"
+            }
+        }
+    }
+}
+
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
     workingDir jdkResultingImage
@@ -111,6 +131,7 @@ task importAmazonCacerts(type: Exec) {
 task copyBuildResults() {
     description 'Copy the JDK image and puts the results in build/.'
     dependsOn executeBuild
+    dependsOn bundleThirdPartyBinaries
     dependsOn importAmazonCacerts
 
     doLast {

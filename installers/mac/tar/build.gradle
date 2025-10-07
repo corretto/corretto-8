@@ -32,6 +32,8 @@ dependencies {
 
 def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-bundle"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
+def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
+def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
@@ -126,6 +128,19 @@ task prepareArtifacts {
     }
     dependsOn inflatePlistTemplate
     doLast {
+        // Copy pre-populated third party binaries if present
+        if (file(thirdPartyBinaries).exists()) {
+            copy {
+                from thirdPartyBinaries
+                include 'bin/**', 'lib/**'
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+            }
+            copy {
+                from thirdPartyLegal
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home/legal"
+            }
+        }
+
         if(file("${buildDir}/${correttoMacDir}").exists()) {
             delete "${buildDir}/${correttoMacDir}"
         }
