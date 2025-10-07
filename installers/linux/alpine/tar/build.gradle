@@ -99,10 +99,13 @@ task executeBuild(type: Exec) {
 task bundleThirdPartyBinaries {
     dependsOn executeBuild
     doLast {
-        // Copy pre-populated third party binaries if present
-        if (file(thirdPartyBinaries).exists()) {
+        // If property set, copy async profiler binaries to bundle
+        if (project.asyncProfilerBinariesPath != "") {
+            if (!file(project.asyncProfilerBinariesPath).isDirectory()) {
+                throw new GradleException("asyncProfilerBinariesPath is not a valid directory: ${project.asyncProfilerBinariesPath}")
+            }
             copy {
-                from thirdPartyBinaries
+                from project.asyncProfilerBinariesPath
                 include 'bin/**', 'lib/**'
                 into jdkResultingImage
             }
