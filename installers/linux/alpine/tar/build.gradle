@@ -43,7 +43,6 @@ def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${a
 def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 def debugArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
-def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
@@ -106,10 +105,6 @@ task bundleThirdPartyBinaries {
                 from thirdPartyBinaries
                 include 'bin/**', 'lib/**'
                 into jdkResultingImage
-            }
-            copy {
-                from thirdPartyLegal
-                into "${jdkResultingImage}/legal"
             }
         }
     }

@@ -29,7 +29,6 @@ dependencies {
 
 def jdkResultingImage = "$buildRoot/build/${project.jdkImageName}/images/j2sdk-image"
 def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
-def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
@@ -90,10 +89,6 @@ task bundleThirdPartyBinaries {
                 from thirdPartyBinaries
                 include 'bin/**', 'lib/**'
                 into jdkResultingImage
-            }
-            copy {
-                from thirdPartyLegal
-                into "${jdkResultingImage}/legal"
             }
         }
     }
