@@ -134,7 +134,7 @@ task prepareArtifacts {
             copy {
                 from project.asyncProfilerBinariesPath
                 include 'bin/**', 'lib/**'
-                into jdkResultingImage
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
             }
         }
 
