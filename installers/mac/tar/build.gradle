@@ -126,6 +126,18 @@ task prepareArtifacts {
     }
     dependsOn inflatePlistTemplate
     doLast {
+        // If property set, copy async profiler binaries to bundle
+        if (project.asyncProfilerBinariesPath != "") {
+            if (!file(project.asyncProfilerBinariesPath).isDirectory()) {
+                throw new GradleException("asyncProfilerBinariesPath is not a valid directory: ${project.asyncProfilerBinariesPath}")
+            }
+            copy {
+                from project.asyncProfilerBinariesPath
+                include 'bin/**', 'lib/**'
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+            }
+        }
+
         if(file("${buildDir}/${correttoMacDir}").exists()) {
             delete "${buildDir}/${correttoMacDir}"
         }
