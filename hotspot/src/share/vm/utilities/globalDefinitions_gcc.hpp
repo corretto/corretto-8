@@ -302,6 +302,7 @@ inline int wcslen(const jchar* x) { return wcslen((const wchar_t*)x); }
 #define PRAGMA_FORMAT_NONLITERAL_IGNORED_INTERNAL
 #endif
 
+#define PRAGMA_DISABLE_GCC_WARNING(optstring) _Pragma(STR(GCC diagnostic ignored optstring))
 // Disable -Wstringop-overflow which is introduced in GCC 10.
 // https://gcc.gnu.org/gcc-10/changes.html
 #if !defined(__clang_major__) && (__GNUC__ >= 10)

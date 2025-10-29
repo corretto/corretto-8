@@ -38,7 +38,7 @@ ext {
     }
 }
 
-def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/j2sdk-image"
+def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-${correttoDebugLevel}/images/j2sdk-image"
 def binaryResultName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 def archiveName = "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
 def debugArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
