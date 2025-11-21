@@ -11,8 +11,6 @@ bootjdk_dir         # Path of bootstrap JDK. To build Corretto8, JDK7 or JDK8 is
 vcruntime_dir       # Path of the latest msvcr120.dll
 
 msvcp_dir           # Path of the latest msvcp120.dll
-
-freetype_dir        # Path of freetype
 ```
 
 To execute this, run: `./gradlew :installers:windows:zip:build` at `corretto-8` root directory. 
@@ -23,7 +21,6 @@ The zip archives of Corretto8 JDK and JRE are located at `/installers/windows/zi
             -Pbootjdk_dir=... \
             -Pvcruntime_dir=... \
             -Pmsvcp_dir=... \
-            -Pfreetype_dir=...
 ```
 
 Base on the architecture of your system, the execution generates `x64` or `x86` artifacts.
