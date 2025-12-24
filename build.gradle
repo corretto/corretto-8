@@ -122,14 +122,7 @@ allprojects {
                 throw new RuntimeException("Invalid corretto.debug_level")
         }
 
-        def freetypeIncludePath = project.findProperty("corretto.freetype_include")
-        def freetypeLibPath = project.findProperty("corretto.freetype_lib")
         def jnfFrameworkPath = project.findProperty("corretto.jnf_path")
-
-        // If freetype location is specified, pass to configure
-        if (freetypeIncludePath && freetypeLibPath) {
-            correttoCommonFlags += ["--with-freetype-include=${freetypeIncludePath}", "--with-freetype-lib=${freetypeLibPath}"]
-        }
 
         // If JNF location is specified, pass to configure
         if (jnfFrameworkPath) {
