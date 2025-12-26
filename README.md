@@ -27,6 +27,9 @@ _preview-release_
 _release-8.XXX.YY.Z_
 : The source code for each release is recorded by a branch or a tag with a name of this form. XXX stands for the OpenJDK 8 update number, YY for the OpenJDK 8 build number, and Z for the Corretto-specific revision number. The latter starts at 1 and is incremented in subsequent releases as long as the update and build number remain constant.
 
+### Download Links
+Release builds can be found by version on the github [release page](https://github.com/corretto/corretto-8/releases). Nightly builds can be found on our [download page](https://downloads.corretto.aws/#/downloads?build=nightly&version=8).
+
 ### OpenJDK Readme
 ```
 
