@@ -4455,7 +4455,7 @@ VS_TOOLSET_SUPPORTED_2022=true
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1766720598
+DATE_WHEN_GENERATED=1766807883
 
 ###############################################################################
 #
@@ -42981,7 +42981,6 @@ fi
   # Later we will also have CFLAGS and LDFLAGS for the hotspot subrepo build.
   #
 
-  FDLIBM_CFLAGS=""
   # Setup compiler/platform specific flags to CFLAGS_JDK,
   # CXXFLAGS_JDK and CCXXFLAGS_JDK (common to C and CXX?)
   if test "x$TOOLCHAIN_TYPE" = xgcc; then
@@ -43315,7 +43314,10 @@ $as_echo "$supports" >&6; }
   fi
 
 
+  fi
 
+  FDLIBM_CFLAGS=""
+  if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$TOOLCHAIN_TYPE" = xclang; then
     # Check that the compiler supports -ffp-contract=off flag
     # Set FDLIBM_CFLAGS to -ffp-contract=off if it does.
     # For GCC < 4.6, on x86, x86_64 and ppc check for
@@ -43457,7 +43459,12 @@ $as_echo "$supports" >&6; }
     else
       FDLIBM_CFLAGS="$COMPILER_FP_CONTRACT_OFF_FLAG"
     fi
-  elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: fdlibm will be compiled with flags: $FDLIBM_CFLAGS" >&5
+$as_echo "$as_me: fdlibm will be compiled with flags: $FDLIBM_CFLAGS" >&6;}
+
+  if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -DTRACING -DMACRO_MEMSYS_OPS -DBREAKPTS"
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DcpuIntel -Di586 -D$OPENJDK_TARGET_CPU_LEGACY_LIB"
@@ -43488,7 +43495,6 @@ $as_echo "$supports" >&6; }
           -D_STATIC_CPPLIB -D_DISABLE_DEPRECATE_STATIC_CPPLIB"
     fi
   fi
-
 
   ###############################################################################
 
