@@ -75,7 +75,7 @@ else
       OUTPUT_DIR := $(JDK_OUTPUTDIR)/objs/libfdlibm, \
       SRC := $(JDK_TOPDIR)/src/share/native/java/lang/fdlibm/src, \
       LANG := C, \
-      CFLAGS := $(CFLAGS_JDKLIB) \
+      CFLAGS := $(CFLAGS_JDKLIB) $(LIBFDLIBM_CFLAGS) \
           -I$(JDK_TOPDIR)/src/share/native/java/lang/fdlibm/include, \
       LDFLAGS := -nostdlib -r, \
       OBJECT_DIR := $(JDK_OUTPUTDIR)/objs/libfdlibm, \
