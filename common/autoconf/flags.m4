@@ -547,7 +547,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
   # Later we will also have CFLAGS and LDFLAGS for the hotspot subrepo build.
   #
 
-  FDLIBM_CFLAGS=""
   # Setup compiler/platform specific flags to CFLAGS_JDK,
   # CXXFLAGS_JDK and CCXXFLAGS_JDK (common to C and CXX?)
   if test "x$TOOLCHAIN_TYPE" = xgcc; then
@@ -573,7 +572,10 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     FLAGS_COMPILER_CHECK_ARGUMENTS([-Wformat-overflow -Werror],
                                    [USE_FORMAT_OVERFLOW="1"], [USE_FORMAT_OVERFLOW="0"])
     AC_SUBST([USE_FORMAT_OVERFLOW])
+  fi
 
+  FDLIBM_CFLAGS=""
+  if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$TOOLCHAIN_TYPE" = xclang; then
     # Check that the compiler supports -ffp-contract=off flag
     # Set FDLIBM_CFLAGS to -ffp-contract=off if it does.
     # For GCC < 4.6, on x86, x86_64 and ppc check for
@@ -604,7 +606,11 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     else
       FDLIBM_CFLAGS="$COMPILER_FP_CONTRACT_OFF_FLAG"
     fi
-  elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
+  fi
+  AC_SUBST(FDLIBM_CFLAGS)
+  AC_MSG_NOTICE([fdlibm will be compiled with flags: $FDLIBM_CFLAGS])
+
+  if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -DTRACING -DMACRO_MEMSYS_OPS -DBREAKPTS"
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DcpuIntel -Di586 -D$OPENJDK_TARGET_CPU_LEGACY_LIB"
@@ -635,7 +641,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
           -D_STATIC_CPPLIB -D_DISABLE_DEPRECATE_STATIC_CPPLIB"
     fi
   fi
-  AC_SUBST(FDLIBM_CFLAGS)
 
   ###############################################################################
 
