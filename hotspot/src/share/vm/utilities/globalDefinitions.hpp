@@ -88,6 +88,9 @@
 #ifndef REGISTER
 #define REGISTER register
 #endif
+#ifndef ATTRIBUTE_SCANF
+#define ATTRIBUTE_SCANF(fmt, vargs)
+#endif
 
 
 #include "utilities/macros.hpp"
