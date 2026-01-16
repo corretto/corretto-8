@@ -69,3 +69,8 @@ compiler/rtm/locking/TestUseRTMAfterLockInflation.java 8183263 generic-x64,gener
 compiler/rtm/locking/TestUseRTMForInflatedLocks.java 8183263 generic-x64,generic-i586
 compiler/rtm/locking/TestUseRTMForStackLocks.java 8183263 generic-x64,generic-i586
 compiler/rtm/method_options/TestUseRTMLockElidingOption.java 8183263 generic-x64,generic-i586
+
+
+# :hotspot_gc
+
+gc/survivorAlignment/TestPromotionFromSurvivorToTenuredAfterMinorGC.java 8177765 generic-all
