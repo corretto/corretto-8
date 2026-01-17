@@ -1,0 +1,88 @@
+From af2c1774fd4aa28fe4dc673d796b1527349bfbb6 Mon Sep 17 00:00:00 2001
+From: Satyen Subramaniam <satyenme@amazon.com>
+Date: Fri, 16 Jan 2026 21:49:28 +0000
+Subject: [PATCH] Adding errors to 0027-8361893-Update-libxml2-to-2.14.patch
+ 
+---
+ .../web/src/main/native/Source/ThirdParty/libxml/src/buf.h    | 4 ++++
+ .../Source/ThirdParty/libxml/src/include/libxml/globals.h     | 4 ++++
+ .../native/Source/ThirdParty/libxml/src/include/wsockcompat.h | 4 ++++
+ .../src/main/native/Source/ThirdParty/libxml/src/timsort.h    | 4 ++++
+ .../src/main/native/Source/ThirdParty/libxml/win32/config.h   | 4 ++++
+ .../ThirdParty/libxml/win32/include/libxml/xmlversion.h       | 4 ++++
+ 6 files changed, 24 insertions(+)
+ 
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.h b/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.h
+index ebdc9781..98d86483 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/src/buf.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ /*
+  * Summary: Internal Interfaces for memory buffers in libxml2
+  * Description: this module describes most of the new xmlBuf buffer
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/globals.h b/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/globals.h
+index 5b09c814..324db9bd 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/globals.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/libxml/globals.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ /*
+  * Summary: interface for all global variables of the library
+  * Description: all the global variables and thread handling for
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/wsockcompat.h b/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/wsockcompat.h
+index e6b6ae44..ed68c366 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/wsockcompat.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/src/include/wsockcompat.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ /* include/wsockcompat.h
+  * Windows -> Berkeley Sockets compatibility things.
+  */
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/src/timsort.h b/modules/web/src/main/native/Source/ThirdParty/libxml/src/timsort.h
+index 0c6346b8..eee0b65e 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/src/timsort.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/src/timsort.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ /*
+  * Taken from https://github.com/swenson/sort
+  * Revision: 05fd77bfec049ce8b7c408c4d3dd2d51ee061a15
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/win32/config.h b/modules/web/src/main/native/Source/ThirdParty/libxml/win32/config.h
+index 3d9bef04..488f40bd 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/win32/config.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/win32/config.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ #ifndef __LIBXML_WIN32_CONFIG__
+ #define __LIBXML_WIN32_CONFIG__
+ 
+diff --git a/modules/web/src/main/native/Source/ThirdParty/libxml/win32/include/libxml/xmlversion.h b/modules/web/src/main/native/Source/ThirdParty/libxml/win32/include/libxml/xmlversion.h
+index d0b5a48a..6287f13b 100644
+--- a/modules/web/src/main/native/Source/ThirdParty/libxml/win32/include/libxml/xmlversion.h
++++ b/modules/web/src/main/native/Source/ThirdParty/libxml/win32/include/libxml/xmlversion.h
+@@ -1,3 +1,7 @@
++
++#error "this file is unused"
++
++
+ /*
+  * Summary: compile-time version informations
+  * Description: compile-time version informations for the XML library
+-- 
+2.47.3
