@@ -2,6 +2,41 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.482.08.1
+Release Date: January 20, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.482.08.1:
+
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| Import jdk8u482-b08    | All      | Updates Corretto baseline to OpenJDK 8u482-b08 | [jdk8u482-b08](https://github.com/openjdk/jdk8u/releases/tag/jdk8u482-b08) |	
+
+The following CVEs are addressed in 8.482.08.1:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-21945 | 7.5 | security-libs/java.security |
+| CVE-2026-21932 | 7.4 | client-libs/java.awt |
+| CVE-2026-21933 | 6.1 | core-libs/java.net |
+| CVE-2026-21925 | 4.8 | core-libs/java.rmi |
+| CVE-2026-21932 | 5.5 | javafx/graphics |
+
 ## Corretto version: 8.472.08.1
 Release Date: October 21, 2025
 
