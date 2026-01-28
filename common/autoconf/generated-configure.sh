@@ -41473,6 +41473,19 @@ $as_echo "$as_me: Rewriting BUILD_LD to \"$new_complete\"" >&6;}
     # This is later checked when setting flags.
   fi
 
+  if test "x$TOOLCHAIN_TYPE" = xgcc; then
+    if test "x$OPENJDK_TARGET_CPU_ARCH" = "xaarch64" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for broken aarch64 gcc 4.x" >&5
+$as_echo_n "checking for broken aarch64 gcc 4.x... " >&6; }
+      COMPILER_VERSION_NUMBER_MAJOR=`$ECHO "$COMPILER_VERSION_NUMBER" | $SED  "s/[^0-9].*//"`
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found $COMPILER_VERSION_NUMBER_MAJOR.x" >&5
+$as_echo "found $COMPILER_VERSION_NUMBER_MAJOR.x" >&6; }
+      if test $COMPILER_VERSION_NUMBER_MAJOR -lt 5; then
+        as_fn_error $? "GCC < 5 may incorrectly compile HotSpot on aarch64. See JDK-8360869." "$LINENO" 5
+      fi
+    fi
+  fi
+
   # Check for broken SuSE 'ld' for which 'Only anonymous version tag is allowed
   # in executable.'
   USING_BROKEN_SUSE_LD=no
