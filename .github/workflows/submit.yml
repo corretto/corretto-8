@@ -179,7 +179,10 @@ jobs:
         working-directory: jdk
 
       - name: Build
-        run: make CONF_NAME=linux-x64 LOG_LEVEL=debug images
+        run: |
+          cat build/linux-x64/spec.gmk
+          cat build/linux-x64/hotspot-spec.gmk
+          make CONF_NAME=linux-x64 LOG_LEVEL=debug images
         working-directory: jdk
 
       - name: Pack artifacts
@@ -538,7 +541,10 @@ jobs:
         working-directory: jdk
 
       - name: Build
-        run: make CONF_NAME=linux-x86 images
+        run: |
+          cat build/linux-x86/spec.gmk
+          cat build/linux-x86/hotspot-spec.gmk
+          make CONF_NAME=linux-x86 images
         working-directory: jdk
 
       - name: Pack artifacts
@@ -1430,7 +1436,10 @@ jobs:
         working-directory: jdk
 
       - name: Build
-        run: make CONF_NAME=macos-x64 images
+        run: |
+          cat build/macos-x64/spec.gmk
+          cat build/macos-x64/hotspot-spec.gmk
+          make CONF_NAME=macos-x64 images
         working-directory: jdk
 
       - name: Pack artifacts
