@@ -106,6 +106,7 @@ task copyImages() {
         copy {
             from "$imagesDir/j2sdk-image"
             include '**/*.diz'
+            includeEmptyDirs = false
             into "$packagingDir/jdk-symbols"
         }
     }

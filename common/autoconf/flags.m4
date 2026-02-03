@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -547,7 +547,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
   # Later we will also have CFLAGS and LDFLAGS for the hotspot subrepo build.
   #
 
-  FDLIBM_CFLAGS=""
   # Setup compiler/platform specific flags to CFLAGS_JDK,
   # CXXFLAGS_JDK and CCXXFLAGS_JDK (common to C and CXX?)
   if test "x$TOOLCHAIN_TYPE" = xgcc; then
@@ -573,7 +572,10 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     FLAGS_COMPILER_CHECK_ARGUMENTS([-Wformat-overflow -Werror],
                                    [USE_FORMAT_OVERFLOW="1"], [USE_FORMAT_OVERFLOW="0"])
     AC_SUBST([USE_FORMAT_OVERFLOW])
+  fi
 
+  FDLIBM_CFLAGS=""
+  if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$TOOLCHAIN_TYPE" = xclang; then
     # Check that the compiler supports -ffp-contract=off flag
     # Set FDLIBM_CFLAGS to -ffp-contract=off if it does.
     # For GCC < 4.6, on x86, x86_64 and ppc check for
@@ -604,7 +606,11 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     else
       FDLIBM_CFLAGS="$COMPILER_FP_CONTRACT_OFF_FLAG"
     fi
-  elif test "x$TOOLCHAIN_TYPE" = xsolstudio; then
+  fi
+  AC_SUBST(FDLIBM_CFLAGS)
+  AC_MSG_NOTICE([fdlibm will be compiled with flags: $FDLIBM_CFLAGS])
+
+  if test "x$TOOLCHAIN_TYPE" = xsolstudio; then
     CCXXFLAGS_JDK="$CCXXFLAGS $CCXXFLAGS_JDK -DTRACING -DMACRO_MEMSYS_OPS -DBREAKPTS"
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86; then
       CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DcpuIntel -Di586 -D$OPENJDK_TARGET_CPU_LEGACY_LIB"
@@ -635,7 +641,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
           -D_STATIC_CPPLIB -D_DISABLE_DEPRECATE_STATIC_CPPLIB"
     fi
   fi
-  AC_SUBST(FDLIBM_CFLAGS)
 
   ###############################################################################
 
@@ -729,44 +734,18 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
 
   # Additional macosx handling
   if test "x$OPENJDK_TARGET_OS" = xmacosx; then
-    if test "x$TOOLCHAIN_TYPE" = xgcc; then
-      # FIXME: This needs to be exported in spec.gmk due to closed legacy code.
-      # FIXME: clean this up, and/or move it elsewhere.
-
-      # Setting these parameters makes it an error to link to macosx APIs that are
-      # newer than the given OS version and makes the linked binaries compatible 
-      # even if built on a newer version of the OS.
-      # The expected format is X.Y.Z
-      MACOSX_VERSION_MIN=10.9.0
-      AC_SUBST(MACOSX_VERSION_MIN)
-    
-      # The macro takes the version with no dots, ex: 1070
-      # Let the flags variables get resolved in make for easier override on make
-      # command line.
-      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
-      LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
-    elif test "x$TOOLCHAIN_TYPE" = xclang; then
-      # FIXME: This needs to be exported in spec.gmk due to closed legacy code.
-      # FIXME: clean this up, and/or move it elsewhere.
-
-      # Setting these parameters makes it an error to link to macosx APIs that are
-      # newer than the given OS version and makes the linked binaries compatible 
-      # even if built on a newer version of the OS.
-      # The expected format is X.Y.Z
-      if test "x$OPENJDK_TARGET_CPU_ARCH" = "xx86" || test "x$OPENJDK_TARGET_CPU_ARCH" = "xx86_64"; then
-        MACOSX_VERSION_MIN=10.9.0
-        AC_SUBST(MACOSX_VERSION_MIN)
-      else
-        MACOSX_VERSION_MIN=11.00.00
-        AC_SUBST(MACOSX_VERSION_MIN)
-      fi
-    
-      # The macro takes the version with no dots, ex: 1070
-      # Let the flags variables get resolved in make for easier override on make
-      # command line.
-      CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MIN_REQUIRED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
-      LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
-    fi
+    # Setting these parameters makes it an error to link to macOS APIs that are
+    # newer than the given OS version and makes the linked binaries compatible
+    # even if built on a newer version of the OS.
+    # The expected format is X.Y.Z
+    MACOSX_VERSION_MIN=11.00.00
+    AC_SUBST(MACOSX_VERSION_MIN)
+  
+    # The macro takes the version with no dots, ex: 1070
+    # Let the flags variables get resolved in make for easier override on make
+    # command line.
+    CCXXFLAGS_JDK="$CCXXFLAGS_JDK -DMAC_OS_X_VERSION_MIN_REQUIRED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -DMAC_OS_X_VERSION_MAX_ALLOWED=\$(subst .,,\$(MACOSX_VERSION_MIN)) -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
+    LDFLAGS_JDK="$LDFLAGS_JDK -mmacosx-version-min=\$(MACOSX_VERSION_MIN)"
   fi
 
   # Setup some hard coded includes

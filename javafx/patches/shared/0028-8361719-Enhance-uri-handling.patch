@@ -1,0 +1,375 @@
+diff --git a/buildSrc/win.gradle b/buildSrc/win.gradle
+index 6ca4c7bd..872cd096 100644
+--- a/buildSrc/win.gradle
++++ b/buildSrc/win.gradle
+@@ -318,7 +318,7 @@ WIN.glass.ccFlags = [ccFlags, "/WX"].flatten()
+ if (WINDOWS_VS_VER != "100") WIN.glass.ccFlags -= ["/WX"]
+ WIN.glass.linker = linker
+ WIN.glass.linkFlags = [linkFlags, "delayimp.lib", "gdi32.lib", "urlmon.lib", "Comdlg32.lib",
+-        "winmm.lib", "imm32.lib", "shell32.lib", "Uiautomationcore.lib", "dwmapi.lib",
++        "winmm.lib", "imm32.lib", "shell32.lib", "Uiautomationcore.lib", "dwmapi.lib",  "shlwapi.lib",
+         "/DELAYLOAD:user32.dll", "/DELAYLOAD:urlmon.dll", "/DELAYLOAD:winmm.dll", "/DELAYLOAD:shell32.dll",
+         "/DELAYLOAD:Uiautomationcore.dll", "/DELAYLOAD:dwmapi.dll"].flatten()
+ WIN.glass.lib = "glass"
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/Application.java b/modules/graphics/src/main/java/com/sun/glass/ui/Application.java
+index cad3e1e5..ae17e61b 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/Application.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/Application.java
+@@ -678,6 +678,8 @@ public abstract class Application {
+         return null;
+     }
+ 
++    protected abstract void _showDocument(final String uri);
++
+     protected boolean _supportsInputMethods() {
+         // Overridden in subclasses
+         return false;
+@@ -740,4 +742,8 @@ public abstract class Application {
+     public static int getKeyCodeForChar(char c) {
+         return application._getKeyCodeForChar(c);
+     }
++
++    public void showDocument(String uri) {
++        _showDocument(uri);
++    }
+ }
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkApplication.java
+index 3ed98043..db29a7cb 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/gtk/GtkApplication.java
+@@ -56,6 +56,8 @@ final class GtkApplication extends Application implements
+             "org.eclipse.swt.internal.gtk.OS";
+     private static final int forcedGtkVersion;
+ 
++    private static native int _openURI(String uri);
++
+     static  {
+         //check for SWT-GTK lib presence
+         Class<?> OS = AccessController.
+@@ -421,6 +423,11 @@ final class GtkApplication extends Application implements
+     protected File staticCommonDialogs_showFolderChooser(Window owner, String folder, String title) {
+         return GtkCommonDialogs.showFolderChooser(owner, folder, title);
+     }
++    @Override
++    protected void _showDocument(String uri) {
++        _openURI(uri);
++    }
++
+ 
+     @Override
+     protected native long staticView_getMultiClickTime();
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/ios/IosApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/ios/IosApplication.java
+index d511da7b..bf921d28 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/ios/IosApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/ios/IosApplication.java
+@@ -187,6 +187,12 @@ public final class IosApplication extends Application {
+         return null;
+     }
+ 
++    @Override
++    protected void _showDocument(String uri) {
++        System.err.println("Cannot launch browser");
++    }
++
++
+     private native Object _enterNestedEventLoopImpl();
+     private native void _leaveNestedEventLoopImpl();
+ 
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/lens/LensApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/lens/LensApplication.java
+index d6785252..0c13a372 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/lens/LensApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/lens/LensApplication.java
+@@ -1735,6 +1735,11 @@ final class LensApplication extends Application {
+         return null;
+     }
+ 
++    @Override
++    protected void _showDocument(String uri) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++
+     @Override protected long staticView_getMultiClickTime() {
+         return LensView._getMultiClickTime();
+     }
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacApplication.java
+index 6432be11..348f33ec 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/mac/MacApplication.java
+@@ -55,6 +55,8 @@ final class MacApplication extends Application implements InvokeLaterDispatcher.
+     private boolean isTaskbarApplication = false;
+     private final InvokeLaterDispatcher invokeLaterDispatcher;
+ 
++    private static native int _openURI(String uri);
++
+     MacApplication() {
+         // Embedded in SWT, with shared event thread
+         boolean isEventThread = AccessController
+@@ -330,4 +332,9 @@ final class MacApplication extends Application implements InvokeLaterDispatcher.
+ 
+     @Override
+     protected native int _getKeyCodeForChar(char c);
++
++    @Override
++    protected void _showDocument(String uri) {
++        _openURI(uri);
++    }
+ }
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/monocle/MonocleApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/monocle/MonocleApplication.java
+index 31ec9ca1..7437f197 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/monocle/MonocleApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/monocle/MonocleApplication.java
+@@ -301,6 +301,11 @@ public final class MonocleApplication extends Application {
+         throw new UnsupportedOperationException();
+     }
+ 
++    @Override
++    protected void _showDocument(String uri) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++
+     @Override
+     protected long staticView_getMultiClickTime() {
+         return MonocleView._getMultiClickTime();
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/swt/SWTApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/swt/SWTApplication.java
+index ddfd08ad..cd7df81f 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/swt/SWTApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/swt/SWTApplication.java
+@@ -378,6 +378,11 @@ public final class SWTApplication extends Application {
+         loopReturn = retValue;
+     }
+ 
++    @Override
++    protected void _showDocument(String uri) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++
+     @Override protected long staticView_getMultiClickTime() {
+         return Display.getDefault().getDoubleClickTime();
+     }
+diff --git a/modules/graphics/src/main/java/com/sun/glass/ui/win/WinApplication.java b/modules/graphics/src/main/java/com/sun/glass/ui/win/WinApplication.java
+index 840fe5c9..fdbeab19 100644
+--- a/modules/graphics/src/main/java/com/sun/glass/ui/win/WinApplication.java
++++ b/modules/graphics/src/main/java/com/sun/glass/ui/win/WinApplication.java
+@@ -36,12 +36,16 @@ import java.nio.ByteBuffer;
+ import java.nio.IntBuffer;
+ import java.security.AccessController;
+ import java.security.PrivilegedAction;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
+ 
+ final class WinApplication extends Application implements InvokeLaterDispatcher.InvokeLaterSubmitter {
+     static float   overrideUIScale;
+     static float   overrideRenderScale;
+     static float   minDPIScale;
+     static boolean forceIntegerRenderScale;
++    private static native String _getDefaultBrowser();
+ 
+     private static boolean getBoolean(String propname, boolean defval, String description) {
+         String str = System.getProperty(propname);
+@@ -304,6 +308,40 @@ final class WinApplication extends Application implements InvokeLaterDispatcher.
+         return WinCommonDialogs.showFolderChooser_impl(owner, folder, title);
+     }
+ 
++    @Override
++    protected void _showDocument(String uri) {
++        String browser = _getDefaultBrowser();
++        if (browser == null) {
++            System.err.println("Could not retrieve default browser");
++            return;
++        }
++
++        if (browser.contains("%1")) {
++            browser = browser.replace("%1", uri);
++        } else {
++            browser = browser + " " + uri;
++        }
++
++        List<String> command = new ArrayList<>();
++        int firstIndex = browser.indexOf("\"");
++        int secondIndex = browser.indexOf("\"", firstIndex + 1);
++
++        if (firstIndex == 0 && secondIndex != firstIndex) {
++            command.add(browser.substring(firstIndex, secondIndex + 1));
++            browser = browser.substring(secondIndex + 1).trim();
++        }
++        command.addAll(Arrays.asList(browser.split(" ")));
++
++        try {
++            ProcessBuilder pb = new ProcessBuilder(command);
++            pb.start();
++        }  catch (Exception e) {
++            System.err.println("Error opening URI : " + uri + " : " +
++                    e.getLocalizedMessage());
++        }
++
++    }
++
+     @Override protected long staticView_getMultiClickTime() {
+         return WinView.getMultiClickTime_impl();
+     }
+diff --git a/modules/graphics/src/main/java/com/sun/javafx/application/HostServicesDelegate.java b/modules/graphics/src/main/java/com/sun/javafx/application/HostServicesDelegate.java
+index 08f1bc11..4389f63d 100644
+--- a/modules/graphics/src/main/java/com/sun/javafx/application/HostServicesDelegate.java
++++ b/modules/graphics/src/main/java/com/sun/javafx/application/HostServicesDelegate.java
+@@ -32,6 +32,7 @@ import java.security.PrivilegedActionException;
+ import java.security.PrivilegedExceptionAction;
+ import javafx.application.Application;
+ import netscape.javascript.JSObject;
++import java.net.URISyntaxException;
+ 
+ 
+ public abstract class HostServicesDelegate {
+diff --git a/modules/graphics/src/main/native-glass/gtk/GlassApplication.cpp b/modules/graphics/src/main/native-glass/gtk/GlassApplication.cpp
+index ea97d6c5..9e2068a2 100644
+--- a/modules/graphics/src/main/native-glass/gtk/GlassApplication.cpp
++++ b/modules/graphics/src/main/native-glass/gtk/GlassApplication.cpp
+@@ -526,3 +526,31 @@ static void process_events(GdkEvent* event, gpointer data)
+         }
+     }
+ }
++
++/*
++ * Class:       com_sun_glass_ui_gtk_GtkApplication
++ * Method:      _openURI
++ * Signature:   (java/lang/String;)I;
++ */
++JNIEXPORT jint JNICALL Java_com_sun_glass_ui_gtk_GtkApplication__1openURI
++        (JNIEnv *env, jclass jClass, jstring uri)
++{
++    gboolean success = FALSE;
++    GError *error = NULL;
++    const char *uri_c;
++    uri_c = env->GetStringUTFChars(uri, NULL);
++    if (uri_c != NULL) {
++        success = gtk_show_uri(NULL, uri_c, 0L, &error);
++        if (!success) {
++            fprintf(stderr, "Error opening URI %s : %s\n", uri_c,
++                    error == NULL ? "Unspecified error." : error->message);
++            if (error != NULL) {
++                g_error_free(error);
++            }
++        }
++        env->ReleaseStringUTFChars(uri, uri_c);
++    } else {
++        fprintf(stderr, "Error: Converted URI string is null\n");
++    }
++    return success ? 0 : -1;
++}
+\ No newline at end of file
+diff --git a/modules/graphics/src/main/native-glass/mac/GlassApplication.m b/modules/graphics/src/main/native-glass/mac/GlassApplication.m
+index cc688554..e79a61f4 100644
+--- a/modules/graphics/src/main/native-glass/mac/GlassApplication.m
++++ b/modules/graphics/src/main/native-glass/mac/GlassApplication.m
+@@ -28,9 +28,9 @@
+ #import "com_sun_glass_ui_mac_MacApplication.h"
+ #import "com_sun_glass_events_KeyEvent.h"
+ 
+-
+ #import "GlassMacros.h"
+ #import "GlassApplication.h"
++#import "GlassAccessible.h"
+ #import "GlassHelper.h"
+ #import "GlassKey.h"
+ #import "GlassScreen.h"
+@@ -1150,3 +1150,51 @@ JNIEXPORT jint JNICALL Java_com_sun_glass_ui_mac_MacApplication__1getMacKey
+     GetMacKey(code, &macCode);
+     return (macCode & 0xFFFF);
+ }
++
++/*
++ * Class:       com_sun_glass_ui_mac_MacApplication
++ * Method:      _openURI
++ * Signature:   (java/lang/String;)I;
++ */
++JNIEXPORT jint JNICALL Java_com_sun_glass_ui_mac_MacApplication__1openURId
++(JNIEnv *env, jclass jClass, jstring uri)
++{
++    __block OSStatus status = noErr;
++
++    GLASS_ASSERT_MAIN_JAVA_THREAD(env);
++    GLASS_POOL_ENTER;
++
++    NSURL *url = [NSURL URLWithString:jStringToNSString(env, uri)];
++
++    NSURL *httpsURL = [NSURL URLWithString:@"https://"];
++    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
++    NSURL *defaultBrowser = [workspace URLForApplicationToOpenURL:httpsURL];
++    if (defaultBrowser == nil) {
++        NSLog(@"Default browser not set");
++        return -1;
++    }
++    NSArray<NSURL *> *urls = @[url];
++    NSWorkspaceOpenConfiguration *configuration = [NSWorkspaceOpenConfiguration configuration];
++    configuration.activates = YES;
++    configuration.promptsUserIfNeeded = YES;
++    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
++    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC)); // 1 second timeout
++
++    [workspace     openURLs:urls
++       withApplicationAtURL:defaultBrowser
++              configuration:configuration
++           completionHandler:^(NSRunningApplication *app, NSError *error) {
++               if (error) {
++                   NSLog(@"Error opening URI %@ : %@", url, error.localizedDescription);
++                   status = (OSStatus) error.code;
++               }
++               dispatch_semaphore_signal(semaphore);
++           }];
++
++    dispatch_semaphore_wait(semaphore, timeout);
++
++    GLASS_POOL_EXIT;
++    GLASS_CHECK_EXCEPTION(env);
++
++    return status;
++}
+\ No newline at end of file
+diff --git a/modules/graphics/src/main/native-glass/win/GlassApplication.cpp b/modules/graphics/src/main/native-glass/win/GlassApplication.cpp
+index 43e49128..15ced1a2 100644
+--- a/modules/graphics/src/main/native-glass/win/GlassApplication.cpp
++++ b/modules/graphics/src/main/native-glass/win/GlassApplication.cpp
+@@ -25,6 +25,8 @@
+ 
+ #include "common.h"
+ 
++#include <shlwapi.h>
++
+ #include "GlassApplication.h"
+ #include "GlassClipboard.h"
+ #include "GlassScreen.h"
+@@ -580,5 +582,34 @@ JNIEXPORT jobjectArray JNICALL Java_com_sun_glass_ui_win_WinApplication_staticSc
+     return GlassScreen::CreateJavaScreens(env);
+ }
+ 
++/*
++ * Class:     com_sun_glass_ui_win_WinApplication
++ * Method:    _getDefaultBrowser
++ * Signature: ()Ljava/lang/String;
++ */
++JNIEXPORT jstring JNICALL Java_com_sun_glass_ui_win_WinApplication__1getDefaultBrowser
++        (JNIEnv *env, jclass cls)
++{
++    LPCWSTR fileExtension = L"https";
++    WCHAR defaultBrowser_c [MAX_PATH];
++    DWORD cchBuffer = MAX_PATH;
++
++    // Use AssocQueryString to get the default browser
++    HRESULT hr = AssocQueryStringW(
++        ASSOCF_NONE,            // No special flags
++        ASSOCSTR_COMMAND,       // Request the command string
++        fileExtension,          // File extension
++        NULL,                   // pszExtra (optional)
++        defaultBrowser_c,       // Output buffer - result
++        &cchBuffer              // Size of the output buffer
++    );
++
++    if (FAILED(hr)) {
++        return NULL;
++    }
++
++    return CreateJString(env, defaultBrowser_c);;
++}
++
+ } // extern "C"
+ 
