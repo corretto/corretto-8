@@ -4454,7 +4454,7 @@ VS_TOOLSET_SUPPORTED_2022=true
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1770070493
+DATE_WHEN_GENERATED=1770252118
 
 ###############################################################################
 #
@@ -42744,20 +42744,6 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
     # The remaining toolchains share opt flags between CC and CXX;
     # setup for C and duplicate afterwards.
     if test "x$TOOLCHAIN_TYPE" = xgcc -o "x$TOOLCHAIN_TYPE" = xclang; then
-      if test "x$OPENJDK_TARGET_OS" = xmacosx; then
-        # On MacOSX we optimize for size, something
-        # we should do for all platforms?
-        C_O_FLAG_HIGHEST="-Os"
-        C_O_FLAG_HI="-Os"
-        C_O_FLAG_NORM="-Os"
-        C_O_FLAG_NONE=""
-      else
-        C_O_FLAG_HIGHEST="-O3"
-        C_O_FLAG_HI="-O3"
-        C_O_FLAG_NORM="-O2"
-        C_O_FLAG_NONE="-O0"
-      fi
-    elif test "x$TOOLCHAIN_TYPE" = xclang; then
       if test "x$OPENJDK_TARGET_OS" = xmacosx; then
         # On MacOSX we optimize for size, something
         # we should do for all platforms?

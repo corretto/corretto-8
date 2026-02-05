@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -108,6 +108,23 @@ public class TestDockerMemoryMetrics {
 
     private static void testMemoryFailCount(String value) throws Exception {
         Common.logNewTestCase("testMemoryFailCount" + value);
+
+        // Check whether swapping really works for this test
+        // On some systems there is no swap space enabled. And running
+        // 'java -Xms{mem-limit} -Xmx{mem-limit} -version' would fail due to swap space size being 0.
+        DockerRunOptions preOpts =
+                new DockerRunOptions(imageName, "/jdk/bin/java", "-version");
+        preOpts.addDockerOpts("--volume", Utils.TEST_CLASSES + ":/test-classes/")
+                .addDockerOpts("--memory=" + value)
+                .addJavaOpts("-Xms" + value)
+                .addJavaOpts("-Xmx" + value);
+        OutputAnalyzer oa = DockerTestUtils.dockerRunJava(preOpts);
+        String output = oa.getOutput();
+        if (!output.contains("version")) {
+            System.out.println("Swapping doesn't work for this test.");
+            return;
+        }
+
         DockerRunOptions opts =
                 new DockerRunOptions(imageName, "/jdk/bin/java", "MetricsMemoryTester");
         opts.addDockerOpts("--volume", Utils.TEST_CLASSES + ":/test-classes/")
@@ -115,7 +132,13 @@ public class TestDockerMemoryMetrics {
                 .addJavaOpts("-Xmx" + value)
                 .addJavaOpts("-cp", "/test-classes/")
                 .addClassOptions("failcount");
-        DockerTestUtils.dockerRunJava(opts).shouldHaveExitValue(0).shouldContain("TEST PASSED!!!");
+        oa = DockerTestUtils.dockerRunJava(opts);
+        output = oa.getOutput();
+        if (output.contains("Ignoring test")) {
+            System.out.println("Ignored by the tester");
+            return;
+        }
+        oa.shouldHaveExitValue(0).shouldContain("TEST PASSED!!!");
     }
 
     private static void testMemoryAndSwapLimit(String memory, String memandswap) throws Exception {

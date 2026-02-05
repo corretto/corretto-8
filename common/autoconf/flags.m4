@@ -366,20 +366,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_OPTIMIZATION],
         C_O_FLAG_NORM="-O2"
         C_O_FLAG_NONE="-O0"
       fi
-    elif test "x$TOOLCHAIN_TYPE" = xclang; then
-      if test "x$OPENJDK_TARGET_OS" = xmacosx; then
-        # On MacOSX we optimize for size, something
-        # we should do for all platforms?
-        C_O_FLAG_HIGHEST="-Os"
-        C_O_FLAG_HI="-Os"
-        C_O_FLAG_NORM="-Os"
-        C_O_FLAG_NONE=""
-      else
-        C_O_FLAG_HIGHEST="-O3"
-        C_O_FLAG_HI="-O3"
-        C_O_FLAG_NORM="-O2"
-        C_O_FLAG_NONE="-O0"
-      fi
     elif test "x$TOOLCHAIN_TYPE" = xxlc; then
       C_O_FLAG_HIGHEST="-O3"
       C_O_FLAG_HI="-O3 -qstrict"
