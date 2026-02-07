@@ -366,20 +366,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_OPTIMIZATION],
         C_O_FLAG_NORM="-O2"
         C_O_FLAG_NONE="-O0"
       fi
-    elif test "x$TOOLCHAIN_TYPE" = xclang; then
-      if test "x$OPENJDK_TARGET_OS" = xmacosx; then
-        # On MacOSX we optimize for size, something
-        # we should do for all platforms?
-        C_O_FLAG_HIGHEST="-Os"
-        C_O_FLAG_HI="-Os"
-        C_O_FLAG_NORM="-Os"
-        C_O_FLAG_NONE=""
-      else
-        C_O_FLAG_HIGHEST="-O3"
-        C_O_FLAG_HI="-O3"
-        C_O_FLAG_NORM="-O2"
-        C_O_FLAG_NONE="-O0"
-      fi
     elif test "x$TOOLCHAIN_TYPE" = xxlc; then
       C_O_FLAG_HIGHEST="-O3"
       C_O_FLAG_HI="-O3 -qstrict"
@@ -695,6 +681,10 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     # The expected format is X.Y.Z
     MACOSX_VERSION_MIN=11.00.00
     AC_SUBST(MACOSX_VERSION_MIN)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 08e617e725bf285e93d75a2a3b37fc6b5010bc5e
     # The macro takes the version with no dots, ex: 1070
     # Let the flags variables get resolved in make for easier override on make
     # command line.

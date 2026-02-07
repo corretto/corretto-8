@@ -19,7 +19,7 @@
 # Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
 # or visit www.oracle.com if you need additional information or have any
 # questions.
-#  
+#
 #
 
 OS_VENDOR = $(shell uname -s)
@@ -80,7 +80,7 @@ ifeq ($(SPEC),)
     HOSTCC  = $(CC)
   endif
 
-  AS   = $(CC) -c 
+  AS   = $(CC) -c
 endif
 
 ifeq ($(OS_VENDOR), Darwin)
@@ -112,29 +112,29 @@ ifeq ($(USE_CLANG), true)
     # Clang produces an error if the PCH file was compiled with other options than the actual compilation unit.
     USE_PRECOMPILED_HEADER=0
   endif
-  
+
   ifeq ($(USE_PRECOMPILED_HEADER),1)
-  
+
     ifndef LP64
       $(error " Precompiled Headers only supported on 64-bit platforms!")
     endif
-  
+
     PRECOMPILED_HEADER_DIR=.
     PRECOMPILED_HEADER_SRC=$(GAMMADIR)/src/share/vm/precompiled/precompiled.hpp
     PRECOMPILED_HEADER=$(PRECOMPILED_HEADER_DIR)/precompiled.hpp.pch
-  
+
     PCH_FLAG = -include precompiled.hpp
     PCH_FLAG/DEFAULT = $(PCH_FLAG)
     PCH_FLAG/NO_PCH = -DNO_PCH
     PCH_FLAG/BY_FILE = $(PCH_FLAG/$@)$(PCH_FLAG/DEFAULT$(PCH_FLAG/$@))
-  
+
     VM_PCH_FLAG/LIBJVM = $(PCH_FLAG/BY_FILE)
     VM_PCH_FLAG/AOUT =
     VM_PCH_FLAG = $(VM_PCH_FLAG/$(LINK_INTO))
-  
+
     # We only use precompiled headers for the JVM build
     CFLAGS += $(VM_PCH_FLAG)
- 
+
     # The following files are compiled at various optimization
     # levels due to optimization issues encountered at the
     # 'OPT_CFLAGS_DEFAULT' level. The Clang compiler issues a compile
@@ -150,7 +150,7 @@ ifeq ($(USE_CLANG), true)
     PCH_FLAG/sharedRuntimeTrans.o = $(PCH_FLAG/NO_PCH)
     PCH_FLAG/unsafe.o = $(PCH_FLAG/NO_PCH)
     PCH_FLAG/metaspaceShared.o = $(PCH_FLAG/NO_PCH)
-  
+
   endif
 else # ($(USE_CLANG), true)
   # check for precompiled headers support
@@ -274,7 +274,7 @@ endif
 
 CFLAGS_WARN/DEFAULT = $(WARNINGS_ARE_ERRORS) $(WARNING_FLAGS)
 # Special cases
-CFLAGS_WARN/BYFILE = $(CFLAGS_WARN/$@)$(CFLAGS_WARN/DEFAULT$(CFLAGS_WARN/$@)) 
+CFLAGS_WARN/BYFILE = $(CFLAGS_WARN/$@)$(CFLAGS_WARN/DEFAULT$(CFLAGS_WARN/$@))
 # XXXDARWIN: for _dyld_bind_fully_image_containing_address
 ifeq ($(OS_VENDOR), Darwin)
   CFLAGS_WARN/os_bsd.o = $(CFLAGS_WARN/DEFAULT) -Wno-deprecated-declarations
@@ -315,7 +315,7 @@ OPT_CFLAGS/NOOPT=-O0
 
 # Work around some compiler bugs.
 ifeq ($(USE_CLANG), true)
-  # Known to fail with clang <= 7.0; 
+  # Known to fail with clang <= 7.0;
   # do no optimize these on later clang until verified
   OPT_CFLAGS/loopTransform.o += $(OPT_CFLAGS/NOOPT)
   OPT_CFLAGS/unsafe.o += -O1
@@ -340,7 +340,7 @@ CFLAGS += -DDONT_USE_PRECOMPILED_HEADER
 endif
 
 ifeq ($(OS_VENDOR), Darwin)
-  # Setting these parameters makes it an error to link to macosx APIs that are 
+  # Setting these parameters makes it an error to link to macosx APIs that are
   # newer than the given OS version and makes the linked binaries compatible even
   # if built on a newer version of the OS.
   # The expected format is X.Y.Z
@@ -348,10 +348,12 @@ ifeq ($(OS_VENDOR), Darwin)
     MACOSX_VERSION_MIN=11.00.00
   endif
   # The macro takes the version with no dots, ex: 1070
+
+  MAC_FLAGS = -mmacosx-version-min=$(MACOSX_VERSION_MIN)
   CFLAGS += -DMAC_OS_X_VERSION_MIN_REQUIRED=$(subst .,,$(MACOSX_VERSION_MIN)) \
             -DMAC_OS_X_VERSION_MAX_ALLOWED=$(subst .,,$(MACOSX_VERSION_MIN)) \
-            -mmacosx-version-min=$(MACOSX_VERSION_MIN)
-  LFLAGS += -mmacosx-version-min=$(MACOSX_VERSION_MIN)
+            $(MAC_FLAGS)
+  LFLAGS += $(MAC_FLAGS)
 endif
 
 
@@ -449,7 +451,7 @@ else
   ifeq ($(DEBUG_CFLAGS/$(BUILDARCH)),)
   DEBUG_CFLAGS += -gstabs
   endif
-  
+
   ifeq ($(ENABLE_FULL_DEBUG_SYMBOLS),1)
     FASTDEBUG_CFLAGS/ia64  = -g
     FASTDEBUG_CFLAGS/amd64 = -g
@@ -464,7 +466,7 @@ else
         FASTDEBUG_CFLAGS += -gstabs
       endif
     endif
-  
+
     OPT_CFLAGS/ia64  = -g
     OPT_CFLAGS/amd64 = -g
     OPT_CFLAGS/arm   = -g
