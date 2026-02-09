@@ -37,7 +37,7 @@ MEM=0
 if [ -f "/proc/meminfo" ]; then
   # Linux, Windows/Cygwin
   MEM=`cat /proc/meminfo |grep ^MemTotal: | awk '{print $2}'`
-  MEM="$(($MEM / 1024))"
+  MEM="$((${MEM/\.*/} / 1024))"
 elif [ -x "/usr/sbin/prtconf" ]; then
   # Solaris
   MEM=`/usr/sbin/prtconf | grep "^Memory size" | awk '{print $3}'`

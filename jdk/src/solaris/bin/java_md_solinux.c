@@ -1069,7 +1069,7 @@ ContinueInNewThread0(int (JNICALL *continuation)(void *), jlong stack_size, void
     if (thr_create(NULL, stack_size, (void *(*)(void *))continuation, args, flags, &tid) == 0) {
       void * tmp;
       thr_join(tid, NULL, &tmp);
-      rslt = (int)tmp;
+      rslt = (int)(intptr_t)tmp;
     } else {
       /* See above. Continue in current thread if thr_create() failed */
       rslt = continuation(args);
