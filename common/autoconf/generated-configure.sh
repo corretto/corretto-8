@@ -4454,7 +4454,7 @@ VS_TOOLSET_SUPPORTED_2022=true
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1770423688
+DATE_WHEN_GENERATED=1770665400
 
 ###############################################################################
 #
@@ -43547,10 +43547,6 @@ $as_echo "$as_me: fdlibm will be compiled with flags: $FDLIBM_CFLAGS" >&6;}
     # The expected format is X.Y.Z
     MACOSX_VERSION_MIN=11.00.00
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 08e617e725bf285e93d75a2a3b37fc6b5010bc5e
     # The macro takes the version with no dots, ex: 1070
     # Let the flags variables get resolved in make for easier override on make
     # command line.

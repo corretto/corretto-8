@@ -681,10 +681,6 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     # The expected format is X.Y.Z
     MACOSX_VERSION_MIN=11.00.00
     AC_SUBST(MACOSX_VERSION_MIN)
-<<<<<<< HEAD
-=======
-
->>>>>>> 08e617e725bf285e93d75a2a3b37fc6b5010bc5e
     # The macro takes the version with no dots, ex: 1070
     # Let the flags variables get resolved in make for easier override on make
     # command line.
