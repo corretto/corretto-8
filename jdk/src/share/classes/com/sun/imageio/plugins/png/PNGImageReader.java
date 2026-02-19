@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -135,6 +135,7 @@ public class PNGImageReader extends ImageReader {
     static final int tRNS_TYPE = 0x74524e53;
     static final int zTXt_TYPE = 0x7a545874;
 
+    static final int MAX_INFLATED_TEXT_LENGTH = 262144;
     static final int PNG_COLOR_GRAY = 0;
     static final int PNG_COLOR_RGB = 2;
     static final int PNG_COLOR_PALETTE = 3;
@@ -622,7 +623,7 @@ public class PNGImageReader extends ImageReader {
     private static byte[] inflate(byte[] b) throws IOException {
         InputStream bais = new ByteArrayInputStream(b);
         try (InputStream iis = new InflaterInputStream(bais)) {
-            return IOUtils.readAllBytes(iis);
+            return IOUtils.readNBytes(iis, MAX_INFLATED_TEXT_LENGTH);
         }
     }
 
