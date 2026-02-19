@@ -332,8 +332,8 @@ fi
 %{java_home}/src.zip
 %if %{perform_openjfx_overlay}
 %{java_home}/javafx-src.zip
-%exclude %{java_home}/bin/*.diz
 %endif
+%exclude %{java_home}/bin/*.diz
 
 %files debugsymbols
 %{java_home}/bin/*.diz
