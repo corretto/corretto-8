@@ -197,6 +197,13 @@ Provides: java-%{javaver}-openjdk-devel = %{epoch}:%{version}-%{release}
 %description devel
 Amazon Corretto's packaging of the OpenJDK 8 code.
 
+%package debugsymbols
+Summary: Amazon Corretto 11 zipped debug symbols
+Group: Development
+
+%description debugsymbols
+Amazon Corretto's packaging of the OpenJDK 11 debug symbols.
+
 %prep
 %setup -q -n src -c
 
@@ -211,8 +218,6 @@ bash ./configure \
   --with-build-number="%{buildver}" \
   --with-corretto-revision="%{corretto_revision}" \
   --with-milestone=%{?experimental_feature:%experimental_feature}%{!?experimental_feature:fcs} \
-  --disable-debug-symbols \
-  --disable-zip-debug-info \
   --enable-jfr \
   --with-vendor-name="Amazon.com Inc." \
   --with-vendor-url="https://aws.amazon.com/corretto/" \
@@ -327,6 +332,20 @@ fi
 %{java_home}/src.zip
 %if %{perform_openjfx_overlay}
 %{java_home}/javafx-src.zip
+%exclude %{java_home}/bin/*.diz
+%endif
+
+%files debugsymbols
+%{java_home}/bin/*.diz
+%{java_home}/jre/lib/*.diz
+%if "%{_arch}" == "x86_64"
+%{java_home}/jre/lib/amd64/*.diz
+%{java_home}/jre/lib/amd64/server/*.diz
+%{java_home}/jre/lib/amd64/jli/*.diz
+%else
+%{java_home}/jre/lib/aarch64/*.diz
+%{java_home}/jre/lib/aarch64/server/*.diz
+%{java_home}/jre/lib/aarch64/jli/*.diz
 %endif
 
 %files
@@ -347,9 +366,22 @@ fi
 %{java_home}/jre/THIRD_PARTY_README
 %{java_home}/jre/bin
 %{java_home}/jre/lib
-
+%exclude %{java_home}/jre/bin/*.diz
+%exclude %{java_home}/jre/lib/*.diz
+%if "%{_arch}" == "x86_64"
+%exclude %{java_home}/jre/lib/amd64/*.diz
+%exclude %{java_home}/jre/lib/amd64/server/*.diz
+%exclude %{java_home}/jre/lib/amd64/jli/*.diz
+%else
+%exclude %{java_home}/jre/lib/aarch64/*.diz
+%exclude %{java_home}/jre/lib/aarch64/server/*.diz
+%exclude %{java_home}/jre/lib/aarch64/jli/*.diz
+%endif
 
 %changelog
+* Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>
+- Add package debug symbols
+
 * Thu Aug 18 2022 Dan Lutker <lutkerd@amazon.com>
 - Add ability to set debug_level
 
