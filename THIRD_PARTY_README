@@ -2131,7 +2131,7 @@ included with JDK 8 and OpenJDK 8 source distributions.
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to libpng 1.6.54, which may be
+%% This notice is provided with respect to libpng 1.6.55, which may be
 included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
@@ -2319,6 +2319,7 @@ Authors, for copyright and licensing purposes.
  * Guy Eric Schalnat
  * James Yu
  * John Bowler
+ * Joshua Inscoe
  * Kevin Bracey
  * Lucas Chollet
  * Magnus Holmgren
