@@ -2131,7 +2131,7 @@ included with JDK 8 and OpenJDK 8 source distributions.
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to libpng 1.6.55, which may be
+%% This notice is provided with respect to libpng 1.6.56, which may be
 included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
@@ -2317,6 +2317,7 @@ Authors, for copyright and licensing purposes.
  * Glenn Randers-Pehrson
  * Greg Roelofs
  * Guy Eric Schalnat
+ * Halil Oktay
  * James Yu
  * John Bowler
  * Joshua Inscoe
@@ -2336,12 +2337,14 @@ Authors, for copyright and licensing purposes.
  * Sam Bushell
  * Samuel Williams
  * Simon-Pierre Cadieux
+ * Taegu Ha (하태구)
  * Tim Wegner
  * Tobias Stoeckmann
  * Tom Lane
  * Tom Tanner
  * Vadim Barkov
  * Willem van Schaik
+ * Yuelin Wang (王跃林)
  * Zhijie Liang
  * Apple Inc.
     - Zixu Wang (王子旭)
