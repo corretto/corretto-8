@@ -37,3 +37,8 @@ Please fill in the following information about your pull request.
 ### Contribution confirmation
 
 By submitting this pull request, I confirm that you can use, modify, copy, and redistribute this contribution, under the terms of your choice.
+
+
+
+---------
+- [ ] I confirm that I make this contribution in accordance with the [OpenJDK Interim AI Policy](https://openjdk.org/legal/ai).
