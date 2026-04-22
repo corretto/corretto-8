@@ -19,12 +19,7 @@
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-configurations {
-    javafx
-}
-
 dependencies {
-    javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -51,21 +46,7 @@ task inflateRpmSpec(type: Copy) {
     into buildRoot
 }
 
-task createJavafxOverlay(type: Copy) {
-    dependsOn project.configurations.javafx
-    from tarTree(project.configurations.javafx.singleFile)
-    into "$buildDir/distributions/javafx"
-    eachFile {
-        if (it.path.startsWith('rt/')) {
-            it.path = it.path.replace('rt/', 'jre/')
-        }
-    }
-}
-
 task copySourceTar(type: Tar) {
-     if (project.correttoArch == 'x64') {
-        dependsOn createJavafxOverlay
-    }
     dependsOn project.configurations.compile, inflateRpmSpec
     compression Compression.GZIP
     archiveName "${buildDir}/distributions/${tarName}.tar.gz"
@@ -75,9 +56,6 @@ task copySourceTar(type: Tar) {
     }
     from(tarTree(project.configurations.compile.singleFile)) {
         into '/'
-    }
-    from("$buildDir/distributions/javafx") {
-        into "javafx"
     }
 }
 

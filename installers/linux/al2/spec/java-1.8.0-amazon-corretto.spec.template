@@ -83,14 +83,6 @@
 # this can be skipped using --without bootjdk
 %bcond_without bootjdk
 
-# By default bundle OpenJFX on x86_64. To skip bundling, use --without bundlejfx
-%bcond_without bundlejfx
-%if "%{_arch}" == "x86_64" && %{with bundlejfx}
-%global perform_openjfx_overlay 1
-%else
-%global perform_openjfx_overlay 0
-%endif
-
 # On aarch64 add additional C and CPP flags
 %global platform_flags ""
 %ifarch aarch64
@@ -233,10 +225,6 @@ rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{java_home}
 cp -a build/linux-%{_arch}-normal-server-@debug_level@/images/j2sdk-image/* %{buildroot}%{java_home}
 
-%if %{perform_openjfx_overlay}
-cp -a -v javafx/* %{buildroot}%{java_home}
-%endif
-
 # Make a *relative* symlink pointing to the cacerts file from ca-certificates.
 rm -f %{buildroot}%{java_home}/jre/lib/security/cacerts
 pushd %{buildroot}%{java_home}/jre/lib/security
@@ -330,9 +318,6 @@ fi
 %{java_home}/release
 %{java_home}/sample
 %{java_home}/src.zip
-%if %{perform_openjfx_overlay}
-%{java_home}/javafx-src.zip
-%endif
 %exclude %{java_home}/bin/*.diz
 
 %files debugsymbols
