@@ -19,14 +19,7 @@
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-configurations {
-    javafx
-}
-
 dependencies {
-    if (!project.hasProperty("corretto.disable_jfx")) {
-        javafx project(path: ':javafx', configuration: 'archives')
-    }
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -106,24 +99,7 @@ task inflatePlistTemplate(type: Copy) {
     into "${jdkResultingImage}/${correttoMacDir}/Contents"
 }
 
-task applyJavafxOverlay(type: Copy) {
-    if (!project.hasProperty("corretto.disable_jfx")) {
-        dependsOn project.configurations.javafx
-        dependsOn renameBuildArtifacts
-        from tarTree(project.configurations.javafx.singleFile)
-        into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
-        eachFile {
-            if (it.path.startsWith('rt/')) {
-                it.path = it.path.replace('rt/', 'jre/')
-            }
-        }
-    }
-}
-
 task prepareArtifacts {
-    if (!project.hasProperty("corretto.disable_jfx")) {
-        dependsOn applyJavafxOverlay
-    }
     dependsOn inflatePlistTemplate
     doLast {
         // If property set, copy async profiler binaries to bundle
@@ -149,9 +125,6 @@ task prepareArtifacts {
                 include "Contents/Home/lib/**"
                 include "Contents/Home/man/man1/**"
                 include "Contents/Home/src.zip"
-                if (!project.hasProperty("corretto.disable_jfx")) {
-                    include "Contents/Home/javafx-src.zip"
-                }
                 include "Contents/Info.plist"
                 include "Contents/MacOS/**"
             }

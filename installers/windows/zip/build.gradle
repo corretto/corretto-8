@@ -18,14 +18,9 @@
 * 2 along with this work; if not, write to the Free Software Foundation,
 * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-configurations {
-    javafx
-}
-
 import java.nio.file.Paths
 
 dependencies {
-    javafx project(path: ':javafx', configuration: 'archives')
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
@@ -36,18 +31,6 @@ task copySource(type: Copy) {
     dependsOn project.configurations.compile
     from tarTree(project.configurations.compile.singleFile)
     into buildRoot
-}
-
-task createJavafxOverlay(type: Copy) {
-    dependsOn project.configurations.javafx
-    from tarTree(project.configurations.javafx.singleFile)
-    into "$buildDir/javafx"
-    eachFile {
-        if (it.path.startsWith('rt/')) {
-            it.path = it.path.replace('rt/', 'jre/')
-        }
-    }
-    includeEmptyDirs = false
 }
 
 task configureBuild(type: Exec) {
@@ -67,26 +50,8 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'images'
 }
 
-task applyJavafxOverlay() {
-    dependsOn createJavafxOverlay
-    outputs.dir(packagingDir)
-    doLast {
-        copy {
-            from createJavafxOverlay.destinationDir
-            into "$imagesDir/j2sdk-image"
-        }
-
-        copy {
-            from "$createJavafxOverlay.destinationDir/jre"
-            into "$imagesDir/j2re-image"
-        }
-    }
-}
-
 task copyImages() {
-    dependsOn createJavafxOverlay
     dependsOn executeBuild
-    dependsOn applyJavafxOverlay
 
     outputs.dir(packagingDir)
     doLast {
