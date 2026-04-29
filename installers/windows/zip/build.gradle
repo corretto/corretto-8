@@ -141,7 +141,7 @@ task packageDebugSymbols(type: Exec) {
     dependsOn copyVersionInfo
     outputs.dir(distributionDir)
     distributionDir.mkdirs()
-    def archiveName = file("$distributionDir/unsigned-jdk-debugsymbols-image.${project.correttoArch}.zip")
+    def archiveName = file("${distributionDir}/${project.correttoDebugSymbolsArchiveName}.zip")
     workingDir "$packagingDir/jdk-symbols"
     commandLine 'bash', '-c', "zip -qr \$(cygpath -u \'$archiveName\') *"
     artifacts.add('archives', archiveName)
