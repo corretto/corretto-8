@@ -1562,6 +1562,12 @@ jobs:
       - name: Select Xcode version
         run: sudo xcode-select --switch /Applications/Xcode_16.4.app/Contents/Developer
 
+      # Fixes JDK-8336451
+      - name: 'Update /etc/hosts on macos'
+        run: |
+          echo -e "127.0.0.1     $(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
+          echo -e "" | sudo tee -a /etc/hosts
+
       - name: Run tests
         run: >
           chmod +x "${HOME}/jtreg/bin/jtreg" &&

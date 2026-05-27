@@ -1660,7 +1660,7 @@ cmsBool IsTypeSupported(cmsTagDescriptor* TagDescriptor, cmsTagTypeSignature Typ
 void* CMSEXPORT cmsReadTag(cmsHPROFILE hProfile, cmsTagSignature sig)
 {
     _cmsICCPROFILE* Icc = (_cmsICCPROFILE*) hProfile;
-    cmsIOHANDLER* io = Icc ->IOhandler;
+    cmsIOHANDLER* io;
     cmsTagTypeHandler* TypeHandler;
     cmsTagTypeHandler LocalTypeHandler;
     cmsTagDescriptor*  TagDescriptor;
@@ -1704,6 +1704,8 @@ void* CMSEXPORT cmsReadTag(cmsHPROFILE hProfile, cmsTagSignature sig)
     TagSize   = Icc -> TagSizes[n];
 
     if (TagSize < 8) goto Error;
+
+    io = Icc ->IOhandler;
 
     if (io == NULL) { // This is a built-in profile that has been manipulated, abort early
 
