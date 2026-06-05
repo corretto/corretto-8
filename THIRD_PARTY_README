@@ -2435,7 +2435,7 @@ current as well as long time former maintainer of giflib code
 
 -------------------------------------------------------------------------------
 
-%% This notice is provided with respect to Little CMS 2.18, which may be
+%% This notice is provided with respect to Little CMS 2.19.1, which may be
 included with JRE 8, JDK 8, and OpenJDK 8.
 
 --- begin of LICENSE ---
@@ -2522,6 +2522,7 @@ Amyspark
 Lovell Fuller
 Eli Schwartz
 Diogo Teles Sant'Anna
+Vlad Erium
 
 Special Thanks
 --------------
