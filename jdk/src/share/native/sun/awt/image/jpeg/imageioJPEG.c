@@ -2932,7 +2932,7 @@ Java_com_sun_imageio_plugins_jpeg_JPEGImageWriter_writeImage
         (*env)->ReleaseIntArrayElements(env, QtableSelectors, qsels, JNI_ABORT);
     }
     if (!success) {
-      freeArray(scale, numBands);
+        freeArray(scale, numBands);
         free(scanLinePtr);
         return data->abortFlag;
     }
