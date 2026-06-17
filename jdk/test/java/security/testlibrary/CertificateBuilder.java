@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@
 package sun.security.testlibrary;
 
 import java.io.*;
+import java.net.IDN;
 import java.util.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
@@ -42,6 +43,8 @@ import sun.security.x509.AccessDescription;
 import sun.security.x509.AlgorithmId;
 import sun.security.x509.AuthorityInfoAccessExtension;
 import sun.security.x509.AuthorityKeyIdentifierExtension;
+import sun.security.x509.GeneralSubtrees;
+import sun.security.x509.NameConstraintsExtension;
 import sun.security.x509.SubjectKeyIdentifierExtension;
 import sun.security.x509.BasicConstraintsExtension;
 import sun.security.x509.ExtendedKeyUsageExtension;
@@ -206,9 +209,10 @@ public class CertificateBuilder {
      *
      * @param ext The extension to be added.
      */
-    public void addExtension(Extension ext) {
+    public CertificateBuilder addExtension(Extension ext) {
         Objects.requireNonNull(ext, "Caught null extension");
         extensions.put(ext.getId(), ext);
+        return this;
     }
 
     /**
@@ -228,14 +232,14 @@ public class CertificateBuilder {
      * Helper method to add DNSName types for the SAN extension
      *
      * @param dnsNames A {@code List} of names to add as DNSName types
-     *
      * @throws IOException if an encoding error occurs.
      */
     public void addSubjectAltNameDNSExt(List<String> dnsNames) throws IOException {
         if (!dnsNames.isEmpty()) {
             GeneralNames gNames = new GeneralNames();
             for (String name : dnsNames) {
-                gNames.add(new GeneralName(new DNSName(name)));
+                gNames.add(new GeneralName(new DNSName(new DerValue(
+                        DerValue.tag_IA5String, IDN.toASCII(name)))));
             }
             addExtension(new SubjectAlternativeNameExtension(false,
                     gNames));
@@ -303,6 +307,19 @@ public class CertificateBuilder {
     public void addAuthorityKeyIdExt(X509Certificate authorityCert)
             throws IOException {
         addAuthorityKeyIdExt(authorityCert.getPublicKey());
+    }
+
+    /**
+     * Set the Name Constraints Extension for a certificate.
+     *
+     * @param permitted permitted names
+     * @param excluded excluded names
+     *
+     * @throws IOException if an encoding error occurs.
+     */
+    public CertificateBuilder addNameConstraintsExt(
+            GeneralSubtrees permitted, GeneralSubtrees excluded) throws IOException {
+        return addExtension(new NameConstraintsExtension(permitted, excluded));
     }
 
     /**
