@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -35,6 +35,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -646,15 +647,10 @@ public class GIFImageReader extends ImageReader {
                 stream.skipBytes(length);
                 continue;
             }
-            byte[] subBlockData =
-                ReaderUtil.staggeredReadByteStream(stream, length);
-            byte[] newData = new byte[data.length + length];
-            System.arraycopy(data, 0, newData, 0, data.length);
-            System.arraycopy(subBlockData, 0, newData,
-                             data.length, length);
-            data = newData;
+            stream.readFully(data, 0, length);
+            buffer.write(data, 0, length);
         }
-        return data;
+        return buffer.toByteArray();
     }
 
     // Stream must be positioned at start of metadata for 'currIndex'
