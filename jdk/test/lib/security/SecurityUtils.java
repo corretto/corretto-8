@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,6 +24,11 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
+import java.security.Security;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Common library for various security test helper functions.
@@ -50,6 +55,33 @@ public final class SecurityUtils {
             ks.load(fis, null);
         }
         return ks;
+    }
+
+    /**
+     * Removes the specified protocols from the jdk.tls.disabledAlgorithms
+     * security property.
+     */
+    public static void removeFromDisabledTlsAlgs(String... protocols) {
+        List<String> protocolsList = Arrays.asList(protocols);
+        protocolsList = Collections.unmodifiableList(protocolsList);
+        removeFromDisabledAlgs("jdk.tls.disabledAlgorithms",
+                               protocolsList);
+    }
+
+    /**
+     * Removes constraints that contain the specified constraint from the
+     * specified security property. For example, List.of("SHA1") will remove
+     * any constraint containing "SHA1".
+     */
+    public static void removeFromDisabledAlgs(String prop,
+            List<String> constraints) {
+        String value = Security.getProperty(prop);
+        value = Arrays.stream(value.split(","))
+                      .map(s -> s.trim())
+                      .filter(s -> constraints.stream()
+                          .allMatch(constraint -> !s.contains(constraint)))
+                      .collect(Collectors.joining(","));
+        Security.setProperty(prop, value);
     }
 
     private SecurityUtils() {}
