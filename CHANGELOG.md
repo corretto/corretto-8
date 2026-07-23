@@ -2,6 +2,46 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.502.07.1
+Release Date: July 21, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.502.07.1:
+
+| Issue Name          | Platform | Description                                    | Link                                                                       |
+|---------------------|----------|------------------------------------------------|----------------------------------------------------------------------------|
+| Import jdk8u502-b07 | All      | Updates Corretto baseline to OpenJDK 8u502-b07 | [jdk8u502-b07](https://github.com/openjdk/jdk8u/releases/tag/jdk8u502-b07) |
+| JDK-8252250         | All      | isnanf is obsolete                             | [#574](https://github.com/corretto/corretto-8/pull/574)                    |
+
+The following CVEs are addressed in 8.502.07.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2026-47057 | 7.5  | core-libs/javax.script      |
+| CVE-2026-41254 | 7.5  | client-libs/2d              |
+| CVE-2026-47063 | 7.5  | security-libs/java.security |
+| CVE-2026-47058 | 7.4  | core-libs/javax.script      |
+| CVE-2026-60147 | 6.5  | security-libs/java.security |
+| CVE-2026-47059 | 5.9  | client-libs/2d              |
+| CVE-2026-46968 | 5.9  | security-libs/javax.net.ssl |
+| CVE-2026-47027 | 5.3  | security-libs/java.security |
+| CVE-2026-47021 | 5.3  | client-libs/2d              |
+| CVE-2026-47010 | 3.7  | client-libs/javax.imageio   |
+
 ## Corretto version: 8.492.09.2
 Release Date: May 6, 2026
 
