@@ -309,9 +309,6 @@ sun/security/pkcs11/rsa/TestKeyPairGenerator.java               linux-all,solari
 # 8151834
 sun/security/mscapi/SmallPrimeExponentP.java                    windows-i586
 
-#8176354
-sun/security/ssl/com/sun/net/ssl/internal/ssl/X509KeyManager/PreferredKey.java     generic-all
-
 # 8206909
 com/sun/crypto/provider/CICO/PBEFunc/CICOPBEFuncTest.java       solaris-sparcv9
 
