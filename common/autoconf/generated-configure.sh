@@ -42873,6 +42873,12 @@ $as_echo "$supports" >&6; }
     CXXFLAGS_JDK="${CXXFLAGS_JDK} ${CXXSTD_CXXFLAG}"
     JVM_CFLAGS="${JVM_CFLAGS} ${CXXSTD_CXXFLAG}"
 
+    # JDK 8 C sources predate C23 (empty parameter lists meaning
+    # unspecified arguments, 'bool' typedefs, etc). GCC 15+ defaults
+    # to gnu23, so pin the C dialect the code was written against.
+    CSTD_CFLAG="-std=gnu11"
+    CFLAGS_JDK="${CFLAGS_JDK} ${CSTD_CFLAG}"
+
 
   fi
 

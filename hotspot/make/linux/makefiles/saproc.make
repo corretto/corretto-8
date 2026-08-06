@@ -93,6 +93,7 @@ $(LIBSAPROC): $(SASRCFILES) $(SAMAPFILE)
 	@echo Making SA debugger back-end...
 	$(QUIETLY) $(CC) -D$(SAARCH) -D_GNU_SOURCE                      \
 		   -D_FILE_OFFSET_BITS=64                               \
+		   -std=gnu99                                           \
                    $(SYMFLAG) $(ARCHFLAG) $(SHARED_FLAG) $(PICFLAG)     \
 	           -I$(SASRCDIR)                                        \
 	           -I$(GENERATED)                                       \

@@ -228,6 +228,14 @@ ifeq ($(USE_CLANG),)
     WARNINGS_ARE_ERRORS += -Wno-class-memaccess -Wno-unused-but-set-variable -Wno-stringop-truncation
     WARNINGS_ARE_ERRORS += -Wno-c++11-compat -Wno-switch -Wno-delete-non-virtual-dtor -Wno-uninitialized
     WARNINGS_ARE_ERRORS += -Wno-misleading-indentation -Wno-address
+    # GCC 12+ -Warray-bounds reports false positives on intentional
+    # negative-offset pointer arithmetic, e.g. GuardedMemory computing its
+    # header from the user pointer (used by checked JNI in jniCheck.cpp).
+    WARNINGS_ARE_ERRORS += -Wno-array-bounds
+    # GCC 12+ -Wdangling-pointer flags storing addresses of stack locals
+    # in statics, e.g. MethodComparator's BytecodeStream pointers. These
+    # are reassigned before each use and never read after return.
+    WARNINGS_ARE_ERRORS += -Wno-dangling-pointer
   endif
 
   # Since GCC 4.3, -Wconversion has changed its meanings to warn these implicit

@@ -44,7 +44,7 @@ template <class T, MEMFLAGS F> class ChunkedList : public CHeapObj<F> {
   }
 
  public:
-  ChunkedList<T, F>() : _top(_values), _next_used(NULL), _next_free(NULL) {}
+  ChunkedList() : _top(_values), _next_used(NULL), _next_free(NULL) {}
 
   bool is_full() const {
     return _top == end();

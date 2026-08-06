@@ -85,7 +85,7 @@ template <class T> class EventLogBase : public EventLog {
   EventRecord<T>* _records;
 
  public:
-  EventLogBase<T>(const char* name, int length = LogEventsBufferEntries):
+  EventLogBase(const char* name, int length = LogEventsBufferEntries):
     _name(name),
     _length(length),
     _count(0),

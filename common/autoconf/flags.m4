@@ -435,6 +435,12 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     $2CXXFLAGS_JDK="${$2CXXFLAGS_JDK} ${$2CXXSTD_CXXFLAG}"
     $2JVM_CFLAGS="${$2JVM_CFLAGS} ${$2CXXSTD_CXXFLAG}"
 
+    # JDK 8 C sources predate C23 (empty parameter lists meaning
+    # unspecified arguments, 'bool' typedefs, etc). GCC 15+ defaults
+    # to gnu23, so pin the C dialect the code was written against.
+    $2CSTD_CFLAG="-std=gnu11"
+    $2CFLAGS_JDK="${$2CFLAGS_JDK} ${$2CSTD_CFLAG}"
+
     AC_SUBST($2CXXSTD_CXXFLAG)
   fi
 
