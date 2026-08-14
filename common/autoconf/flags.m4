@@ -435,6 +435,20 @@ AC_DEFUN_ONCE([FLAGS_SETUP_COMPILER_FLAGS_FOR_JDK],
     $2CXXFLAGS_JDK="${$2CXXFLAGS_JDK} ${$2CXXSTD_CXXFLAG}"
     $2JVM_CFLAGS="${$2JVM_CFLAGS} ${$2CXXSTD_CXXFLAG}"
 
+    AC_MSG_CHECKING([if the default C dialect is pre-C23])
+    AC_LANG_PUSH([C])
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[typedef int bool;]])],
+      [AC_MSG_RESULT([yes])
+        $2CSTD_CFLAG=""],
+      [AC_MSG_RESULT([no, pinning -std=gnu17])
+        $2CSTD_CFLAG="-std=gnu17"])
+    AC_LANG_POP([C])
+    $2CFLAGS_JDK="${$2CFLAGS_JDK} ${$2CSTD_CFLAG}"
+    m4_if([$2], [], [
+      LEGACY_HOST_CFLAGS="$LEGACY_HOST_CFLAGS ${CSTD_CFLAG}"
+      LEGACY_TARGET_CFLAGS="$LEGACY_TARGET_CFLAGS ${CSTD_CFLAG}"
+    ])
+
     AC_SUBST($2CXXSTD_CXXFLAG)
   fi
 

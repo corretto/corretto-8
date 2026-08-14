@@ -42873,6 +42873,40 @@ $as_echo "$supports" >&6; }
     CXXFLAGS_JDK="${CXXFLAGS_JDK} ${CXXSTD_CXXFLAG}"
     JVM_CFLAGS="${JVM_CFLAGS} ${CXXSTD_CXXFLAG}"
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the default C dialect is pre-C23" >&5
+$as_echo_n "checking if the default C dialect is pre-C23... " >&6; }
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+typedef int bool;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        CSTD_CFLAG=""
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, pinning -std=gnu17" >&5
+$as_echo "no, pinning -std=gnu17" >&6; }
+        CSTD_CFLAG="-std=gnu17"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+    CFLAGS_JDK="${CFLAGS_JDK} ${CSTD_CFLAG}"
+
+      LEGACY_HOST_CFLAGS="$LEGACY_HOST_CFLAGS ${CSTD_CFLAG}"
+      LEGACY_TARGET_CFLAGS="$LEGACY_TARGET_CFLAGS ${CSTD_CFLAG}"
+
+
 
   fi
 
