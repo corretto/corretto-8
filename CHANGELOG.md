@@ -2,6 +2,39 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.504.01.1
+Release Date: August 18, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.504.01.1:
+
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| Import jdk8u504-b01    | All      | Updates Corretto baseline to OpenJDK 8u504-b01 | [jdk8u504-b01](https://github.com/openjdk/jdk8u/releases/tag/jdk8u504-b01) |	
+
+The following CVEs are addressed in 8.504.01.1:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-61308 | 6.8 | core-libs/java.net |
+| CVE-2026-70907 | 5.3 | security-libs/javax.net.ssl |
+| CVE-2026-60589 | 3.7 | security-libs/javax.xml.crypto |
+
 ## Corretto version: 8.502.07.1
 Release Date: July 21, 2026
 
