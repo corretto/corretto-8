@@ -117,6 +117,7 @@
 
 # 8221305
 java/awt/FontMetrics/MaxAdvanceIsMax.java             solaris-all,macosx-all
+java/awt/KeyboardFocusmanager/ConsumeNextMnemonicKeyTypedTest/ConsumeNextMnemonicKeyTypedTest.java 8321303 linux-all
 
 ############################################################################
 
