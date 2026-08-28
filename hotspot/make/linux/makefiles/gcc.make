@@ -229,6 +229,12 @@ ifeq ($(USE_CLANG),)
     WARNINGS_ARE_ERRORS += -Wno-c++11-compat -Wno-switch -Wno-delete-non-virtual-dtor -Wno-uninitialized
     WARNINGS_ARE_ERRORS += -Wno-misleading-indentation -Wno-address
   endif
+  # temporary workaround to get aarch64 building on AL2027
+  ifeq "$(shell expr \( $(CC_VER_MAJOR) \>= 16 \))" "1"
+    ifeq ($(BUILDARCH), aarch64)
+      WARNINGS_ARE_ERRORS += -Wno-stringop-overflow
+    endif
+  endif
 
   # Since GCC 4.3, -Wconversion has changed its meanings to warn these implicit
   # conversions which might affect the values. Only enable it in earlier versions.
