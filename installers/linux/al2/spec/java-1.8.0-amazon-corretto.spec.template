@@ -83,10 +83,21 @@
 # this can be skipped using --without bootjdk
 %bcond_without bootjdk
 
+# temporary workaround to build AL2027
+%if "%{dist}" == ".amzn2027"
+%global dialect_flag -std=gnu17
+%endif
+
 # On aarch64 add additional C and CPP flags
-%global platform_flags ""
 %ifarch aarch64
-%global platform_flags --with-extra-cflags="-moutline-atomics" --with-extra-cxxflags="-moutline-atomics"
+%global atomics_flag -moutline-atomics
+%global cxxflags_option --with-extra-cxxflags="%{atomics_flag}"
+%endif
+
+# Pass --with-extra-*flags to configure only when there is a flag to pass.
+%global platform_flags %{nil}
+%if 0%{?dialect_flag:1}%{?atomics_flag:1}
+%global platform_flags --with-extra-cflags="%{?dialect_flag} %{?atomics_flag}" %{?cxxflags_option}
 %endif
 
 Summary: Amazon Corretto runtime environment
@@ -200,6 +211,9 @@ Amazon Corretto's packaging of the OpenJDK 11 debug symbols.
 %setup -q -n src -c
 
 %build
+%if "%{dist}" == ".amzn2027"
+unset CFLAGS CXXFLAGS LDFLAGS
+%endif
 bash ./configure \
 %if 0%{?additional_configure_options:1}
     %{additional_configure_options} \
