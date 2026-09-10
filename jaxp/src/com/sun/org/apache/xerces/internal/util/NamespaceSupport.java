@@ -23,6 +23,7 @@ package com.sun.org.apache.xerces.internal.util;
 import java.util.Enumeration;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -196,7 +197,7 @@ public class NamespaceSupport implements NamespaceContext {
             return false;
         }
 
-        final int activeIndex = fNamespaceTable.getOrDefault(prefix, NO_PREVIOUS_DECLARATION);
+        final int activeIndex = getOrDefault(fNamespaceTable, prefix, NO_PREVIOUS_DECLARATION);
 
         // see if prefix already exists in current context
         if (activeIndex >= fContext[fCurrentContext]) {
@@ -238,7 +239,7 @@ public class NamespaceSupport implements NamespaceContext {
         fNamespaceTable.clear();
         for (int i = 0; i < fNamespaceSize; i += 2) {
             final String prefix = fNamespace[i];
-            fNamespacePrev[i >> 1] = fNamespaceTable.getOrDefault(prefix, NO_PREVIOUS_DECLARATION);
+            fNamespacePrev[i >> 1] = getOrDefault(fNamespaceTable, prefix, NO_PREVIOUS_DECLARATION);
             fNamespaceTable.put(prefix, i);
         }
     }
@@ -249,7 +250,7 @@ public class NamespaceSupport implements NamespaceContext {
     public String getURI(String prefix) {
 
         // find prefix in current context
-        final int active = fNamespaceTable.getOrDefault(prefix, NO_PREVIOUS_DECLARATION);
+        final int active = getOrDefault(fNamespaceTable, prefix, NO_PREVIOUS_DECLARATION);
         return active != NO_PREVIOUS_DECLARATION ? fNamespace[active + 1] : null;
 
     } // getURI(String):String
@@ -306,7 +307,7 @@ public class NamespaceSupport implements NamespaceContext {
             final int prefixIndex = i - 2;
             if (fNamespace[prefixIndex + 1] == uri) {
                 final String prefix = fNamespace[prefixIndex];
-                if (fNamespaceTable.getOrDefault(prefix, NO_PREVIOUS_DECLARATION) == prefixIndex) {
+                if (getOrDefault(fNamespaceTable, prefix, NO_PREVIOUS_DECLARATION) == prefixIndex) {
                     prefixList.add(prefix);
                 }
             }
@@ -356,7 +357,7 @@ public class NamespaceSupport implements NamespaceContext {
      */
     public boolean containsPrefixInCurrentContext(String prefix) {
         // find prefix in current context
-        return fNamespaceTable.getOrDefault(prefix, NO_PREVIOUS_DECLARATION) >= fContext[fCurrentContext];
+        return getOrDefault(fNamespaceTable, prefix, NO_PREVIOUS_DECLARATION) >= fContext[fCurrentContext];
     }
 
     protected final class IteratorPrefixes implements Iterator {
@@ -446,6 +447,20 @@ public class NamespaceSupport implements NamespaceContext {
         }
 
 
+    }
+
+    //
+    // Private methods
+    //
+
+    /**
+     * Needed here from Map.getOrDefault due to bootstrap JDK 7 not having getOrDefault
+     */
+    private static Integer getOrDefault(Map<?, Integer> map, Object key, Integer defaultValue) {
+        Integer v;
+        return (((v = map.get(key)) != null) || map.containsKey(key))
+            ? v
+            : defaultValue;
     }
 
 } // class NamespaceSupport
