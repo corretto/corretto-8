@@ -693,7 +693,14 @@ class ServerImpl {
                 URI uri = new URI (uriStr);
                 start = space+1;
                 String version = requestLine.substring (start);
-                Headers headers = req.headers();
+                Headers headers;
+                try {
+                    headers = req.headers();
+                } catch (ProtocolException pe) {
+                    reject(Code.HTTP_BAD_REQUEST, requestLine,
+                            "Failed to parse headers: " + pe.getMessage());
+                    return;
+                }
                 /* check key for illegal characters */
                 for (String k : headers.keySet()) {
                     if (!isValidHeaderKey(k)) {
