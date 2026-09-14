@@ -183,68 +183,74 @@
 <p>The OpenJDK build requires CYGWIN version 1.7.16 or newer. Information about CYGWIN can be obtained from the CYGWIN website at <a href="http://www.cygwin.com">www.cygwin.com</a>.</p>
 <p>By default CYGWIN doesn’t install all the tools required for building the OpenJDK. Along with the default installation, you need to install the following tools.</p>
 <table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 13%" />
+<col style="width: 8%" />
+<col style="width: 65%" />
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Binary Name</th>
-<th style="text-align: left;">Category</th>
-<th style="text-align: left;">Package</th>
-<th style="text-align: left;">Description</th>
+<th>Binary Name</th>
+<th>Category</th>
+<th>Package</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">ar.exe</td>
-<td style="text-align: left;">Devel</td>
-<td style="text-align: left;">binutils</td>
-<td style="text-align: left;">The GNU assembler, linker and binary utilities</td>
+<td>ar.exe</td>
+<td>Devel</td>
+<td>binutils</td>
+<td>The GNU assembler, linker and binary utilities</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">make.exe</td>
-<td style="text-align: left;">Devel</td>
-<td style="text-align: left;">make</td>
-<td style="text-align: left;">The GNU version of the ‘make’ utility built for CYGWIN</td>
+<td>make.exe</td>
+<td>Devel</td>
+<td>make</td>
+<td>The GNU version of the ‘make’ utility built for CYGWIN</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">m4.exe</td>
-<td style="text-align: left;">Interpreters</td>
-<td style="text-align: left;">m4</td>
-<td style="text-align: left;">GNU implementation of the traditional Unix macro processor</td>
+<td>m4.exe</td>
+<td>Interpreters</td>
+<td>m4</td>
+<td>GNU implementation of the traditional Unix macro processor</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">cpio.exe</td>
-<td style="text-align: left;">Utils</td>
-<td style="text-align: left;">cpio</td>
-<td style="text-align: left;">A program to manage archives of files</td>
+<td>cpio.exe</td>
+<td>Utils</td>
+<td>cpio</td>
+<td>A program to manage archives of files</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">gawk.exe</td>
-<td style="text-align: left;">Utils</td>
-<td style="text-align: left;">awk</td>
-<td style="text-align: left;">Pattern-directed scanning and processing language</td>
+<td>gawk.exe</td>
+<td>Utils</td>
+<td>awk</td>
+<td>Pattern-directed scanning and processing language</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">file.exe</td>
-<td style="text-align: left;">Utils</td>
-<td style="text-align: left;">file</td>
-<td style="text-align: left;">Determines file type using ‘magic’ numbers</td>
+<td>file.exe</td>
+<td>Utils</td>
+<td>file</td>
+<td>Determines file type using ‘magic’ numbers</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">zip.exe</td>
-<td style="text-align: left;">Archive</td>
-<td style="text-align: left;">zip</td>
-<td style="text-align: left;">Package and compress (archive) files</td>
+<td>zip.exe</td>
+<td>Archive</td>
+<td>zip</td>
+<td>Package and compress (archive) files</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">unzip.exe</td>
-<td style="text-align: left;">Archive</td>
-<td style="text-align: left;">unzip</td>
-<td style="text-align: left;">Extract compressed files in a ZIP archive</td>
+<td>unzip.exe</td>
+<td>Archive</td>
+<td>unzip</td>
+<td>Extract compressed files in a ZIP archive</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">free.exe</td>
-<td style="text-align: left;">System</td>
-<td style="text-align: left;">procps</td>
-<td style="text-align: left;">Display amount of free and used memory in the system</td>
+<td>free.exe</td>
+<td>System</td>
+<td>procps</td>
+<td>Display amount of free and used memory in the system</td>
 </tr>
 </tbody>
 </table>
@@ -578,65 +584,73 @@ Try rebooting the system, or there could be some kind of issue with the disk or 
 <p>It is understood that most developers will NOT be using these specific versions, and in fact creating these specific versions may be difficult due to the age of some of this software. It is expected that developers are more often using the more recent releases and distributions of these operating systems.</p>
 <p>Compilation problems with newer or different C/C++ compilers is a common problem. Similarly, compilation problems related to changes to the <code>/usr/include</code> or system header files is also a common problem with older, newer, or unreleased OS versions. Please report these types of problems as bugs so that they can be dealt with accordingly.</p>
 <p>Bootstrap JDK: JDK 7u7</p>
-<table>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 30%" />
+<col style="width: 5%" />
+<col style="width: 6%" />
+<col style="width: 5%" />
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Base OS and Architecture</th>
-<th style="text-align: left;">OS</th>
-<th style="text-align: left;">C/C++ Compiler</th>
-<th style="text-align: left;">Processors</th>
-<th style="text-align: left;">RAM Minimum</th>
-<th style="text-align: left;">DISK Needs</th>
+<th>Base OS and Architecture</th>
+<th>OS</th>
+<th>C/C++ Compiler</th>
+<th>Processors</th>
+<th>RAM Minimum</th>
+<th>DISK Needs</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Linux X86 (32-bit) and X64 (64-bit)</td>
-<td style="text-align: left;">Fedora 9</td>
-<td style="text-align: left;">gcc 4.3</td>
-<td style="text-align: left;">2 or more</td>
-<td style="text-align: left;">1 GB</td>
-<td style="text-align: left;">6 GB</td>
+<td>Linux X86 (32-bit) and X64 (64-bit)</td>
+<td>Fedora 9</td>
+<td>gcc 4.3</td>
+<td>2 or more</td>
+<td>1 GB</td>
+<td>6 GB</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Solaris SPARC (32-bit) and SPARCV9 (64-bit)</td>
-<td style="text-align: left;">Solaris 10 Update 6</td>
-<td style="text-align: left;">Studio 12 Update 1 + patches</td>
-<td style="text-align: left;">4 or more</td>
-<td style="text-align: left;">4 GB</td>
-<td style="text-align: left;">8 GB</td>
+<td>Solaris SPARC (32-bit) and SPARCV9 (64-bit)</td>
+<td>Solaris 10 Update 6</td>
+<td>Studio 12 Update 1 + patches</td>
+<td>4 or more</td>
+<td>4 GB</td>
+<td>8 GB</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Solaris X86 (32-bit) and X64 (64-bit)</td>
-<td style="text-align: left;">Solaris 10 Update 6</td>
-<td style="text-align: left;">Studio 12 Update 1 + patches</td>
-<td style="text-align: left;">4 or more</td>
-<td style="text-align: left;">4 GB</td>
-<td style="text-align: left;">8 GB</td>
+<td>Solaris X86 (32-bit) and X64 (64-bit)</td>
+<td>Solaris 10 Update 6</td>
+<td>Studio 12 Update 1 + patches</td>
+<td>4 or more</td>
+<td>4 GB</td>
+<td>8 GB</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Windows X86 (32-bit)</td>
-<td style="text-align: left;">Windows XP</td>
-<td style="text-align: left;">Microsoft Visual Studio C++ 2010 Professional Edition</td>
-<td style="text-align: left;">2 or more</td>
-<td style="text-align: left;">2 GB</td>
-<td style="text-align: left;">6 GB</td>
+<td>Windows X86 (32-bit)</td>
+<td>Windows XP</td>
+<td>Microsoft Visual Studio C++ 2010 Professional Edition</td>
+<td>2 or more</td>
+<td>2 GB</td>
+<td>6 GB</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Windows X64 (64-bit)</td>
-<td style="text-align: left;">Windows Server 2003 - Enterprise x64 Edition</td>
-<td style="text-align: left;">Microsoft Visual Studio C++ 2010 Professional Edition</td>
-<td style="text-align: left;">2 or more</td>
-<td style="text-align: left;">2 GB</td>
-<td style="text-align: left;">6 GB</td>
+<td>Windows X64 (64-bit)</td>
+<td>Windows Server 2003 - Enterprise x64 Edition</td>
+<td>Microsoft Visual Studio C++ 2010 Professional Edition</td>
+<td>2 or more</td>
+<td>2 GB</td>
+<td>6 GB</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mac OS X X64 (64-bit)</td>
-<td style="text-align: left;">Mac OS X 10.7 “Lion”</td>
-<td style="text-align: left;">XCode 4.5.2 or newer</td>
-<td style="text-align: left;">2 or more</td>
-<td style="text-align: left;">4 GB</td>
-<td style="text-align: left;">6 GB</td>
+<td>Mac OS X X64 (64-bit)</td>
+<td>Mac OS X 10.7 “Lion”</td>
+<td>XCode 4.5.2 or newer</td>
+<td>2 or more</td>
+<td>4 GB</td>
+<td>6 GB</td>
 </tr>
 </tbody>
 </table>
