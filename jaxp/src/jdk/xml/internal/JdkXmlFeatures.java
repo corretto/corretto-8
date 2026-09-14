@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@
 package jdk.xml.internal;
 
 import javax.xml.XMLConstants;
+import static com.sun.org.apache.xalan.internal.XalanConstants.XPATH_ALLOW_NON_XSLT_SYS_PROPS;
 import static jdk.xml.internal.JdkXmlUtils.OVERRIDE_PARSER;
 
 /**
@@ -69,7 +70,16 @@ public class JdkXmlFeatures {
          */
         JDK_OVERRIDE_PARSER(OVERRIDE_PARSER, OVERRIDE_PARSER,
                 ORACLE_FEATURE_SERVICE_MECHANISM, ORACLE_FEATURE_SERVICE_MECHANISM,
-                false, false, true, false);
+                false, false, true, false),
+
+        /**
+         * Feature allowNonXSLTSysProps: controls whether XPath's system-property()
+         * function is permitted to access non-XSLT-defined JVM system properties.
+         * FSP: when FSP is on, accessing non-XSLT-defined JVM system properties is disabled
+         */
+        JDK_XPATH_SYSTEM_PROPERTY(XPATH_ALLOW_NON_XSLT_SYS_PROPS, XPATH_ALLOW_NON_XSLT_SYS_PROPS,
+                null, null,
+                false, false, true, true);
 
         private final String name;
         private final String nameSP;
