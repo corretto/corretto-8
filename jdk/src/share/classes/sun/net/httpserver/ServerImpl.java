@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.ProtocolException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -650,7 +651,16 @@ class ServerImpl {
                     connection.raw = rawin;
                     connection.rawout = rawout;
                 }
-                Request req = new Request (rawin, rawout);
+
+                Request req;
+                try {
+                    req = new Request(rawin, rawout, newconnection && !https);
+                } catch (ProtocolException pe) {
+                    logger.log(Level.FINE, "closing due to: " + pe);
+                    reject(Code.HTTP_BAD_REQUEST, "", pe.getMessage());
+                    return;
+                }
+
                 requestLine = req.requestLine();
                 if (requestLine == null) {
                     /* connection closed */
