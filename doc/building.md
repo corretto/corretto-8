@@ -315,17 +315,17 @@ By default CYGWIN doesn't install all the tools required for building the
 OpenJDK. Along with the default installation, you need to install the following
 tools.
 
-  Binary Name   Category       Package    Description
-  ------------- -------------- ---------- ------------------------------------------------------------
-  ar.exe        Devel          binutils   The GNU assembler, linker and binary utilities
-  make.exe      Devel          make       The GNU version of the 'make' utility built for CYGWIN
-  m4.exe        Interpreters   m4         GNU implementation of the traditional Unix macro processor
-  cpio.exe      Utils          cpio       A program to manage archives of files
-  gawk.exe      Utils          awk        Pattern-directed scanning and processing language
-  file.exe      Utils          file       Determines file type using 'magic' numbers
-  zip.exe       Archive        zip        Package and compress (archive) files
-  unzip.exe     Archive        unzip      Extract compressed files in a ZIP archive
-  free.exe      System         procps     Display amount of free and used memory in the system
+| Binary Name | Category     | Package  | Description                                                |
+| ----------- | ------------ | -------- | ---------------------------------------------------------- |
+| ar.exe      | Devel        | binutils | The GNU assembler, linker and binary utilities             |
+| make.exe    | Devel        | make     | The GNU version of the 'make' utility built for CYGWIN     |
+| m4.exe      | Interpreters | m4       | GNU implementation of the traditional Unix macro processor |
+| cpio.exe    | Utils        | cpio     | A program to manage archives of files                      |
+| gawk.exe    | Utils        | awk      | Pattern-directed scanning and processing language          |
+| file.exe    | Utils        | file     | Determines file type using 'magic' numbers                 |
+| zip.exe     | Archive      | zip      | Package and compress (archive) files                       |
+| unzip.exe   | Archive      | unzip    | Extract compressed files in a ZIP archive                  |
+| free.exe    | System       | procps   | Display amount of free and used memory in the system       |
 
 Note that the CYGWIN software can conflict with other non-CYGWIN software on
 your Windows system. CYGWIN provides a
@@ -992,14 +992,14 @@ so that they can be dealt with accordingly.
 
 Bootstrap JDK: JDK 7u7
 
-  Base OS and Architecture                      OS                                             C/C++ Compiler                                          Processors   RAM Minimum   DISK Needs
-  --------------------------------------------- ---------------------------------------------- ------------------------------------------------------- ------------ ------------- ------------
-  Linux X86 (32-bit) and X64 (64-bit)           Fedora 9                                       gcc 4.3                                                 2 or more    1 GB          6 GB
-  Solaris SPARC (32-bit) and SPARCV9 (64-bit)   Solaris 10 Update 6                            Studio 12 Update 1 + patches                            4 or more    4 GB          8 GB
-  Solaris X86 (32-bit) and X64 (64-bit)         Solaris 10 Update 6                            Studio 12 Update 1 + patches                            4 or more    4 GB          8 GB
-  Windows X86 (32-bit)                          Windows XP                                     Microsoft Visual Studio C++ 2010 Professional Edition   2 or more    2 GB          6 GB
-  Windows X64 (64-bit)                          Windows Server 2003 - Enterprise x64 Edition   Microsoft Visual Studio C++ 2010 Professional Edition   2 or more    2 GB          6 GB
-  Mac OS X X64 (64-bit)                         Mac OS X 10.7 "Lion"                           XCode 4.5.2 or newer                                    2 or more    4 GB          6 GB
+| Base OS and Architecture                    | OS                                           | C/C++ Compiler                                        | Processors | RAM Minimum | DISK Needs |
+| ------------------------------------------- | -------------------------------------------- | ----------------------------------------------------- | ---------- | ----------- | ---------- |
+| Linux X86 (32-bit) and X64 (64-bit)         | Fedora 9                                     | gcc 4.3                                               | 2 or more  | 1 GB        | 6 GB       |
+| Solaris SPARC (32-bit) and SPARCV9 (64-bit) | Solaris 10 Update 6                          | Studio 12 Update 1 + patches                          | 4 or more  | 4 GB        | 8 GB       |
+| Solaris X86 (32-bit) and X64 (64-bit)       | Solaris 10 Update 6                          | Studio 12 Update 1 + patches                          | 4 or more  | 4 GB        | 8 GB       |
+| Windows X86 (32-bit)                        | Windows XP                                   | Microsoft Visual Studio C++ 2010 Professional Edition | 2 or more  | 2 GB        | 6 GB       |
+| Windows X64 (64-bit)                        | Windows Server 2003 - Enterprise x64 Edition | Microsoft Visual Studio C++ 2010 Professional Edition | 2 or more  | 2 GB        | 6 GB       |
+| Mac OS X X64 (64-bit)                       | Mac OS X 10.7 "Lion"                         | XCode 4.5.2 or newer                                  | 2 or more  | 4 GB        | 6 GB       |
 
 -------------------------------------------------------------------------------
 
