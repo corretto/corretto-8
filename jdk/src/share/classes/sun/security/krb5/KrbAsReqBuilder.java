@@ -342,7 +342,7 @@ public final class KrbAsReqBuilder {
             }
             try {
                 req = build(pakey, referralsState);
-                rep = new KrbAsRep(comm.send(req.encoding()));
+                rep = new KrbAsRep(comm.send(req.encoding()), req.getMessage().reqBody.eType);
                 return this;
             } catch (KrbException ke) {
                 if (!preAuthFailedOnce && (
