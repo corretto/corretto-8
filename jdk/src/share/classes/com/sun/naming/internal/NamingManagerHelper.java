@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -88,7 +88,7 @@ public class NamingManagerHelper {
                 // if reference has no factory, check for addresses
                 // containing URLs
 
-                answer = processURLAddrs(ref, name, nameCtx, environment);
+                answer = processURLAddrs(ref, name, nameCtx, environment, factoryFilter);
                 if (answer != null) {
                     return answer;
                 }
@@ -156,7 +156,7 @@ public class NamingManagerHelper {
                 // containing URLs
                 // ignore name & attrs params; not used in URL factory
                 // RMI references from '
-                answer = processURLAddrs(ref, name, nameCtx, environment);
+                answer = processURLAddrs(ref, name, nameCtx, environment, factoryFilter);
                 if (answer != null) {
                     return answer;
                 }
@@ -256,7 +256,8 @@ public class NamingManagerHelper {
      * invoking a factory.
      */
     static Object processURLAddrs(Reference ref, Name name, Context nameCtx,
-                                  Hashtable<?,?> environment)
+                                  Hashtable<?,?> environment,
+                                  Predicate<Class<?>> factoryFilter)
             throws NamingException {
 
         for (int i = 0; i < ref.size(); i++) {
@@ -265,7 +266,7 @@ public class NamingManagerHelper {
                     addr.getType().equalsIgnoreCase("URL")) {
 
                 String url = (String)addr.getContent();
-                Object answer = processURL(url, name, nameCtx, environment);
+                Object answer = processURL(url, name, nameCtx, environment, factoryFilter);
                 if (answer != null) {
                     return answer;
                 }
@@ -275,7 +276,8 @@ public class NamingManagerHelper {
     }
 
     private static Object processURL(Object refInfo, Name name,
-                                     Context nameCtx, Hashtable<?,?> environment)
+                                     Context nameCtx, Hashtable<?,?> environment,
+                                     Predicate<Class<?>> factoryFilter)
             throws NamingException {
         Object answer;
 
@@ -286,7 +288,7 @@ public class NamingManagerHelper {
             String scheme = getURLScheme(url);
             if (scheme != null) {
                 answer = getURLObject(scheme, refInfo, name, nameCtx,
-                        environment);
+                        environment, factoryFilter);
                 if (answer != null) {
                     return answer;
                 }
@@ -302,7 +304,7 @@ public class NamingManagerHelper {
                 String scheme = getURLScheme(urls[i]);
                 if (scheme != null) {
                     answer = getURLObject(scheme, refInfo, name, nameCtx,
-                            environment);
+                            environment, factoryFilter);
                     if (answer != null)
                         return answer;
                 }
@@ -344,11 +346,16 @@ public class NamingManagerHelper {
      * @param nameCtx Context whose provider resource file will be searched
      *          for package prefix values (or null if none)
      * @param environment Environment properties for creating the context
+     * @param factoryFilter an object factory filter. If the factoryFilter is
+     *          an instance of {@link ObjectFactoriesFilter.ContextFactoryFilter}
+     *          it will be used to check whether the selected URL Context Factory
+     *          is allowed to process a URL Reference of the given URL scheme.
      * @see javax.naming.InitialContext
      */
     private static Object getURLObject(String scheme, Object urlInfo,
                                        Name name, Context nameCtx,
-                                       Hashtable<?,?> environment)
+                                       Hashtable<?,?> environment,
+                                       Predicate<Class<?>> factoryFilter)
             throws NamingException {
 
         // e.g. "ftpURLContextFactory"
@@ -358,6 +365,10 @@ public class NamingManagerHelper {
 
         if (factory == null)
             return null;
+
+        if (!ObjectFactoriesFilter.checkURLContextFactory(scheme, factory, factoryFilter)) {
+            return null;
+        }
 
         // Found object factory
         try {

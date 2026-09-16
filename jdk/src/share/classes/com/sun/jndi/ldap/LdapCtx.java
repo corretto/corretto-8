@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -385,6 +385,16 @@ final public class LdapCtx extends ComponentDirContext
         netscapeSchemaBug = existing.netscapeSchemaBug;
 
         initEnv();
+    }
+
+    /**
+     * Whether this LDAP provider implementation trusts serial data.
+     * See {@linkplain java.naming/ java.naming module info} for more info.
+     *
+     * @return true if this LDAP provider implementation trusts serial data
+     */
+    public static boolean trustSerialData() {
+        return Obj.trustSerialData();
     }
 
     public LdapContext newInstance(Control[] reqCtls) throws NamingException {
@@ -1112,7 +1122,7 @@ final public class LdapCtx extends ComponentDirContext
 
         try {
             return NamingManagerHelper.getDirObjectInstance(obj, name, this,
-                    envprops, attrs, ObjectFactoriesFilter::checkLdapFilter);
+                    envprops, attrs, ObjectFactoriesFilter.ldapFactoryFilter());
 
         } catch (NamingException e) {
             throw cont.fillInException(e);
