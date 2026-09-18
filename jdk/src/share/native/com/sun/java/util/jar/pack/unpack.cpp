@@ -1340,6 +1340,10 @@ void unpacker::read_signature_values(entry* cpMap, int len, byte tag) {
     for (int j = 0; j < (int)form.value.b.len; j++) {
       int c = form.value.b.ptr[j];
       if (c == 'L') nc++;
+      if (nc == USHRT_MAX) { // entry::nrefs is unsigned short
+        abort("too many class references");
+        return;
+      }
     }
     ncTotal += nc;
     e.refs = U_NEW(entry*, cpMap[i].nrefs = 1 + nc);
@@ -1417,6 +1421,14 @@ void unpacker::read_bootstrap_methods(entry* cpMap, int len, byte tag) {
   for (int i = 0; i < len; i++) {
     entry& e = cpMap[i];
     int argc = cp_BootstrapMethod_arg_count.getInt();
+    if (argc < 0) {
+      abort("negative number of arguments");
+      return;
+    }
+    if (USHRT_MAX - 1 < argc) { // entry::nrefs is unsigned short
+      abort("too many arguments");
+      return;
+    }
     cp.initValues(e, tag, i);
     e.value.i = argc;
     e.refs = U_NEW(entry*, e.nrefs = argc + 1);
