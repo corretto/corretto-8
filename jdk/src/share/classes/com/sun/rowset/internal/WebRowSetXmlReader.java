@@ -58,6 +58,11 @@ public class WebRowSetXmlReader implements XmlReader, Serializable {
     static final String WEBROWSET_XSD = "webrowset.xsd";
     private static final String VALIDATION_PROPERTY = "jdk.sql.rowset.webrowsetValidation";
 
+    // Error messages
+    private static final String STD_SCHEMA_MESSAGE =
+            String.format("readXML : Cannot locate standard WebRowSet schema: %s.", WEBROWSET_XSD);
+
+
     private JdbcRowSetResourceBundle resBundle;
 
     public WebRowSetXmlReader(){
@@ -175,8 +180,7 @@ public class WebRowSetXmlReader implements XmlReader, Serializable {
     private Schema getSchema() throws SAXException {
         URL stdSchema = WebRowSet.class.getResource(WEBROWSET_XSD);
         if (stdSchema == null) {
-            throw new SAXException(MessageFormat.format(resBundle.handleGetObject(
-                    "wrsxmlreader.stdschema").toString(), WEBROWSET_XSD));
+            throw new SAXException(STD_SCHEMA_MESSAGE);
         }
 
         // JDK 8 has no SchemaFactory.newDefaultInstance(); use the

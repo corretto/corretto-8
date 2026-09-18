@@ -564,10 +564,14 @@ public abstract class CommonWebRowSetTests extends CommonCachedRowSetTests {
     @Test(dataProvider = "rowSetType")
     public void testLegacyXmlWithoutValidation(WebRowSet wrs)
             throws Exception {
-        String legacyXml = getLegacyXml();
+        String legacyXml = getLegacyXml()
+                // Exercise the path where an empty element follows a value bearing
+                // element. This is for JDK-8386783
+                .replace("<url>jdbc:derby://localhost:1527/testDB;create=true</url>", "<url/>");
         withRowSetValidation("false", () -> {
             try {
                 wrs.readXml(new StringReader(legacyXml));
+                assertNull(wrs.getUrl());
                 assertEquals(wrs.size(), COFFEES_ROWS);
                 assertEquals(getPrimaryKeys(wrs), COFFEES_PRIMARY_KEYS);
 
