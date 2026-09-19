@@ -30,13 +30,19 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 class MetaZonesParseHandler extends AbstractLDMLHandler<String> {
     // "from"/"to" attribute values of <usesMetazone> in metaZones.xml
-    private static final SimpleDateFormat MZ_TIME = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final SimpleDateFormat MZ_TIME =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT);
+    static {
+        MZ_TIME.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
     private static final Date NOW = new Date();
 
     private String tzid, metazone;
