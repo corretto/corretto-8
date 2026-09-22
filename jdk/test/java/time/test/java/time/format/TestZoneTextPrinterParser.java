@@ -55,7 +55,7 @@ import org.testng.annotations.Test;
 
 /*
  * @test
- * @bug 8081022 8151876 8166875 8390388 8388214
+ * @bug 8081022 8151876 8166875 8390388 8388214 8392519
  * @key randomness
  */
 
@@ -70,6 +70,7 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
     static {
         Map<String, ZoneOffset> offsets = new HashMap<>();
         offsets.put("America/Edmonton", ZoneOffset.of("-06:00"));
+        offsets.put("America/Inuvik", ZoneOffset.of("-06:00"));
         offsets.put("America/Yellowknife", ZoneOffset.of("-06:00"));
         offsets.put("America/Vancouver", ZoneOffset.of("-07:00"));
         offsets.put("Canada/Mountain", ZoneOffset.of("-06:00"));
