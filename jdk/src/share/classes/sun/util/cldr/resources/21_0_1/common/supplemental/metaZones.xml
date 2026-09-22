@@ -52,7 +52,8 @@
 			<timezone type="Africa/Casablanca">
 				<usesMetazone to="1984-03-16 00:00" mzone="Europe_Western"/>
 				<usesMetazone to="1985-12-31 23:00" from="1984-03-16 00:00" mzone="Europe_Central"/>
-				<usesMetazone from="1985-12-31 23:00" mzone="Europe_Western"/>
+				<usesMetazone to="2018-10-28 02:00" from="1985-12-31 23:00" mzone="Europe_Western"/>
+				<usesMetazone from="2026-09-20 01:00" mzone="Europe_Western"/>
 			</timezone>
 			<timezone type="Africa/Ceuta">
 				<usesMetazone to="1984-03-16 00:00" mzone="Europe_Western"/>
@@ -75,7 +76,8 @@
 			</timezone>
 			<timezone type="Africa/El_Aaiun">
 				<usesMetazone to="1976-04-14 01:00" mzone="Africa_FarWestern"/>
-				<usesMetazone from="1976-04-14 01:00" mzone="Europe_Western"/>
+				<usesMetazone to="2018-10-28 02:00" from="1976-04-14 01:00" mzone="Europe_Western"/>
+				<usesMetazone from="2026-09-20 01:00" mzone="Europe_Western"/>
 			</timezone>
 			<timezone type="Africa/Freetown">
 				<usesMetazone mzone="GMT"/>
@@ -370,7 +372,7 @@
 				<usesMetazone mzone="Atlantic"/>
 			</timezone>
 			<timezone type="America/Edmonton">
-				<usesMetazone mzone="America_Mountain"/>
+				<usesMetazone mzone="America_Mountain" stdOffset="-07" dstOffset="-06"/>
 			</timezone>
 			<timezone type="America/Eirunepe">
 				<usesMetazone to="2008-06-24 05:00" mzone="Acre"/>
@@ -745,7 +747,7 @@
 				<usesMetazone from="1983-11-30 09:00" mzone="Alaska"/>
 			</timezone>
 			<timezone type="America/Yellowknife">
-				<usesMetazone mzone="America_Mountain"/>
+				<usesMetazone mzone="America_Mountain" stdOffset="-07" dstOffset="-06"/>
 			</timezone>
 			<timezone type="Antarctica/Casey">
 				<usesMetazone to="2009-10-17 18:00" mzone="Australia_Western"/>
