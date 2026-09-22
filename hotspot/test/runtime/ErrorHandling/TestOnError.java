@@ -25,13 +25,13 @@
  * @test TestOnError
  * @bug 8078470
  * @summary Test using -XX:OnError=<cmd>
- * @library /testlibrary
+ * @library /test/lib
  * @requires vm.debug
- * @build TestOnError com.oracle.java.testlibrary.*
+ * @build TestOnError jdk.test.lib.*
  * @run main TestOnError
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 public class TestOnError {
 

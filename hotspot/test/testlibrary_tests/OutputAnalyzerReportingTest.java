@@ -27,14 +27,14 @@
  * @summary Test the OutputAnalyzer reporting functionality,
  *     such as printing additional diagnostic info
  *     (exit code, stdout, stderr, command line, etc.)
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 
 public class OutputAnalyzerReportingTest {

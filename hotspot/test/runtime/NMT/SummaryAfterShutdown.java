@@ -25,18 +25,19 @@
  * @test
  * @key nmt jcmd
  * @summary Verify that jcmd correctly reports that NMT is not enabled after a shutdown
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:NativeMemoryTracking=detail SummaryAfterShutdown
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class SummaryAfterShutdown {
 
   public static void main(String args[]) throws Exception {
     OutputAnalyzer output;
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     ProcessBuilder pb = new ProcessBuilder();
 
     // Run 'jcmd <pid> VM.native_memory shutdown'

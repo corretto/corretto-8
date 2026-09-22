@@ -31,16 +31,16 @@
  *        "..................................H"
  *     3. invoke gc and check that memory returned to the system (amount of committed memory got down)
  *
- * @library /testlibrary
+ * @library /test/lib
  */
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.List;
 import sun.management.ManagementFactoryHelper;
-import static com.oracle.java.testlibrary.Asserts.*;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import static jdk.test.lib.Asserts.*;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestShrinkDefragmentedHeap {
     // Since we store all the small objects, they become old and old regions are also allocated at the bottom of the heap

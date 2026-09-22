@@ -27,7 +27,6 @@ import java.lang.management.MemoryUsage;
 import java.lang.reflect.Executable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.security.BasicPermission;
 import java.util.Objects;
@@ -76,17 +75,11 @@ public class WhiteBox {
   public native long getObjectAddress(Object o);
   public native int  getHeapOopSize();
   public native int  getVMPageSize();
-  public native long getVMAllocationGranularity();
   public native long getVMLargePageSize();
-  public native long getHeapSpaceAlignment();
   public native long getHeapAlignment();
 
   public native boolean isObjectInOldGen(Object o);
   public native long getObjectSize(Object o);
-
-  public native boolean classKnownToNotExist(ClassLoader loader, String name);
-  public native URL[] getLookupCacheURLs(ClassLoader loader);
-  public native int[] getLookupCacheMatches(ClassLoader loader, String name);
 
   // Runtime
   // Make sure class name is in the correct format
@@ -99,33 +92,10 @@ public class WhiteBox {
 
   public native void forceSafepoint();
 
-  private native long getConstantPool0(Class<?> aClass);
-  public         long getConstantPool(Class<?> aClass) {
-    Objects.requireNonNull(aClass);
-    return getConstantPool0(aClass);
-  }
-
-  private native int getConstantPoolCacheIndexTag0();
-  public         int getConstantPoolCacheIndexTag() {
-    return getConstantPoolCacheIndexTag0();
-  }
-
-  private native int getConstantPoolCacheLength0(Class<?> aClass);
-  public         int getConstantPoolCacheLength(Class<?> aClass) {
-    Objects.requireNonNull(aClass);
-    return getConstantPoolCacheLength0(aClass);
-  }
-
-  private native int remapInstructionOperandFromCPCache0(Class<?> aClass, int index);
-  public         int remapInstructionOperandFromCPCache(Class<?> aClass, int index) {
-    Objects.requireNonNull(aClass);
-    return remapInstructionOperandFromCPCache0(aClass, index);
-  }
-
-  private native int encodeConstantPoolIndyIndex0(int index);
-  public         int encodeConstantPoolIndyIndex(int index) {
-    return encodeConstantPoolIndyIndex0(index);
-  }
+  // Resource/Class Lookup Cache
+  public native boolean classKnownToNotExist(ClassLoader loader, String name);
+  public native URL[] getLookupCacheURLs(ClassLoader loader);
+  public native int[] getLookupCacheMatches(ClassLoader loader, String name);
 
   // JVMTI
   public native void addToBootstrapClassLoaderSearch(String segment);
@@ -134,33 +104,16 @@ public class WhiteBox {
   // G1
   public native boolean g1InConcurrentMark();
   public native boolean g1IsHumongous(Object o);
-  public native boolean g1BelongsToHumongousRegion(long adr);
-  public native boolean g1BelongsToFreeRegion(long adr);
   public native long    g1NumMaxRegions();
   public native long    g1NumFreeRegions();
   public native int     g1RegionSize();
   public native MemoryUsage g1AuxiliaryMemoryUsage();
   public native Object[]    parseCommandLine(String commandline, DiagnosticCommand[] args);
 
-  // Parallel GC
-  public native long psVirtualSpaceAlignment();
-  public native long psHeapGenerationAlignment();
-
-  /**
-   * Enumerates old regions with liveness less than specified and produces some statistics
-   * @param liveness percent of region's liveness (live_objects / total_region_size * 100).
-   * @return long[3] array where long[0] - total count of old regions
-   *                             long[1] - total memory of old regions
-   *                             long[2] - lowest estimation of total memory of old regions to be freed (non-full
-   *                             regions are not included)
-   */
-  public native long[] g1GetMixedGCInfo(int liveness);
-
   // NMT
   public native long NMTMalloc(long size);
   public native void NMTFree(long mem);
   public native long NMTReserveMemory(long size);
-  public native long NMTAttemptReserveMemoryAt(long addr, long size);
   public native void NMTCommitMemory(long addr, long size);
   public native void NMTUncommitMemory(long addr, long size);
   public native void NMTReleaseMemory(long addr, long size);
@@ -169,58 +122,30 @@ public class WhiteBox {
   public native boolean NMTIsDetailSupported();
   public native boolean NMTChangeTrackingLevel();
   public native int NMTGetHashSize();
+  public native long NMTNewArena(long initSize);
+  public native void NMTFreeArena(long arena);
+  public native void NMTArenaMalloc(long arena, long size);
 
   // Compiler
-  public native int     matchesMethod(Executable method, String pattern);
-  public native int     matchesInline(Executable method, String pattern);
-  public native boolean shouldPrintAssembly(Executable method, int comp_level);
-  public native int     deoptimizeFrames(boolean makeNotEntrant);
   public native void    deoptimizeAll();
-
   public        boolean isMethodCompiled(Executable method) {
     return isMethodCompiled(method, false /*not osr*/);
   }
   public native boolean isMethodCompiled(Executable method, boolean isOsr);
   public        boolean isMethodCompilable(Executable method) {
-    return isMethodCompilable(method, -2 /*any*/);
+    return isMethodCompilable(method, -1 /*any*/);
   }
   public        boolean isMethodCompilable(Executable method, int compLevel) {
     return isMethodCompilable(method, compLevel, false /*not osr*/);
   }
   public native boolean isMethodCompilable(Executable method, int compLevel, boolean isOsr);
-
   public native boolean isMethodQueuedForCompilation(Executable method);
-
-  // Determine if the compiler corresponding to the compilation level 'compLevel'
-  // and to the compilation context 'compilation_context' provides an intrinsic
-  // for the method 'method'. An intrinsic is available for method 'method' if:
-  //  - the intrinsic is enabled (by using the appropriate command-line flag) and
-  //  - the platform on which the VM is running provides the instructions necessary
-  //    for the compiler to generate the intrinsic code.
-  //
-  // The compilation context is related to using the DisableIntrinsic flag on a
-  // per-method level, see hotspot/src/share/vm/compiler/abstractCompiler.hpp
-  // for more details.
-  public boolean isIntrinsicAvailable(Executable method,
-                                      Executable compilationContext,
-                                      int compLevel) {
-      Objects.requireNonNull(method);
-      return isIntrinsicAvailable0(method, compilationContext, compLevel);
-  }
-  // If usage of the DisableIntrinsic flag is not expected (or the usage can be ignored),
-  // use the below method that does not require the compilation context as argument.
-  public boolean isIntrinsicAvailable(Executable method, int compLevel) {
-      return isIntrinsicAvailable(method, null, compLevel);
-  }
-  private native boolean isIntrinsicAvailable0(Executable method,
-                                               Executable compilationContext,
-                                               int compLevel);
   public        int     deoptimizeMethod(Executable method) {
     return deoptimizeMethod(method, false /*not osr*/);
   }
   public native int     deoptimizeMethod(Executable method, boolean isOsr);
   public        void    makeMethodNotCompilable(Executable method) {
-    makeMethodNotCompilable(method, -2 /*any*/);
+    makeMethodNotCompilable(method, -1 /*any*/);
   }
   public        void    makeMethodNotCompilable(Executable method, int compLevel) {
     makeMethodNotCompilable(method, compLevel, false /*not osr*/);
@@ -232,7 +157,7 @@ public class WhiteBox {
   public native int     getMethodCompilationLevel(Executable method, boolean isOsr);
   public native boolean testSetDontInlineMethod(Executable method, boolean value);
   public        int     getCompileQueuesSize() {
-    return getCompileQueueSize(-2 /*any*/);
+    return getCompileQueueSize(-1 /*any*/);
   }
   public native int     getCompileQueueSize(int compLevel);
   public native boolean testSetForceInlineMethod(Executable method, boolean value);
@@ -252,8 +177,6 @@ public class WhiteBox {
   }
   public native void    clearMethodState(Executable method);
   public native void    markMethodProfiled(Executable method);
-  public native void    lockCompilation();
-  public native void    unlockCompilation();
   public native int     getMethodEntryBci(Executable method);
   public native Object[] getNMethod(Executable method, boolean isOsr);
   public native long    allocateCodeBlob(int size, int type);
@@ -266,22 +189,7 @@ public class WhiteBox {
       return allocateCodeBlob( intSize, type);
   }
   public native void    freeCodeBlob(long addr);
-  public native Object[] getCodeHeapEntries(int type);
-  public native int     getCompilationActivityMode();
-  private native long getMethodData0(Executable method);
-  public         long getMethodData(Executable method) {
-    Objects.requireNonNull(method);
-    return getMethodData0(method);
-  }
   public native Object[] getCodeBlob(long addr);
-
-  private native void clearInlineCaches0(boolean preserve_static_stubs);
-  public void clearInlineCaches() {
-    clearInlineCaches0(false);
-  }
-  public void clearInlineCaches(boolean preserve_static_stubs) {
-    clearInlineCaches0(preserve_static_stubs);
-  }
 
   // Intered strings
   public native boolean isInStringTable(String str);
@@ -292,53 +200,12 @@ public class WhiteBox {
   public native void freeMetaspace(ClassLoader classLoader, long addr, long size);
   public native long incMetaspaceCapacityUntilGC(long increment);
   public native long metaspaceCapacityUntilGC();
-  public native boolean metaspaceShouldConcurrentCollect();
-  public native long metaspaceReserveAlignment();
-
-  // Don't use these methods directly
-  // Use sun.hotspot.gc.GC class instead.
-  public native boolean isGCSupported(int name);
-  public native boolean isGCSelected(int name);
-  public native boolean isGCSelectedErgonomically();
 
   // Force Young GC
   public native void youngGC();
 
   // Force Full GC
   public native void fullGC();
-
-  // Returns true if the current GC supports control of its concurrent
-  // phase via requestConcurrentGCPhase().  If false, a request will
-  // always fail.
-  public native boolean supportsConcurrentGCPhaseControl();
-
-  // Returns an array of concurrent phase names provided by this
-  // collector.  These are the names recognized by
-  // requestConcurrentGCPhase().
-  public native String[] getConcurrentGCPhases();
-
-  // Attempt to put the collector into the indicated concurrent phase,
-  // and attempt to remain in that state until a new request is made.
-  //
-  // Returns immediately if already in the requested phase.
-  // Otherwise, waits until the phase is reached.
-  //
-  // Throws IllegalStateException if unsupported by the current collector.
-  // Throws NullPointerException if phase is null.
-  // Throws IllegalArgumentException if phase is not valid for the current collector.
-  public void requestConcurrentGCPhase(String phase) {
-    if (!supportsConcurrentGCPhaseControl()) {
-      throw new IllegalStateException("Concurrent GC phase control not supported");
-    } else if (phase == null) {
-      throw new NullPointerException("null phase");
-    } else if (!requestConcurrentGCPhase0(phase)) {
-      throw new IllegalArgumentException("Unknown concurrent GC phase: " + phase);
-    }
-  }
-
-  // Helper for requestConcurrentGCPhase().  Returns true if request
-  // succeeded, false if the phase is invalid.
-  private native boolean requestConcurrentGCPhase0(String phase);
 
   // Method tries to start concurrent mark cycle.
   // It returns false if CM Thread is always in concurrent cycle.
@@ -354,31 +221,28 @@ public class WhiteBox {
   // CPU features
   public native String getCPUFeatures();
 
+  // Native extensions
+  public native long getHeapUsageForContext(int context);
+  public native long getHeapRegionCountForContext(int context);
+  public native int getContextForObject(Object obj);
+  public native void printRegionInfo(int context);
+
   // VM flags
-  public native boolean isConstantVMFlag(String name);
-  public native boolean isLockedVMFlag(String name);
   public native void    setBooleanVMFlag(String name, boolean value);
-  public native void    setIntVMFlag(String name, long value);
-  public native void    setUintVMFlag(String name, long value);
   public native void    setIntxVMFlag(String name, long value);
   public native void    setUintxVMFlag(String name, long value);
   public native void    setUint64VMFlag(String name, long value);
-  public native void    setSizeTVMFlag(String name, long value);
   public native void    setStringVMFlag(String name, String value);
   public native void    setDoubleVMFlag(String name, double value);
   public native Boolean getBooleanVMFlag(String name);
-  public native Long    getIntVMFlag(String name);
-  public native Long    getUintVMFlag(String name);
   public native Long    getIntxVMFlag(String name);
   public native Long    getUintxVMFlag(String name);
   public native Long    getUint64VMFlag(String name);
-  public native Long    getSizeTVMFlag(String name);
   public native String  getStringVMFlag(String name);
   public native Double  getDoubleVMFlag(String name);
   private final List<Function<String,Object>> flagsGetters = Arrays.asList(
-    this::getBooleanVMFlag, this::getIntVMFlag, this::getUintVMFlag,
-    this::getIntxVMFlag, this::getUintxVMFlag, this::getUint64VMFlag,
-    this::getSizeTVMFlag, this::getStringVMFlag, this::getDoubleVMFlag);
+    this::getBooleanVMFlag, this::getIntxVMFlag, this::getUintxVMFlag,
+    this::getUint64VMFlag, this::getStringVMFlag, this::getDoubleVMFlag);
 
   public Object getVMFlag(String name) {
     return flagsGetters.stream()
@@ -387,15 +251,6 @@ public class WhiteBox {
                        .findAny()
                        .orElse(null);
   }
-
-  // Jigsaw
-  public native void DefineModule(Object module, boolean is_open, String version,
-                                  String location, Object[] packages);
-  public native void AddModuleExports(Object from_module, String pkg, Object to_module);
-  public native void AddReadsModule(Object from_module, Object source_module);
-  public native void AddModuleExportsToAllUnnamed(Object module, String pkg);
-  public native void AddModuleExportsToAll(Object module, String pkg);
-
   public native int getOffsetForName0(String name);
   public int getOffsetForName(String name) throws Exception {
     int offset = getOffsetForName0(name);
@@ -404,47 +259,18 @@ public class WhiteBox {
     }
     return offset;
   }
-  public native Boolean getMethodBooleanOption(Executable method, String name);
-  public native Long    getMethodIntxOption(Executable method, String name);
-  public native Long    getMethodUintxOption(Executable method, String name);
-  public native Double  getMethodDoubleOption(Executable method, String name);
-  public native String  getMethodStringOption(Executable method, String name);
-  private final List<BiFunction<Executable,String,Object>> methodOptionGetters
-      = Arrays.asList(this::getMethodBooleanOption, this::getMethodIntxOption,
-          this::getMethodUintxOption, this::getMethodDoubleOption,
-          this::getMethodStringOption);
 
-  public Object getMethodOption(Executable method, String name) {
-    return methodOptionGetters.stream()
-                              .map(f -> f.apply(method, name))
-                              .filter(x -> x != null)
-                              .findAny()
-                              .orElse(null);
-  }
-
-  // Safepoint Checking
-  public native void assertMatchingSafepointCalls(boolean mutexSafepointValue, boolean attemptedNoSafepointValue);
-
-  // Sharing & archiving
-  public native boolean isShared(Object o);
+  // Class Data Sharing
   public native boolean isSharedClass(Class<?> c);
-  public native boolean areSharedStringsIgnored();
-  public native boolean isCDSIncludedInVmBuild();
-  public native boolean isJFRIncludedInVmBuild();
-  public native boolean isJavaHeapArchiveSupported();
-  public native Object  getResolvedReferences(Class<?> c);
-  public native boolean areOpenArchiveHeapObjectsMapped();
-
-  // Handshakes
-  public native int handshakeWalkStack(Thread t, boolean all_threads);
 
   // Returns true on linux if library has the noexecstack flag set.
   public native boolean checkLibSpecifiesNoexecstack(String libfilename);
 
   // Container testing
   public native boolean isContainerized();
+  public native int validateCgroup(boolean cgroupsV2Enabled,
+                                   String controllersFile,
+                                   String procSelfCgroup,
+                                   String procSelfMountinfo);
   public native void printOsInfo();
-
-  // Decoder
-  public native void disableElfSectionCache();
 }

@@ -26,14 +26,14 @@
  * @bug 8059100
  * @summary Test that you can decrease NMT tracking level but not increase it.
  * @key nmt
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ChangeTrackingLevel
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail ChangeTrackingLevel
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 import sun.hotspot.WhiteBox;
 
 public class ChangeTrackingLevel {

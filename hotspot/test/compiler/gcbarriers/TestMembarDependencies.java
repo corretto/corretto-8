@@ -25,13 +25,13 @@
  * @test TestMembarDependencies
  * @bug 8172850
  * @summary Tests correct scheduling of memory loads around MembarVolatile emitted by GC barriers.
- * @library /testlibrary
+ * @library /test/lib
  * @run driver compiler.membars.TestMembarDependencies
  */
 
 package compiler.membars;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestMembarDependencies {
     private static TestMembarDependencies f1;

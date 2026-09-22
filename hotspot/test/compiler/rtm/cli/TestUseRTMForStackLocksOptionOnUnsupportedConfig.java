@@ -27,7 +27,7 @@
  * @bug 8031320
  * @summary Verify UseRTMForStackLocks option processing on CPUs without
  *          rtm support and/or on VMs without rtm locking support.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestUseRTMForStackLocksOptionOnUnsupportedConfig
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
@@ -35,10 +35,10 @@
  *                    TestUseRTMForStackLocksOptionOnUnsupportedConfig
  */
 
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.NotPredicate;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.NotPredicate;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 

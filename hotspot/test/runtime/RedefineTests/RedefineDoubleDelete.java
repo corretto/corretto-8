@@ -24,7 +24,7 @@
 /*
  * @test
  * @bug 8178870
- * @library /testlibrary
+ * @library /test/lib
  * @summary Redefine class with CFLH twice to test deleting the cached_class_file
  * @build RedefineClassHelper
  * @run main RedefineClassHelper

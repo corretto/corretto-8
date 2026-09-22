@@ -26,14 +26,14 @@
  * @key regression
  * @bug 8020675
  * @summary make sure there is no fatal error if a class is loaded from an invalid jar file which is in the bootclasspath
- * @library /testlibrary
+ * @library /test/lib
  * @build TestForName
  * @build LoadClassNegative
  * @run main LoadClassNegative
  */
 
 import java.io.File;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class LoadClassNegative {
 

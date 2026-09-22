@@ -28,13 +28,14 @@
  * @bug 8012015
  * @requires !(os.family == "aix")
  * @summary Make sure reserved (but uncommitted) memory is not accessible
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ReserveMemory
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main ReserveMemory
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 import sun.hotspot.WhiteBox;
 

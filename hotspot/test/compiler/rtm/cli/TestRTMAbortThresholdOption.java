@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of RTMAbortThreshold option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestRTMAbortThresholdOption
  * @run main/othervm TestRTMAbortThresholdOption
  */

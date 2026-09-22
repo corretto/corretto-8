@@ -24,13 +24,13 @@
 /*
  * @test
  * @summary Test launches unit tests inside vm concurrently
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build RunUnitTestsConcurrently
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI RunUnitTestsConcurrently 30 15000
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 import sun.hotspot.WhiteBox;
 
 public class RunUnitTestsConcurrently {

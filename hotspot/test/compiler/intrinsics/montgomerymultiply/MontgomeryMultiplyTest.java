@@ -36,7 +36,7 @@ import java.util.Random;
 /**
  * @test
  * @bug 8130150
- * @library /testlibrary
+ * @library /test/lib
  * @requires (os.simpleArch == "x64") & (os.family != "windows")
  * @summary Verify that the Montgomery multiply intrinsic works and correctly checks its arguments.
  * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:+UseMontgomerySquareIntrinsic

@@ -26,7 +26,7 @@
  * @bug 8031321
  * @summary Verify processing of UseCountLeadingZerosInstruction option
  *          on CPU without LZCNT support.
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestUseCountLeadingZerosInstructionOnUnsupportedCPU
  *        BMIUnsupportedCPUTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
@@ -36,7 +36,7 @@
  */
 
 import sun.hotspot.cpuinfo.CPUInfo;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 public class TestUseCountLeadingZerosInstructionOnUnsupportedCPU
      extends BMIUnsupportedCPUTest {

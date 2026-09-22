@@ -22,7 +22,7 @@
  */
 
 import java.io.*;
-import com.oracle.java.testlibrary.InMemoryJavaCompiler;
+import jdk.test.lib.compiler.InMemoryJavaCompiler;
 
 public class MyDiffClassLoader extends ClassLoader {
 

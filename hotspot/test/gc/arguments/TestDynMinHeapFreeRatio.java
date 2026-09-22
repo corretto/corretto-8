@@ -25,7 +25,7 @@
  * @test TestDynMinHeapFreeRatio
  * @bug 8028391
  * @summary Verify that MinHeapFreeRatio flag is manageable
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestDynMinHeapFreeRatio
  * @run main/othervm -XX:MinHeapFreeRatio=0 -XX:MaxHeapFreeRatio=100 TestDynMinHeapFreeRatio
  * @run main/othervm -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=50 -XX:-UseAdaptiveSizePolicy TestDynMinHeapFreeRatio
@@ -33,10 +33,10 @@
  * @run main/othervm -XX:MinHeapFreeRatio=51 -XX:MaxHeapFreeRatio=52 TestDynMinHeapFreeRatio
  * @run main/othervm -XX:MinHeapFreeRatio=75 -XX:MaxHeapFreeRatio=100 TestDynMinHeapFreeRatio
  */
-import static com.oracle.java.testlibrary.Asserts.assertEQ;
-import static com.oracle.java.testlibrary.Asserts.assertFalse;
-import static com.oracle.java.testlibrary.Asserts.assertTrue;
-import com.oracle.java.testlibrary.DynamicVMOption;
+import static jdk.test.lib.Asserts.assertEQ;
+import static jdk.test.lib.Asserts.assertFalse;
+import static jdk.test.lib.Asserts.assertTrue;
+import jdk.test.lib.management.DynamicVMOption;
 
 public class TestDynMinHeapFreeRatio {
 

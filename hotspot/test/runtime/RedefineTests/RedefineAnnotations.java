@@ -23,13 +23,13 @@
 
 /*
  * @test
- * @library /testlibrary
+ * @library /test/lib
  * @summary Test that type annotations are retained after a retransform
  * @run main RedefineAnnotations buildagent
  * @run main/othervm -javaagent:redefineagent.jar RedefineAnnotations
  */
 
-import static com.oracle.java.testlibrary.Asserts.assertTrue;
+import static jdk.test.lib.Asserts.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.lang.NoSuchFieldException;

@@ -21,8 +21,8 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.*;
+import jdk.test.lib.cli.*;
+import jdk.test.lib.process.*;
 
 /**
  * Test on bit manipulation related command line options,

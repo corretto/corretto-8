@@ -27,7 +27,7 @@ import java.util.function.Function;
 import sun.hotspot.WhiteBox;
 import sun.management.*;
 import com.sun.management.*;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 public final class VmFlagTest<T> {
     public static final WhiteBox WHITE_BOX = WhiteBox.getWhiteBox();

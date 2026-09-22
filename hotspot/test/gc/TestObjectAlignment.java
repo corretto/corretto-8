@@ -26,7 +26,7 @@
  * @key gc
  * @bug 8021823
  * @summary G1: Concurrent marking crashes with -XX:ObjectAlignmentInBytes>=32 in 64bit VMs
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm TestObjectAlignment -Xmx20M -XX:+ExplicitGCInvokesConcurrent -XX:+IgnoreUnrecognizedVMOptions -XX:ObjectAlignmentInBytes=8
  * @run main/othervm TestObjectAlignment -Xmx20M -XX:+ExplicitGCInvokesConcurrent -XX:+IgnoreUnrecognizedVMOptions -XX:ObjectAlignmentInBytes=16
  * @run main/othervm TestObjectAlignment -Xmx20M -XX:+ExplicitGCInvokesConcurrent -XX:+IgnoreUnrecognizedVMOptions -XX:ObjectAlignmentInBytes=32
@@ -41,8 +41,8 @@
  * @run main/othervm TestObjectAlignment -Xmx20M -XX:-ExplicitGCInvokesConcurrent -XX:+IgnoreUnrecognizedVMOptions -XX:ObjectAlignmentInBytes=256
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestObjectAlignment {
 

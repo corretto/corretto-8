@@ -23,7 +23,7 @@
 
 /*
  * @test
- * @library /testlibrary /testlibrary/whitebox /compiler/whitebox
+ * @library /test/lib /compiler/whitebox
  *          /compiler/testlibrary
  * @build SubtractExactIntTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox

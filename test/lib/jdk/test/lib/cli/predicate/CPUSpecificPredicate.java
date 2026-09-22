@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -44,7 +44,7 @@ public class CPUSpecificPredicate implements BooleanSupplier {
     @Override
     public boolean getAsBoolean() {
         if (!Platform.getOsArch().matches(cpuArchPattern)) {
-            System.out.println("CPU arch " + Platform.getOsArch() + " does not match " + cpuArchPattern);
+            System.out.println("CPU arch does not match " + cpuArchPattern);
             return false;
         }
 

@@ -27,12 +27,12 @@
  * @bug 8013184
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm SystemGCOnForegroundCollector
  * @author jon.masamitsu@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class SystemGCOnForegroundCollector {
   public static void main(String args[]) throws Exception {

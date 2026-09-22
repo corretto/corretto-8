@@ -25,10 +25,10 @@
  * @test
  * @key nmt
  * @summary Turning off NMT should not result in an error
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CommandLineTurnOffNMT {
 

@@ -24,13 +24,13 @@
 /* @test TestLargePageSizeInBytes
  * @summary Tests that the flag -XX:LargePageSizeInBytes does not cause warnings on Solaris
  * @bug 8049536
- * @library /testlibrary
+ * @library /test/lib
  * @run driver TestLargePageSizeInBytes
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
 
 public class TestLargePageSizeInBytes {
     private static long M = 1024L * 1024L;

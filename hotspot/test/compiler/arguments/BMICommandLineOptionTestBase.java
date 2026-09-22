@@ -21,7 +21,7 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.cli.*;
+import jdk.test.lib.cli.*;
 
 /**
  * Base class for all X86 bit manipulation related command line options.

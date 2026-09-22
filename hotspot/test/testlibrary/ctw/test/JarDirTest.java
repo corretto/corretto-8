@@ -24,8 +24,8 @@
 /*
  * @test
  * @bug 8012447
- * @library /testlibrary /testlibrary/whitebox /testlibrary/ctw/src
- * @build ClassFileInstaller com.oracle.java.testlibrary.* sun.hotspot.tools.ctw.CompileTheWorld sun.hotspot.WhiteBox Foo Bar
+ * @library /test/lib /testlibrary/ctw/src
+ * @build ClassFileInstaller jdk.test.lib.* sun.hotspot.tools.ctw.CompileTheWorld sun.hotspot.WhiteBox Foo Bar
  * @run main ClassFileInstaller sun.hotspot.WhiteBox Foo Bar
  * @run main JarDirTest prepare
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -Dsun.hotspot.tools.ctw.logfile=ctw.log sun.hotspot.tools.ctw.CompileTheWorld jars/*
@@ -38,7 +38,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class JarDirTest extends CtwTest {
     private static final String[] SHOULD_CONTAIN

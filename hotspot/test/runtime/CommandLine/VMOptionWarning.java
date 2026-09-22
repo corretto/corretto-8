@@ -25,10 +25,11 @@
  * @test
  * @bug 8027314
  * @summary Warn if diagnostic or experimental vm option is used and -XX:+UnlockDiagnosticVMOptions or -XX:+UnlockExperimentalVMOptions, respectively, isn't specified. Warn if develop or notproduct vm option is used with product version of VM.
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class VMOptionWarning {
     public static void main(String[] args) throws Exception {

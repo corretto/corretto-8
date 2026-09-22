@@ -25,15 +25,15 @@
  * @test
  * @summary Release uncommitted memory and make sure NMT handles it correctly
  * @key nmt regression
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ReleaseNoCommit
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=summary ReleaseNoCommit
  */
 
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 import sun.hotspot.WhiteBox;
 
@@ -47,7 +47,7 @@ public class ReleaseNoCommit {
         ProcessBuilder pb = new ProcessBuilder();
         OutputAnalyzer output;
         // Grab my own PID
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
 
         addr = wb.NMTReserveMemory(reserveSize);
         // Check for reserved

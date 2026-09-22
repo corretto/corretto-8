@@ -26,7 +26,7 @@
  * @key gc
  * @bug 8179084
  * @summary Test argument processing for -XX:+AggressiveHeap.
- * @library /testlibrary /test/lib
+ * @library /test/lib
  * @run driver TestAggressiveHeap
  */
 
@@ -34,8 +34,8 @@ import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import jtreg.SkippedException;
 
 public class TestAggressiveHeap {

@@ -25,10 +25,10 @@
  * @test
  * @bug 8030783
  * @summary Regression test for 8026478
- * @library /testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class VerifyAdapterSharing {
   public static void main(String[] args) throws Exception {

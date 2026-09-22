@@ -25,17 +25,17 @@
 /*
  * @test
  * @summary Test miscellanous functionality related to JVM running in docker container
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build CheckContainerized sun.hotspot.WhiteBox PrintContainerInfo
  * @run driver ClassFileInstaller -jar whitebox.jar sun.hotspot.WhiteBox sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run driver TestMisc
  */
 
-import com.oracle.java.testlibrary.Common;
-import com.oracle.java.testlibrary.DockerTestUtils;
-import com.oracle.java.testlibrary.DockerRunOptions;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.containers.docker.Common;
+import jdk.test.lib.containers.docker.DockerTestUtils;
+import jdk.test.lib.containers.docker.DockerRunOptions;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 
 public class TestMisc {

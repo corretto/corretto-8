@@ -33,11 +33,12 @@
  * @bug 7037122
  * @bug 7123945
  * @bug 8016029
- * @library /testlibrary
+ * @library /test/lib
  * @run main OomWhileParsingRepeatedJsr
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 
 public class OomWhileParsingRepeatedJsr {

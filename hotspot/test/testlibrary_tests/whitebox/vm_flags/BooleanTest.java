@@ -24,7 +24,7 @@
 /*
  * @test BooleanTest
  * @bug 8038756
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build BooleanTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI BooleanTest
@@ -33,7 +33,7 @@
  */
 
 import sun.hotspot.WhiteBox;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import sun.management.*;
 import com.sun.management.*;
 

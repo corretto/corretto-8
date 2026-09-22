@@ -28,7 +28,7 @@
  * @summary Creates two threads contending for the same lock and checks
  *      whether jstack reports "locked" by more than one thread.
  *
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm TestThreadDumpMonitorContention
  */
 
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 public class TestThreadDumpMonitorContention {
     // jstack tends to be closely bound to the VM that we are running

@@ -27,7 +27,7 @@
  * @requires vm.gc=="G1" | vm.gc=="null"
  * @summary Verify that heap shrinks after GC in the presence of fragmentation
  * due to humongous objects
- * @library /testlibrary /test/lib
+ * @library /test/lib
  * @run main/othervm -XX:-ExplicitGCInvokesConcurrent -XX:MinHeapFreeRatio=10
  * -XX:MaxHeapFreeRatio=12 -XX:+UseG1GC -XX:G1HeapRegionSize=1M -verbose:gc
  * TestHumongousShrinkHeap
@@ -38,7 +38,7 @@ import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.List;
 import sun.management.ManagementFactoryHelper;
-import static com.oracle.java.testlibrary.Asserts.*;
+import static jdk.test.lib.Asserts.*;
 import jtreg.SkippedException;
 
 public class TestHumongousShrinkHeap {

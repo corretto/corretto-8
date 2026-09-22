@@ -25,7 +25,7 @@
  * @test
  * @bug 8010927
  * @summary Kitchensink crashed with SIGSEGV, Problematic frame: v ~StubRoutines::checkcast_arraycopy
- * @library /testlibrary/whitebox /testlibrary
+ * @library /test/lib
  * @build Test8010927
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -XX:+UnlockDiagnosticVMOptions -XX:+IgnoreUnrecognizedVMOptions -XX:+WhiteBoxAPI -Xbootclasspath/a:. -Xmx64m -XX:NewSize=20971520 -XX:MaxNewSize=32m -XX:-UseTLAB -XX:-UseParNewGC -XX:-UseAdaptiveSizePolicy Test8010927

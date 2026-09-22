@@ -24,14 +24,14 @@
 /*
  * @test TestCrashOnOutOfMemoryError
  * @summary Test using -XX:+CrashOnOutOfMemoryError
- * @library /testlibrary
- * @build com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build jdk.test.lib.*
  * @run driver TestCrashOnOutOfMemoryError
  * @bug 8138745
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;

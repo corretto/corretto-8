@@ -34,10 +34,10 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.Utils;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.Utils;
+import jdk.test.lib.cli.CommandLineOptionTest;
 
 /**
  * Auxiliary methods used for RTM testing.

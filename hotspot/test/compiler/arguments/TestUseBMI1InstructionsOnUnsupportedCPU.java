@@ -26,7 +26,7 @@
  * @bug 8031321
  * @summary Verify processing of UseBMI1Instructions option on CPU without
  *          BMI1 feature support.
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestUseBMI1InstructionsOnUnsupportedCPU
  *        BMIUnsupportedCPUTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
@@ -35,8 +35,8 @@
  */
 
 import sun.hotspot.cpuinfo.CPUInfo;
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.*;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.*;
 
 public class TestUseBMI1InstructionsOnUnsupportedCPU
       extends BMIUnsupportedCPUTest {

@@ -25,7 +25,7 @@
  * @test
  * @key gc
  * @bug 8049831
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestCapacityUntilGCWrapAround
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
@@ -34,8 +34,8 @@
 
 import sun.hotspot.WhiteBox;
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.Platform;
 
 public class TestCapacityUntilGCWrapAround {
     private static long MB = 1024 * 1024;

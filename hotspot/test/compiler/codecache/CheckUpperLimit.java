@@ -25,10 +25,10 @@
  * @test
  * @bug 8015635
  * @summary Test ensures that the ReservedCodeCacheSize is at most MAXINT
- * @library /testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CheckUpperLimit {
   public static void main(String[] args) throws Exception {

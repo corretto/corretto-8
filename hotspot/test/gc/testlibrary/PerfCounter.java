@@ -21,7 +21,7 @@
  * questions.
  */
 
-package com.oracle.java.testlibrary;
+package gc.testlibrary;
 
 import sun.jvmstat.monitor.Monitor;
 

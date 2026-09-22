@@ -24,13 +24,13 @@
 /* @test TestLargePagesFlags
  * @summary Tests how large pages are choosen depending on the given large pages flag combinations.
  * @requires os.family == "linux"
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestLargePagesFlags
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
 
 import java.util.ArrayList;
 

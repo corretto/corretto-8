@@ -23,11 +23,11 @@
 
 /* @test LimitSharedSizes
  * @summary Test handling of limits on shared space size
- * @library /testlibrary
+ * @library /test/lib
  * @run main LimitSharedSizes
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class LimitSharedSizes {
     private static class SharedSizeTestData {

@@ -29,12 +29,12 @@
  *          is different from object alignment for creating a CDS file
  *          should fail when loading.
  * @requires vm.bits == 64
- * @library /testlibrary
+ * @library /test/lib
  * @bug 8025642
  * @run main CdsDifferentObjectAlignment
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CdsDifferentObjectAlignment {
 

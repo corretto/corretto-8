@@ -27,12 +27,12 @@
  * @bug 8014546
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm AdaptiveGCBoundary
  * @author jon.masamitsu@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class AdaptiveGCBoundary {
   public static void main(String args[]) throws Exception {

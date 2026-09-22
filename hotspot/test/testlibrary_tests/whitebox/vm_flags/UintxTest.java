@@ -24,14 +24,14 @@
 /*
  * @test UintxTest
  * @bug 8038756
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build UintxTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI UintxTest
  * @summary testing of WB::set/getUintxVMFlag()
  * @author igor.ignatyev@oracle.com
  */
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Platform;
 
 public class UintxTest {
     private static final String FLAG_NAME = "VerifyGCStartAt";

@@ -25,12 +25,12 @@
  * @test
  * @bug 8062280
  * @summary C2: inlining failure due to access checks being too strict
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm MHInlineTest
  */
 import java.lang.invoke.*;
-import com.oracle.java.testlibrary.*;
-import static com.oracle.java.testlibrary.Asserts.*;
+import jdk.test.lib.process.*;
+import static jdk.test.lib.Asserts.*;
 
 public class MHInlineTest {
     public static void main(String[] args) throws Exception {

@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of RTMRetryCount option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestRTMRetryCountOption
  * @run main/othervm TestRTMRetryCountOption
  */

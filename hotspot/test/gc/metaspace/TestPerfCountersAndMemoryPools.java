@@ -24,12 +24,13 @@
 import java.util.List;
 import java.lang.management.*;
 
-import com.oracle.java.testlibrary.*;
-import static com.oracle.java.testlibrary.Asserts.*;
+import jdk.test.lib.*;
+import static jdk.test.lib.Asserts.*;
+import gc.testlibrary.PerfCounters;
 
 /* @test TestPerfCountersAndMemoryPools
  * @bug 8023476
- * @library /testlibrary
+ * @library /test/lib /
  * @requires vm.gc=="Serial" | vm.gc=="null"
  * @summary Tests that a MemoryPoolMXBeans and PerfCounters for metaspace
  *          report the same data.

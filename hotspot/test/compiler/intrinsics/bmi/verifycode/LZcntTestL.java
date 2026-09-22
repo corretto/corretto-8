@@ -24,7 +24,7 @@
 /*
  * @test
  * @bug 8031321
- * @library /testlibrary /testlibrary/whitebox /compiler/whitebox ..
+ * @library /test/lib /compiler/whitebox ..
  * @build LZcntTestL
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -Xbatch -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI

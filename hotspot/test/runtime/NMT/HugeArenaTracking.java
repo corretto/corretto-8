@@ -24,7 +24,7 @@
 /*
  * @test
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @requires vm.bits == 64
  * @build HugeArenaTracking
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
@@ -32,7 +32,8 @@
  */
 
 import java.util.Random;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class HugeArenaTracking {

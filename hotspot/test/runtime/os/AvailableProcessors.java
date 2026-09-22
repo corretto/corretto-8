@@ -26,13 +26,13 @@
  * @bug 6515172
  * @summary Check that availableProcessors reports the correct value when running in a cpuset on linux
  * @requires os.family == "linux"
- * @library /testlibrary /test/lib
- * @build com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build jdk.test.lib.*
  * @run driver AvailableProcessors
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 import jtreg.SkippedException;
 
 import java.util.ArrayList;

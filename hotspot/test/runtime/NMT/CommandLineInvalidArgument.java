@@ -25,10 +25,10 @@
  * @test
  * @key nmt
  * @summary Invalid argument to NMT should result in an informative error message
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CommandLineInvalidArgument {
 

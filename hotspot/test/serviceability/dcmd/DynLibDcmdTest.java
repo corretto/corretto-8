@@ -23,12 +23,12 @@
 
 import java.util.HashSet;
 import java.util.Set;
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Platform;
 
 /*
  * @test
  * @summary Test of VM.dynlib diagnostic command via MBean
- * @library /testlibrary
+ * @library /test/lib
  * @compile DcmdUtil.java
  * @run main DynLibDcmdTest
  */

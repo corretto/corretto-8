@@ -21,7 +21,7 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Platform;
 import intrinsics.Verifier;
 
 import java.io.FileOutputStream;

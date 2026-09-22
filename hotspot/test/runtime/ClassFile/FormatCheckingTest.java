@@ -25,13 +25,13 @@
  * @test
  * @bug 8148854
  * @summary Ensure class name loaded by app class loader is format checked by default
- * @library /testlibrary
+ * @library /test/lib
  * @compile BadHelloWorld.jcod
  * @run main FormatCheckingTest
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class FormatCheckingTest {
     public static void main(String args[]) throws Throwable {

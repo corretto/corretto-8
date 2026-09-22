@@ -35,12 +35,13 @@ endif
 SRC_DIR = src
 BUILD_DIR = build
 OUTPUT_DIR = $(BUILD_DIR)/classes
-WHITEBOX_DIR = ../whitebox
+TESTLIBRARY_DIR = ../../../../test/lib
 
 JAVAC = $(JDK_HOME)/bin/javac
 JAR = $(JDK_HOME)/bin/jar
 
 SRC_FILES = $(shell find $(SRC_DIR) -name '*.java')
+WB_SRC_FILES = $(shell find $(TESTLIBRARY_DIR)/sun/hotspot -name '*.java')
 
 MAIN_CLASS = sun.hotspot.tools.ctw.CompileTheWorld
 
@@ -52,7 +53,7 @@ clean: cleantmp
 	@rm -rf ctw.jar wb.jar
 
 cleantmp:
-	@rm -rf filelist manifest.mf
+	@rm -rf filelist wb_filelist manifest.mf
 	@rm -rf $(BUILD_DIR)
 
 ctw.jar: filelist wb.jar manifest.mf
@@ -60,10 +61,17 @@ ctw.jar: filelist wb.jar manifest.mf
 	$(JAVAC) -sourcepath $(SRC_DIR) -d $(OUTPUT_DIR) -cp wb.jar @filelist
 	$(JAR) cfm ctw.jar manifest.mf -C $(OUTPUT_DIR) .
 
-wb.jar: 
-	make -C ${WHITEBOX_DIR} wb.jar
-	cp ${WHITEBOX_DIR}/wb.jar ./
-	make -C ${WHITEBOX_DIR} clean
+wb.jar: wb_filelist
+	@mkdir -p $(OUTPUT_DIR)
+	$(JAVAC)  -sourcepath $(TESTLIBRARY_DIR) \
+		-d $(OUTPUT_DIR) \
+		-cp $(OUTPUT_DIR) \
+		@wb_filelist
+	$(JAR) cf $@ -C $(OUTPUT_DIR) .
+
+wb_filelist: $(WB_SRC_FILES)
+	@rm -f $@
+	@echo $(WB_SRC_FILES) > $@
 
 filelist: $(SRC_FILES)
 	@rm -f $@

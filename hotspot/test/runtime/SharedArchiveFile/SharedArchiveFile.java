@@ -25,10 +25,10 @@
  * @test
  * @bug 8014138
  * @summary Testing new -XX:SharedArchiveFile=<file-name> option
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class SharedArchiveFile {
   public static void main(String[] args) throws Exception {

@@ -26,7 +26,7 @@
  * @bug 8013120
  * @summary Release committed memory and make sure NMT handles it correctly
  * @key nmt regression
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ReleaseCommittedMemory
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail ReleaseCommittedMemory

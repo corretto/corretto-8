@@ -27,7 +27,7 @@
  * @bug 8031320
  * @summary Verify PrintPreciseRTMLockingStatistics on CPUs with
  *          rtm support and on VM with rtm locking support,
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestPrintPreciseRTMLockingStatisticsOptionOnSupportedConfig
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
@@ -35,8 +35,8 @@
  *                   TestPrintPreciseRTMLockingStatisticsOptionOnSupportedConfig
  */
 
-import com.oracle.java.testlibrary.cli.*;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.*;
+import jdk.test.lib.cli.predicate.AndPredicate;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 

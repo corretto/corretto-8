@@ -27,17 +27,17 @@
  * @bug 8031320
  * @summary Verify UseRTMDeopt option processing on CPUs without rtm support
  *          or on VMs without rtm locking support.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestUseRTMDeoptOptionOnUnsupportedConfig
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
  *                   -XX:+WhiteBoxAPI TestUseRTMDeoptOptionOnUnsupportedConfig
  */
 
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.CommandLineOptionTest;
 
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.NotPredicate;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.NotPredicate;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 

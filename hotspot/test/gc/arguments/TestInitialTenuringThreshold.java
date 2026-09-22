@@ -26,12 +26,12 @@
  * @key gc
  * @bug 8014765
  * @summary Tests argument processing for initial tenuring threshold
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm TestInitialTenuringThreshold
  * @author thomas.schatzl@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestInitialTenuringThreshold {
 

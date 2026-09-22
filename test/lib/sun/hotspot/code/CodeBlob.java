@@ -27,17 +27,7 @@ import sun.hotspot.WhiteBox;
 
 public class CodeBlob {
   private static final WhiteBox WB = WhiteBox.getWhiteBox();
-  public static CodeBlob[] getCodeBlobs(BlobType type) {
-    Object[] obj = WB.getCodeHeapEntries(type.id);
-    if (obj == null) {
-      return null;
-    }
-    CodeBlob[] result = new CodeBlob[obj.length];
-    for (int i = 0, n = result.length; i < n; ++i) {
-      result[i] = new CodeBlob((Object[]) obj[i]);
-    }
-    return result;
-  }
+
   public static CodeBlob getCodeBlob(long addr) {
     Object[] obj = WB.getCodeBlob(addr);
     if (obj == null) {

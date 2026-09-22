@@ -24,14 +24,15 @@
 /*
  * @test TestEmptyBootstrapMethodsAttr
  * @bug 8041918
- * @library /testlibrary
+ * @library /test/lib
  * @summary Test empty bootstrap_methods table within BootstrapMethods attribute
  * @compile TestEmptyBootstrapMethodsAttr.java
  * @run main TestEmptyBootstrapMethodsAttr
  */
 
 import java.io.File;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class TestEmptyBootstrapMethodsAttr {
 

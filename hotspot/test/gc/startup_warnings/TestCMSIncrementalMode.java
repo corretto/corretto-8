@@ -27,11 +27,11 @@
 * @key gc
 * @bug 8006398
 * @summary Test that the deprecated CMSIncrementalMode print a warning message
-* @library /testlibrary
+* @library /test/lib
 */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class TestCMSIncrementalMode {
 

@@ -24,16 +24,16 @@
 /*
  * @test PlainRead
  * @requires os.family == "linux"
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build PlainRead
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI PlainRead
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
 import sun.hotspot.WhiteBox;
 
 public class PlainRead {

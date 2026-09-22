@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of RTMSpinLoopCount option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestRTMSpinLoopCountOption
  * @run main/othervm TestRTMSpinLoopCountOption
  */

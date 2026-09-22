@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of UseRTMXendForLockBusy option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestUseRTMXendForLockBusyOption
  * @run main/othervm TestUseRTMXendForLockBusyOption
  */

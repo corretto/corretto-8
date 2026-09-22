@@ -21,7 +21,7 @@
  * questions.
  */
 
-package com.oracle.java.testlibrary;
+package jdk.test.lib.compiler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,8 +55,8 @@ import javax.tools.ToolProvider;
  *
  * <pre>
  * {@code
- * import com.oracle.java.testlibrary.InMemoryJavaCompiler;
- * import com.oracle.java.testlibrary.ByteClassLoader;
+ * import jdk.test.lib.compiler.InMemoryJavaCompiler;
+ * import jdk.test.lib.ByteClassLoader;
  *
  * class Example {
  *     public static void main(String[] args) {

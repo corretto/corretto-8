@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of RTMLockingCalculationDelay option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestRTMLockingCalculationDelayOption
  * @run main/othervm TestRTMLockingCalculationDelayOption
  */

@@ -21,8 +21,8 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
+import jdk.test.lib.Platform;
+import jdk.test.lib.cli.CommandLineOptionTest;
 import sha.predicate.IntrinsicPredicates;
 
 import java.util.function.BooleanSupplier;

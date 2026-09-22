@@ -25,11 +25,12 @@
  * @test
  * @bug 7167142
  * @summary Warn if unused .hotspot_compiler file is present
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.io.PrintWriter;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class CompilerConfigFileWarning {
     public static void main(String[] args) throws Exception {

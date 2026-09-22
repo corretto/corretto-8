@@ -26,10 +26,10 @@
  * @key nmt regression
  * @bug 8005936 8058606
  * @summary Verify PrintNMTStatistics on normal JVM exit for detail and summary tracking level
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class PrintNMTStatistics {
 

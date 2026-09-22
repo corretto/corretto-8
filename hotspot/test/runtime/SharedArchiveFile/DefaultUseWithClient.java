@@ -25,12 +25,12 @@
  * @test DefaultUseWithClient
  * @summary Test default behavior of sharing with -client
  * @requires os.family == "windows" & vm.bits == "32" & vm.flavor == "client"
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm DefaultUseWithClient
  * @bug 8032224
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 
 public class DefaultUseWithClient {

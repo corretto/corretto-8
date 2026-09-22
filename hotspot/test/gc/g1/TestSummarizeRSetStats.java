@@ -24,7 +24,7 @@
 /*
  * @test TestSummarizeRSetStats.java
  * @bug 8013895
- * @library /testlibrary
+ * @library /test/lib
  * @build TestSummarizeRSetStatsTools TestSummarizeRSetStats
  * @summary Verify output of -XX:+G1SummarizeRSetStats
  * @run main TestSummarizeRSetStats

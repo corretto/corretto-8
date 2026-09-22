@@ -28,13 +28,14 @@
  * @bug 8200109
  * @key nmt jcmd
  * @modules java.base/jdk.internal.misc
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail MallocSiteTypeChange
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class MallocSiteTypeChange {

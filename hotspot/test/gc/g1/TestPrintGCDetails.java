@@ -27,11 +27,11 @@
  * @summary Ensure that the PrintGCDetails for a full GC with G1 includes Metaspace.
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestPrintGCDetails {
   public static void main(String[] args) throws Exception {

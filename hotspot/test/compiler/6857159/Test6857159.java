@@ -26,10 +26,10 @@
  * @test
  * @bug 6857159
  * @summary local schedule failed with checkcast of Thread.currentThread()
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class Test6857159 {
     public static void main(String[] args) throws Throwable {

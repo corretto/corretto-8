@@ -26,11 +26,11 @@
  * @bug 8043607
  * @summary Ensure that the GCId is logged
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestGCId {
   public static void main(String[] args) throws Exception {

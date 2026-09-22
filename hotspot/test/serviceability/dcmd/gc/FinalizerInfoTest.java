@@ -21,9 +21,9 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /*
  * @test
  * @summary
- * @library /testlibrary
+ * @library /test/lib
  * @run main FinalizerInfoTest
  */
 public class FinalizerInfoTest {
@@ -69,7 +69,7 @@ public class FinalizerInfoTest {
             }
 
 
-            String pid = Integer.toString(ProcessTools.getProcessId());
+            String pid = Long.toString(ProcessTools.getProcessId());
             ProcessBuilder pb = new ProcessBuilder();
             pb.command(new String[] { JDKToolFinder.getJDKTool("jcmd"), pid, cmd});
             OutputAnalyzer output = new OutputAnalyzer(pb.start());

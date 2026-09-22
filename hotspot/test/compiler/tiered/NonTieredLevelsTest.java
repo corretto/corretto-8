@@ -26,7 +26,7 @@ import jtreg.SkippedException;
 
 /**
  * @test NonTieredLevelsTest
- * @library /testlibrary /testlibrary/whitebox /compiler/whitebox /test/lib
+ * @library /test/lib /compiler/whitebox
  * @build NonTieredLevelsTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:-TieredCompilation

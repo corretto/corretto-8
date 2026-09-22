@@ -25,16 +25,16 @@
  * @test
  * @bug 8028623
  * @summary Test hashing of extended characters in Serviceability Agent.
- * @library /testlibrary
- * @build com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build jdk.test.lib.*
  * @compile -encoding utf8 Test8028623.java
  * @run main Test8028623
  */
 
-import com.oracle.java.testlibrary.JDKToolLauncher;
-import com.oracle.java.testlibrary.OutputBuffer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.JDKToolLauncher;
+import jdk.test.lib.process.OutputBuffer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
 
 import java.io.File;
 
@@ -52,11 +52,11 @@ public class Test8028623 {
             System.out.println("SA attach not expected to work - test skipped.");
             return;
         }
-        int pid = ProcessTools.getProcessId();
+        long pid = ProcessTools.getProcessId();
         JDKToolLauncher jmap = JDKToolLauncher.create("jmap")
                                               .addToolArg("-F")
                                               .addToolArg("-dump:live,format=b,file=" + dumpFile)
-                                              .addToolArg(Integer.toString(pid));
+                                              .addToolArg(Long.toString(pid));
         ProcessBuilder pb = new ProcessBuilder(jmap.getCommand());
         OutputBuffer output = ProcessTools.getOutput(pb);
         Process p = pb.start();

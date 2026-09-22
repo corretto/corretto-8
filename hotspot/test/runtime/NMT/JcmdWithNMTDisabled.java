@@ -25,11 +25,12 @@
  * @test
  * @key nmt jcmd
  * @summary Verify that jcmd correctly reports that NMT is not enabled
- * @library /testlibrary
+ * @library /test/lib
  * @run main JcmdWithNMTDisabled 1
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class JcmdWithNMTDisabled {
   static ProcessBuilder pb = new ProcessBuilder();
@@ -58,7 +59,7 @@ public class JcmdWithNMTDisabled {
     }
 
     // Grab my own PID
-    pid = Integer.toString(ProcessTools.getProcessId());
+    pid = Long.toString(ProcessTools.getProcessId());
 
     jcmdCommand("summary");
     jcmdCommand("detail");

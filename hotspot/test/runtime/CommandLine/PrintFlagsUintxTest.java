@@ -29,10 +29,11 @@
  *          is intended to be used with unsigned long that is 32-bit on win64.
  *          Thus flag values that are exact multiple of 4 GiB will be formatted
  *          into 0 in PrintFlags output.
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class PrintFlagsUintxTest {
     public static void main(String[] args) throws Exception {

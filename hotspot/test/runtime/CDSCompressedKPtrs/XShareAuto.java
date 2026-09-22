@@ -25,11 +25,12 @@
  * @test
  * @bug 8005933
  * @summary Test that -Xshare:auto uses CDS when explicitly specified with -server.
- * @library /testlibrary
+ * @library /test/lib
  * @run main XShareAuto
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class XShareAuto {
     public static void main(String[] args) throws Exception {

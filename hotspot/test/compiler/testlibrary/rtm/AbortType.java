@@ -24,7 +24,7 @@
 
 package rtm;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 import java.util.HashMap;
 import java.util.Map;

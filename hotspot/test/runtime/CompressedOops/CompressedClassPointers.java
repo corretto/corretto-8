@@ -26,11 +26,12 @@
  * @bug 8024927
  * @summary Testing address of compressed class pointer space as best as possible.
  * @requires vm.bits == 64
- * @library /testlibrary /test/lib
+ * @library /test/lib
  * @run main CompressedClassPointers
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import jtreg.SkippedException;
 
 public class CompressedClassPointers {

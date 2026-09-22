@@ -25,7 +25,7 @@
  * @test
  * @bug 8260349
  * @summary test that setting via the env-var and options file shows up as expected
- * @library /testlibrary
+ * @library /test/lib
  * @run driver MaxMetaspaceSizeEnvVarTest
  */
 
@@ -34,8 +34,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.util.NoSuchElementException;
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class MaxMetaspaceSizeEnvVarTest {
 

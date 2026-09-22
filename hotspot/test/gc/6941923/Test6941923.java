@@ -25,11 +25,11 @@
  * @test Test6941923.java
  * @bug 6941923
  * @summary test flags for gc log rotation
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm/timeout=600 Test6941923
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;

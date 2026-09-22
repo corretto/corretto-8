@@ -27,16 +27,17 @@
  * @bug 8031320
  * @summary Verify that UseRTMDeopt affects uncommon trap installation in
  *          copmpiled methods with synchronized block.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestUseRTMDeopt
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
  *                   -XX:+WhiteBoxAPI TestUseRTMDeopt
  */
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.process.*;
 import rtm.*;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;

@@ -25,11 +25,11 @@
  * @test
  * @bug 8058744
  * @summary Invalid pattern-matching of address computations in raw unsafe
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -Xbatch UnsafeRaw
  */
 
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Utils;
 import java.util.Random;
 
 public class UnsafeRaw {

@@ -25,10 +25,10 @@
  * @test
  * @bug 8066670
  * @summary Testing -XX:+PrintSharedArchiveAndExit option
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class PrintSharedArchiveAndExit {
   public static void main(String[] args) throws Exception {

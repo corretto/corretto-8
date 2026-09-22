@@ -25,7 +25,7 @@
  * @test
  * @bug 8194246
  * @summary JVM crashes on stack trace for large number of methods.
- * @library /testlibrary
+ * @library /test/lib
  * @run main LargeClassTest
  */
 
@@ -38,8 +38,8 @@ import jdk.internal.org.objectweb.asm.Label;
 import jdk.internal.org.objectweb.asm.AnnotationVisitor;
 import jdk.internal.org.objectweb.asm.Opcodes;
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class LargeClassTest implements Opcodes {
     public static void main(String... args) throws Exception {

@@ -25,17 +25,18 @@
  * @test
  * @key nmt jcmd
  * @summary Run shutdown twice
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:NativeMemoryTracking=detail ShutdownTwice
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class ShutdownTwice {
 
   public static void main(String args[]) throws Exception {
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     OutputAnalyzer output;
 
     ProcessBuilder pb = new ProcessBuilder();

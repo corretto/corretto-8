@@ -24,13 +24,17 @@
 import java.util.List;
 import java.util.ArrayList;
 
-import com.oracle.java.testlibrary.*;
-import static com.oracle.java.testlibrary.Asserts.*;
+import jdk.test.lib.*;
+import jdk.test.lib.compiler.*;
+import jdk.test.lib.process.*;
+import static jdk.test.lib.Asserts.*;
+import gc.testlibrary.PerfCounter;
+import gc.testlibrary.PerfCounters;
 
 /* @test TestMetaspacePerfCounters
  * @bug 8014659
  * @requires vm.gc=="null"
- * @library /testlibrary
+ * @library /test/lib /
  * @summary Tests that performance counters for metaspace and compressed class
  *          space exists and works.
  *

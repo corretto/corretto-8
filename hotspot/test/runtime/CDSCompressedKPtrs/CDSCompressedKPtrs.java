@@ -25,11 +25,12 @@
  * @test
  * @bug 8003424
  * @summary Testing UseCompressedClassPointers with CDS
- * @library /testlibrary
+ * @library /test/lib
  * @run main CDSCompressedKPtrs
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class CDSCompressedKPtrs {
   public static void main(String[] args) throws Exception {

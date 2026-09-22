@@ -24,7 +24,7 @@
 
 package rtm.predicate;
 
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Platform;
 
 import java.util.function.BooleanSupplier;
 

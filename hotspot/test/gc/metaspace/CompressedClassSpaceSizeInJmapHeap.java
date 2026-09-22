@@ -26,11 +26,12 @@
  * @bug 8004924
  * @summary Checks that jmap -heap contains the flag CompressedClassSpaceSize
  * @requires vm.bits == 64
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:CompressedClassSpaceSize=50m CompressedClassSpaceSizeInJmapHeap
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import java.nio.file.*;
 import java.io.File;
 import java.nio.charset.Charset;
@@ -43,7 +44,7 @@ public class CompressedClassSpaceSizeInJmapHeap {
             return;
         }
 
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
 
         JDKToolLauncher jmap = JDKToolLauncher.create("jmap")
                                               .addToolArg("-heap")

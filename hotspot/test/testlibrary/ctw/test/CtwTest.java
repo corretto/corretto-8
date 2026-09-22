@@ -36,8 +36,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.charset.Charset;
 
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public abstract class CtwTest {
     protected final String[] shouldContain;

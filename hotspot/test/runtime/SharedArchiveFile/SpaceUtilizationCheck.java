@@ -24,11 +24,12 @@
 /*
  * @test SpaceUtilizationCheck
  * @summary Check if the space utilization for shared spaces is adequate
- * @library /testlibrary
+ * @library /test/lib
  * @run main SpaceUtilizationCheck
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;

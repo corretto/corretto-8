@@ -25,11 +25,12 @@
  * @test
  * @bug 8003424
  * @summary Test that cannot use CDS if UseCompressedClassPointers is turned off.
- * @library /testlibrary
+ * @library /test/lib
  * @run main CDSCompressedKPtrsError
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class CDSCompressedKPtrsError {
   public static void main(String[] args) throws Exception {

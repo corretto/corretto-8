@@ -26,10 +26,10 @@
  * @bug 8013496
  * @summary Test checks that the order in which ReversedCodeCacheSize and
  *          InitialCodeCacheSize are passed to the VM is irrelevant.
- * @library /testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CheckReservedInitialCodeCacheSizeArgOrder {
   public static void main(String[] args) throws Exception {

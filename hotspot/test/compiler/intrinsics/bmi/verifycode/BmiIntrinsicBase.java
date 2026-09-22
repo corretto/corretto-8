@@ -22,9 +22,9 @@
  *
  */
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.Platform;
+import jdk.test.lib.Utils;
 import sun.hotspot.code.NMethod;
 import sun.hotspot.cpuinfo.CPUInfo;
 

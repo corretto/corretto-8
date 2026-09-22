@@ -22,8 +22,8 @@
  *
  */
 
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.NotPredicate;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.NotPredicate;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 
@@ -32,7 +32,7 @@ import rtm.predicate.SupportedVM;
  * @bug 8031320
  * @summary Verify RTMTotalCountIncrRate option processing on CPU without
  *          rtm support and/or on VM without rtm locking support.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestRTMTotalCountIncrRateOptionOnUnsupportedConfig
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions

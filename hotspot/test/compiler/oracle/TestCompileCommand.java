@@ -21,18 +21,16 @@
  * questions.
  */
 
-import java.io.PrintWriter;
-import java.io.File;
-
-import com.oracle.java.testlibrary.*;
-
 /*
  * @test TestCompileCommand
  * @bug 8069389
  * @summary "Regression tests of -XX:CompileCommand"
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestCompileCommand
  */
+
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class TestCompileCommand {
 

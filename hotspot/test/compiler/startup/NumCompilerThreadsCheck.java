@@ -25,9 +25,9 @@
  * @test
  * @bug 8034775
  * @summary Ensures correct minimal number of compiler threads (provided by -XX:CICompilerCount=)
- * @library /testlibrary
+ * @library /test/lib
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class NumCompilerThreadsCheck {
 

@@ -19,6 +19,7 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
 package sun.hotspot.code;
@@ -26,33 +27,28 @@ package sun.hotspot.code;
 import java.lang.reflect.Executable;
 import sun.hotspot.WhiteBox;
 
-public class NMethod extends CodeBlob {
+public class NMethod {
   private static final WhiteBox wb = WhiteBox.getWhiteBox();
   public static NMethod get(Executable method, boolean isOsr) {
     Object[] obj = wb.getNMethod(method, isOsr);
     return obj == null ? null : new NMethod(obj);
   }
   private NMethod(Object[] obj) {
-    super((Object[])obj[0]);
-    assert obj.length == 5;
-    comp_level = (Integer) obj[1];
+    assert obj.length == 3;
+    comp_level = (Integer) obj[0];
+    compile_id = (Integer) obj[1];
     insts = (byte[]) obj[2];
-    compile_id = (Integer) obj[3];
-    entry_point = (Long) obj[4];
   }
   public final byte[] insts;
   public final int comp_level;
   public final int compile_id;
-  public final long entry_point;
 
   @Override
   public String toString() {
-    return "NMethod{"
-        + super.toString()
-        + ", insts=" + insts
-        + ", comp_level=" + comp_level
-        + ", compile_id=" + compile_id
-        + ", entry_point=" + entry_point
-        + '}';
+    return "NMethod{" +
+        "insts=" + insts +
+        ", comp_level=" + comp_level +
+        ", compile_id=" + compile_id +
+        '}';
   }
 }

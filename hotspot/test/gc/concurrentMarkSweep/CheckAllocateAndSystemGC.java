@@ -27,12 +27,12 @@
  * @bug 8013032
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm CheckAllocateAndSystemGC
  * @author jon.masamitsu@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CheckAllocateAndSystemGC {
   public static void main(String args[]) throws Exception {

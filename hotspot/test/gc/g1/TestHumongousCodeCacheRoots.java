@@ -26,14 +26,14 @@
  * @key regression
  * @key gc
  * @bug 8027756
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestHumongousCodeCacheRoots
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @summary Humongous objects may have references from the code cache
  * @run main TestHumongousCodeCacheRoots
 */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 import java.util.ArrayList;

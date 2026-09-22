@@ -23,7 +23,7 @@
 
 import java.io.PrintWriter;
 import java.lang.instrument.*;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.compiler.InMemoryJavaCompiler;
 
 /*
  * Helper class to write tests that redefine classes.

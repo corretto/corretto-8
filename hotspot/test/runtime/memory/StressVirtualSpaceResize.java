@@ -24,7 +24,7 @@
 /*
  * @test
  * @summary Stress test that expands/shrinks VirtualSpace
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build StressVirtualSpaceResize
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI StressVirtualSpaceResize

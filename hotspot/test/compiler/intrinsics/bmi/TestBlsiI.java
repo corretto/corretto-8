@@ -27,7 +27,7 @@
  * @bug 8031321
  * @summary Verify that results of computations are the same w/
  *          and w/o usage of BLSI instruction
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestBlsiI BMITestRunner Expr
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions

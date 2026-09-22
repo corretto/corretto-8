@@ -25,11 +25,11 @@
  * @key gc
  * @bug 8032771
  * @summary Test silent verification.
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import java.util.ArrayList;
 import java.util.Collections;
 

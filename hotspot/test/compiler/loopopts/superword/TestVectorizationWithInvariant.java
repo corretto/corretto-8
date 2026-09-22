@@ -22,14 +22,14 @@
  *
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 import sun.misc.Unsafe;
 
 /**
  * @test
  * @bug 8078497
  * @summary Tests correct alignment of vectors with loop invariant offset.
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestVectorizationWithInvariant
  */
 public class TestVectorizationWithInvariant {

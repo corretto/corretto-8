@@ -25,15 +25,15 @@
 /*
  * @test
  * @summary Basic (sanity) test for JDK-under-test inside a docker image.
- * @library /testlibrary
+ * @library /test/lib
  * @build HelloDocker
  * @run driver DockerBasicTest
  */
 
-import com.oracle.java.testlibrary.Utils;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.DockerTestUtils;
-import com.oracle.java.testlibrary.DockerRunOptions;
+import jdk.test.lib.Utils;
+import jdk.test.lib.Platform;
+import jdk.test.lib.containers.docker.DockerTestUtils;
+import jdk.test.lib.containers.docker.DockerRunOptions;
 
 public class DockerBasicTest {
     private static final String imageNameAndTag = "jdk8-internal:test";

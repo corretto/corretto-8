@@ -25,13 +25,13 @@
  * @test
  * @bug 8174962
  * @summary Redefine class with interface method call
- * @library /testlibrary
+ * @library /test/lib
  * @build RedefineClassHelper
  * @run main RedefineClassHelper
  * @run main/othervm -javaagent:redefineagent.jar -XX:TraceRedefineClasses=3174407 RedefineInterfaceCall
  */
 
-import static com.oracle.java.testlibrary.Asserts.assertEquals;
+import static jdk.test.lib.Asserts.assertEquals;
 
 interface I1 { default int m() { return 0; } }
 interface I2 extends I1 {}

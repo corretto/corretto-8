@@ -24,7 +24,7 @@
 /*
  * @test
  * @bug 8155635
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -Xbatch -XX:-TieredCompilation compiler.unsafe.MixedUnsafeStoreObject
  * @run main/othervm -Xbatch compiler.unsafe.MixedUnsafeStoreObject
  * @comment Testcase currently only known to reproduce when run with -XX:+UseG1GC.
@@ -34,7 +34,7 @@ package compiler.unsafe;
 
 import sun.misc.Unsafe;
 
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Utils;
 
 public class MixedUnsafeStoreObject {
     static final Unsafe UNSAFE = Utils.getUnsafe();

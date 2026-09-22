@@ -26,13 +26,13 @@
  * @test
  * @bug 6869327
  * @summary Test that C2 flag UseCountedLoopSafepoints ensures a safepoint is kept in a CountedLoop
- * @library /testlibrary
+ * @library /test/lib
  * @run main UseCountedLoopSafepoints
  */
 
 import java.util.concurrent.atomic.AtomicLong;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class UseCountedLoopSafepoints {
     private static final AtomicLong _num = new AtomicLong(0);

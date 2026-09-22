@@ -21,10 +21,10 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.Platform;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
 
 /**
  * Generic test case for SHA-related options targeted to SPARC CPUs which
