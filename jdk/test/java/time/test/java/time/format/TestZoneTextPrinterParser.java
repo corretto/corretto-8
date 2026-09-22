@@ -27,6 +27,7 @@ import static org.testng.Assert.assertEquals;
 
 import java.text.DateFormatSymbols;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DecimalStyle;
 import java.time.format.DateTimeFormatter;
@@ -36,9 +37,12 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQueries;
 import java.time.zone.ZoneRulesProvider;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
@@ -51,7 +55,7 @@ import org.testng.annotations.Test;
 
 /*
  * @test
- * @bug 8081022 8151876 8166875 8390388
+ * @bug 8081022 8151876 8166875 8390388 8388214
  * @key randomness
  */
 
@@ -60,6 +64,17 @@ import org.testng.annotations.Test;
  */
 @Test
 public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
+
+    // Explicit dstOffset attributes from CLDR v48.2 metazone data.
+    private static final Map<String, ZoneOffset> CLDR_EXPLICIT_DST_OFFSETS;
+    static {
+        Map<String, ZoneOffset> offsets = new HashMap<>();
+        offsets.put("America/Vancouver", ZoneOffset.of("-07:00"));
+        offsets.put("Canada/Pacific", ZoneOffset.of("-07:00"));
+        offsets.put("Europe/Dublin", ZoneOffset.of("+01:00"));
+        offsets.put("Eire", ZoneOffset.of("+01:00"));
+        CLDR_EXPLICIT_DST_OFFSETS = Collections.unmodifiableMap(offsets);
+    }
 
     protected static DateTimeFormatter getFormatter(Locale locale, TextStyle style) {
         return new DateTimeFormatterBuilder().appendZoneText(style)
@@ -87,15 +102,15 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
                 long epochMilli = zdt.toInstant().toEpochMilli();
                 boolean isDST = tz.inDaylightTime(new Date(epochMilli));
                 // Some zones now use an explicit daylight offset in CLDR without
-                // java.util.TimeZone reporting DST for the instant. JDK 8 does not
-                // use CLDR by default, so apply this rule only when CLDR supplies
-                // the names for the locale.
-                boolean hasExplicitDaylightOffset = tz.getDSTSavings() == 0
-                        && tz.getOffset(epochMilli) > tz.getRawOffset();
+                // java.util.TimeZone reporting DST for the instant.
+                ZoneOffset explicitDstOffset = CLDR_EXPLICIT_DST_OFFSETS.get(zid);
                 for (Locale locale : locales) {
-                    boolean useDaylightName = isDST || (hasExplicitDaylightOffset
+                    boolean useDaylightName = isDST;
+                    if (explicitDstOffset != null
                             && LocaleProviderAdapter.getAdapter(TimeZoneNameProvider.class, locale)
-                                    .getAdapterType() == LocaleProviderAdapter.Type.CLDR);
+                                    .getAdapterType() == LocaleProviderAdapter.Type.CLDR) {
+                        useDaylightName = zdt.getOffset().equals(explicitDstOffset);
+                    }
                     String longDisplayName = tz.getDisplayName(useDaylightName, TimeZone.LONG, locale);
                     String shortDisplayName = tz.getDisplayName(useDaylightName, TimeZone.SHORT, locale);
                     if ((longDisplayName.startsWith("GMT+") && shortDisplayName.startsWith("GMT+"))
