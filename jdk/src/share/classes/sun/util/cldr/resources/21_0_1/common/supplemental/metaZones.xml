@@ -461,7 +461,7 @@
 			</timezone>
 			<timezone type="America/Inuvik">
 				<usesMetazone to="1979-04-29 10:00" mzone="America_Pacific"/>
-				<usesMetazone from="1979-04-29 10:00" mzone="America_Mountain"/>
+				<usesMetazone from="1979-04-29 10:00" mzone="America_Mountain" stdOffset="-07" dstOffset="-06" />
 			</timezone>
 			<timezone type="America/Iqaluit">
 				<usesMetazone to="1999-10-31 06:00" mzone="America_Eastern"/>
