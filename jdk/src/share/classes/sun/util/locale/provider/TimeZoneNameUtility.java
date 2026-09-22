@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -140,6 +140,30 @@ public final class TimeZoneNameUtility {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns the explicit metazone DST offset for the specified time zone ID,
+     * if one exists.
+     *
+     * @param tzid the time zone ID
+     * @return the explicit metazone DST offset, or null
+     */
+    public static String explicitDstOffset(String tzid) {
+        LocaleProviderAdapter cldrAdapter =
+            LocaleProviderAdapter.forType(LocaleProviderAdapter.Type.CLDR);
+        if (cldrAdapter == null) {
+            return null;
+        }
+
+        Map<String, String> aliases = ZoneInfo.getAliasTable();
+        String canonicalID = aliases != null ? aliases.get(tzid) : null;
+        if (canonicalID == null) {
+            canonicalID = tzid;
+        }
+
+        return (String) cldrAdapter.getLocaleResources(Locale.ROOT)
+            .getTimeZoneNames("metazone.dstoffset." + canonicalID);
     }
 
     private static String[] retrieveDisplayNamesImpl(String id, Locale locale) {

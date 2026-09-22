@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -64,11 +64,17 @@ public class CLDRConverter {
     static final String TIMEZONE_ID_PREFIX = "timezone.id.";
     static final String ZONE_NAME_PREFIX = "timezone.displayname.";
     static final String METAZONE_ID_PREFIX = "metazone.id.";
+    static final String METAZONE_DSTOFFSET_PREFIX = "metazone.dstoffset.";
 
     private static SupplementDataParseHandler handlerSuppl;
     static NumberingSystemsParseHandler handlerNumbering;
     static MetaZonesParseHandler handlerMetaZones;
     private static BundleGenerator bundleGenerator;
+
+    // Map of explicit dst offsets for metazones
+    // key: time zone ID
+    // value: explicit dstOffset for the corresponding metazone name
+    static final Map<String, String> explicitDstOffsets = new HashMap<>(32);
 
     static enum DraftType {
         UNCONFIRMED,
@@ -543,6 +549,14 @@ public class CLDRConverter {
                         names.put(tzid, meta);
                     }
                 }
+            }
+        }
+
+        // Explicit metazone offsets
+        if (id.equals("root")) {
+            for (Map.Entry<String, String> entry : explicitDstOffsets.entrySet()) {
+                names.put(METAZONE_DSTOFFSET_PREFIX + entry.getKey(),
+                          entry.getValue());
             }
         }
         return names;

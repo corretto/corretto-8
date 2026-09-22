@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -79,15 +78,16 @@ public abstract class TimeZoneNamesBundle extends OpenListResourceBundle {
      */
     @Override
     public Object handleGetObject(String key) {
-        String[] contents = (String[]) super.handleGetObject(key);
-        if (Objects.isNull(contents)) {
-            return null;
+        Object val = super.handleGetObject(key);
+        if (val instanceof String[]) {
+            String[] contents = (String[]) val;
+            int clen = contents.length;
+            String[] tmpobj = new String[7];
+            tmpobj[0] = key;
+            System.arraycopy(contents, 0, tmpobj, 1, clen);
+            return tmpobj;
         }
-        int clen = contents.length;
-        String[] tmpobj = new String[7];
-        tmpobj[0] = key;
-        System.arraycopy(contents, 0, tmpobj, 1, clen);
-        return tmpobj;
+        return val;
     }
 
     /**

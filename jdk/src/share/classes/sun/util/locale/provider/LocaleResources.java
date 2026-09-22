@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -86,6 +86,9 @@ public class LocaleResources {
     private static final String CALENDAR_NAMES = "CALN.";
     private static final String NUMBER_PATTERNS_CACHEKEY = "NP";
     private static final String DATE_TIME_PATTERN = "DTP.";
+
+    // TimeZoneNamesBundle explicit metazone dst offset prefix
+    private static final String TZNB_METAZONE_DSTOFFSET_PREFIX = "metazone.dstoffset.";
 
     // null singleton cache value
     private static final Object NULLOBJECT = new Object();
@@ -251,23 +254,27 @@ public class LocaleResources {
         return (String) localeName;
     }
 
-    String[] getTimeZoneNames(String key) {
-        String[] names = null;
+    Object getTimeZoneNames(String key) {
+        Object val = null;
         String cacheKey = TIME_ZONE_NAMES + '.' + key;
 
         removeEmptyReferences();
         ResourceReference data = cache.get(cacheKey);
 
-        if (Objects.isNull(data) || Objects.isNull((names = (String[]) data.get()))) {
+        if (Objects.isNull(data) || Objects.isNull((val = data.get()))) {
             TimeZoneNamesBundle tznb = localeData.getTimeZoneNames(locale);
             if (tznb.containsKey(key)) {
-                names = tznb.getStringArray(key);
+                if (key.startsWith(TZNB_METAZONE_DSTOFFSET_PREFIX)) {
+                    val = tznb.getString(key);
+                } else {
+                    val = tznb.getStringArray(key);
+                }
                 cache.put(cacheKey,
-                          new ResourceReference(cacheKey, (Object) names, referenceQueue));
+                          new ResourceReference(cacheKey, val, referenceQueue));
             }
         }
 
-        return names;
+        return val;
     }
 
     @SuppressWarnings("unchecked")
@@ -293,7 +300,9 @@ public class LocaleResources {
         // Use a LinkedHashSet to preseve the order
         Set<String[]> value = new LinkedHashSet<>();
         for (String key : keyset) {
-            value.add(rb.getStringArray(key));
+            if (!key.startsWith(TZNB_METAZONE_DSTOFFSET_PREFIX)) {
+                value.add(rb.getStringArray(key));
+            }
         }
 
         // Add aliases data for CLDR

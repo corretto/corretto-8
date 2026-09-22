@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -121,7 +121,8 @@ public class TimeZoneNameProviderImpl extends TimeZoneNameProvider {
     private String[] getDisplayNameArray(String id, Locale locale) {
         Objects.requireNonNull(id);
         Objects.requireNonNull(locale);
-        return LocaleProviderAdapter.forType(type).getLocaleResources(locale).getTimeZoneNames(id);
+        return (String[]) LocaleProviderAdapter.forType(type)
+            .getLocaleResources(locale).getTimeZoneNames(id);
     }
 
     /**
