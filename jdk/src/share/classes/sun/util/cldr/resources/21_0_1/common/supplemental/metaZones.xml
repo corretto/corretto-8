@@ -177,7 +177,8 @@
 			<timezone type="Africa/Windhoek">
 				<usesMetazone to="1990-03-20 22:00" mzone="Africa_Southern"/>
 				<usesMetazone to="1994-04-02 22:00" from="1990-03-20 22:00" mzone="Africa_Central"/>
-				<usesMetazone from="1994-04-02 22:00" mzone="Africa_Western"/>
+				<usesMetazone to="2017-10-23 22:00" from="1994-04-02 22:00" mzone="Africa_Western" stdOffset="+01" dstOffset="+02"/>
+				<usesMetazone from="2017-10-23 22:00" mzone="Africa_Central"/>
 			</timezone>
 			<timezone type="America/Adak">
 				<usesMetazone to="1983-10-30 12:00" mzone="Bering"/>
@@ -731,7 +732,7 @@
 				<usesMetazone mzone="Atlantic"/>
 			</timezone>
 			<timezone type="America/Vancouver">
-				<usesMetazone mzone="America_Pacific"/>
+				<usesMetazone mzone="America_Pacific" stdOffset="-08" dstOffset="-07"/>
 			</timezone>
 			<timezone type="America/Whitehorse">
 				<usesMetazone mzone="America_Pacific"/>
@@ -1169,8 +1170,8 @@
 				<usesMetazone mzone="Europe_Central"/>
 			</timezone>
 			<timezone type="Europe/Dublin">
-				<usesMetazone mzone="Irish" to="1971-10-31 02:00"/>
-				<usesMetazone mzone="GMT" from="1971-10-31 02:00"/>
+				<usesMetazone mzone="Irish" to="1971-10-31 02:00" stdOffset="+00" dstOffset="+01"/>
+				<usesMetazone mzone="GMT" from="1971-10-31 02:00" stdOffset="+00" dstOffset="+01"/>
 			</timezone>
 			<timezone type="Europe/Gibraltar">
 				<usesMetazone mzone="Europe_Central"/>
