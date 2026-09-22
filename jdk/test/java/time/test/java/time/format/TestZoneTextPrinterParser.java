@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -42,14 +42,16 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.spi.TimeZoneNameProvider;
 import jdk.testlibrary.RandomFactory;
+import sun.util.locale.provider.LocaleProviderAdapter;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /*
  * @test
- * @bug 8081022 8151876 8166875
+ * @bug 8081022 8151876 8166875 8390388
  * @key randomness
  */
 
@@ -82,10 +84,20 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
                 }
                 zdt = zdt.withZoneSameLocal(ZoneId.of(zid));
                 TimeZone tz = TimeZone.getTimeZone(zid);
-                boolean isDST = tz.inDaylightTime(new Date(zdt.toInstant().toEpochMilli()));
+                long epochMilli = zdt.toInstant().toEpochMilli();
+                boolean isDST = tz.inDaylightTime(new Date(epochMilli));
+                // Some zones now use an explicit daylight offset in CLDR without
+                // java.util.TimeZone reporting DST for the instant. JDK 8 does not
+                // use CLDR by default, so apply this rule only when CLDR supplies
+                // the names for the locale.
+                boolean hasExplicitDaylightOffset = tz.getDSTSavings() == 0
+                        && tz.getOffset(epochMilli) > tz.getRawOffset();
                 for (Locale locale : locales) {
-                    String longDisplayName = tz.getDisplayName(isDST, TimeZone.LONG, locale);
-                    String shortDisplayName = tz.getDisplayName(isDST, TimeZone.SHORT, locale);
+                    boolean useDaylightName = isDST || (hasExplicitDaylightOffset
+                            && LocaleProviderAdapter.getAdapter(TimeZoneNameProvider.class, locale)
+                                    .getAdapterType() == LocaleProviderAdapter.Type.CLDR);
+                    String longDisplayName = tz.getDisplayName(useDaylightName, TimeZone.LONG, locale);
+                    String shortDisplayName = tz.getDisplayName(useDaylightName, TimeZone.SHORT, locale);
                     if ((longDisplayName.startsWith("GMT+") && shortDisplayName.startsWith("GMT+"))
                             || (longDisplayName.startsWith("GMT-") && shortDisplayName.startsWith("GMT-"))) {
                         printText(locale, zdt, TextStyle.FULL, tz, tz.getID());
@@ -93,9 +105,9 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
                         continue;
                     }
                     printText(locale, zdt, TextStyle.FULL, tz,
-                            tz.getDisplayName(isDST, TimeZone.LONG, locale));
+                            tz.getDisplayName(useDaylightName, TimeZone.LONG, locale));
                     printText(locale, zdt, TextStyle.SHORT, tz,
-                            tz.getDisplayName(isDST, TimeZone.SHORT, locale));
+                            tz.getDisplayName(useDaylightName, TimeZone.SHORT, locale));
                 }
             }
         }
