@@ -35,7 +35,6 @@ import com.sun.net.httpserver.*;
  */
 class Request {
 
-    final static int BUF_LEN = 2048;
     final static byte CR = 13;
     final static byte LF = 10;
     static final byte FIRST_CHAR = 32;
@@ -60,10 +59,6 @@ class Request {
     }
 
 
-    char[] buf = new char [BUF_LEN];
-    int pos;
-    StringBuffer lineBuf;
-
     public InputStream inputStream () {
         return is;
     }
@@ -79,7 +74,7 @@ class Request {
 
     public String readLine () throws IOException {
         boolean gotLF = false;
-        pos = 0; lineBuf = new StringBuffer();
+        StringBuilder lineBuf = new StringBuilder();
 
         // For the first request that comes on a clear connection
         // we will check that the first non CR/LF char on the
@@ -114,19 +109,11 @@ class Request {
                     }
                     offset++;
                 }
-                consume(c);
+                checkCtl(c);
+                lineBuf.append((char)c);
             }
         }
-        lineBuf.append (buf, 0, pos);
-        return new String (lineBuf);
-    }
-
-    private void consume (int c) {
-        if (pos == BUF_LEN) {
-            lineBuf.append (buf);
-            pos = 0;
-        }
-        buf[pos++] = (char)c;
+        return lineBuf.toString();
     }
 
     /**
@@ -134,6 +121,13 @@ class Request {
      */
     public String requestLine () {
         return startLine;
+    }
+
+    void checkCtl(int c) throws IOException {
+        if (c == 0x7f ||
+                c < ' ' && c != CR && c!= LF && c != '\t') {
+            throw new ProtocolException("Invalid character in request header");
+        }
     }
 
     Headers hdrs = null;
@@ -168,9 +162,11 @@ class Request {
             int keyend = -1;
             int c;
             boolean inKey = firstc != ' ' && firstc != '\t';
+            checkCtl(firstc);
             s[len++] = (char) firstc;
     parseloop:{
                 while ((c = is.read()) >= 0) {
+                    checkCtl(c);
                     switch (c) {
                       case ':':
                         if (inKey && len > 0) {
@@ -219,7 +215,7 @@ class Request {
             }
             String v;
             if (keyend >= len)
-                v = new String();
+                v = "";
             else
                 v = String.copyValueOf(s, keyend, len - keyend);
 
