@@ -25,7 +25,7 @@
  * @test
  * @bug 8055008
  * @summary Redefine EMCP and non-EMCP methods that are running in an infinite loop
- * @library /testlibrary
+ * @library /test/lib
  * @build RedefineClassHelper
  * @run main RedefineClassHelper
  * @run main/othervm -javaagent:redefineagent.jar RedefineRunningMethods

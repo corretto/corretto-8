@@ -24,7 +24,7 @@
 /*
  * @test CorrectnessTest
  * @bug 8038418
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @compile execution/TypeConflict.java execution/TypeProfile.java
  *          execution/MethodHandleDelegate.java
  * @build CorrectnessTest
@@ -33,8 +33,8 @@
  * @run main/timeout=1200 OffTest
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import scenarios.ProfilingType;
 
 import java.util.Random;

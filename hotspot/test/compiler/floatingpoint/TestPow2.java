@@ -25,7 +25,7 @@
  * @test
  * @bug 8063086
  * @summary X^2 special case for C2 yields different result than interpreter
- * @library /testlibrary /testlibrary/whitebox /compiler/whitebox
+ * @library /test/lib /compiler/whitebox
  * @build TestPow2
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI

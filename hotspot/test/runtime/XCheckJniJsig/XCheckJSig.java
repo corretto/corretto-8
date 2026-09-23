@@ -25,14 +25,15 @@
  * @test
  * @bug 7051189 8023393
  * @summary Need to suppress info message if -Xcheck:jni is used with libjsig.so
- * @library /testlibrary /test/lib
+ * @library /test/lib
  * @requires os.family == "solaris" | os.family == "linux" | os.family == "mac"
  * @run main XCheckJSig
  */
 
 import java.io.File;
 import java.util.Map;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import jtreg.SkippedException;
 
 public class XCheckJSig {

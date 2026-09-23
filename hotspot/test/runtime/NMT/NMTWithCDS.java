@@ -25,10 +25,10 @@
  * @test
  * @bug 8055061
  * @key nmt
- * @library /testlibrary
+ * @library /test/lib
  * @run main NMTWithCDS
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class NMTWithCDS {
 

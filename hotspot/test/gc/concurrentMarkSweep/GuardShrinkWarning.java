@@ -27,12 +27,12 @@
  * @bug 8012111
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm GuardShrinkWarning
  * @author jon.masamitsu@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class GuardShrinkWarning {
   public static void main(String args[]) throws Exception {

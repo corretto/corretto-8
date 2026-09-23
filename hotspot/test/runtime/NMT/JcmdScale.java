@@ -25,11 +25,12 @@
  * @test
  * @key nmt jcmd
  * @summary Test the NMT scale parameter
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:NativeMemoryTracking=summary JcmdScale
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class JcmdScale {
 
@@ -37,7 +38,7 @@ public class JcmdScale {
     ProcessBuilder pb = new ProcessBuilder();
     OutputAnalyzer output;
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
 
     pb.command(new String[] { JDKToolFinder.getJDKTool("jcmd"), pid, "VM.native_memory", "scale=KB"});
     output = new OutputAnalyzer(pb.start());

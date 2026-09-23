@@ -24,11 +24,11 @@
 /**
  * @test
  * @bug 8074551
- * @library /testlibrary
+ * @library /test/lib
  * @run main PollutedTrapCounts
  */
 import java.lang.invoke.*;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class PollutedTrapCounts {
     public static void main(String[] args) throws Exception {

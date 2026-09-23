@@ -23,10 +23,10 @@
 
 package sha.predicate;
 
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.CPUSpecificPredicate;
-import com.oracle.java.testlibrary.cli.predicate.OrPredicate;
+import jdk.test.lib.Platform;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.CPUSpecificPredicate;
+import jdk.test.lib.cli.predicate.OrPredicate;
 import sun.hotspot.WhiteBox;
 
 import java.util.function.BooleanSupplier;

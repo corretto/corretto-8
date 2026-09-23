@@ -26,11 +26,11 @@
  * @key gc
  * @bug 8025661
  * @summary Test parsing of -Xminf and -Xmaxf
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm TestHeapFreeRatio
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestHeapFreeRatio {
 

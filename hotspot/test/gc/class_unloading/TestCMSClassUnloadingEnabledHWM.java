@@ -25,15 +25,15 @@
  * @test
  * @key gc
  * @bug 8049831
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestCMSClassUnloadingEnabledHWM
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run driver TestCMSClassUnloadingEnabledHWM
  * @summary Test that -XX:-CMSClassUnloadingEnabled will trigger a Full GC when more than MetaspaceSize metadata is allocated.
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;

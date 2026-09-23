@@ -21,20 +21,20 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 /*
  * @test
  * @summary Test of diagnostic command GC.heap_info
- * @library /testlibrary
+ * @library /test/lib
  * @run main HeapInfoTest
  */
 public class HeapInfoTest {
 
     public static void main(String[] args) throws Exception {
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
         ProcessBuilder pb = new ProcessBuilder();
         pb.command(new String[] { JDKToolFinder.getJDKTool("jcmd"), pid, "GC.heap_info"});
         OutputAnalyzer output = new OutputAnalyzer(pb.start());

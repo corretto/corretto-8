@@ -24,10 +24,10 @@
 /*
  * @test
  * @summary Test the OutputAnalyzer utility class
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class OutputAnalyzerTest {
 

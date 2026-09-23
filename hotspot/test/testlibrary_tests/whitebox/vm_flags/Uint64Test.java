@@ -24,7 +24,7 @@
 /*
  * @test Uint64Test
  * @bug 8038756
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build Uint64Test
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI Uint64Test

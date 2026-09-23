@@ -25,14 +25,15 @@
  * @test
  * @summary Test consistency of NMT by creating allocations of the Test type with various sizes and verifying visibility with jcmd
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build MallocRoundingReportTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail MallocRoundingReportTest
  *
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 import sun.hotspot.WhiteBox;
 
@@ -44,7 +45,7 @@ public class MallocRoundingReportTest {
         WhiteBox wb = WhiteBox.getWhiteBox();
 
         // Grab my own PID
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
         ProcessBuilder pb = new ProcessBuilder();
 
         long[] additionalBytes = {0, 1, 512, 650};

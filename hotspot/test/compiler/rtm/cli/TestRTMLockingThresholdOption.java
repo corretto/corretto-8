@@ -26,7 +26,7 @@
  * @test
  * @bug 8031320
  * @summary Verify processing of RTMLockingThreshold option.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestRTMLockingThresholdOption
  * @run main/othervm TestRTMLockingThresholdOption
  */

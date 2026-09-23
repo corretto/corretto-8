@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -34,21 +34,14 @@ public class DiagnosticCommand {
     private DiagnosticArgumentType type;
     private boolean mandatory;
     private String defaultValue;
-    private boolean argument;
 
     public DiagnosticCommand(String name, String desc, DiagnosticArgumentType type,
             boolean mandatory, String defaultValue) {
-        this(name, desc, type, false, mandatory, defaultValue);
-    }
-
-    public DiagnosticCommand(String name, String desc, DiagnosticArgumentType type,
-            boolean argument, boolean mandatory, String defaultValue) {
         this.name = name;
         this.desc = desc;
         this.type = type;
         this.mandatory = mandatory;
         this.defaultValue = defaultValue;
-        this.argument = argument;
     }
 
     public String getName() {
@@ -65,10 +58,6 @@ public class DiagnosticCommand {
 
     public boolean isMandatory() {
         return mandatory;
-    }
-
-    public boolean isArgument() {
-        return argument;
     }
 
     public String getDefaultValue() {

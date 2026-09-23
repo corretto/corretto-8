@@ -28,7 +28,7 @@
  * @requires vm.gc == null
  * @requires vm.opt.ExplicitGCInvokesConcurrent != true
  * @requires vm.opt.ClassUnloading != true
- * @library  /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
@@ -54,7 +54,7 @@ import java.nio.file.Paths;
 
 import sun.hotspot.WhiteBox;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 public class TestClassUnloadingDisabled {
     public static void main(String args[]) throws Exception {

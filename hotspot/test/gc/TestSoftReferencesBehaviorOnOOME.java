@@ -25,14 +25,14 @@
  * @test TestSoftReferencesBehaviorOnOOME
  * @key gc
  * @summary Tests that all SoftReferences has been cleared at time of OOM.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestSoftReferencesBehaviorOnOOME
  * @run main/othervm -Xmx128m TestSoftReferencesBehaviorOnOOME 512 2k
  * @run main/othervm -Xmx128m TestSoftReferencesBehaviorOnOOME 128k 256k
  * @run main/othervm -Xmx128m TestSoftReferencesBehaviorOnOOME 2k 32k 10
  */
 import java.util.*;
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Utils;
 import java.lang.ref.SoftReference;
 import java.util.LinkedList;
 

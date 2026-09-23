@@ -27,13 +27,13 @@
  * @summary Regression test to ensure we can start G1 with 2gb heap.
  * @key gc
  * @key regression
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.util.ArrayList;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class Test2GbHeap {
   public static void main(String[] args) throws Exception {

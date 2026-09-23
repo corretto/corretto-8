@@ -25,11 +25,12 @@
  * @test TestGCLogRotationViaJcmd.java
  * @bug 7090324
  * @summary test for gc log rotation via jcmd
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -Xloggc:test.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=3 TestGCLogRotationViaJcmd
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -48,7 +49,7 @@ public class TestGCLogRotationViaJcmd {
 
     public static void main(String[] args) throws Exception {
         // Grab the pid from the current java process
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
 
         // Create a JDKToolLauncher
         JDKToolLauncher jcmd = JDKToolLauncher.create("jcmd")

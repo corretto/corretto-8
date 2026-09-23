@@ -24,7 +24,7 @@
 /**
  * @test Level2RecompilationTest
  * @summary Test downgrading mechanism from level 3 to level 2 for those profiled methods.
- * @library /testlibrary /testlibrary/whitebox /compiler/whitebox
+ * @library /test/lib /compiler/whitebox
  * @build Level2RecompilationTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+TieredCompilation

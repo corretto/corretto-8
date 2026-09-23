@@ -25,11 +25,11 @@
  * @test ConfigFileParsing
  * @bug 7158804
  * @summary Improve config file parsing
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.io.PrintWriter;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class ConfigFileParsing {
   public static void main(String[] args) throws Exception {

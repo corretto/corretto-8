@@ -25,12 +25,12 @@
  * @test TestEnableTracing
  * @summary Test if tracing produces the expected output when enabled.
  * @bug 8209863 8145788
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestEnableTracing
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestEnableTracing {
     public static void main(String[] args) throws Exception {

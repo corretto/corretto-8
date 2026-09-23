@@ -24,7 +24,10 @@
 package jdk.test.lib;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import jdk.test.lib.process.ProcessTools;
 
 /**
  * A utility for constructing command lines for starting JDK tool processes.
@@ -57,6 +60,7 @@ public class JDKToolLauncher {
         } else {
             executable = JDKToolFinder.getTestJDKTool(tool);
         }
+        vmArgs.addAll(Arrays.asList(ProcessTools.getPlatformSpecificVMArgs()));
     }
 
     /**

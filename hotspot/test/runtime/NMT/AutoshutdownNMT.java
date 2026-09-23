@@ -25,10 +25,10 @@
  * @test
  * @key nmt
  * @summary Test for deprecated message if -XX:-AutoShutdownNMT is specified
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class AutoshutdownNMT {
 

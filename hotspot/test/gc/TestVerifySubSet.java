@@ -25,11 +25,11 @@
  * @key gc
  * @bug 8072725
  * @summary Test VerifySubSet option
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import java.util.ArrayList;
 import java.util.Collections;
 

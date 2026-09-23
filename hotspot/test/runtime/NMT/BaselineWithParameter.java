@@ -26,17 +26,18 @@
  * @bug 8004802
  * @key nmt jcmd regression
  * @summary Regression test for invoking a jcmd with baseline=false, result was that the target VM crashed
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:NativeMemoryTracking=detail BaselineWithParameter
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class BaselineWithParameter {
 
   public static void main(String args[]) throws Exception {
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     OutputAnalyzer output;
 
     ProcessBuilder pb = new ProcessBuilder();

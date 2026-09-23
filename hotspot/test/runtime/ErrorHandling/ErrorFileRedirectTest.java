@@ -27,12 +27,12 @@
  * @test
  * @bug 8220786
  * @summary Test ErrorFileToStderr and ErrorFileToStdout
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
 
 import java.io.BufferedReader;
 import java.io.File;

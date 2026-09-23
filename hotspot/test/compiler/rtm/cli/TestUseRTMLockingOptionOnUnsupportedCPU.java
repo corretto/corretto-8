@@ -27,17 +27,18 @@
  * @bug 8031320
  * @summary Verify UseRTMLocking option processing on CPU without
  *          rtm support.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestUseRTMLockingOptionOnUnsupportedCPU
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
  *                   -XX:+WhiteBoxAPI TestUseRTMLockingOptionOnUnsupportedCPU
  */
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.*;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.NotPredicate;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.*;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.NotPredicate;
+import jdk.test.lib.process.*;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 

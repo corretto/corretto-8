@@ -25,11 +25,11 @@
  * @test
  * @bug 8030955
  * @summary Allow multiple calls to PerfMemory::destroy() without asserting.
- * @library /testlibrary
+ * @library /test/lib
  * @run main PerfMemDestroy
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class PerfMemDestroy {
     public static void main(String args[]) throws Throwable {

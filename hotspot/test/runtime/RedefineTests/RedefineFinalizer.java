@@ -25,7 +25,7 @@
  * @test
  * @bug 6904403
  * @summary Don't assert if we redefine finalize method
- * @library /testlibrary
+ * @library /test/lib
  * @build RedefineClassHelper
  * @run main RedefineClassHelper
  * @run main/othervm -javaagent:redefineagent.jar RedefineFinalizer

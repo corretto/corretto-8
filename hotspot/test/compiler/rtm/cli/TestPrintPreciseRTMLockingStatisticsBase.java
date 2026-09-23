@@ -22,8 +22,9 @@
  *
  */
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.*;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.*;
+import jdk.test.lib.process.*;
 
 import java.util.function.BooleanSupplier;
 

@@ -24,7 +24,7 @@
 /*
  * @test StringTest
  * @bug 8038756
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build StringTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI StringTest

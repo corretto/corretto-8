@@ -25,10 +25,10 @@
  * @test
  * @bug 8023014
  * @summary Test ensures that there is no crash when compiler initialization fails
- * @library /testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class SmallCodeCacheStartup {
   public static void main(String[] args) throws Exception {

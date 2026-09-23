@@ -25,7 +25,7 @@
  * @test
  * @summary Stress test for malloc tracking
  * @key nmt jcmd stress
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build MallocStressTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail MallocStressTest
@@ -35,7 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class MallocStressTest {
@@ -71,7 +72,7 @@ public class MallocStressTest {
         whiteBox = WhiteBox.getWhiteBox();
 
         // Grab my own PID
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
         ProcessBuilder pb = new ProcessBuilder();
 
         AllocThread[]   alloc_threads = new AllocThread[256];

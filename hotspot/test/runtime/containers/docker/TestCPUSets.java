@@ -25,20 +25,20 @@
 /*
  * @test
  * @summary Test JVM's awareness of cpu sets (cpus and mems)
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build AttemptOOM CPUSetsReader sun.hotspot.WhiteBox PrintContainerInfo
  * @run driver ClassFileInstaller -jar whitebox.jar sun.hotspot.WhiteBox sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run driver TestCPUSets
  */
 
 import java.util.List;
-import com.oracle.java.testlibrary.Common;
-import com.oracle.java.testlibrary.DockerRunOptions;
-import com.oracle.java.testlibrary.DockerTestUtils;
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.Utils;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.containers.docker.Common;
+import jdk.test.lib.containers.docker.DockerRunOptions;
+import jdk.test.lib.containers.docker.DockerTestUtils;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.Platform;
+import jdk.test.lib.Utils;
+import jdk.test.lib.process.OutputAnalyzer;
 
 
 public class TestCPUSets {

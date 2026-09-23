@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 
 // A simple CPU sets reader and parser

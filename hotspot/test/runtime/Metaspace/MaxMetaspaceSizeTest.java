@@ -21,14 +21,14 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 /*
  * @test MaxMetaspaceSizeTest
  * @requires vm.bits == 64
  * @bug 8087291
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm MaxMetaspaceSizeTest
  */
 

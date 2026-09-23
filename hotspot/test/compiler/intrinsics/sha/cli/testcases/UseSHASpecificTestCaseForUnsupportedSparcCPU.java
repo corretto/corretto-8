@@ -21,12 +21,12 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
-import com.oracle.java.testlibrary.cli.predicate.NotPredicate;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.Platform;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.cli.predicate.NotPredicate;
 import sha.predicate.IntrinsicPredicates;
 
 /**

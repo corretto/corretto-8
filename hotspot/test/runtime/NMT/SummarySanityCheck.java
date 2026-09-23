@@ -25,13 +25,14 @@
  * @test
  * @key nmt jcmd
  * @summary Sanity check the output of NMT
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build SummarySanityCheck
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+WhiteBoxAPI SummarySanityCheck
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +43,7 @@ public class SummarySanityCheck {
   private static String jcmdout;
   public static void main(String args[]) throws Exception {
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
 
     ProcessBuilder pb = new ProcessBuilder();
 

@@ -26,7 +26,7 @@
  * @summary Searches for all libraries in test VM and checks that they
  *          have the noexecstack bit set.
  * @requires (os.family == "linux")
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                                sun.hotspot.WhiteBox$WhiteBoxPermission
@@ -34,7 +34,7 @@
  *                   TestCheckJDK
  */
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 import sun.hotspot.WhiteBox;
 
 import java.nio.file.Files;

@@ -25,12 +25,12 @@
  * @key gc
  * @bug 8010463 8011343 8011898
  * @summary Simple test run with -XX:+VerifyDuringStartup -XX:-UseTLAB to verify 8010463
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 import java.util.ArrayList;
 import java.util.Collections;
 

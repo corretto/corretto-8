@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 import com.sun.management.ThreadMXBean;
 import sun.hotspot.WhiteBox;
 import sun.misc.Unsafe;

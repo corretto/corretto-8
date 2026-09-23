@@ -25,17 +25,18 @@
  * @test
  * @key nmt jcmd
  * @summary Verify that jcmd correctly reports that baseline succeeds with NMT enabled with detailed tracking.
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:NativeMemoryTracking=detail JcmdBaselineDetail
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class JcmdBaselineDetail {
 
     public static void main(String args[]) throws Exception {
         // Grab my own PID
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
         OutputAnalyzer output;
 
         ProcessBuilder pb = new ProcessBuilder();

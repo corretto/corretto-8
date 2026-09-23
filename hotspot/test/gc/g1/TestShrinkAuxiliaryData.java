@@ -21,11 +21,11 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.Utils;
 import jtreg.SkippedException;
 
 import java.io.IOException;

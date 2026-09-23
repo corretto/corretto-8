@@ -21,14 +21,14 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 /*
  * @test
  * @bug     8006997
  * @summary ContendedPaddingWidth should be range-checked
  *
- * @library /testlibrary
+ * @library /test/lib
  * @run main Options
  */
 public class Options {

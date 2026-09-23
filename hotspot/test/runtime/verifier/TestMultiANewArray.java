@@ -26,12 +26,12 @@ import java.io.FileOutputStream;
 import jdk.internal.org.objectweb.asm.ClassWriter;
 import jdk.internal.org.objectweb.asm.MethodVisitor;
 import static jdk.internal.org.objectweb.asm.Opcodes.*;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 /*
  * @test TestMultiANewArray
  * @bug 8038076
- * @library /testlibrary
+ * @library /test/lib
  * @compile -XDignore.symbol.file TestMultiANewArray.java
  * @run main/othervm TestMultiANewArray 49
  * @run main/othervm TestMultiANewArray 50

@@ -29,7 +29,7 @@
  *          might pass even if there are problems in the code, but it will never crash unless there is a problem.
  * @requires vm.gc=="G1" | vm.gc=="null"
  * @key gc
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @modules java.base/sun.misc
  * @build TestNoEagerReclaimOfHumongousRegions
  * @run main ClassFileInstaller sun.hotspot.WhiteBox

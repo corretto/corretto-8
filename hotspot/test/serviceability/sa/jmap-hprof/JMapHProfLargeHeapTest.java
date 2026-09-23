@@ -31,20 +31,20 @@ import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.JDKToolFinder;
-import com.oracle.java.testlibrary.JDKToolLauncher;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.JDKToolLauncher;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Platform;
+import jdk.test.lib.process.ProcessTools;
 
 /*
  * @test
  * @bug 6313383
  * @key regression
  * @summary Regression test for hprof export issue due to large heaps (>2G)
- * @library /testlibrary
- * @build com.oracle.java.testlibrary.* JMapHProfLargeHeapProc
+ * @library /test/lib
+ * @build jdk.test.lib.* JMapHProfLargeHeapProc
  * @run main JMapHProfLargeHeapTest
  */
 

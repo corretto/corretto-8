@@ -25,10 +25,10 @@
  * @test
  * @bug 8006298
  * @summary Using an unrecognized VM option should print the name of the option
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class UnrecognizedVMOption {
   public static void main(String[] args) throws Exception {

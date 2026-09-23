@@ -24,7 +24,7 @@
 /*
  * @test EnqueueMethodForCompilationTest
  * @bug 8006683 8007288 8022832
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build EnqueueMethodForCompilationTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm/timeout=600 -Xbootclasspath/a:. -Xmixed -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:CompileCommand=compileonly,SimpleTestCase$Helper::* EnqueueMethodForCompilationTest

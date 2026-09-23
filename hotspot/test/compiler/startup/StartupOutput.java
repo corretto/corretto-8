@@ -25,10 +25,10 @@
  * @test
  * @bug 8026949
  * @summary Test ensures correct VM output during startup
- * @library ../../testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class StartupOutput {
   public static void main(String[] args) throws Exception {

@@ -25,10 +25,10 @@
  * @test TestHumongousAllocInitialMark
  * @bug 7168848
  * @summary G1: humongous object allocations should initiate marking cycles when necessary
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestHumongousAllocInitialMark {
     // Heap sizes < 224 MB are increased to 224 MB if vm_page_size == 64K to

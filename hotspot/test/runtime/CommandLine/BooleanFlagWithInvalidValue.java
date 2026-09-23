@@ -25,10 +25,10 @@
  * @test
  * @bug 8006298
  * @summary Setting an invalid value for a bool argument should result in a useful error message
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class BooleanFlagWithInvalidValue {
   public static void main(String[] args) throws Exception {

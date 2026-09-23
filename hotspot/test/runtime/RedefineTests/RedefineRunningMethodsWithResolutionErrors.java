@@ -25,7 +25,7 @@
  * @test
  * @bug 8076110
  * @summary Redefine running methods that have cached resolution errors
- * @library /testlibrary
+ * @library /test/lib
  * @modules java.instrument
  *          java.base/jdk.internal.org.objectweb.asm
  * @build RedefineClassHelper

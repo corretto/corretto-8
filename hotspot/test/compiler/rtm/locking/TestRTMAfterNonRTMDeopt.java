@@ -29,7 +29,7 @@
  *          caused by reason other then rtm_state_change will reset
  *          method's RTM state. And if we don't use RTMDeopt, then
  *          RTM state remain the same after such deoptimization.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestRTMAfterNonRTMDeopt
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
@@ -37,9 +37,10 @@
  */
 
 import java.util.List;
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.process.*;
 import rtm.*;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;

@@ -24,7 +24,7 @@
 /*
  * @test CorrectnessTest
  * @bug 8038418
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @compile execution/TypeConflict.java execution/TypeProfile.java
  *          execution/MethodHandleDelegate.java
  * @build CorrectnessTest
@@ -50,8 +50,8 @@
  * @summary Tests correctness of type usage with type profiling and speculations
  */
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.Platform;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.Platform;
 import execution.Execution;
 import execution.MethodHandleDelegate;
 import execution.TypeConflict;

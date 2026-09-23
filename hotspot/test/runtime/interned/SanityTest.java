@@ -24,7 +24,7 @@
 /*
  * @test SanityTest
  * @summary Sanity check of String.intern() & GC
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build SanityTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI SanityTest

@@ -31,7 +31,7 @@ package gc.stress.gclocker;
  * @bug 8048556
  * @summary Check for GC Locker initiated GCs that immediately follow another
  * GC and so have very little needing to be collected.
- * @library /testlibrary
+ * @library /test/lib
  * @run driver/timeout=1000 gc.stress.gclocker.TestExcessGCLockerCollections 300 4 2
  */
 
@@ -54,9 +54,9 @@ import java.util.List;
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 class TestExcessGCLockerCollectionsStringConstants {
     // Some constant strings used in both GC logging and error detection

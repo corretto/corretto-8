@@ -27,8 +27,8 @@
  * @summary G1 Old Gen's CollectionUsage.used is zero after mixed GC which is incorrect
  * @key gc
  * @requires vm.gc=="G1" | vm.gc=="null"
- * @library /testlibrary /testlibrary/whitebox
- * @build ClassFileInstaller com.oracle.java.testlibrary.* sun.hotspot.WhiteBox TestOldGenCollectionUsage
+ * @library /test/lib
+ * @build ClassFileInstaller jdk.test.lib.* sun.hotspot.WhiteBox TestOldGenCollectionUsage
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions
@@ -38,7 +38,7 @@
  *                   TestOldGenCollectionUsage
  */
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 import sun.hotspot.WhiteBox;
 
 import java.util.ArrayList;

@@ -26,7 +26,7 @@
  * @bug 8026365
  * @summary Test invokespecial of host class method from an anonymous class
  * @author  Robert Field
- * @library /testlibrary
+ * @library /test/lib
  * @compile -XDignore.symbol.file InvokeSpecialAnonTest.java
  * @run main ClassFileInstaller InvokeSpecialAnonTest AnonTester
  * @run main/othervm -Xbootclasspath/a:. -Xverify:all InvokeSpecialAnonTest

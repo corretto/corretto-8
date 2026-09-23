@@ -25,13 +25,14 @@
  * @test
  * @summary Test Reserve/Commit/Uncommit/Release of virtual memory and that we track it correctly
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build VirtualAllocTestType
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail VirtualAllocTestType
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class VirtualAllocTestType {
@@ -43,7 +44,7 @@ public class VirtualAllocTestType {
     long reserveSize = 256 * 1024;
     long addr;
 
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     ProcessBuilder pb = new ProcessBuilder();
 
     boolean has_nmt_detail = wb.NMTIsDetailSupported();

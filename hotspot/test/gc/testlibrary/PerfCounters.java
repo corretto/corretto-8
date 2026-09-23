@@ -21,7 +21,9 @@
  * questions.
  */
 
-package com.oracle.java.testlibrary;
+package gc.testlibrary;
+
+import jdk.test.lib.process.*;
 
 import sun.jvmstat.monitor.Monitor;
 import sun.jvmstat.monitor.MonitorException;
@@ -41,7 +43,7 @@ public class PerfCounters {
 
     static {
         try {
-            String pid = Integer.toString(ProcessTools.getProcessId());
+            String pid = Long.toString(ProcessTools.getProcessId());
             VmIdentifier vmId = new VmIdentifier(pid);
             MonitoredHost host = MonitoredHost.getMonitoredHost(vmId);
             vm = host.getMonitoredVm(vmId);

@@ -21,12 +21,12 @@
  * questions.
  */
 import java.io.PrintWriter;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 /*
  * @test
  * @bug 8038636
- * @library /testlibrary
+ * @library /test/lib
  * @build Agent
  * @run main ClassFileInstaller Agent
  * @run main Launcher

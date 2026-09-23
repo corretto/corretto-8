@@ -23,7 +23,7 @@
 
 package scenarios;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 import hierarchies.TypeHierarchy;
 
 import java.util.Objects;

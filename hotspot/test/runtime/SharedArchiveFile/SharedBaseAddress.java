@@ -25,11 +25,12 @@
  * @test SharedBaseAddress
  * @summary Test variety of values for SharedBaseAddress, making sure
  *          VM handles normal values as well as edge values w/o a crash.
- * @library /testlibrary
+ * @library /test/lib
  * @run main SharedBaseAddress
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 public class SharedBaseAddress {
 

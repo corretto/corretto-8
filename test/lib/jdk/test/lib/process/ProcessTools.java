@@ -41,8 +41,10 @@ import java.util.function.Predicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 
 import jdk.test.lib.JDKToolFinder;
+import jdk.test.lib.Platform;
 import jdk.test.lib.Utils;
 
 public final class ProcessTools {
@@ -299,24 +301,25 @@ public final class ProcessTools {
      * @return Process id
      */
     public static long getProcessId() throws Exception {
-        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        long pid = Long.parseLong(runtime.getName().split("@")[0]);
 
-        final int index = jvmName.indexOf('@');
-
-        if (index < 1) {
-            // part before '@' empty (index = 0) / '@' not found (index = -1)
-            return 42;
-        }
-
-        try {
-            return Long.parseLong(jvmName.substring(0, index));
-        } catch (NumberFormatException e) {
-            // ignore
-        }
-        return 42;
+        return pid;
     }
 
+    /**
+     * Get platform specific VM arguments (e.g. -d64 on 64bit Solaris)
+     *
+     * @return String[] with platform specific arguments, empty if there are none
+     */
+    public static String[] getPlatformSpecificVMArgs() {
 
+        if (Platform.is64bit() && Platform.isSolaris()) {
+            return new String[] { "-d64" };
+        }
+
+        return new String[] {};
+    }
 
     /**
      * Create ProcessBuilder using the java launcher from the jdk to be tested and
@@ -340,6 +343,7 @@ public final class ProcessTools {
 
         ArrayList<String> args = new ArrayList<>();
         args.add(javapath);
+        Collections.addAll(args, getPlatformSpecificVMArgs());
 
         args.add("-cp");
         args.add(System.getProperty("java.class.path"));
@@ -552,15 +556,6 @@ public final class ProcessTools {
         @Override
         public void destroy() {
             p.destroy();
-        }
-
-        public long pid() {
-            try {
-               return  ProcessTools.getProcessId();
-            } catch (Exception e) {
-               //shit happens,  ignore
-            }
-            return 42;
         }
 
         @Override

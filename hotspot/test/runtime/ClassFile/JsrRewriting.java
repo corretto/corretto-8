@@ -33,11 +33,12 @@
  * @bug 7185550
  * @bug 7149464
  * @key cte_test
- * @library /testlibrary
+ * @library /test/lib
  * @run main JsrRewriting
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 
 public class JsrRewriting {

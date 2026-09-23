@@ -26,11 +26,11 @@
  * @key gc
  * @bug 8017611
  * @summary Tests handling unrecognized VM options
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm TestUnrecognizedVMOptionsHandling
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestUnrecognizedVMOptionsHandling {
 

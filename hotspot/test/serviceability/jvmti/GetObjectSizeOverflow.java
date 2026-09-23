@@ -26,16 +26,17 @@
  *
  * @test
  * @bug 8027230
- * @library /testlibrary /test/lib
+ * @library /test/lib
  * @requires vm.bits == 64
- * @build ClassFileInstaller com.oracle.java.testlibrary.* GetObjectSizeOverflowAgent
+ * @build ClassFileInstaller jdk.test.lib.* GetObjectSizeOverflowAgent
  * @run main ClassFileInstaller GetObjectSizeOverflowAgent
  * @run main GetObjectSizeOverflow
  */
 
 import java.io.PrintWriter;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import jtreg.SkippedException;
 
 public class GetObjectSizeOverflow {

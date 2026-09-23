@@ -27,15 +27,15 @@
  * @summary Test to make sure that eager reclaim of humongous objects correctly clears
  * mark bitmaps at reclaim.
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 // An object that has a few references to other instances to slow down marking.
 class ObjectWithSomeRefs {

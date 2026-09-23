@@ -26,12 +26,12 @@
  * @bug 8000968
  * @key regression
  * @summary NPG: UseCompressedClassPointers asserts with ObjectAlignmentInBytes=32
- * @library /testlibrary
+ * @library /test/lib
  * @requires vm.bits == 64
  * @run main CompressedKlassPointerAndOops
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CompressedKlassPointerAndOops {
 

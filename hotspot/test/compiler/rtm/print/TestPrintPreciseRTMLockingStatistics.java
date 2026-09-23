@@ -29,7 +29,7 @@
  *          on overall aborts and locks count and count of aborts of
  *          different types. Test also verify that VM output does not
  *          contain rtm locking statistics when it should not.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestPrintPreciseRTMLockingStatistics
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
@@ -38,9 +38,10 @@
 
 import java.util.*;
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.process.*;
 import rtm.*;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;

@@ -23,13 +23,13 @@
 
 package compiler.conversions;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 /*
  * @test
  * @bug 8234617
  * @summary Test implicit narrowing conversion of primivite values at putfield.
- * @library /testlibrary
+ * @library /test/lib
  * @compile Conversion.jasm
  * @run main/othervm -Xbatch -XX:CompileCommand=dontinline,compiler.conversions.Conversion::*
  *                   compiler.conversions.TestPrimitiveConversions

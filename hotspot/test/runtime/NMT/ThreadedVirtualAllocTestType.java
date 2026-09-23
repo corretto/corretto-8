@@ -24,13 +24,14 @@
 /*
  * @test
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ThreadedVirtualAllocTestType
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail ThreadedVirtualAllocTestType
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class ThreadedVirtualAllocTestType {
@@ -42,7 +43,7 @@ public class ThreadedVirtualAllocTestType {
   public static void main(String args[]) throws Exception {
     OutputAnalyzer output;
 
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     ProcessBuilder pb = new ProcessBuilder();
 
     boolean has_nmt_detail = wb.NMTIsDetailSupported();

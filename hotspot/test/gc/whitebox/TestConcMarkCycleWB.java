@@ -25,15 +25,15 @@
  * @test TestConMarkCycleWB
  * @bug 8065579
  * @requires vm.gc=="null" | vm.gc=="G1"
- * @library /testlibrary /testlibrary/whitebox
- * @build ClassFileInstaller com.oracle.java.testlibrary.* sun.hotspot.WhiteBox TestConcMarkCycleWB
+ * @library /test/lib
+ * @build ClassFileInstaller jdk.test.lib.* sun.hotspot.WhiteBox TestConcMarkCycleWB
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:+UseG1GC TestConcMarkCycleWB
  * @summary Verifies that ConcurrentMarking-related WB works properly
  */
-import static com.oracle.java.testlibrary.Asserts.assertFalse;
-import static com.oracle.java.testlibrary.Asserts.assertTrue;
+import static jdk.test.lib.Asserts.assertFalse;
+import static jdk.test.lib.Asserts.assertTrue;
 import sun.hotspot.WhiteBox;
 
 public class TestConcMarkCycleWB {

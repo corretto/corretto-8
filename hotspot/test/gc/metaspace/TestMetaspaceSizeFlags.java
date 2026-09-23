@@ -21,16 +21,16 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 /*
  * @test TestMetaspaceSizeFlags
  * @key gc
  * @bug 8024650
  * @summary Test that metaspace size flags can be set correctly
- * @library /testlibrary
+ * @library /test/lib
  */
 public class TestMetaspaceSizeFlags {
   public static final long K = 1024L;

@@ -25,7 +25,7 @@
  * @key gc
  * @bug 8191564
  * @summary Tests that GarbageCollectorMXBeans and GC MemoryPools are created.
- * @library /testlibrary
+ * @library /test/lib
  * @requires vm.gc == null
  * @run main/othervm -XX:+UseParallelGC TestMemoryMXBeansAndPoolsPresence Parallel
  * @run main/othervm -XX:+UseSerialGC TestMemoryMXBeansAndPoolsPresence Serial
@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.lang.management.*;
 import java.util.stream.*;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 class GCBeanDescription {
     public String name;

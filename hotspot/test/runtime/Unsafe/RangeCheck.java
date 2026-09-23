@@ -25,10 +25,11 @@
  * @test
  * @bug 8001071
  * @summary Add simple range check into VM implemenation of Unsafe access methods
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.misc.Unsafe;
 
 public class RangeCheck {

@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 import sun.hotspot.WhiteBox;
 
 /**

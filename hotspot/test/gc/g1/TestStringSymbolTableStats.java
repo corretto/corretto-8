@@ -26,11 +26,11 @@
  * @bug 8027476 8027455
  * @summary Ensure that the G1TraceStringSymbolTableScrubbing prints the expected message.
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestStringSymbolTableStats {
   public static void main(String[] args) throws Exception {

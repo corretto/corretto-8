@@ -26,7 +26,7 @@
  * @summary Test string deduplication during full GC
  * @bug 8029075
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
 public class TestStringDeduplicationFullGC {

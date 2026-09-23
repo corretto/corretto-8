@@ -42,7 +42,6 @@ public class Platform {
     private static final String osName      = System.getProperty("os.name");
     private static final String dataModel   = System.getProperty("sun.arch.data.model");
     private static final String vmVersion   = System.getProperty("java.vm.version");
-    private static final String jdkDebug    = System.getProperty("jdk.debug");
     private static final String osArch      = System.getProperty("os.arch");
     private static final String userName    = System.getProperty("user.name");
     private static final String compiler    = System.getProperty("sun.management.compiler");
@@ -200,15 +199,7 @@ public class Platform {
     }
 
     public static boolean isDebugBuild() {
-        return (jdkDebug.toLowerCase().contains("debug"));
-    }
-
-    public static boolean isSlowDebugBuild() {
-        return (jdkDebug.toLowerCase().equals("slowdebug"));
-    }
-
-    public static boolean isFastDebugBuild() {
-        return (jdkDebug.toLowerCase().equals("fastdebug"));
+        return (vmVersion.toLowerCase().contains("debug"));
     }
 
     public static String getVMVersion() {
@@ -365,14 +356,4 @@ public class Platform {
         }
     }
 
-    /*
-     * This should match the #if condition in ClassListParser::load_class_from_source().
-     */
-    public static boolean areCustomLoadersSupportedForCDS() {
-        boolean isLinux = Platform.isLinux();
-        boolean is64 = Platform.is64bit();
-        boolean isSolaris = Platform.isSolaris();
-
-        return (is64 && (isLinux || isSolaris));
-    }
 }

@@ -26,10 +26,10 @@
  * @test
  * @bug 8033626
  * @summary assert(ex_map->jvms()->same_calls_as(_exceptions->jvms())) failed: all collected exceptions must come from the same place
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:-TieredCompilation -Xbatch -XX:CompileOnly=TestObjectClone::f TestObjectClone
  */
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 public class TestObjectClone implements Cloneable {
     static class A extends TestObjectClone {}

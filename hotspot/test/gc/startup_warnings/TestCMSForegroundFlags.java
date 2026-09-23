@@ -26,14 +26,14 @@
 * @key gc
 * @bug 8027132
 * @summary Test that the deprecated CMS foreground collector flags print warning messages
-* @library /testlibrary
+* @library /test/lib
 * @run main TestCMSForegroundFlags -XX:-UseCMSCompactAtFullCollection UseCMSCompactAtFullCollection
 * @run main TestCMSForegroundFlags -XX:CMSFullGCsBeforeCompaction=4 CMSFullGCsBeforeCompaction
 * @run main TestCMSForegroundFlags -XX:-UseCMSCollectionPassing UseCMSCollectionPassing
 */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class TestCMSForegroundFlags {
   public static void main(String[] args) throws Exception {

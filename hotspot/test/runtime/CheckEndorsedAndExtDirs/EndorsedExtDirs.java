@@ -25,12 +25,12 @@
  * @test
  * @bug 8064667
  * @summary Sanity test for -XX:+CheckEndorsedAndExtDirs
- * @library /testlibrary
- * @build com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build jdk.test.lib.*
  * @run main/othervm EndorsedExtDirs
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributes;

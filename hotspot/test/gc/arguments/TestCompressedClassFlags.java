@@ -21,14 +21,15 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 /*
  * @test
  * @bug 8015107
  * @summary Tests that VM prints a warning when -XX:CompressedClassSpaceSize
  *          is used together with -XX:-UseCompressedClassPointers
- * @library /testlibrary
+ * @library /test/lib
  */
 public class TestCompressedClassFlags {
     public static void main(String[] args) throws Exception {

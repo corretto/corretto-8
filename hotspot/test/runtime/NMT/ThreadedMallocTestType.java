@@ -24,13 +24,14 @@
 /*
  * @test
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build ThreadedMallocTestType
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail ThreadedMallocTestType
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 import sun.hotspot.WhiteBox;
 
 public class ThreadedMallocTestType {
@@ -43,7 +44,7 @@ public class ThreadedMallocTestType {
     final WhiteBox wb = WhiteBox.getWhiteBox();
 
     // Grab my own PID
-    String pid = Integer.toString(ProcessTools.getProcessId());
+    String pid = Long.toString(ProcessTools.getProcessId());
     ProcessBuilder pb = new ProcessBuilder();
 
     Thread allocThread = new Thread() {

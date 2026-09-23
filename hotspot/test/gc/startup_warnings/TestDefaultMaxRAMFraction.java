@@ -26,11 +26,11 @@
 * @key gc
 * @bug 8021967
 * @summary Test that the deprecated TestDefaultMaxRAMFraction flag print a warning message
-* @library /testlibrary
+* @library /test/lib
 */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 public class TestDefaultMaxRAMFraction {
   public static void main(String[] args) throws Exception {

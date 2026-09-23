@@ -27,16 +27,16 @@
  * @summary Test to make sure that eager reclaim of humongous objects work. We simply try to fill
  * up the heap with humongous objects that should be eagerly reclaimable to avoid Full GC.
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.LinkedList;
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.Asserts;
 
 class ReclaimRegionFast {
     public static final int M = 1024*1024;

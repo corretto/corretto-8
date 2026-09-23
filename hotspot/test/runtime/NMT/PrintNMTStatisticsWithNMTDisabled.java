@@ -25,10 +25,10 @@
  * @test
  * @key nmt
  * @summary Trying to enable PrintNMTStatistics should result in a warning
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class PrintNMTStatisticsWithNMTDisabled {
 

@@ -26,7 +26,7 @@
  * @bug 8054836
  * @summary Test to verify correctness of malloc tracking
  * @key nmt jcmd
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build MallocTrackingVerify
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:NativeMemoryTracking=detail MallocTrackingVerify
@@ -36,7 +36,8 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
+import jdk.test.lib.process.*;
 
 import sun.hotspot.WhiteBox;
 
@@ -51,7 +52,7 @@ public class MallocTrackingVerify {
         OutputAnalyzer output;
 
         // Grab my own PID
-        String pid = Integer.toString(ProcessTools.getProcessId());
+        String pid = Long.toString(ProcessTools.getProcessId());
         ProcessBuilder pb = new ProcessBuilder();
 
         Random random = new Random();

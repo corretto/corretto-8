@@ -25,10 +25,10 @@
  * @test
  * @bug 8006298
  * @summary Using a bool (+/-) prefix on non-bool flag should result in a useful error message
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class NonBooleanFlagWithInvalidBooleanPrefix {
   public static void main(String[] args) throws Exception {

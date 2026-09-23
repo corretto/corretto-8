@@ -26,10 +26,10 @@
  * @key gc
  * @bug 8047976
  * @summary Tests argument processing for G1ConcRefinementThreads
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.util.*;
 import java.util.regex.*;
 

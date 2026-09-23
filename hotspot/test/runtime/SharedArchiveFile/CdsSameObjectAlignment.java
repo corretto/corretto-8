@@ -26,11 +26,11 @@
  * @summary Testing CDS (class data sharing) using varying object alignment.
  *          Using same object alignment for each dump/load pair
  * @requires vm.bits == 64
- * @library /testlibrary
+ * @library /test/lib
  * @run main CdsSameObjectAlignment
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class CdsSameObjectAlignment {
     public static void main(String[] args) throws Exception {

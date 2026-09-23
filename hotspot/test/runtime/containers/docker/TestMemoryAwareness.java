@@ -26,18 +26,18 @@
  * @test
  * @bug 8146115 8292083
  * @summary Test JVM's memory resource awareness when running inside docker container
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build AttemptOOM sun.hotspot.WhiteBox PrintContainerInfo CheckOperatingSystemMXBean
  * @run driver ClassFileInstaller -jar whitebox.jar sun.hotspot.WhiteBox sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run driver TestMemoryAwareness
  */
 
-import com.oracle.java.testlibrary.Common;
-import com.oracle.java.testlibrary.DockerRunOptions;
-import com.oracle.java.testlibrary.DockerTestUtils;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.containers.docker.Common;
+import jdk.test.lib.containers.docker.DockerRunOptions;
+import jdk.test.lib.containers.docker.DockerTestUtils;
+import jdk.test.lib.process.OutputAnalyzer;
 
-import com.oracle.java.testlibrary.Asserts;
+import jdk.test.lib.Asserts;
 
 public class TestMemoryAwareness {
     private static final String imageName = Common.imageName("memory");

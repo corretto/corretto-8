@@ -21,10 +21,10 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.Platform;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.OrPredicate;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.Platform;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.OrPredicate;
 
 /**
  * Generic test case for SHA-related options targeted to X86 CPUs that don't

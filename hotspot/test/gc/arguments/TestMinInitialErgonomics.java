@@ -26,7 +26,7 @@
  * @key gc
  * @bug 8006088
  * @summary Test ergonomics decisions related to minimum and initial heap size.
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build TestMinInitialErgonomics TestMaxHeapSizeTools
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm TestMinInitialErgonomics

@@ -25,7 +25,7 @@
  * @test CgroupSubsystemFactory
  * @bug 8287107
  * @requires os.family == "linux"
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build CgroupSubsystemFactory
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
@@ -41,8 +41,8 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import com.oracle.java.testlibrary.Asserts;
-import com.oracle.java.testlibrary.Utils;
+import jdk.test.lib.Asserts;
+import jdk.test.lib.Utils;
 import sun.hotspot.WhiteBox;
 
 /*

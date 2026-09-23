@@ -24,7 +24,7 @@
 /*
  * @test SetForceInlineMethodTest
  * @bug 8006683 8007288 8022832
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build SetForceInlineMethodTest
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:CompileCommand=compileonly,SimpleTestCase$Helper::* SetForceInlineMethodTest

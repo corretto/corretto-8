@@ -27,7 +27,7 @@
  * @bug 8031320
  * @summary Verify that RTMTotalCountIncrRate option affects
  *          RTM locking statistics.
- * @library /testlibrary /testlibrary/whitebox /compiler/testlibrary
+ * @library /test/lib /compiler/testlibrary
  * @build TestRTMTotalCountIncrRate
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
@@ -37,9 +37,10 @@
 import sun.misc.Unsafe;
 import java.util.List;
 
-import com.oracle.java.testlibrary.*;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.*;
+import jdk.test.lib.cli.CommandLineOptionTest;
+import jdk.test.lib.cli.predicate.AndPredicate;
+import jdk.test.lib.process.*;
 import rtm.*;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;

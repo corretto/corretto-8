@@ -24,13 +24,13 @@
 /*
  * @test TestOnOutOfMemoryError
  * @summary Test using -XX:OnOutOfMemoryError=<cmd>
- * @library /testlibrary
- * @build TestOnOutOfMemoryError com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build TestOnOutOfMemoryError jdk.test.lib.*
  * @run main TestOnOutOfMemoryError
  * @bug 8078470
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestOnOutOfMemoryError {
 

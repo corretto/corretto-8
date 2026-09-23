@@ -21,8 +21,8 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;

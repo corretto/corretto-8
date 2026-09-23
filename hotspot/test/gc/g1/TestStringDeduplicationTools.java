@@ -29,7 +29,7 @@ import java.lang.management.*;
 import java.lang.reflect.*;
 import java.security.*;
 import java.util.*;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import sun.misc.*;
 
 class TestStringDeduplicationTools {

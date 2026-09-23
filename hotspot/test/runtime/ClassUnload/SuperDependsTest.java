@@ -27,7 +27,7 @@
  * @summary Create ClassLoader dependency from initiating loader to class loader through subclassing
  * @modules java.base/jdk.internal.misc
  *          java.compiler
- * @library /testlibrary /testlibrary/whitebox /runtime/testlibrary
+ * @library /test/lib /runtime/testlibrary
  * @build sun.hotspot.WhiteBox
  * @compile p2/c2.java MyDiffClassLoader.java
  * @run main ClassFileInstaller sun.hotspot.WhiteBox

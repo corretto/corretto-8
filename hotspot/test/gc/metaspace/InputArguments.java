@@ -21,8 +21,6 @@
  * questions.
  */
 
-package com.oracle.java.testlibrary;
-
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.List;

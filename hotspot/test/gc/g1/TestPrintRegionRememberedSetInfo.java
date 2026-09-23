@@ -26,12 +26,12 @@
  * @key gc
  * @bug 8014240
  * @summary Test output of G1PrintRegionRememberedSetInfo
- * @library /testlibrary
+ * @library /test/lib
  * @run main TestPrintRegionRememberedSetInfo
  * @author thomas.schatzl@oracle.com
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.Arrays;

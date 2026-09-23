@@ -23,15 +23,15 @@
 
 import java.util.List;
 import java.lang.management.*;
-import com.oracle.java.testlibrary.*;
-import static com.oracle.java.testlibrary.Asserts.*;
+import jdk.test.lib.*;
+import static jdk.test.lib.Asserts.*;
 
 /* @test TestMetaspaceMemoryPool
  * @bug 8000754
  * @summary Tests that a MemoryPoolMXBeans is created for metaspace and that a
  *          MemoryManagerMXBean is created.
  * @requires vm.bits == 64
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:-UseCompressedOops TestMetaspaceMemoryPool
  * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:-UseCompressedOops -XX:MaxMetaspaceSize=60m TestMetaspaceMemoryPool
  * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:+UseCompressedOops -XX:+UseCompressedClassPointers TestMetaspaceMemoryPool

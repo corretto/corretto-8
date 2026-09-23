@@ -27,14 +27,14 @@
  * @summary Ensure that various values of worker threads/concurrent
  * refinement threads do not crash the VM.
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestSummarizeRSetStatsThreads {
 

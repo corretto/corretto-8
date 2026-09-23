@@ -21,14 +21,14 @@
  * questions.
  */
 
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.cli.CommandLineOptionTest;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.cli.CommandLineOptionTest;
 
 /**
  * @test
  * @bug 8031323
  * @summary Verify SurvivorAlignmentInBytes option processing.
- * @library /testlibrary
+ * @library /test/lib
  * @requires vm.opt.SurvivorAlignmentInBytes == null
  *           & vm.opt.ObjectAlignmentInBytes == null
  *           & vm.opt.UnlockExperimentalVMOptions == null

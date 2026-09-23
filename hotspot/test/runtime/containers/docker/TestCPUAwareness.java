@@ -25,17 +25,17 @@
 /*
  * @test
  * @summary Test JVM's CPU resource awareness when running inside docker container
- * @library /testlibrary /testlibrary/whitebox
+ * @library /test/lib
  * @build sun.hotspot.WhiteBox PrintContainerInfo CheckOperatingSystemMXBean
  * @run driver ClassFileInstaller -jar whitebox.jar sun.hotspot.WhiteBox sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run driver TestCPUAwareness
  */
 
 import java.util.List;
-import com.oracle.java.testlibrary.OutputAnalyzer;
-import com.oracle.java.testlibrary.Common;
-import com.oracle.java.testlibrary.DockerTestUtils;
-import com.oracle.java.testlibrary.DockerRunOptions;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.containers.docker.Common;
+import jdk.test.lib.containers.docker.DockerTestUtils;
+import jdk.test.lib.containers.docker.DockerRunOptions;
 
 public class TestCPUAwareness {
 private static final String imageName = Common.imageName("cpu");

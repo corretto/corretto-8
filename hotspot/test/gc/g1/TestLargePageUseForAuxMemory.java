@@ -25,7 +25,7 @@
  * @test TestLargePageUseForAuxMemory.java
  * @bug 8058354
  * @key gc
- * @library /testlibrary /testlibrary/whitebox /test/lib
+ * @library /test/lib
  * @requires (vm.gc=="G1" | vm.gc=="null") & vm.debug
  * @build TestLargePageUseForAuxMemory
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
@@ -34,7 +34,7 @@
  * @run main/othervm -Xbootclasspath/a:. -XX:+UseG1GC -XX:+WhiteBoxAPI -XX:+IgnoreUnrecognizedVMOptions -XX:+UseLargePages TestLargePageUseForAuxMemory
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 import jtreg.SkippedException;
 import sun.hotspot.WhiteBox;
 

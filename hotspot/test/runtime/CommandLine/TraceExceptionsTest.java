@@ -25,10 +25,10 @@
  * @test
  * @bug 8048933
  * @summary TraceExceptions output should have the exception message - useful for ClassNotFoundExceptions especially
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TraceExceptionsTest {
     public static void main(String[] args) throws Exception {

@@ -25,10 +25,10 @@
  * @test
  * @bug 8006298
  * @summary Setting a flag to an invalid value should print a useful error message
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class FlagWithInvalidValue {
   public static void main(String[] args) throws Exception {

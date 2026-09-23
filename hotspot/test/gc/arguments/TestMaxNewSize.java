@@ -27,7 +27,7 @@
  * @bug 7057939
  * @summary Make sure that MaxNewSize always has a useful value after argument
  * processing.
- * @library /testlibrary
+ * @library /test/lib
  * @build TestMaxNewSize
  * @run main TestMaxNewSize -XX:+UseSerialGC
  * @run main TestMaxNewSize -XX:+UseParallelGC
@@ -44,7 +44,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class TestMaxNewSize {
 

@@ -26,9 +26,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
 
-import com.oracle.java.testlibrary.ExitCode;
-import com.oracle.java.testlibrary.cli.*;
-import com.oracle.java.testlibrary.cli.predicate.AndPredicate;
+import jdk.test.lib.process.ExitCode;
+import jdk.test.lib.cli.*;
+import jdk.test.lib.cli.predicate.AndPredicate;
 import rtm.predicate.SupportedCPU;
 import rtm.predicate.SupportedVM;
 

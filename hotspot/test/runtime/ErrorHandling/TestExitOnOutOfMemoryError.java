@@ -24,14 +24,14 @@
 /*
  * @test TestExitOnOutOfMemoryError
  * @summary Test using -XX:ExitOnOutOfMemoryError
- * @library /testlibrary
- * @build com.oracle.java.testlibrary.*
+ * @library /test/lib
+ * @build jdk.test.lib.*
  * @run driver TestExitOnOutOfMemoryError
  * @bug 8138745
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestExitOnOutOfMemoryError {
 

@@ -25,7 +25,7 @@
  * @test
  * @bug 8141551
  * @summary C2 can not handle returns with inccompatible interface arrays
- * @library /testlibrary /testlibrary/whitebox/
+ * @library /test/lib/
  * @build sun.hotspot.WhiteBox
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission

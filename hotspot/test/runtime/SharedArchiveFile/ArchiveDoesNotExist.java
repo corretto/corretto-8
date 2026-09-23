@@ -27,11 +27,11 @@
  *          attempting to use CDS archive. JVM should exit gracefully
  *          when sharing mode is ON, and continue w/o sharing if sharing
  *          mode is AUTO.
- * @library /testlibrary
+ * @library /test/lib
  * @run main ArchiveDoesNotExist
  */
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.io.File;
 
 public class ArchiveDoesNotExist {

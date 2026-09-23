@@ -27,11 +27,11 @@
  * @summary Ensure that the PrintGCDetails output for a minor GC with G1
  * includes the expected necessary messages.
  * @key gc
- * @library /testlibrary
+ * @library /test/lib
  */
 
-import com.oracle.java.testlibrary.ProcessTools;
-import com.oracle.java.testlibrary.OutputAnalyzer;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
 public class TestGCLogMessages {
 

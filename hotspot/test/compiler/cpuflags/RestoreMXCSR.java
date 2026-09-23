@@ -25,10 +25,10 @@
  * @test
  * @bug 8020433
  * @summary Crash when using -XX:+RestoreMXCSROnJNICalls
- * @library /testlibrary
+ * @library /test/lib
  *
  */
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 
 public class RestoreMXCSR {
   public static void main(String[] args) throws Exception {

@@ -25,12 +25,12 @@
 
 /*
  * @test
- * @library /testlibrary
+ * @library /test/lib
  * @run main/othervm -Xbatch -XX:+IgnoreUnrecognizedVMOptions -XX:+EliminateAutoBox
  *                   -XX:CompileOnly=::valueOf,::byteValue,::shortValue,::testUnsignedByte,::testUnsignedShort
  *                   UnsignedLoads
  */
-import static com.oracle.java.testlibrary.Asserts.assertEQ;
+import static jdk.test.lib.Asserts.assertEQ;
 
 public class UnsignedLoads {
     public static int testUnsignedByte() {

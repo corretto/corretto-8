@@ -21,7 +21,7 @@
  * questions.
  */
 import java.io.PrintWriter;
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.*;
 
 /*
  * Test to redefine java/lang/Object and verify that it doesn't crash on vtable
@@ -32,7 +32,7 @@ import com.oracle.java.testlibrary.*;
  * @test
  * @bug 8005056
  * @bug 8009728
- * @library /testlibrary
+ * @library /test/lib
  * @build Agent
  * @run main ClassFileInstaller Agent
  * @run main TestRedefineObject

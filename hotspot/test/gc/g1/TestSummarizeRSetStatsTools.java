@@ -29,7 +29,7 @@ import sun.management.ManagementFactoryHelper;
 import com.sun.management.HotSpotDiagnosticMXBean;
 import com.sun.management.VMOption;
 
-import com.oracle.java.testlibrary.*;
+import jdk.test.lib.process.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.lang.Thread;
