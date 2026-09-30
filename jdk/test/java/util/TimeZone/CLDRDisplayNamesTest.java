@@ -23,7 +23,7 @@
 
 /*
  * @test
- * @bug 8005471 8381379
+ * @bug 8005471 8381379 8390388
  * @run main/othervm -Djava.locale.providers=CLDR CLDRDisplayNamesTest
  * @summary Make sure that localized time zone names of CLDR are used
  * if specified.
@@ -81,8 +81,7 @@ public class CLDRDisplayNamesTest {
         {ZonedDateTime.of(2026, 4, 5, 0, 0, 0, 0, ZoneId.of("Eire")), "Irish Summer Time"},
         {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("Eire")), "Greenwich Mean Time"},
         {ZonedDateTime.of(2026, 4, 5, 0, 0, 0, 0, ZoneId.of("America/Vancouver")), "Pacific Daylight Time"},
-        // This changes to "Pacific Daylight Time" once tzdata adopts -07 year round.
-        {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Vancouver")), "Pacific Standard Time"},
+        {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Vancouver")), "Pacific Daylight Time"},
     };
 
     public static void main(String[] args) {
