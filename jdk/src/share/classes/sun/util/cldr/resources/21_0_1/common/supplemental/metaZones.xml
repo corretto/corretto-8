@@ -638,7 +638,7 @@
 				<usesMetazone mzone="Atlantic"/>
 			</timezone>
 			<timezone type="America/Rainy_River">
-				<usesMetazone mzone="America_Central"/>
+				<usesMetazone mzone="America_Central" stdOffset="-06" dstOffset="-05"/>
 			</timezone>
 			<timezone type="America/Rankin_Inlet">
 				<usesMetazone to="2000-10-29 07:00" mzone="America_Central"/>
@@ -740,7 +740,7 @@
 				<usesMetazone mzone="America_Pacific"/>
 			</timezone>
 			<timezone type="America/Winnipeg">
-				<usesMetazone mzone="America_Central"/>
+				<usesMetazone mzone="America_Central" stdOffset="-06" dstOffset="-05"/>
 			</timezone>
 			<timezone type="America/Yakutat">
 				<usesMetazone to="1983-11-30 09:00" mzone="Yukon"/>
