@@ -2,6 +2,33 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.504.04.1
+Release Date: September 29, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.504.04.1:
+
+| Issue Name  | Platform | Description                                                                                      | Link                                                                                                                                                                                                                                                                                                                  |
+|-------------|----------|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| JDK-8388214 | All      | (tz) Update Timezone Data to 2026c                                                               | Main: [JDK-8388214](https://bugs.openjdk.org/browse/JDK-8388214)<br>&nbsp;<br>Related: [8381379](https://bugs.openjdk.org/browse/JDK-8381379), [8390388](https://bugs.openjdk.org/browse/JDK-8390388), [8390380](https://bugs.openjdk.org/browse/JDK-8390380), [8391256](https://bugs.openjdk.org/browse/JDK-8391256) |
+| JDK-8392377 | All      | (tz) Update Timezone Data to 2026d                                                               | Main: [JDK-8392377](https://bugs.openjdk.org/browse/JDK-8392377)<br>&nbsp;<br>Related: [8392730](https://bugs.openjdk.org/browse/JDK-8392730), [8392519](https://bugs.openjdk.org/browse/JDK-8392519)                                                                                                                 |
+| JDK-8386991 | AL2023   | Insets are incorrectly set in newer Gnome versions                                               | [JDK-8386991](https://bugs.openjdk.org/browse/JDK-8386991)                                                                                                                                                                                                                                                            |
+| JDK-8305825 | AL2023   | getBounds API returns wrong value resulting in multiple Regression Test Failures on Ubuntu 23.04 | [JDK-8305825](https://bugs.openjdk.org/browse/JDK-8305825)                                                                                                                                                                                                                                                            |
+
 ## Corretto version: 8.504.01.1
 Release Date: August 18, 2026
 
