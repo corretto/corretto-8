@@ -110,6 +110,8 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
                 ZoneOffset explicitDstOffset = CLDR_EXPLICIT_DST_OFFSETS.get(zid);
                 for (Locale locale : locales) {
                     boolean useDaylightName = isDST;
+                    // JDK 8 does not use CLDR by default, so apply this rule only
+                    // when CLDR supplies the names for the locale.
                     if (explicitDstOffset != null
                             && LocaleProviderAdapter.getAdapter(TimeZoneNameProvider.class, locale)
                                     .getAdapterType() == LocaleProviderAdapter.Type.CLDR) {
