@@ -635,6 +635,8 @@ readCEN(jzfile *zip, jint knownTotal)
     zip->locpos = cenpos - cenoff;
     if (zip->locpos < 0)
         ZIP_FORMAT_ERROR("invalid END header (bad central directory offset)");
+    if (cenlen + ENDHDR >= INT_MAX)
+        ZIP_FORMAT_ERROR("invalid END header (central directory size too large)");
 
 #ifdef USE_MMAP
     if (zip->usemmap) {
