@@ -50,7 +50,7 @@ America/Indiana/Tell_City CST CDT
 America/Indiana/Vevay EST EDT
 America/Indiana/Vincennes EST EDT
 America/Indiana/Winamac EST EDT
-America/Inuvik MST MDT
+America/Inuvik CST
 America/Iqaluit EST EDT
 America/Jamaica EST
 America/Juneau AKST AKDT
