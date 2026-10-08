@@ -30,7 +30,7 @@
  * @test
  * @bug 7031830
  * @summary bad_record_mac failure on TLSv1.2 enabled connection with SSLEngine
- * @library /lib/security
+ * @library /lib/security /javax/net/ssl/templates
  * @run main/othervm SSLEngineBadBufferArrayAccess
  */
 
@@ -87,12 +87,13 @@ import java.nio.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class SSLEngineBadBufferArrayAccess {
+public class SSLEngineBadBufferArrayAccess extends SSLContextTemplate {
 
     /*
      * Enables logging of the SSL/TLS operations.
      */
-    private static boolean logging = true;
+    private final static boolean logging = Boolean.parseBoolean(
+            System.getProperty("test.logging", "true"));
 
     /*
      * Enables the JSSE system debugging system property:
@@ -103,8 +104,9 @@ public class SSLEngineBadBufferArrayAccess {
      * including specific handshake messages, and might be best examined
      * after gaining some familiarity with this application.
      */
-    private static boolean debug = false;
-    private SSLContext sslc;
+    private final static boolean debug = Boolean.getBoolean("test.debug");
+    private final String PROTOCOL;
+
     private SSLEngine serverEngine;     // server-side SSLEngine
 
     private final byte[] serverMsg = "Hi there Client, I'm a Server".getBytes();
@@ -121,20 +123,6 @@ public class SSLEngineBadBufferArrayAccess {
      */
     private ByteBuffer cTOs;            // "reliable" transport client->server
     private ByteBuffer sTOc;            // "reliable" transport server->client
-
-    /*
-     * The following is to set up the keystores/trust material.
-     */
-    private static final String pathToStores = "../../../../javax/net/ssl/etc";
-    private static final String keyStoreFile = "keystore";
-    private static final String trustStoreFile = "truststore";
-    private static final String passwd = "passphrase";
-    private static String keyFilename =
-            System.getProperty("test.src", ".") + "/" + pathToStores
-            + "/" + keyStoreFile;
-    private static String trustFilename =
-            System.getProperty("test.src", ".") + "/" + pathToStores
-            + "/" + trustStoreFile;
 
     /*
      * Is the server ready to serve?
@@ -154,7 +142,7 @@ public class SSLEngineBadBufferArrayAccess {
     /*
      * Main entry point for this test.
      */
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         if (debug) {
             System.setProperty("javax.net.debug", "all");
         }
@@ -163,7 +151,7 @@ public class SSLEngineBadBufferArrayAccess {
         SecurityUtils.removeFromDisabledTlsAlgs("TLSv1", "TLSv1.1");
 
         String [] protocols = new String [] {
-            "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2" };
+            "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"};
 
         for (String protocol : protocols) {
             /*
@@ -182,32 +170,18 @@ public class SSLEngineBadBufferArrayAccess {
     /*
      * Create an initialized SSLContext to use for these tests.
      */
-    public SSLEngineBadBufferArrayAccess(String protocol) throws Exception {
+    public SSLEngineBadBufferArrayAccess(String protocol) {
+        PROTOCOL = protocol;
+    }
 
-        KeyStore ks = KeyStore.getInstance("JKS");
-        KeyStore ts = KeyStore.getInstance("JKS");
+    @Override
+    protected ContextParameters getServerContextParameters() {
+        return new ContextParameters(PROTOCOL, "PKIX", "NewSunX509");
+    }
 
-        char[] passphrase = "passphrase".toCharArray();
-
-        try (FileInputStream fis = new FileInputStream(keyFilename)) {
-            ks.load(fis, passphrase);
-        }
-
-        try (FileInputStream fis = new FileInputStream(trustFilename)) {
-            ts.load(fis, passphrase);
-        }
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, passphrase);
-
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ts);
-
-        SSLContext sslCtx = SSLContext.getInstance(protocol);
-
-        sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-
-        sslc = sslCtx;
+    @Override
+    protected ContextParameters getClientContextParameters() {
+        return new ContextParameters(PROTOCOL, "PKIX", "NewSunX509");
     }
 
     /*
@@ -230,6 +204,7 @@ public class SSLEngineBadBufferArrayAccess {
     private void runTest(boolean direct) throws Exception {
         boolean serverClose = direct;
 
+        System.out.println("Running test serverClose = " + serverClose);
         ServerSocket serverSocket = new ServerSocket(0);
         serverPort = serverSocket.getLocalPort();
 
@@ -242,7 +217,7 @@ public class SSLEngineBadBufferArrayAccess {
         Socket socket;
         try {
             serverSocket.setSoTimeout(30000);
-            socket = (Socket) serverSocket.accept();
+            socket = serverSocket.accept();
         } catch (SocketTimeoutException ste) {
             serverSocket.close();
 
@@ -325,7 +300,7 @@ public class SSLEngineBadBufferArrayAccess {
         byte[] outbound = new byte[8192];
 
         while (!isEngineClosed(serverEngine)) {
-            int len = 0;
+            int len;
 
             // Inbound data
             log("================");
@@ -334,7 +309,14 @@ public class SSLEngineBadBufferArrayAccess {
             try {
                 len = is.read(inbound);
                 if (len == -1) {
-                    throw new Exception("Unexpected EOF");
+                    logSocketStatus(socket);
+                    if (socket.isClosed()
+                            || socket.isOutputShutdown()) {
+                        log("Client socket was closed or shutdown output");
+                        break;
+                    } else {
+                        throw new Exception("Unexpected EOF");
+                    }
                 }
                 cTOs.put(inbound, 0, len);
             } catch (SocketTimeoutException ste) {
@@ -370,16 +352,13 @@ public class SSLEngineBadBufferArrayAccess {
                 closed = true;
 
                 /*
-                 * We'll alternate initiatating the shutdown.
+                 * We'll alternate initiating the shutdown.
                  * When the server initiates, it will take one more
                  * loop, but tests the orderly shutdown.
                  */
                 if (serverClose) {
                     serverEngine.closeOutbound();
                 }
-            }
-
-            if (closed && isEngineClosed(serverEngine)) {
                 serverIn.flip();
 
                 /*
@@ -401,6 +380,7 @@ public class SSLEngineBadBufferArrayAccess {
                     }
                 }
                 serverIn.compact();
+                break;
             }
         }
     }
@@ -448,7 +428,7 @@ public class SSLEngineBadBufferArrayAccess {
             return;
         }
 
-        SSLSocketFactory sslsf = sslc.getSocketFactory();
+        SSLSocketFactory sslsf = createClientSSLContext().getSocketFactory();
         try (SSLSocket sslSocket = (SSLSocket)sslsf.createSocket()) {
             try {
                 sslSocket.connect(
@@ -490,6 +470,7 @@ public class SSLEngineBadBufferArrayAccess {
         InputStream is = sslSocket.getInputStream();
 
         // write(byte[]) goes in one shot.
+        System.out.println("writing message to server.");
         os.write(clientMsg);
 
         byte[] inbound = new byte[2048];
@@ -497,14 +478,16 @@ public class SSLEngineBadBufferArrayAccess {
 
         int len;
         while ((len = is.read(inbound, pos, 2048 - pos)) != -1) {
+            System.out.printf("Client read %d bytes. Waiting for %d from server.%n", len, serverMsg.length);
             pos += len;
             // Let the client do the closing.
             if ((pos == serverMsg.length) && !serverClose) {
+                System.out.println("Closing the socket");
                 sslSocket.close();
                 break;
             }
         }
-
+        System.out.println("Read everything we're going to, I guess.");
         if (pos != serverMsg.length) {
             throw new Exception("Client:  Data length error");
         }
@@ -525,7 +508,7 @@ public class SSLEngineBadBufferArrayAccess {
          * Configure the serverEngine to act as a server in the SSL/TLS
          * handshake.
          */
-        serverEngine = sslc.createSSLEngine();
+        serverEngine = createServerSSLContext().createSSLEngine();
         serverEngine.setUseClientMode(false);
         serverEngine.getNeedClientAuth();
     }
@@ -585,6 +568,15 @@ public class SSLEngineBadBufferArrayAccess {
 
     private static boolean isEngineClosed(SSLEngine engine) {
         return (engine.isOutboundDone() && engine.isInboundDone());
+    }
+
+    private static void logSocketStatus(Socket socket) {
+        log("##### " + socket + " #####");
+        log("isBound: " + socket.isBound());
+        log("isConnected: " + socket.isConnected());
+        log("isClosed: " + socket.isClosed());
+        log("isInputShutdown: " + socket.isInputShutdown());
+        log("isOutputShutdown: " + socket.isOutputShutdown());
     }
 
     /*
