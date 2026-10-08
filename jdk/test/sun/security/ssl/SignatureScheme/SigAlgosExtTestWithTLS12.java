@@ -28,7 +28,9 @@
  *     This test only covers TLS 1.2.
  *
  * @library /test/lib
+ *          /lib/testlibrary
  *          /javax/net/ssl/templates
+ * @build jdk.testlibrary.Utils
  *
  * @run main/othervm
  *     -Djdk.tls.server.SignatureSchemes=ecdsa_secp384r1_sha384
@@ -53,6 +55,8 @@
 import javax.net.ssl.*;
 import java.nio.ByteBuffer;
 import java.util.*;
+
+import jdk.testlibrary.Utils;
 
 public class SigAlgosExtTestWithTLS12 extends SSLEngineTemplate {
 
@@ -214,7 +218,7 @@ public class SigAlgosExtTestWithTLS12 extends SSLEngineTemplate {
                 // Slice the buffer such that it contains the entire
                 // handshake message (less the handshake header).
                 int bufPos = tlsRecord.position();
-                ByteBuffer buf = slice(tlsRecord, bufPos, msgLen);
+                ByteBuffer buf = Utils.slice(tlsRecord, bufPos, msgLen);
 
                 // Replace the signature scheme with an unknown value
                 twistSigSchemesCertReq(buf, (short) 0x0000);
@@ -230,18 +234,6 @@ public class SigAlgosExtTestWithTLS12 extends SSLEngineTemplate {
         }
 
         tlsRecord.reset();
-    }
-
-    /* Implementation of ByteBuffer.slice(int, int) for JDK11 */
-    private static final ByteBuffer slice(ByteBuffer buffer, int index, int length) {
-        final int limit = buffer.limit();
-        final int position = buffer.position();
-        buffer.position(index);
-        buffer.limit(index + length);
-        ByteBuffer slice = buffer.slice();
-        buffer.limit(limit);
-        buffer.position(position);
-        return slice;
     }
 
     /**
