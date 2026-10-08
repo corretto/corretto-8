@@ -617,8 +617,11 @@ readCEN(jzfile *zip, jint knownTotal)
              * (i.e., >= 2^63), or total values that do not fit in jint, are
              * not supported and indicate a corrupt or invalid zip file.
              */
-            if (cenlen < 0 || cenoff < 0 || total64 < 0 || total64 > INT_MAX) {
+            if (cenlen < 0 || cenoff < 0) {
                 ZIP_FORMAT_ERROR("Zip64 END values exceed supported size");
+            }
+            if (total64 < 0 || total64 > INT_MAX || total64 > cenlen / CENHDR) {
+                ZIP_FORMAT_ERROR("invalid END header (total entries count too large)");
             }
             total = (jint)total64;
             endpos = end64pos;
