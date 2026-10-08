@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -923,7 +923,7 @@ public class ZipFileSystem extends FileSystem {
 
     private volatile boolean isOpen = true;
     private final SeekableByteChannel ch; // channel to the zipfile
-    final byte[]  cen;     // CEN & ENDHDR
+    final byte[]  cen;     // CEN
     private END  end;
     private long locpos;   // position of first LOC header (usually 0)
 
@@ -1085,15 +1085,15 @@ public class ZipFileSystem extends FileSystem {
         if (locpos < 0)
             zerror("invalid END header (bad central directory offset)");
 
-        // read in the CEN and END
-        byte[] cen = new byte[(int)(end.cenlen + ENDHDR)];
-        if (readNBytesAt(cen, 0, cen.length, cenpos) != end.cenlen + ENDHDR) {
+        // read in the CEN
+        byte[] cen = new byte[(int)(end.cenlen)];
+        if (readNBytesAt(cen, 0, cen.length, cenpos) != end.cenlen) {
             zerror("read CEN tables failed");
         }
         // Iterate through the entries in the central directory
         inodes = new LinkedHashMap<>(end.centot + 1);
         int pos = 0;
-        int limit = cen.length - ENDHDR;
+        int limit = cen.length;
         while (pos < limit) {
             if (!cenSigAt(cen, pos))
                 zerror("invalid CEN header (bad signature)");
@@ -1113,7 +1113,7 @@ public class ZipFileSystem extends FileSystem {
             // skip ext and comment
             pos += (CENHDR + nlen + elen + clen);
         }
-        if (pos + ENDHDR != cen.length) {
+        if (pos != cen.length) {
             zerror("invalid CEN header (bad header size)");
         }
         buildNodeTree();
