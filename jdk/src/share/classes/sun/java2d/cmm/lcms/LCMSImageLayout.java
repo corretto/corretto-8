@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -349,7 +349,8 @@ class LCMSImageLayout {
 
             ComponentSampleModel csm = (ComponentSampleModel)r.getSampleModel();
 
-            l.pixelType = CHANNELS_SH(br.getNumBands()) | BYTES_SH(1);
+            int numBands = br.getNumBands();
+            l.pixelType = CHANNELS_SH(numBands) | BYTES_SH(1);
 
             int[] bandOffsets = csm.getBandOffsets();
             BandOrder order = BandOrder.getBandOrder(bandOffsets);
@@ -358,7 +359,7 @@ class LCMSImageLayout {
             switch (order) {
                 case INVERTED:
                     l.pixelType |= DOSWAP;
-                    firstBand  = csm.getNumBands() - 1;
+                    firstBand  = numBands - 1;
                     break;
                 case DIRECT:
                     // do nothing
@@ -372,11 +373,14 @@ class LCMSImageLayout {
             l.nextPixelOffset = br.getPixelStride();
 
             l.offset = br.getDataOffset(firstBand);
-            l.dataArray = br.getDataStorage();
             l.dataType = DT_BYTE;
+            byte[] data = br.getDataStorage();
+            l.dataArray = data;
+            l.dataArrayLength = data.length;
 
             l.width = br.getWidth();
             l.height = br.getHeight();
+            l.verify();
 
             if (l.nextRowOffset == l.width * br.getPixelStride()) {
                 l.imageAtOnce = true;
