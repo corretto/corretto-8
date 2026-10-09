@@ -55,7 +55,7 @@ import org.testng.annotations.Test;
 
 /*
  * @test
- * @bug 8081022 8151876 8166875 8390388 8388214 8392519
+ * @bug 8081022 8151876 8166875 8390388 8388214 8392519 8393344
  * @key randomness
  */
 
@@ -69,10 +69,14 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
     private static final Map<String, ZoneOffset> CLDR_EXPLICIT_DST_OFFSETS;
     static {
         Map<String, ZoneOffset> offsets = new HashMap<>();
+        offsets.put("Africa/Windhoek", ZoneOffset.of("+02:00"));
         offsets.put("America/Edmonton", ZoneOffset.of("-06:00"));
         offsets.put("America/Inuvik", ZoneOffset.of("-06:00"));
+        offsets.put("America/Rainy_River", ZoneOffset.of("-05:00"));
         offsets.put("America/Yellowknife", ZoneOffset.of("-06:00"));
         offsets.put("America/Vancouver", ZoneOffset.of("-07:00"));
+        offsets.put("America/Winnipeg", ZoneOffset.of("-05:00"));
+        offsets.put("Canada/Central", ZoneOffset.of("-05:00"));
         offsets.put("Canada/Mountain", ZoneOffset.of("-06:00"));
         offsets.put("Canada/Pacific", ZoneOffset.of("-07:00"));
         offsets.put("Europe/Dublin", ZoneOffset.of("+01:00"));
