@@ -629,17 +629,21 @@ readCEN(jzfile *zip, jint knownTotal)
         }
     }
 
-    if (cenlen > endpos)
+    // Validate END header
+    if (cenlen > endpos) {
         ZIP_FORMAT_ERROR("invalid END header (bad central directory size)");
+    }
     cenpos = endpos - cenlen;
 
     /* Get position of first local file (LOC) header, taking into
      * account that there may be a stub prefixed to the zip file. */
     zip->locpos = cenpos - cenoff;
-    if (zip->locpos < 0)
+    if (zip->locpos < 0) {
         ZIP_FORMAT_ERROR("invalid END header (bad central directory offset)");
-    if (cenlen + ENDHDR >= INT_MAX)
+    }
+    if (cenlen + ENDHDR >= INT_MAX) {
         ZIP_FORMAT_ERROR("invalid END header (central directory size too large)");
+    }
 
 #ifdef USE_MMAP
     if (zip->usemmap) {
