@@ -22,8 +22,7 @@
  */
 
 /* @test
- * @bug 8272746
- * @summary Verify that ZipFile rejects files with CEN sizes exceeding the implementation limit
+ * @summary Verify that ZipFileSystem rejects files with CEN sizes exceeding the implementation limit
  * @library /lib/testlibrary
  * @build jdk.testlibrary.Utils
  * @build jdk.testlibrary.ZipUtils
@@ -39,11 +38,11 @@ import jdk.testlibrary.Utils;
 import jdk.testlibrary.ZipUtils;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import java.util.zip.ZipError;
 
 import static org.testng.Assert.*;
 import static jdk.testlibrary.ZipUtils.*;
@@ -54,7 +53,7 @@ import static jdk.testlibrary.ZipUtils.*;
  * fast with much less resources.
  *
  * While the CEN in these files are zero-filled and the produced ZIPs are technically
- * invalid, the CEN is never actually read by ZipFile since it does
+ * invalid, the CEN is never actually read by ZipFileSystem since it does
  * 'End of central directory record' (END header) validation before reading the CEN.
  */
 public class EndOfCenValidation {
@@ -65,8 +64,8 @@ public class EndOfCenValidation {
     static final Path BAD_CEN_OFFSET_ZIP = Paths.get("bad-cen-offset.zip");
     static final Path BAD_ENTRY_COUNT_ZIP = Paths.get("bad-entry-count.zip");
 
-    // Maximum allowed CEN size allowed by ZipFile
-    static final int MAX_CEN_SIZE = Integer.MAX_VALUE - ZipFile.ENDHDR - 1;
+    // Maximum allowed CEN size allowed by ZipFileSystem
+    static final int MAX_CEN_SIZE = Integer.MAX_VALUE - 8;
 
     /**
      * Delete big files after test, in case the file system did not support sparse files.
@@ -111,9 +110,7 @@ public class EndOfCenValidation {
      */
     @Test
     public void shouldRejectInvalidCenSize() throws IOException {
-
         int size = MAX_CEN_SIZE;
-
         Path zip = zipWithModifiedEndRecord(size, false, 0, INVALID_CEN_SIZE);
         verifyRejection(zip, INVALID_CEN_BAD_SIZE);
     }
@@ -145,14 +142,14 @@ public class EndOfCenValidation {
     }
 
     /**
-     * Verify that ZipFile rejects the ZIP file with a ZipException
+     * Verify that ZipFileSystem.newFileSystem rejects the ZIP file with a ZipError
      * with the given message
      * @param zip ZIP file to open
      * @param msg exception message to expect
      */
     private static void verifyRejection(Path zip, String msg) {
-        ZipException ex = expectThrows(ZipException.class, () -> {
-            new ZipFile(zip.toFile());
+        ZipError ex = expectThrows(ZipError.class, () -> {
+            FileSystems.newFileSystem(zip, null);
         });
         assertEquals(ex.getMessage(), msg);
     }
