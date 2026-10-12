@@ -69,7 +69,6 @@ public class TestZoneTextPrinterParser extends AbstractTestPrinterParser {
     private static final Map<String, ZoneOffset> CLDR_EXPLICIT_DST_OFFSETS;
     static {
         Map<String, ZoneOffset> offsets = new HashMap<>();
-        offsets.put("Africa/Windhoek", ZoneOffset.of("+02:00"));
         offsets.put("America/Edmonton", ZoneOffset.of("-06:00"));
         offsets.put("America/Inuvik", ZoneOffset.of("-06:00"));
         offsets.put("America/Rainy_River", ZoneOffset.of("-05:00"));
