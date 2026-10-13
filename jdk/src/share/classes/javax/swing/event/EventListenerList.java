@@ -276,7 +276,9 @@ public class EventListenerList implements Serializable {
             ReflectUtil.checkPackageAccess(name);
             Class<?> c = Class.forName(name, false, cl);
             if (EventListener.class.isAssignableFrom(c)) {
-                add((Class<EventListener>) c, l);
+                @SuppressWarnings("unchecked")
+                Class<EventListener> tmp = (Class<EventListener>) c;
+                add(tmp, l);
             }
         }
     }
