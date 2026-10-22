@@ -617,8 +617,11 @@ readCEN(jzfile *zip, jint knownTotal)
              * (i.e., >= 2^63), or total values that do not fit in jint, are
              * not supported and indicate a corrupt or invalid zip file.
              */
-            if (cenlen < 0 || cenoff < 0 || total64 < 0 || total64 > INT_MAX) {
+            if (cenlen < 0 || cenoff < 0) {
                 ZIP_FORMAT_ERROR("Zip64 END values exceed supported size");
+            }
+            if (total64 < 0 || total64 > INT_MAX || total64 > cenlen / CENHDR) {
+                ZIP_FORMAT_ERROR("invalid END header (total entries count too large)");
             }
             total = (jint)total64;
             endpos = end64pos;
@@ -626,15 +629,21 @@ readCEN(jzfile *zip, jint knownTotal)
         }
     }
 
-    if (cenlen > endpos)
+    // Validate END header
+    if (cenlen > endpos) {
         ZIP_FORMAT_ERROR("invalid END header (bad central directory size)");
+    }
     cenpos = endpos - cenlen;
 
     /* Get position of first local file (LOC) header, taking into
      * account that there may be a stub prefixed to the zip file. */
     zip->locpos = cenpos - cenoff;
-    if (zip->locpos < 0)
+    if (zip->locpos < 0) {
         ZIP_FORMAT_ERROR("invalid END header (bad central directory offset)");
+    }
+    if (cenlen + ENDHDR >= INT_MAX) {
+        ZIP_FORMAT_ERROR("invalid END header (central directory size too large)");
+    }
 
 #ifdef USE_MMAP
     if (zip->usemmap) {
