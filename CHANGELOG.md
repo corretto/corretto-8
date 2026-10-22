@@ -36,9 +36,9 @@ The following CVEs are addressed in 8.512.08.1:
 
 | CVE | CVSS | Component |
 |-----|------|-----------|
+| CVE-2026-91403 | 9.1 | security-libs/javax.net.ssl |
 | CVE-2026-91415 | 7.0 | client-libs/2d |
 | CVE-2026-91398 | 6.8 | core-libs/java.net |
-| CVE-2026-113470 | 6.8 | security-libs/java.security |
 | CVE-2026-91382 | 6.5 | client-libs/2d |
 | CVE-2026-91411 | 6.5 | security-libs/org.ietf.jgss |
 | CVE-2026-87294 | 6.5 | security-libs/java.security |
