@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -173,21 +173,35 @@ class SocksSocketImpl extends PlainSocketImpl implements SocksConsts {
             if (userName == null)
                 return false;
             out.write(1);
-            out.write(userName.length());
+
             try {
-                out.write(userName.getBytes("ISO-8859-1"));
+                byte[] userNameBytes = userName.getBytes("ISO-8859-1");
+                // RFC 1929 allows usernames of at most 255 bytes
+                if (userNameBytes.length > 0xFF) {
+                    throw new SocketException("SOCKS: username is too long");
+                }
+                out.write(userNameBytes.length);
+                out.write(userNameBytes);
             } catch (java.io.UnsupportedEncodingException uee) {
                 assert false;
             }
-            if (password != null) {
-                out.write(password.length());
+
+            if (password == null) {
+                out.write(0);
+            } else {
                 try {
-                    out.write(password.getBytes("ISO-8859-1"));
+                    byte[] passwordBytes = password.getBytes("ISO-8859-1");
+                    // RFC 1929 allows password of at most 255 bytes
+                    if (passwordBytes.length > 0xFF) {
+                        throw new SocketException("SOCKS: password is too long");
+                    }
+                    out.write(passwordBytes.length);
+                    out.write(passwordBytes);
                 } catch (java.io.UnsupportedEncodingException uee) {
                     assert false;
                 }
-            } else
-                out.write(0);
+            }
+
             out.flush();
             byte[] data = new byte[2];
             int i = readSocksReply(in, data, deadlineMillis);
@@ -346,6 +360,20 @@ class SocksSocketImpl extends PlainSocketImpl implements SocksConsts {
                 security.checkConnect(epoint.getAddress().getHostAddress(),
                                       epoint.getPort());
         }
+
+        byte[] domainNameBytes = null;
+        if (epoint.isUnresolved()) {
+            try {
+                domainNameBytes = epoint.getHostName().getBytes("ISO-8859-1");
+            } catch (java.io.UnsupportedEncodingException uee) {
+                assert false;
+            }
+            // RFC 1928 allows FQDNs of at most 255 bytes
+            if (domainNameBytes.length > 0xFF) {
+                throw new SocketException("SOCKS: host name is too long");
+            }
+        }
+
         if (server == null) {
             // This is the general case
             // server is not null only when the socket was created with a
@@ -478,12 +506,8 @@ class SocksSocketImpl extends PlainSocketImpl implements SocksConsts {
         /* Test for IPV4/IPV6/Unresolved */
         if (epoint.isUnresolved()) {
             out.write(DOMAIN_NAME);
-            out.write(epoint.getHostName().length());
-            try {
-                out.write(epoint.getHostName().getBytes("ISO-8859-1"));
-            } catch (java.io.UnsupportedEncodingException uee) {
-                assert false;
-            }
+            out.write(domainNameBytes.length);
+            out.write(domainNameBytes);
             out.write((epoint.getPort() >> 8) & 0xff);
             out.write((epoint.getPort() >> 0) & 0xff);
         } else if (epoint.getAddress() instanceof Inet6Address) {

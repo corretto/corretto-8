@@ -17,6 +17,16 @@ BUILD=${BUILD:-"00"}
 MAJOR=8
 CURRENT_VERSION=$(cat version.txt)
 
+# Upstream tags can lag Corretto's current build. Compare numerically because
+# JDK 8 build numbers are commonly zero-padded, including 08 and 09.
+if [[ ${CURRENT_VERSION} =~ ^${MAJOR}\.${MINOR}\.([0-9]+)\.[0-9]+$ ]]; then
+    CURRENT_BUILD=${BASH_REMATCH[1]}
+    if (( 10#${BUILD} <= 10#${CURRENT_BUILD} )); then
+        echo "Upstream build ${BUILD} is not newer than ${CURRENT_VERSION}; leaving it unchanged."
+        exit 0
+    fi
+fi
+
 if [[ ${CURRENT_VERSION} == ${MAJOR}.${MINOR}.${BUILD}.* ]]; then
     echo "Corretto version is current."
 else
