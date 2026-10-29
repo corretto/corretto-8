@@ -29,6 +29,9 @@ import static sun.security.x509.GeneralNameInterface.NAME_WIDENS;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import jdk.testlibrary.Utils;
+
 import sun.security.x509.IPAddressName;
 
 /*
@@ -36,7 +39,7 @@ import sun.security.x509.IPAddressName;
  * @summary Verify IPAddressName.constrains
  * @bug 8267617
  * @library /test/lib
- * @modules java.base/sun.security.x509
+ * @library /lib/testlibrary
  */
 
 public class ConstrainsTest {
@@ -97,7 +100,7 @@ public class ConstrainsTest {
     }
 
     public static void main(String[] args) throws Exception {
-        Arrays.asList(new ConstrainsTest().names()).forEach(v -> testNameContains(
+        Utils.listOf(new ConstrainsTest().names()).forEach(v -> testNameContains(
                 (IPAddressName) v[0], (IPAddressName) v[1], (int) v[2]));
     }
 

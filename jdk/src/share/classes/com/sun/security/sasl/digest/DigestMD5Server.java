@@ -25,11 +25,11 @@
 
 package com.sun.security.sasl.digest;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.List;
