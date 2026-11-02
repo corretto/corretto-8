@@ -88,7 +88,8 @@ public class CLDRDisplayNamesTest {
         {ZonedDateTime.of(2026, 7, 5, 0, 0, 0, 0, ZoneId.of("America/Yellowknife")), "Mountain Daylight Time"},
         {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Inuvik")), "Mountain Daylight Time"},
         {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Winnipeg")), "Central Daylight Time"},
-        {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Rainy_River")), "Central Daylight Time"},
+        {ZonedDateTime.of(2026, 12, 5, 0, 0, 0, 0, ZoneId.of("America/Rainy_River")), "Central Daylight Time"}
+
     };
 
     public static void main(String[] args) {
