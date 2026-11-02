@@ -75,7 +75,7 @@ public class GIFImageReader extends ImageReader {
     // A List of Longs indicating the stream positions of the
     // start of the metadata for each image.  Entries are added
     // as needed.
-    List imageStartPosition = new ArrayList();
+    List<Long> imageStartPosition = new ArrayList<>();
 
     // Length of metadata for image at 'currIndex', valid only if
     // imageMetadata != null.
@@ -230,7 +230,8 @@ public class GIFImageReader extends ImageReader {
         return new ImageTypeSpecifier(colorModel, sampleModel);
     }
 
-    public Iterator getImageTypes(int imageIndex) throws IIOException {
+    public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
+            throws IIOException {
         checkIndex(imageIndex);
 
         int index = locateImage(imageIndex);
@@ -239,7 +240,7 @@ public class GIFImageReader extends ImageReader {
         }
         readMetadata();
 
-        List l = new ArrayList(1);
+        List<ImageTypeSpecifier> l = new ArrayList<>(1);
 
         byte[] colorTable;
         if (imageMetadata.localColorTable != null) {
@@ -608,7 +609,7 @@ public class GIFImageReader extends ImageReader {
             int index = Math.min(imageIndex, imageStartPosition.size() - 1);
 
             // Seek to that position
-            Long l = (Long)imageStartPosition.get(index);
+            Long l = imageStartPosition.get(index);
             stream.seek(l.longValue());
 
             // Skip images until at desired index or last image found
@@ -742,7 +743,7 @@ public class GIFImageReader extends ImageReader {
                         byte[] comment = concatenateBlocks();
                         if (!ignoreMetadata) {
                             if (imageMetadata.comments == null) {
-                                imageMetadata.comments = new ArrayList();
+                                imageMetadata.comments = new ArrayList<>();
                             }
                             imageMetadata.comments.add(comment);
                         }
@@ -786,11 +787,11 @@ public class GIFImageReader extends ImageReader {
                             // Init lists if necessary
                             if (imageMetadata.applicationIDs == null) {
                                 imageMetadata.applicationIDs =
-                                    new ArrayList();
+                                    new ArrayList<>();
                                 imageMetadata.authenticationCodes =
-                                    new ArrayList();
+                                    new ArrayList<>();
                                 imageMetadata.applicationData =
-                                    new ArrayList();
+                                    new ArrayList<>();
                             }
                             imageMetadata.applicationIDs.add(applicationID);
                             imageMetadata.authenticationCodes.add(authCode);
@@ -894,7 +895,7 @@ public class GIFImageReader extends ImageReader {
         }
 
         // Initialize the destination image
-        Iterator imageTypes = getImageTypes(imageIndex);
+        Iterator<ImageTypeSpecifier> imageTypes = getImageTypes(imageIndex);
         this.theImage = getDestination(param,
                                        imageTypes,
                                        imageMetadata.imageWidth,
@@ -1064,7 +1065,7 @@ public class GIFImageReader extends ImageReader {
         streamMetadata = null;
         currIndex = -1;
         imageMetadata = null;
-        imageStartPosition = new ArrayList();
+        imageStartPosition = new ArrayList<>();
         numImages = -1;
 
         // No need to reinitialize 'block'
