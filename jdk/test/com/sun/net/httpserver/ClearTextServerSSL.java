@@ -34,9 +34,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import jdk.testlibrary.net.URIBuilder;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class ClearTextServerSSL {
 
     static final String CTXT_PATH = "/ClearTextServerSSL";
 
-    @BeforeAll
+    @BeforeClass
     public static void setup() {
         if (ENABLE_LOGGING) {
             ConsoleHandler ch = new ConsoleHandler();
@@ -90,21 +90,19 @@ public class ClearTextServerSSL {
             URL url = uri("http", server, path("/clear")).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             int response = conn.getResponseCode();
-            Assertions.assertEquals(200, response);
+            Assert.assertEquals(200, response);
             URL httpsurl = uri("https", server, path("/ssl")).toURL();
             HttpsURLConnection httpsconn = (HttpsURLConnection) httpsurl.openConnection();
-            Assertions.assertThrows(SSLException.class, () -> {
-                try {
-                    httpsconn.getResponseCode();
-                } catch (IOException ioe) {
-                    // unwraps unnecessary wrapping fixed in JDK-8216498
-                    if (ioe.getCause() instanceof SSLException) {
-                        throw new SSLException(ioe);
-                    } else {
-                        throw ioe;
-                    }
+            try {
+                httpsconn.getResponseCode();
+                Assert.fail("Expected SSLException");
+            } catch (IOException ioe) {
+                // Accept the wrapping used before JDK-8216498.
+                if (!(ioe instanceof SSLException)
+                        && !(ioe.getCause() instanceof SSLException)) {
+                    throw ioe;
                 }
-            });
+            }
             try (Socket socket = new Socket()) {
                 socket.connect(server.getAddress());
                 byte[] badRequest = {
@@ -117,7 +115,7 @@ public class ClearTextServerSSL {
                 List<String> line = reader.lines().collect(Collectors.collectingAndThen(
                         Collectors.toList(),
                         Collections::unmodifiableList));
-                Assertions.assertEquals("HTTP/1.1 400 Bad Request", line.get(0));
+                Assert.assertEquals("HTTP/1.1 400 Bad Request", line.get(0));
                 System.out.println("Got expected response:");
                 line.stream().map(l -> "\t" + l).forEach(System.out::println);
             }
