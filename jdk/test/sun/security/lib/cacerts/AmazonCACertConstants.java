@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 public class AmazonCACertConstants {
-    public static final int AMAZON_CA_CERT_COUNT = 47;
+    public static final int AMAZON_CA_CERT_COUNT = 45;
     public static final Map<String, String> AMAZON_CA_FINGERPRINT_MAP = new HashMap<String, String>() {
         {
             put("accvraiz1",
@@ -59,10 +59,6 @@ public class AmazonCACertConstants {
                     "0C:2C:D6:3D:F7:80:6F:A3:99:ED:E8:09:11:6B:57:5B:F8:79:89:F0:65:18:F9:80:8C:86:05:03:17:8B:AF:66");
             put("e-szignorootca2017",
                     "BE:B0:0B:30:83:9B:9B:C3:2C:32:E4:44:79:05:95:06:41:F2:64:21:B1:5E:D0:89:19:8B:51:8A:E2:EA:1B:99");
-            put("emsigneccrootca-c3",
-                    "BC:4D:80:9B:15:18:9D:78:DB:3E:1D:8C:F4:F9:72:6A:79:5D:A1:64:3C:A5:F1:35:8E:1D:DB:0E:DC:0D:7E:B3");
-            put("emsignrootca-c1",
-                    "12:56:09:AA:30:1D:A0:A2:49:B9:7A:82:39:CB:6A:34:21:6F:44:DC:AC:9F:39:54:B1:42:92:F2:E8:C8:60:8F");
             put("gdcatrustauthr5root",
                     "BF:FF:8F:D0:44:33:48:7D:6A:8A:A6:0C:1A:29:76:7A:9F:C2:BB:B0:5E:42:0F:71:3A:13:B9:92:89:1D:38:93");
             put("globalsignroote46",
