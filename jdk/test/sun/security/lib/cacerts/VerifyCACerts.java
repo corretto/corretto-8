@@ -338,6 +338,15 @@ public class VerifyCACerts {
                     + " FINGERPRINT_MAP entries, should be " + COUNT);
         }
 
+        System.out.println("Trusted CA Certificate count: " + ks.size());
+
+        // also ensure FINGERPRINT_MAP lists correct count
+        if (FINGERPRINT_MAP.size() != COUNT) {
+            atLeastOneFailed = true;
+            System.err.println("ERROR: " + FINGERPRINT_MAP.size()
+                    + " FINGERPRINT_MAP entries, should be " + COUNT);
+        }
+
         // check that all entries in the map are in the keystore
         for (String alias : FINGERPRINT_MAP.keySet()) {
             if (!ks.isCertificateEntry(alias)) {
