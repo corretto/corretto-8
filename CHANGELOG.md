@@ -2,6 +2,42 @@
 
 The following sections describe the changes for each release of Amazon Corretto 8.
 
+## Corretto version: 8.514.01.1
+Release Date: November 17, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 15.0 and later, x86_64
++ macOS 15.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 8.514.04.1:
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| Import jdk8u514-b01    | All      | Updates Corretto baseline to OpenJDK 8u514-b01 | [jdk8u514-b01](https://github.com/openjdk/jdk8u/releases/tag/jdk8u514-b01) |
+| JDK-8396048 | All | (tz) Update to tzdata2026f | [JDK-8396048](https://bugs.openjdk.org/browse/JDK-8396048) |
+| Remove emSign C1 and C3 roots from amazon-cacerts | All | Remove emSign C1 and C3 roots from amazon-cacerts | [#587](https://github.com/corretto/corretto-8/pull/587) |
+
+The following CVEs are addressed in 8.514.01.1:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-114939 | 7.4 | security-libs/org.ietf.jgss |
+| CVE-2026-114940 | 7.4 | security-libs/javax.net.ssl |
+| CVE-2026-114943 | 6.5 | hotspot/runtime |
+| CVE-2026-114944 | 5.9 | core-svc/java.lang.management |
+| CVE-2026-114946 | 4.8 | hotspot/compiler |
+
 ## Corretto version: 8.512.09.1
 Release Date: October 24, 2026
 
