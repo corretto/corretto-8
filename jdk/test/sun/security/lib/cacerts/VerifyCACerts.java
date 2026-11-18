@@ -338,6 +338,15 @@ public class VerifyCACerts {
                     + " FINGERPRINT_MAP entries, should be " + OVERALL_CA_CERT_COUNT);
         }
 
+        System.out.println("Trusted CA Certificate count: " + ks.size());
+
+        // also ensure FINGERPRINT_MAP lists correct count
+        if (FINGERPRINT_MAP.size() != COUNT) {
+            atLeastOneFailed = true;
+            System.err.println("ERROR: " + FINGERPRINT_MAP.size()
+                    + " FINGERPRINT_MAP entries, should be " + COUNT);
+        }
+
         // check that all entries in the map are in the keystore
         for (String alias : FINGERPRINT_MAP.keySet()) {
             if (!ks.isCertificateEntry(alias)) {
@@ -374,26 +383,26 @@ public class VerifyCACerts {
                 System.err.println("ERROR: cert cannot be verified:" + e.getMessage());
             }
 
+            // Is cert expired?
             try {
                 cert.checkValidity();
             } catch (CertificateExpiredException cee) {
-                // Ignore - we have an 'is very expired' check later
+                if (!EXPIRY_EXC_ENTRIES.contains(alias)) {
+                    atLeastOneFailed = true;
+                    System.err.println("ERROR: cert is expired but not in EXPIRY_EXC_ENTRIES");
+                }
             } catch (CertificateNotYetValidException cne) {
                 atLeastOneFailed = true;
                 System.err.println("ERROR: cert is not yet valid");
             }
 
-            // If cert is more than 90 days *past* expiry, mark as failure so
-            // we can alert either OpenJDK upstream or Amazon Linux.
-            // This is different to the upstream failure condition, which fails
-            // 90 days *before* expiry. Our condition is more relaxed because we
-            // rely on OpenJDK/Amazon Linux to manage the certs.
+            // If cert is within 90 days of expiring, mark as warning so
+            // that cert can be scheduled to be removed/renewed.
             Date notAfter = cert.getNotAfter();
             if (System.currentTimeMillis() - notAfter.getTime() > NINETY_DAYS) {
                 if (!EXPIRY_EXC_ENTRIES.contains(alias)) {
-                    atLeastOneFailed = true;
-                    System.err.println("ERROR: cert \"" + alias + "\" expiry \""
-                            + notAfter.toString() + "\" has been expired for >90 days.");
+                    System.err.println("WARNING: cert \"" + alias + "\" expiry \""
+                            + notAfter + "\" will expire within 90 days");
                 }
             }
         }
