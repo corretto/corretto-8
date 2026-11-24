@@ -3666,7 +3666,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 #
-# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -4410,7 +4410,7 @@ VS_TOOLSET_SUPPORTED_2022=true
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1779849897
+DATE_WHEN_GENERATED=1790600261
 
 ###############################################################################
 #
@@ -51941,7 +51941,8 @@ $as_echo_n "checking for memory size... " >&6; }
     FOUND_MEM=yes
   elif test "x$OPENJDK_BUILD_OS" = xwindows; then
     # Windows, but without cygwin
-    MEMORY_SIZE=`wmic computersystem get totalphysicalmemory -value | grep = | cut -d "=" -f 2-`
+    MEMORY_SIZE=`powershell -Command \
+        "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory" | $SED 's/\\r//g' `
     MEMORY_SIZE=`expr $MEMORY_SIZE / 1024 / 1024`
     FOUND_MEM=yes
   fi
